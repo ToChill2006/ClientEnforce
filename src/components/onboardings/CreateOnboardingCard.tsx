@@ -8,94 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 
-const Schema = z.object({
-  title: z.string().min(1),
-  client_email: z.string().email(),
-  client_full_name: z.string().min(1).optional(),
-});
-
-export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
-  const { push } = useToast();
-  const [title, setTitle] = React.useState("");
-  const [clientEmail, setClientEmail] = React.useState("");
-  const [clientName, setClientName] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-
-  async function create() {
-    const parsed = Schema.safeParse({
-      title,
-      client_email: clientEmail,
-      client_full_name: clientName || undefined,
-    });
-    if (!parsed.success) {
-      push({ title: "Invalid input", description: "Check title and client email.", variant: "error" });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/onboardings", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          title: parsed.data.title,
-          client: { email: parsed.data.client_email, full_name: parsed.data.client_full_name },
-        }),
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Failed to create onboarding");
-
-      push({ title: "Onboarding created", variant: "success" });
-      setTitle("");
-      setClientEmail("");
-      setClientName("");
-      onCreated();
-    } catch (e: any) {
-      push({ title: "Create failed", description: e?.message ?? "Unknown error", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <Card className="border-zinc-200">
-      <CardHeader>
-        <CardTitle>Create onboarding</CardTitle>
-        <CardDescription>Creates a new onboarding using your default template.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="title">Title</Label>
-          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. ACME — March onboarding" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Client email</Label>
-          <Input id="email" type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@company.com" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="name">Client full name (optional)</Label>
-          <Input id="name" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Jane Doe" />
-        </div>
-        <div className="flex items-center gap-3">
-          <Button type="button" onClick={create} disabled={loading}>
-            {loading ? "Creating..." : "Create"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-"use client";
-
-import * as React from "react";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/toast";
-
 type TemplateItem = {
   id: string;
   name?: string | null;
@@ -118,6 +30,7 @@ const Schema = z.object({
   client_mode: z.enum(["existing", "new"]),
   client_id: z.string().optional(),
   client_email: z.string().email().optional(),
+  // Name is REQUIRED for new clients (enforced below)
   client_full_name: z.string().min(1).optional(),
 });
 
@@ -165,10 +78,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
         if (cancelled) return;
 
         setTemplates(items);
-        // Auto-select the first template if none selected.
-        if (!templateId && items.length > 0) {
-          setTemplateId(items[0].id);
-        }
+        if (!templateId && items.length > 0) setTemplateId(items[0].id);
       } catch (e: any) {
         if (!cancelled) toast({ title: "Could not load templates", description: e?.message ?? "Unknown error", variant: "error" });
       } finally {
@@ -187,10 +97,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
         if (cancelled) return;
 
         setClients(items);
-        // Auto-select first client in existing mode.
-        if (!clientId && items.length > 0) {
-          setClientId(items[0].id);
-        }
+        if (!clientId && items.length > 0) setClientId(items[0].id);
       } catch (e: any) {
         if (!cancelled) toast({ title: "Could not load clients", description: e?.message ?? "Unknown error", variant: "error" });
       } finally {
@@ -208,11 +115,10 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
   }, []);
 
   React.useEffect(() => {
-    // When switching to existing, populate the email/name fields from the selected client.
     if (clientMode === "existing") {
       const c = selectedClient;
       setClientEmail(c?.email ?? "");
-      setClientName((c?.full_name ?? c?.name ?? "") as string);
+      setClientName(((c?.full_name ?? c?.name ?? "") as string).trim());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientMode, clientId]);
@@ -234,15 +140,20 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
       return;
     }
 
-    // Enforce conditional requirements.
     if (parsed.data.client_mode === "existing" && !parsed.data.client_id) {
       toast({ title: "Select a client", description: "Choose an existing client or switch to new client.", variant: "error" });
       return;
     }
 
-    if (parsed.data.client_mode === "new" && !parsed.data.client_email) {
-      toast({ title: "Client email required", description: "Enter a valid client email.", variant: "error" });
-      return;
+    if (parsed.data.client_mode === "new") {
+      if (!parsed.data.client_email) {
+        toast({ title: "Client email required", description: "Enter a valid client email.", variant: "error" });
+        return;
+      }
+      if (!parsed.data.client_full_name) {
+        toast({ title: "Client name required", description: "Enter the client's full name.", variant: "error" });
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -295,12 +206,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. ACME — March onboarding"
-            />
+            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. ACME — March onboarding" />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -366,11 +272,15 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               >
                 {clientsLoading ? <option value="">Loading clients…</option> : null}
                 {!clientsLoading && clients.length === 0 ? <option value="">No clients available</option> : null}
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {((c.full_name || c.name) ? `${c.full_name || c.name} — ${c.email}` : c.email) as string}
-                  </option>
-                ))}
+                {clients.map((c) => {
+                  const displayName = (c.full_name || c.name || "").toString().trim();
+                  const label = displayName ? `${displayName} — ${c.email}` : c.email;
+                  return (
+                    <option key={c.id} value={c.id}>
+                      {label}
+                    </option>
+                  );
+                })}
               </select>
               <div className="text-xs text-zinc-500">Uses the selected client’s saved details.</div>
             </div>
@@ -398,7 +308,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Client full name (optional)</Label>
+              <Label htmlFor="name">Client full name</Label>
               <Input id="name" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Jane Doe" />
             </div>
           </div>
