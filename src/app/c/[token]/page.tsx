@@ -183,7 +183,7 @@ export default async function ClientTokenPage({
     select: string = "*"
   ): Promise<TryResult> => {
     try {
-      const r = await admin.from(table).select(select).eq(where.col as any, where.val);
+      const r = await (admin as any).from(table).select(select).eq(where.col, where.val);
       return { data: (r as any).data ?? null, error: (r as any).error ?? null };
     } catch (e: any) {
       // For unexpected thrown errors, normalize into the same shape.
