@@ -13,6 +13,24 @@ function asStripeId(v: any): string | null {
   return null;
 }
 
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const anyInv = invoice as any;
+
+  // Some payloads include invoice.subscription but Stripe typings may not
+  const direct = anyInv?.subscription;
+  if (direct) return asStripeId(direct);
+
+  // Stripe invoice webhooks often include parent.subscription_details.subscription
+  const parentSub = anyInv?.parent?.subscription_details?.subscription;
+  if (parentSub) return asStripeId(parentSub);
+
+  // Fallback: subscription can exist on a line item's parent details
+  const lineSub = anyInv?.lines?.data?.[0]?.parent?.subscription_item_details?.subscription;
+  if (lineSub) return asStripeId(lineSub);
+
+  return null;
+}
+
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -216,8 +234,13 @@ export async function POST(req: Request) {
         invoice.lines?.data?.[0]?.metadata?.tier ||
         null;
 
-      const customerId = asStripeId(invoice.customer);
-      const subscriptionId = asStripeId(invoice.subscription);
+      const customerId = asStripeId((invoice as any).customer);
+      const subscriptionId = getInvoiceSubscriptionId(invoice);
+
+      if (!subscriptionId) {
+        console.warn("[stripe-webhook] invoice missing subscription id", { invoiceId: invoice.id, type: event.type });
+        return NextResponse.json({ received: true });
+      }
 
       if (!orgId) {
         console.warn("[stripe-webhook] invoice missing org_id metadata", { invoiceId: invoice.id, type: event.type });
