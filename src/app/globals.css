@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* App-wide baseline */
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: rgb(250 250 250); /* zinc-50 */
+  color: rgb(24 24 27); /* zinc-900 */
+}
+
+/* Subtle typography defaults */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+}
+
+/* Scrollbars (subtle, optional) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(212 212 216) transparent; /* zinc-300 */
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(212 212 216);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Focus ring baseline for non-button elements */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(161 161 170), 0 0 0 4px rgb(250 250 250);
+}
+
+/* Table niceties */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
