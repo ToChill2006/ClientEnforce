@@ -75,7 +75,7 @@ export default async function ClientTokenPage({
 
   // Normalize Supabase responses while ensuring we only ever await real Promises.
   type OneResult<T> = { data: T | null; error: any | null };
-  const runOne = async <T,>(promise: Promise<any>): Promise<OneResult<T>> => {
+  const runOne = async <T,>(promise: PromiseLike<any>): Promise<OneResult<T>> => {
     try {
       const r = await promise;
       return { data: (r as any)?.data ?? null, error: (r as any)?.error ?? null };
