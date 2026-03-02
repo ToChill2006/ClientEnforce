@@ -58,18 +58,6 @@ export default async function ClientTokenPage({
 
   const admin = supabaseAdmin();
 
-  // Onboarding lookup: be tolerant of column naming differences across DB schemas.
-  // (Some schemas use client_token, clientToken, or token. Some omit template fields.)
-  type OneResult<T> = { data: T | null; error: any | null };
-
-  const tryOne = async <T,>(fn: () => Promise<any>): Promise<OneResult<T>> => {
-    try {
-      const r = await fn();
-      return { data: (r as any).data ?? null, error: (r as any).error ?? null };
-    } catch (e: any) {
-      return { data: null, error: e };
-    }
-  };
 
   const isMissingColumn = (e: any) => {
     const m = String(e?.message || "").toLowerCase();
@@ -85,47 +73,58 @@ export default async function ClientTokenPage({
     return m.includes("relation") && m.includes("does not exist");
   };
 
+  // Normalize Supabase responses while ensuring we only ever await real Promises.
+  type OneResult<T> = { data: T | null; error: any | null };
+  const runOne = async <T,>(promise: Promise<any>): Promise<OneResult<T>> => {
+    try {
+      const r = await promise;
+      return { data: (r as any)?.data ?? null, error: (r as any)?.error ?? null };
+    } catch (e: any) {
+      return { data: null, error: e };
+    }
+  };
+
   const tryOnboarding = async (): Promise<OneResult<any>> => {
     const attempts: Array<() => Promise<OneResult<any>>> = [
       // Minimal + most common
       () =>
-        tryOne(() =>
+        runOne(
           admin
             .from("onboardings")
             .select("id,title,status,locked_at,template_id,client_token")
             .eq("client_token", token)
-            .single()
+            .maybeSingle()
         ),
       // Alternate token column
       () =>
-        tryOne(() =>
+        runOne(
           admin
             .from("onboardings")
             .select("id,title,status,locked_at,template_id")
             .eq("clientToken", token as any)
-            .single()
+            .maybeSingle()
         ),
       () =>
-        tryOne(() =>
+        runOne(
           admin
             .from("onboardings")
             .select("id,title,status,locked_at,template_id")
             .eq("token", token as any)
-            .single()
+            .maybeSingle()
         ),
       // Try with templateId/template fields if they exist
       () =>
-        tryOne(() =>
+        runOne(
           admin
             .from("onboardings")
             .select("id,title,status,locked_at,template_id,templateId,template")
             .eq("client_token", token)
-            .single()
+            .maybeSingle()
         ),
       // Last resort: select all columns (helps when the schema differs a lot)
-      () => tryOne(() => admin.from("onboardings").select("*").eq("client_token", token).single()),
-      () => tryOne(() => admin.from("onboardings").select("*").eq("clientToken", token as any).single()),
-      () => tryOne(() => admin.from("onboardings").select("*").eq("token", token as any).single()),
+      () => runOne(admin.from("onboardings").select("*").eq("client_token", token).maybeSingle()),
+      () => runOne(admin.from("onboardings").select("*").eq("clientToken", token as any).maybeSingle()),
+      () => runOne(admin.from("onboardings").select("*").eq("token", token as any).maybeSingle()),
     ];
 
     for (const attempt of attempts) {
