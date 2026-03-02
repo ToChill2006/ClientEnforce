@@ -264,7 +264,8 @@ export default async function ClientTokenPage({
   // If we did not find per-onboarding requirement rows, fall back to requirements stored on the template row.
   // Many schemas store form definitions as JSON on templates (and materialize requirement rows later).
   // This keeps the client portal from looking empty when the template does have fields.
-  if (!reqErr && Array.isArray(reqRows) && reqRows.length === 0 && templateKey) {
+  const reqRowsArr = Array.isArray(reqRows) ? reqRows : [];
+  if (!reqErr && reqRowsArr.length === 0 && templateKey) {
     try {
       const t = await admin
         .from("templates")
