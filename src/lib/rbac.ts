@@ -22,7 +22,9 @@ export async function requireProfile() {
   return data;
 }
 
-export async function requireRole(): Promise<MemberRole> {
+export async function requireRole(
+  allowedRoles?: MemberRole[]
+): Promise<MemberRole> {
   const user = await requireUser();
   const profile = await requireProfile();
   const supabase = await supabaseServer();
@@ -32,8 +34,16 @@ export async function requireRole(): Promise<MemberRole> {
     .eq("org_id", profile.org_id)
     .eq("user_id", user.id)
     .single();
+
   if (error) throw new Error(error.message);
-  return data.role as MemberRole;
+
+  const role = data.role as MemberRole;
+
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    throw new Error("Forbidden");
+  }
+
+  return role;
 }
 
 export function isAdmin(role: MemberRole) {
@@ -41,7 +51,5 @@ export function isAdmin(role: MemberRole) {
 }
 
 export async function requireAdmin() {
-  const role = await requireRole();
-  if (!isAdmin(role)) throw new Error("Forbidden");
-  return role;
+  return requireRole(["owner", "admin"]);
 }
