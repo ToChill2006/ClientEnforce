@@ -80,7 +80,8 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
         setTemplates(items);
         if (!templateId && items.length > 0) setTemplateId(items[0].id);
       } catch (e: any) {
-        if (!cancelled) toast({ title: "Could not load templates", description: e?.message ?? "Unknown error", variant: "error" });
+        if (!cancelled)
+          toast({ title: "Could not load templates", description: e?.message ?? "Unknown error", variant: "error" });
       } finally {
         if (!cancelled) setTemplatesLoading(false);
       }
@@ -99,7 +100,8 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
         setClients(items);
         if (!clientId && items.length > 0) setClientId(items[0].id);
       } catch (e: any) {
-        if (!cancelled) toast({ title: "Could not load clients", description: e?.message ?? "Unknown error", variant: "error" });
+        if (!cancelled)
+          toast({ title: "Could not load clients", description: e?.message ?? "Unknown error", variant: "error" });
       } finally {
         if (!cancelled) setClientsLoading(false);
       }

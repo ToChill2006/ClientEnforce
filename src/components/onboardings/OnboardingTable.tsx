@@ -17,12 +17,18 @@ type Row = {
 };
 
 export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl: string; onSent: () => void }) {
-  const { push } = useToast();
+  const toastApi = useToast() as any;
+  const toast: (t: any) => void =
+    typeof toastApi?.notify === "function"
+      ? toastApi.notify
+      : typeof toastApi?.push === "function"
+      ? toastApi.push
+      : () => {};
 
   async function copyLink(link: string) {
     try {
       await navigator.clipboard.writeText(link);
-      push({ title: "Copied", description: "Client link copied to clipboard.", variant: "success" });
+      toast({ title: "Copied", description: "Client link copied to clipboard.", variant: "success" });
     } catch {
       // Fallback for older/locked-down browsers
       try {
@@ -35,9 +41,9 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
         ta.select();
         document.execCommand("copy");
         document.body.removeChild(ta);
-        push({ title: "Copied", description: "Client link copied to clipboard.", variant: "success" });
+        toast({ title: "Copied", description: "Client link copied to clipboard.", variant: "success" });
       } catch {
-        push({ title: "Copy failed", description: "Could not copy link. Please copy manually.", variant: "error" });
+        toast({ title: "Copy failed", description: "Could not copy link. Please copy manually.", variant: "error" });
       }
     }
   }
@@ -55,10 +61,10 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Failed to send");
 
-      push({ title: "Sent to client", description: json.link, variant: "success" });
+      toast({ title: "Sent to client", description: json.link, variant: "success" });
       onSent();
     } catch (e: any) {
-      push({ title: "Send failed", description: e?.message ?? "Unknown error", variant: "error" });
+      toast({ title: "Send failed", description: e?.message ?? "Unknown error", variant: "error" });
     }
   }
 
