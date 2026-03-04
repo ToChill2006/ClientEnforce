@@ -3,47 +3,6 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
-      {/* Top nav */}
-      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-sm font-semibold">
-              CE
-            </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold">ClientEnforce</div>
-              <div className="text-xs text-zinc-500">Secure client onboarding</div>
-            </div>
-          </div>
-
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/features" className="text-sm text-zinc-600 hover:text-zinc-900">
-              Features
-            </Link>
-            <Link href="/pricing" className="text-sm text-zinc-600 hover:text-zinc-900">
-              Pricing
-            </Link>
-            <Link href="/about" className="text-sm text-zinc-600 hover:text-zinc-900">
-              About
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex h-9 items-center justify-center rounded-md border border-transparent bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800"
-            >
-              Create account
-            </Link>
-          </div>
-        </div>
-      </header>
 
       {/* Hero */}
       <section className="relative">
@@ -397,26 +356,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-10 flex items-center justify-between gap-6 border-t border-zinc-200 pt-8 text-xs text-zinc-500">
-            <div>© {new Date().getFullYear()} ClientEnforce</div>
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="hover:text-zinc-900">
-                Log in
-              </Link>
-              <Link href="/signup" className="hover:text-zinc-900">
-                Sign up
-              </Link>
-              <Link href="/features" className="hover:text-zinc-900">
-                Features
-              </Link>
-              <Link href="/pricing" className="hover:text-zinc-900">
-                Pricing
-              </Link>
-              <Link href="/about" className="hover:text-zinc-900">
-                About
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
     </main>
