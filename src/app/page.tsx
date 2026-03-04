@@ -17,18 +17,15 @@ export default function HomePage() {
           </div>
 
           <nav className="hidden items-center gap-6 md:flex">
-            <a href="#features" className="text-sm text-zinc-600 hover:text-zinc-900">
+            <Link href="/features" className="text-sm text-zinc-600 hover:text-zinc-900">
               Features
-            </a>
-            <a href="#how" className="text-sm text-zinc-600 hover:text-zinc-900">
-              How it works
-            </a>
-            <a href="#security" className="text-sm text-zinc-600 hover:text-zinc-900">
-              Security
-            </a>
-            <a href="#pricing" className="text-sm text-zinc-600 hover:text-zinc-900">
+            </Link>
+            <Link href="/pricing" className="text-sm text-zinc-600 hover:text-zinc-900">
               Pricing
-            </a>
+            </Link>
+            <Link href="/about" className="text-sm text-zinc-600 hover:text-zinc-900">
+              About
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -84,12 +81,12 @@ export default function HomePage() {
                 >
                   Go to dashboard
                 </Link>
-                <a
-                  href="#features"
+                <Link
+                  href="/features"
                   className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
                 >
                   See what you get →
-                </a>
+                </Link>
               </div>
 
               <div className="mt-8 grid grid-cols-3 gap-3 max-w-xl">
@@ -369,10 +366,10 @@ export default function HomePage() {
                     Create account
                   </Link>
                   <Link
-                    href="/dashboard/settings"
+                    href="/pricing"
                     className="inline-flex h-11 items-center justify-center rounded-md border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
                   >
-                    View billing & upgrades
+                    View pricing
                   </Link>
                 </div>
               </div>
@@ -409,9 +406,15 @@ export default function HomePage() {
               <Link href="/signup" className="hover:text-zinc-900">
                 Sign up
               </Link>
-              <a href="#features" className="hover:text-zinc-900">
+              <Link href="/features" className="hover:text-zinc-900">
                 Features
-              </a>
+              </Link>
+              <Link href="/pricing" className="hover:text-zinc-900">
+                Pricing
+              </Link>
+              <Link href="/about" className="hover:text-zinc-900">
+                About
+              </Link>
             </div>
           </div>
         </div>
