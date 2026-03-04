@@ -591,9 +591,12 @@ export default function OnboardingsPage() {
 
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="min-w-[980px] w-full border-collapse">
+          <table className="min-w-[1100px] w-full border-collapse">
             <thead className="bg-zinc-50">
               <tr className="border-b border-zinc-200">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Title
+                </th>
                 <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
                   Client
                 </th>
@@ -618,7 +621,7 @@ export default function OnboardingsPage() {
             <tbody className="divide-y divide-zinc-100">
               {loadError ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8">
+                  <td colSpan={7} className="px-4 py-8">
                     <div className="text-sm font-medium text-zinc-900">Could not load onboardings</div>
                     <div className="mt-1 text-sm text-zinc-500">{loadError}</div>
                     <div className="mt-3">
@@ -632,7 +635,7 @@ export default function OnboardingsPage() {
                 <>
                   {Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i}>
-                      <td colSpan={6} className="px-4 py-3">
+                      <td colSpan={7} className="px-4 py-3">
                         <div className="h-4 w-full rounded bg-zinc-100" />
                       </td>
                     </tr>
@@ -640,7 +643,7 @@ export default function OnboardingsPage() {
                 </>
               ) : list.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10">
+                  <td colSpan={7} className="px-4 py-10">
                     <div className="text-sm font-medium text-zinc-900">No onboardings found</div>
                     <div className="mt-1 text-sm text-zinc-500">
                       Create a new onboarding to start collecting requirements, uploads, and signatures.
@@ -662,8 +665,14 @@ export default function OnboardingsPage() {
                     <tr key={r.id} className="hover:bg-zinc-50">
                       <td className="px-4 py-3 align-middle">
                         <div className="min-w-0">
+                          <div className="truncate text-sm text-zinc-700 max-w-[260px]">{r.title || "—"}</div>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 align-middle">
+                        <div className="min-w-0">
                           <div className="truncate text-sm font-medium text-zinc-900">
-                            {r.client_name || r.title || "—"}
+                            {r.client_name || "—"}
                           </div>
                           <div className="truncate text-sm text-zinc-500">{r.client_email || "—"}</div>
                         </div>

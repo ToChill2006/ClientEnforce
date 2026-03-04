@@ -21,6 +21,17 @@ type Requirement = {
   signature_path: string | null;
 };
 
+function prettyStoredName(path: string | null) {
+  if (!path) return null;
+
+  // Handles:
+  // - "bucket:some/long/path/file.png"
+  // - "some/long/path/file.png"
+  const afterColon = path.includes(":") ? path.split(":").slice(1).join(":") : path;
+  const last = afterColon.split("/").filter(Boolean).pop();
+  return last || path;
+}
+
 export function ClientPortal({
   token,
   onboardingTitle,
@@ -393,7 +404,9 @@ function FileRequirement({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm text-zinc-700">{filePath ? `Uploaded: ${filePath}` : "Upload a file"}</div>
+        <div className="text-sm text-zinc-700">
+          {filePath ? `Uploaded: ${prettyStoredName(filePath)}` : "Upload a file"}
+        </div>
         <div className="text-xs text-zinc-500">{disabled ? "Locked" : busy ? "Uploading…" : ""}</div>
       </div>
       <input
@@ -417,31 +430,76 @@ function SignatureRequirement({
   canvasRef,
 }: {
   signaturePath: string | null;
-  onSave: () => void;
+  onSave: () => Promise<void> | void;
   disabled: boolean;
   busy: boolean;
   canvasRef: (c: SignatureCanvas | null) => void;
 }) {
   const localRef = React.useRef<SignatureCanvas | null>(null);
-  const saveTimer = React.useRef<number | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const [dirty, setDirty] = React.useState(false);
+
+  // Fix “offset / poor tracking” by matching canvas backing-store to its CSS size (DPR aware)
+  React.useEffect(() => {
+    if (disabled) return;
+
+    const resize = () => {
+      const sig = localRef.current;
+      const el = containerRef.current;
+      if (!sig || !el) return;
+
+      const canvas = sig.getCanvas();
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = Math.max(1, el.clientWidth);
+      const cssHeight = 180;
+
+      // Preserve current drawing if any (resize clears canvas)
+      const hadInk = !sig.isEmpty();
+      const dataUrl = hadInk ? sig.getTrimmedCanvas().toDataURL("image/png") : null;
+
+      canvas.width = Math.floor(cssWidth * dpr);
+      canvas.height = Math.floor(cssHeight * dpr);
+      canvas.style.width = `${cssWidth}px`;
+      canvas.style.height = `${cssHeight}px`;
+
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      sig.clear();
+      if (dataUrl) {
+        // Restore what user already drew
+        sig.fromDataURL(dataUrl);
+      }
+    };
+
+    // Run once, then on resizes
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, [disabled]);
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm text-zinc-700">{signaturePath ? `Saved: ${signaturePath}` : "Sign below"}</div>
+        <div className="text-sm text-zinc-700">
+          {signaturePath ? `Saved: ${prettyStoredName(signaturePath)}` : "Sign below"}
+        </div>
         <div className="text-xs text-zinc-500">{disabled ? "Locked" : busy ? "Saving…" : ""}</div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-2">
+      <div ref={containerRef} className="rounded-xl border border-zinc-200 bg-white p-2">
         <SignatureCanvas
           penColor="black"
-          canvasProps={{ width: 640, height: 180, className: "w-full" }}
+          // Stroke tuning (feels smoother + more “ink-like”)
+          minWidth={1.6}
+          maxWidth={3.2}
+          velocityFilterWeight={0.7}
+          throttle={16}
+          minDistance={0}
+          canvasProps={{ height: 180, className: "w-full block" }}
           onEnd={() => {
             if (disabled) return;
-            if (saveTimer.current) window.clearTimeout(saveTimer.current);
-            saveTimer.current = window.setTimeout(() => {
-              onSave();
-            }, 500);
+            setDirty(true);
           }}
           ref={(c) => {
             localRef.current = c;
@@ -451,10 +509,26 @@ function SignatureRequirement({
       </div>
 
       <div className="flex gap-2 justify-end">
-        <Button type="button" variant="secondary" onClick={() => localRef.current?.clear()} disabled={disabled || busy}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            localRef.current?.clear();
+            setDirty(false);
+          }}
+          disabled={disabled || busy}
+        >
           Clear
         </Button>
-        <Button type="button" variant="secondary" onClick={onSave} disabled={disabled || busy}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={async () => {
+            await onSave();
+            setDirty(false);
+          }}
+          disabled={disabled || busy || !dirty}
+        >
           Save signature
         </Button>
       </div>

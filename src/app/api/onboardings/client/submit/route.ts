@@ -47,13 +47,23 @@ export async function POST(req: Request) {
 
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 400 });
 
+  // Clear any pending follow-up jobs once the onboarding is submitted/locked
+  const { error: delFollowupsErr } = await admin
+    .from("followup_jobs")
+    .delete()
+    .eq("onboarding_id", onboarding.id);
+
+  if (delFollowupsErr) {
+    return NextResponse.json({ error: delFollowupsErr.message }, { status: 400 });
+  }
+
   await admin.from("audit_logs").insert({
     org_id: onboarding.org_id,
     actor_user_id: null,
     action: "onboarding.client_submitted",
     entity_type: "onboarding",
     entity_id: onboarding.id,
-    metadata: {},
+    metadata: { cleared_followups: true },
   });
 
   await admin.from("audit_logs").insert({

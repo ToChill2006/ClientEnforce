@@ -56,42 +56,50 @@ export default function FollowupsPage() {
   const [sendHour, setSendHour] = React.useState("9");
   const [tz, setTz] = React.useState("UTC");
   const [saving, setSaving] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const TIMEZONES = React.useMemo(() => {
+  const [timezones, setTimezones] = React.useState<string[]>([
+    "UTC",
+    "Europe/London",
+    "Europe/Paris",
+    "Europe/Berlin",
+    "Europe/Madrid",
+    "America/New_York",
+    "America/Chicago",
+    "America/Denver",
+    "America/Los_Angeles",
+    "America/Toronto",
+    "Asia/Dubai",
+    "Asia/Kolkata",
+    "Asia/Singapore",
+    "Asia/Tokyo",
+    "Australia/Sydney",
+  ]);
+
+  React.useEffect(() => {
+    // Populate a fuller timezone list on the client (prevents SSR/CSR hydration mismatch).
     try {
-      // Modern browsers
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const anyIntl: any = Intl as any;
       if (anyIntl?.supportedValuesOf) {
         const list = anyIntl.supportedValuesOf("timeZone") as string[];
-        // Keep list usable (some browsers return huge lists)
-        return Array.isArray(list) && list.length > 0 ? list : ["UTC"];
+        if (Array.isArray(list) && list.length > 0) {
+          setTimezones(list);
+          // Keep current selection valid
+          setTz((prev) => (list.includes(prev) ? prev : "UTC"));
+        }
       }
     } catch {
       // ignore
     }
-
-    // Fallback curated list
-    return [
-      "UTC",
-      "Europe/London",
-      "Europe/Paris",
-      "Europe/Berlin",
-      "Europe/Madrid",
-      "America/New_York",
-      "America/Chicago",
-      "America/Denver",
-      "America/Los_Angeles",
-      "America/Toronto",
-      "Asia/Dubai",
-      "Asia/Kolkata",
-      "Asia/Singapore",
-      "Asia/Tokyo",
-      "Australia/Sydney",
-    ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendPreview = React.useMemo(() => {
+    if (!mounted) return null;
     try {
       const hour = Number(sendHour);
       if (!Number.isFinite(hour) || hour < 0 || hour > 23) return null;
@@ -108,7 +116,7 @@ export default function FollowupsPage() {
     } catch {
       return null;
     }
-  }, [sendHour, tz]);
+  }, [sendHour, tz, mounted]);
 
   async function loadSettings() {
     const res = await fetch("/api/cron/followups/settings", { cache: "no-store" });
@@ -281,7 +289,7 @@ export default function FollowupsPage() {
                 value={tz}
                 onChange={(e) => setTz(e.target.value)}
               >
-                {TIMEZONES.map((z) => (
+                {timezones.map((z) => (
                   <option key={z} value={z}>
                     {z}
                   </option>

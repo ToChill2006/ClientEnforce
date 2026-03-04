@@ -72,34 +72,57 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
     <div className="rounded-2xl border border-zinc-200 bg-white">
       <div className="border-b border-zinc-200 px-4 py-3 text-sm font-semibold">Onboardings</div>
       <div className="divide-y divide-zinc-200">
+        {/* Desktop/table headers */}
+        <div className="hidden grid-cols-12 gap-3 px-4 py-2 text-xs font-medium text-zinc-500 md:grid">
+          <div className="col-span-3">Title</div>
+          <div className="col-span-3">Client</div>
+          <div className="col-span-2">Template</div>
+          <div className="col-span-1">Status</div>
+          <div className="col-span-2">Progress</div>
+          <div className="col-span-1 text-right">Actions</div>
+        </div>
+
         {rows.length === 0 ? (
           <div className="px-4 py-6 text-sm text-zinc-600">No onboardings yet.</div>
         ) : (
           rows.map((r) => {
             const p = progress[r.id]?.percent ?? 0;
             const link = `${appUrl}/c/${r.client_token}`;
+            const clientLabel = r.client.full_name ?? r.client.email;
+            const templateLabel = r.template?.name ?? "—";
+
             return (
               <div key={r.id} className="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-12 md:items-center">
-                <div className="md:col-span-4">
-                  <div className="text-sm font-semibold text-zinc-900">{r.title}</div>
-                  <div className="mt-0.5 text-xs text-zinc-600">
-                    {r.client.full_name ?? r.client.email}
-                  </div>
-
-                  {r.template?.name ? (
-                    <div className="mt-1 text-xs text-zinc-500">Template: {r.template.name}</div>
-                  ) : null}
-
-                  <div className="mt-1 text-xs text-zinc-500">Status: {r.status}</div>
+                {/* Title */}
+                <div className="md:col-span-3">
+                  <div className="text-sm font-semibold text-zinc-900 truncate max-w-[220px]">{r.title}</div>
+                  <div className="mt-0.5 text-xs text-zinc-500 md:hidden">Client: {clientLabel}</div>
                 </div>
 
-                <div className="md:col-span-5">
+                {/* Client */}
+                <div className="md:col-span-3">
+                  <div className="text-sm text-zinc-900">{clientLabel}</div>
+                  <div className="mt-1 text-xs text-zinc-500 md:hidden">Template: {templateLabel}</div>
+                </div>
+
+                {/* Template */}
+                <div className="md:col-span-2">
+                  <div className="text-sm text-zinc-900">{templateLabel}</div>
+                </div>
+
+                {/* Status */}
+                <div className="md:col-span-1">
+                  <div className="text-sm text-zinc-900">{r.status}</div>
+                </div>
+
+                {/* Progress */}
+                <div className="md:col-span-2">
                   <div className="mb-1 flex items-center justify-between text-xs text-zinc-600">
-                    <span>Progress</span>
+                    <span className="md:hidden">Progress</span>
                     <span className="font-medium text-zinc-900">{p}%</span>
                   </div>
                   <Progress value={p} />
-                  <div className="mt-2 break-all text-xs text-zinc-600">
+                  <div className="mt-2 break-all text-xs text-zinc-600 md:hidden">
                     Client link:{" "}
                     <a className="underline" href={link} target="_blank" rel="noreferrer">
                       {link}
@@ -107,15 +130,20 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 md:col-span-3 md:justify-end">
-                  <Button variant="secondary" type="button" onClick={() => (window.location.href = `/dashboard/onboardings/${r.id}`)}>
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2 md:col-span-1 md:justify-end">
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    onClick={() => (window.location.href = `/dashboard/onboardings/${r.id}`)}
+                  >
                     View
                   </Button>
                   <Button variant="secondary" type="button" onClick={() => copyLink(link)}>
                     Copy link
                   </Button>
                   <Button type="button" onClick={() => send(r.id)}>
-                    Send email
+                    Send
                   </Button>
                 </div>
               </div>
