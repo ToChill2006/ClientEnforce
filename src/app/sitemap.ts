@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: 'https://clientenforce.com/portal',
+      url: 'https://clientenforce.com/signup',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
