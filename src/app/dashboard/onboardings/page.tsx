@@ -736,8 +736,7 @@ export default function OnboardingsPage() {
         </div>
 
         {!loading && !loadError ? (
-          <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 text-sm text-zinc-500">
-            <div>Tip: progress updates via /api/onboardings/progress.</div>
+          <div className="flex items-center justify-end border-t border-zinc-200 px-4 py-3 text-sm text-zinc-500">
             <div className="flex items-center gap-2">
               <SmallButton variant="secondary" onClick={() => load()} disabled={loading}>
                 Refresh list

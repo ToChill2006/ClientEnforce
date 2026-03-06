@@ -22,7 +22,7 @@ function StatusPill({ status, locked }: { status?: string | null; locked: boolea
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">{children}</div>
+      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">{children}</div>
     </div>
   );
 }
@@ -367,14 +367,14 @@ export default async function ClientTokenPage({
   return (
     <Shell>
       <div className="mx-auto max-w-4xl">
-        <div className="mb-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Client portal</div>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
                 {onboarding.title || "Onboarding"}
               </h1>
-              <div className="mt-2 flex flex-wrap items-center gap-3">
+              <div className="mt-3 flex flex-wrap items-center gap-3">
                 <StatusPill status={onboarding.status} locked={locked} />
                 <div className="text-sm text-zinc-600">Progress updates live below.</div>
               </div>
@@ -387,43 +387,47 @@ export default async function ClientTokenPage({
             </div>
           </div>
 
-          {normalizedReqsWithIds.length === 0 && (
-            <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-              <div className="font-medium text-zinc-900">No questions have been added yet.</div>
-              <div className="mt-1 text-zinc-600">Ask the sender to configure onboarding requirements.</div>
+          <div className="mt-8">
+            {normalizedReqsWithIds.length === 0 && (
+              <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
+                <div className="font-medium text-zinc-900">No questions have been added yet.</div>
+                <div className="mt-1 text-zinc-600">Ask the sender to configure onboarding requirements.</div>
 
-              {templatePreview.length > 0 && (
-                <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Template preview</div>
-                  <div className="mt-2 text-xs text-zinc-600">
-                    These questions exist in the template, but they haven’t been added to this onboarding yet.
+                {templatePreview.length > 0 && (
+                  <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Template preview</div>
+                    <div className="mt-2 text-xs text-zinc-600">
+                      These questions exist in the template, but they haven’t been added to this onboarding yet.
+                    </div>
+                    <ul className="mt-3 space-y-2">
+                      {templatePreview.slice(0, 12).map((r: any, i: number) => (
+                        <li key={i} className="flex items-start justify-between gap-4 rounded-md bg-white px-3 py-2">
+                          <div>
+                            <div className="text-sm font-medium text-zinc-900">{r.label || "Untitled question"}</div>
+                            <div className="mt-0.5 text-xs text-zinc-600">Type: {String(r.type || "text")}</div>
+                          </div>
+                          <div className="text-xs text-zinc-600">{r.is_required ? "Required" : "Optional"}</div>
+                        </li>
+                      ))}
+                    </ul>
+                    {templatePreview.length > 12 && (
+                      <div className="mt-2 text-xs text-zinc-500">…and {templatePreview.length - 12} more</div>
+                    )}
                   </div>
-                  <ul className="mt-3 space-y-2">
-                    {templatePreview.slice(0, 12).map((r: any, i: number) => (
-                      <li key={i} className="flex items-start justify-between gap-4 rounded-md bg-white px-3 py-2">
-                        <div>
-                          <div className="text-sm font-medium text-zinc-900">{r.label || "Untitled question"}</div>
-                          <div className="mt-0.5 text-xs text-zinc-600">Type: {String(r.type || "text")}</div>
-                        </div>
-                        <div className="text-xs text-zinc-600">{r.is_required ? "Required" : "Optional"}</div>
-                      </li>
-                    ))}
-                  </ul>
-                  {templatePreview.length > 12 && (
-                    <div className="mt-2 text-xs text-zinc-500">…and {templatePreview.length - 12} more</div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-          <ClientPortal
-            token={token}
-            onboardingTitle={onboarding.title}
-            locked={locked}
-            requirements={normalizedReqsWithIds as any}
-          />
+                )}
+              </div>
+            )}
+          </div>
+          <div className="mt-8">
+            <ClientPortal
+              token={token}
+              onboardingTitle={onboarding.title}
+              locked={locked}
+              requirements={normalizedReqsWithIds as any}
+            />
+          </div>
 
-          <div className="border-t border-zinc-200 pt-6 text-xs text-zinc-500">
+          <div className="mt-10 border-t border-zinc-200 pt-8 text-xs text-zinc-500">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>Powered by ClientEnforce</div>
               <div className="tabular-nums">Token: {token.slice(0, 8)}…</div>

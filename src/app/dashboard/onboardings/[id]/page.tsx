@@ -147,6 +147,7 @@ function reqKindLabel(kind?: string | null) {
   return kind as string;
 }
 
+
 function valuePreview(r: Requirement): { type: "text" | "json" | "file" | "signature" | "empty"; v?: any } {
   const sig = (r.signature_path || "").trim();
   const fp = (r.file_path || "").trim();
@@ -159,8 +160,73 @@ function valuePreview(r: Requirement): { type: "text" | "json" | "file" | "signa
   return { type: "empty" };
 }
 
+function fileNameFromPath(path?: string | null) {
+  if (!path) return "file";
+  try {
+    // Support refs like "bucket:folder/file.pdf"
+    const noBucket = path.includes(":") ? path.split(":").slice(1).join(":") : path;
+    const clean = noBucket.split("?")[0];
+    const parts = clean.split("/");
+    const last = parts[parts.length - 1] || "file";
+    return decodeURIComponent(last);
+  } catch {
+    const parts = String(path).split("/");
+    return parts[parts.length - 1] || "file";
+  }
+}
+
 async function copyToClipboard(text: string) {
   await navigator.clipboard.writeText(text);
+}
+
+function isHttpUrl(v: string) {
+  return /^https?:\/\//i.test(v);
+}
+
+function parseStorageRef(ref: string, defaultBucket: string) {
+  const raw = (ref || "").trim();
+  if (!raw) return { bucket: defaultBucket, path: "" };
+
+  if (raw.includes(":")) {
+    const [bucket, ...rest] = raw.split(":");
+    return { bucket, path: rest.join(":").replace(/^\/+/, "") };
+  }
+
+  return { bucket: defaultBucket, path: raw.replace(/^\/+/, "") };
+}
+
+async function previewRef(ref: string, defaultBucket: string) {
+  const raw = (ref || "").trim();
+  if (!raw) throw new Error("Missing file reference");
+
+  // If already a public URL, just open it.
+  if (isHttpUrl(raw)) {
+    window.open(raw, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  const { bucket, path } = parseStorageRef(raw, defaultBucket);
+  if (!path) throw new Error("Missing storage path");
+
+  const url = `/api/storage/preview?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+async function downloadRef(ref: string, defaultBucket: string) {
+  const raw = (ref || "").trim();
+  if (!raw) throw new Error("Missing file reference");
+
+  // If already a public URL, navigate to it (browser download behaviour depends on headers)
+  if (isHttpUrl(raw)) {
+    window.location.href = raw;
+    return;
+  }
+
+  const { bucket, path } = parseStorageRef(raw, defaultBucket);
+  if (!path) throw new Error("Missing storage path");
+
+  const url = `/api/storage/download?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`;
+  window.location.href = url;
 }
 
 async function fetchRequirementsDirect(onboardingId: string): Promise<Requirement[]> {
@@ -202,6 +268,7 @@ export default function OnboardingDetailAdminPage() {
   const [payload, setPayload] = React.useState<DetailPayload | null>(null);
   const [progress, setProgress] = React.useState(0);
   const [locking, setLocking] = React.useState(false);
+  const [downloadingPdf, setDownloadingPdf] = React.useState(false);
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
 
   async function loadDetail() {
@@ -370,6 +437,49 @@ export default function OnboardingDetailAdminPage() {
     }
   }
 
+  async function downloadPdf() {
+    try {
+      if (!params?.id) return;
+      setDownloadingPdf(true);
+      setBanner(null);
+
+      const filenameBase = (payload?.onboarding?.title || "onboarding").trim() || "onboarding";
+      const safeName = filenameBase
+        .replace(/[^a-z0-9\-_ ]/gi, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 80);
+
+      // Expect a server route that returns application/pdf.
+      // If you haven't created it yet, create: /api/onboardings/pdf?onboarding_id=<id>
+      const url = `/api/onboardings/pdf?onboarding_id=${encodeURIComponent(String(params.id))}`;
+      const res = await fetch(url, { cache: "no-store" });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `PDF export failed (${res.status})`);
+      }
+
+      const blob = await res.blob();
+      if (!blob || blob.size === 0) throw new Error("Empty PDF response");
+
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objUrl;
+      a.download = `${safeName || "onboarding"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objUrl);
+
+      setBanner({ kind: "success", msg: "PDF downloaded." });
+    } catch (e: any) {
+      setBanner({ kind: "error", msg: e?.message || "Failed to download PDF." });
+    } finally {
+      setDownloadingPdf(false);
+    }
+  }
+
   React.useEffect(() => {
     loadDetail();
     loadProgress();
@@ -470,6 +580,14 @@ export default function OnboardingDetailAdminPage() {
               Copy client link
             </button>
           ) : null}
+
+          <button
+            onClick={downloadPdf}
+            disabled={downloadingPdf}
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+          >
+            {downloadingPdf ? "Preparing PDF…" : "Download PDF"}
+          </button>
 
           {ob?.status === "submitted" ? (
             <button
@@ -590,25 +708,70 @@ export default function OnboardingDetailAdminPage() {
                         ) : preview.type === "json" ? (
                           <pre className="max-w-[680px] overflow-auto rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-800">{JSON.stringify(preview.v, null, 2)}</pre>
                         ) : preview.type === "file" ? (
-                          <div className="flex items-center gap-2">
-                            <span className="max-w-[520px] truncate text-sm text-zinc-900">{String(preview.v)}</span>
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await copyToClipboard(String(preview.v));
-                                  setBanner({ kind: "success", msg: "File path copied." });
-                                } catch {
-                                  setBanner({ kind: "error", msg: "Could not copy file path." });
-                                }
-                              }}
-                              className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
-                            >
-                              Copy
-                            </button>
+                          <div className="flex w-full items-center gap-3">
+                            <span className="min-w-0 flex-1 truncate text-sm text-zinc-900" title={fileNameFromPath(String(preview.v))}>
+                              {fileNameFromPath(String(preview.v))}
+                            </span>
+                            <div className="ml-auto flex items-center gap-2">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await previewRef(String(preview.v), "clientenforce-uploads");
+                                  } catch (e: any) {
+                                    setBanner({ kind: "error", msg: e?.message || "Could not preview file." });
+                                  }
+                                }}
+                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                              >
+                                Preview
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await downloadRef(String(preview.v), "clientenforce-uploads");
+                                    setBanner({ kind: "success", msg: "Download started." });
+                                  } catch (e: any) {
+                                    setBanner({ kind: "error", msg: e?.message || "Could not download file." });
+                                  }
+                                }}
+                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                              >
+                                Download
+                              </button>
+                            </div>
                           </div>
                         ) : (
-                          <div className="space-y-2">
-                            <div className="max-w-[520px] truncate text-sm text-zinc-900">{String(preview.v)}</div>
+                          <div className="flex w-full items-center gap-3">
+                            <span className="min-w-0 flex-1 truncate text-sm text-zinc-900" title={fileNameFromPath(String(preview.v))}>
+                              {fileNameFromPath(String(preview.v))}
+                            </span>
+                            <div className="ml-auto flex items-center gap-2">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await previewRef(String(preview.v), "clientenforce-signatures");
+                                  } catch (e: any) {
+                                    setBanner({ kind: "error", msg: e?.message || "Could not preview signature." });
+                                  }
+                                }}
+                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                              >
+                                Preview
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await downloadRef(String(preview.v), "clientenforce-signatures");
+                                    setBanner({ kind: "success", msg: "Download started." });
+                                  } catch (e: any) {
+                                    setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
+                                  }
+                                }}
+                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                              >
+                                Download
+                              </button>
+                            </div>
                           </div>
                         )}
                       </td>

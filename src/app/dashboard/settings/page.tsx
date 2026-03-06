@@ -80,6 +80,7 @@ export default function SettingsPage() {
   const [inviteEmail, setInviteEmail] = React.useState("");
   const [inviteRole, setInviteRole] = React.useState<"member" | "admin">("member");
   const [inviting, setInviting] = React.useState(false);
+  const [loggingOut, setLoggingOut] = React.useState(false);
 
   // Inline banners (no toast dependency)
   const [pageError, setPageError] = React.useState<string | null>(null);
@@ -259,6 +260,39 @@ export default function SettingsPage() {
     }
   }
 
+  async function logout() {
+    setLoggingOut(true);
+    setPageError(null);
+    setPageSuccess(null);
+
+    try {
+      // Try a few common sign-out endpoints across iterations.
+      const candidates = ["/api/auth/logout", "/api/logout", "/auth/signout", "/api/auth/signout"];
+
+      let didRequest = false;
+      for (const url of candidates) {
+        const res = await fetch(url, { method: "POST" });
+        if (res.status === 404) continue;
+        didRequest = true;
+        if (!res.ok) {
+          const json = await res.json().catch(() => null);
+          throw new Error(json?.error || res.statusText || "Logout failed");
+        }
+        break;
+      }
+
+      // If no endpoint exists, still redirect (some apps clear session via middleware/cookies).
+      if (!didRequest) {
+        // noop
+      }
+
+      window.location.href = "/";
+    } catch (e: any) {
+      setPageError(e?.message ?? "Logout failed");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
   const seatsLimit = org?.seats_limit ?? 0;
   const seatsText = seatsLimit > 0 ? `${seatsUsed} / ${seatsLimit} seats used` : `${seatsUsed} seat(s) used`;
   const currentTier = normalizeTier(org?.tier);
@@ -274,12 +308,9 @@ export default function SettingsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={load} disabled={loading}>
-            {loading ? "Refreshing…" : "Refresh"}
+          <Button variant="secondary" onClick={logout} disabled={loggingOut}>
+            {loggingOut ? "Logging out…" : "Log out"}
           </Button>
-          <Link className="text-sm text-zinc-600 hover:text-zinc-900" href="/dashboard/team">
-            Team
-          </Link>
         </div>
       </div>
 
@@ -363,9 +394,13 @@ export default function SettingsPage() {
 
           <div className="md:col-span-3 flex flex-wrap gap-2">
             <Button onClick={openBillingPortal}>Manage billing</Button>
+            <Button variant="secondary" onClick={load} disabled={loading}>
+              {loading ? "Refreshing…" : "Refresh"}
+            </Button>
           </div>
         </CardContent>
       </Card>
+
 
       {/* Upgrade */}
       <Card>
@@ -373,125 +408,137 @@ export default function SettingsPage() {
           <CardTitle>Upgrade</CardTitle>
           <CardDescription>Unlock more seats, automation, and advanced controls.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-zinc-900">Free</div>
-              {currentTier === "free" ? <span className={pill("Free")}>Current</span> : null}
+        <CardContent>
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 md:p-8">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-zinc-900">Plans</h3>
+                <p className="mt-1 text-sm text-zinc-600">
+                  Choose the plan that fits your onboarding volume. Upgrade any time.
+                </p>
+              </div>
+              <div className="text-xs text-zinc-500">
+                {currentTier === "free"
+                  ? "You’re currently on Starter (Free)."
+                  : currentTier === "pro"
+                    ? "You’re currently on Pro."
+                    : "You’re currently on Business."}
+              </div>
             </div>
-            <ul className="mt-3 space-y-1 text-sm text-zinc-700">
-              <li>• 1 seat</li>
-              <li>• Basic onboarding</li>
-              <li>• Limited automation</li>
-            </ul>
-            <div className="mt-4 text-xs text-zinc-500">
-              {currentTier === "free" ? "You’re currently on the free tier." : "You’re on a paid plan."}
-            </div>
-          </div>
 
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-zinc-900">Pro</div>
-              {currentTier === "pro" ? <span className={pill("Pro")}>Current</span> : null}
-            </div>
-            <ul className="mt-3 space-y-1 text-sm text-zinc-700">
-              <li>• More seats</li>
-              <li>• Follow-ups & reminders</li>
-              <li>• Better reporting</li>
-            </ul>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button onClick={() => startUpgrade("pro")} disabled={currentTier === "pro" || currentTier === "business"}>
-                {currentTier === "pro" ? "Current plan" : currentTier === "business" ? "Already on Business" : "Upgrade to Pro"}
-              </Button>
-            </div>
-          </div>
+            <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {/* Starter */}
+              <div className="flex flex-col rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-900">Starter</div>
+                    <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">£0</div>
+                    <div className="mt-1 text-sm text-zinc-600">For testing the flow + onboarding a few clients.</div>
+                  </div>
+                  {currentTier === "free" ? (
+                    <span className={pill("Starter")}>Current</span>
+                  ) : (
+                    <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
+                      Free
+                    </span>
+                  )}
+                </div>
 
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-zinc-900">Business</div>
-              {currentTier === "business" ? <span className={pill("Business")}>Current</span> : null}
-            </div>
-            <ul className="mt-3 space-y-1 text-sm text-zinc-700">
-              <li>• Higher seat limits</li>
-              <li>• Advanced permissions</li>
-              <li>• Priority support</li>
-            </ul>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button onClick={() => startUpgrade("business")} disabled={currentTier === "business"}>
-                {currentTier === "business" ? "Current plan" : "Upgrade to Business"}
-              </Button>
-            </div>
-          </div>
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
+                  <li>• 1 admin user</li>
+                  <li>• 1 onboarding template</li>
+                  <li>• Client portal link per onboarding</li>
+                  <li>• Document uploads + signatures</li>
+                  <li>• Progress tracking / completion %</li>
+                  <li>• Basic email support</li>
+                  <li className="text-zinc-500">• Up to 5 active onboardings</li>
+                </ul>
 
-          <div className="md:col-span-3 text-xs text-zinc-500">
-            If you’ve just upgraded, it may take a few seconds to reflect here. Hit Refresh if it doesn’t update.
+                <button
+                  type="button"
+                  className="mt-6 inline-flex h-10 w-full items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 disabled:opacity-60"
+                  disabled
+                >
+                  {currentTier === "free" ? "Current plan" : "Included"}
+                </button>
+              </div>
+
+              {/* Pro */}
+              <div className="flex flex-col rounded-2xl border border-zinc-900 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-900">Pro</div>
+                    <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
+                      £19<span className="text-base font-semibold text-zinc-500">/mo</span>
+                    </div>
+                    <div className="mt-1 text-sm text-zinc-600">For solo operators + small teams who want automation.</div>
+                  </div>
+                  <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white">Most popular</span>
+                </div>
+
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
+                  <li>• Everything in Starter</li>
+                  <li>• Up to 5 admin users</li>
+                  <li>• Up to 10 templates</li>
+                  <li>• Automated reminders (email)</li>
+                  <li>• Audit timeline (who did what, when)</li>
+                  <li>• Export evidence pack (PDF/ZIP)</li>
+                  <li className="text-zinc-500">• Up to 50 active onboardings</li>
+                </ul>
+
+                <Button
+                  className="mt-6 w-full"
+                  onClick={() => startUpgrade("pro")}
+                  disabled={currentTier === "pro" || currentTier === "business"}
+                >
+                  {currentTier === "pro" ? "Current plan" : currentTier === "business" ? "Already on Business" : "Upgrade to Pro"}
+                </Button>
+              </div>
+
+              {/* Business */}
+              <div className="flex flex-col rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-900">Business</div>
+                    <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
+                      £49<span className="text-base font-semibold text-zinc-500">/mo</span>
+                    </div>
+                    <div className="mt-1 text-sm text-zinc-600">For teams onboarding clients at scale.</div>
+                  </div>
+                  {currentTier === "business" ? (
+                    <span className={pill("Business")}>Current</span>
+                  ) : (
+                    <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
+                      Scale
+                    </span>
+                  )}
+                </div>
+
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
+                  <li>• Everything in Pro</li>
+                  <li>• Up to 15 admin users</li>
+                  <li>• Unlimited templates</li>
+                  <li>• Team permissions (roles)</li>
+                  <li>• Advanced reporting (coming soon)</li>
+                  <li>• Priority support</li>
+                  <li className="text-zinc-500">• Up to 200 active onboardings</li>
+                </ul>
+
+                <Button
+                  className="mt-6 w-full"
+                  variant="secondary"
+                  onClick={() => startUpgrade("business")}
+                  disabled={currentTier === "business"}
+                >
+                  {currentTier === "business" ? "Current plan" : "Upgrade to Business"}
+                </Button>
+              </div>
+            </div>
+
           </div>
         </CardContent>
       </Card>
 
-      {/* Members */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Team members</CardTitle>
-          <CardDescription>Who has access to this workspace.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-sm text-zinc-700">{seatsText}</div>
-            {seatsLimit > 0 && seatsUsed >= seatsLimit ? (
-              <div className="text-xs text-amber-700">Seat limit reached</div>
-            ) : null}
-          </div>
-
-          <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
-            <table className="w-full min-w-[720px] text-sm">
-              <thead className="border-b border-zinc-200 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                <tr>
-                  <th className="px-4 py-2 text-left">User</th>
-                  <th className="px-4 py-2 text-left">Role</th>
-                  <th className="px-4 py-2 text-left">Added</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {loading ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-3 text-zinc-600">
-                      Loading…
-                    </td>
-                  </tr>
-                ) : members.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-3 text-zinc-600">
-                      No members found.
-                    </td>
-                  </tr>
-                ) : (
-                  members.map((m, idx) => {
-                    const email = (m.email ?? "").toString();
-                    const name = (m.full_name ?? "").toString().trim();
-                    const label = name ? `${name} — ${email}` : email || `Member ${idx + 1}`;
-                    return (
-                      <tr key={m.user_id ?? m.id ?? `${idx}`} className="hover:bg-zinc-50">
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-zinc-900">{label}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={pill((m.role as string) || "member")}>{(m.role as string) || "member"}</span>
-                        </td>
-                        <td className="px-4 py-3 text-zinc-700">{fmtDate(m.created_at)}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="text-xs text-zinc-500">
-            To remove members or change roles, go to the Team page.
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Invite */}
       <Card>
@@ -532,9 +579,6 @@ export default function SettingsPage() {
             <Button onClick={createInvite} disabled={inviting || !inviteEmail.trim() || (seatsLimit > 0 && seatsUsed >= seatsLimit)}>
               {inviting ? "Creating…" : "Create invite"}
             </Button>
-            <Link href="/dashboard/team" className="inline-flex">
-              <Button variant="secondary">Manage team</Button>
-            </Link>
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
@@ -592,7 +636,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="text-xs text-zinc-500">
-            Invite links are used for onboarding internal team members. Client invitations remain in the Onboardings flow.
+            Invite links are for adding teammates to your workspace.
           </div>
         </CardContent>
       </Card>

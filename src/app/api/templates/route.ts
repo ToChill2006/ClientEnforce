@@ -19,8 +19,9 @@ export async function GET() {
 
   const { data: templates, error } = await supabase
     .from("templates")
-    .select("id, name, created_at, updated_at")
+    .select("id, name, created_at, updated_at, deleted_at")
     .eq("org_id", profile.org_id)
+    .is("deleted_at", null)
     .order("updated_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -41,17 +42,32 @@ export async function POST(req: Request) {
   const profile = await requireProfile();
   const admin = supabaseAdmin();
 
-  const { data: template, error } = await admin
-    .from("templates")
-    .insert({
+  const insertWith = async (definitionColumn: "definition" | "definition_json") => {
+    const payload: any = {
       org_id: profile.org_id,
       name: parsed.data.name,
-      definition: parsed.data.definition,
-    })
-    .select("id, name, created_at, updated_at")
-    .single();
+      [definitionColumn]: parsed.data.definition,
+    };
+
+    return admin
+      .from("templates")
+      .insert(payload)
+      .select("id, name, created_at, updated_at")
+      .single();
+  };
+
+  // Try the most likely column first
+  let { data: created, error } = await insertWith("definition");
+
+  // If the column doesn't exist, retry with the alternate column name
+  if (error && /column .*definition.* does not exist/i.test(error.message)) {
+    const retry = await insertWith("definition_json");
+    created = retry.data as any;
+    error = retry.error as any;
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  const template = created as { id: string; name: string; created_at: string; updated_at: string };
 
   await admin.from("audit_logs").insert({
     org_id: profile.org_id,

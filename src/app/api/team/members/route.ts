@@ -27,7 +27,8 @@ export async function GET() {
     const { data: profs, error: profErr } = await supabase
       .from("profiles")
       .select("user_id, email, full_name")
-      .eq("org_id", profile.org_id)
+      // IMPORTANT: do not filter by org_id here. Memberships already scopes the org,
+      // and newly-accepted users may not have profiles.org_id set yet.
       .in("user_id", userIds);
 
     if (profErr) return NextResponse.json({ error: profErr.message }, { status: 400 });

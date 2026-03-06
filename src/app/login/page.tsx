@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { loginAction } from "./actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -8,29 +8,26 @@ import { Button } from "@/components/ui/button";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; created?: string }>;
+  searchParams: Promise<{ error?: string; created?: string; next?: string }>;
 }) {
   const sp = await searchParams;
   const error = sp?.error ? decodeURIComponent(sp.error) : null;
   const created = sp?.created === "1";
+  const next = sp?.next && sp.next.startsWith("/") ? sp.next : "/dashboard";
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
       <div className="mx-auto flex max-w-md flex-col px-6 py-14">
         <div className="mb-6 flex items-center gap-3">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-sm font-semibold">
-            CE
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
+            <img src="/C.png" alt="ClientEnforce logo" className="h-6 w-6 object-contain" />
           </div>
-          <div className="leading-tight">
-            <div className="text-sm font-semibold">ClientEnforce</div>
-            <div className="text-xs text-zinc-500">Sign in to your workspace</div>
-          </div>
+          <div className="text-sm font-semibold">ClientEnforce</div>
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Log in</CardTitle>
-            <CardDescription>Access your dashboard and manage client onboarding.</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle className="mb-2">Log in</CardTitle>
           </CardHeader>
 
           <CardContent className="flex flex-col gap-4">
@@ -47,6 +44,7 @@ export default async function LoginPage({
             ) : null}
 
             <form action={loginAction} className="flex flex-col gap-4">
+              <input type="hidden" name="next" value={next} />
               <div className="flex flex-col gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" name="email" type="email" autoComplete="email" required />
@@ -77,17 +75,13 @@ export default async function LoginPage({
               <div className="h-px flex-1 bg-zinc-200" />
             </div>
 
-            <Link href="/signup" className="w-full">
+            <Link href={`/signup?next=${encodeURIComponent(next)}`} className="w-full">
               <Button type="button" variant="secondary" className="w-full">
                 Create an account
               </Button>
             </Link>
           </CardContent>
         </Card>
-
-        <div className="mt-6 text-xs text-zinc-500">
-          By continuing, you agree to your organization’s acceptable use policies.
-        </div>
       </div>
     </main>
   );

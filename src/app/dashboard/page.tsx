@@ -7,14 +7,32 @@ import Link from "next/link";
 type MetricsResponse = {
   clients?: number;
   templates?: number;
-  onboardings?: number;
-  followups_due?: number;
 
-  // Optional shapes (dashboard still works if your API doesn’t return these)
+  // total onboardings
+  onboardings?: number;
+  onboardings_total?: number;
+  onboardings_count?: number;
+
+  // followups due
+  followups_due?: number;
+  followups_due_count?: number;
+  followupsDueCount?: number;
+  followupsDue?: number;
+  followupsDueTotal?: number;
+
+  // status counts can come back under various keys
   status_counts?: Record<string, number>;
+  onboardings_by_status?: Record<string, number>;
+  onboardings_by_status_raw?: Record<string, number>;
+  onboarding_status?: Record<string, number>;
+  onboardingStatus?: Record<string, number>;
+  onboardingStatusCounts?: Record<string, number>;
+
   recent_onboardings?: Array<{
     id: string;
     title?: string | null;
+    name?: string | null;
+    onboarding_title?: string | null;
     client_name?: string | null;
     client_email?: string | null;
     status?: string | null;
@@ -40,6 +58,7 @@ function statusLabel(raw?: string | null) {
   if (s === "sent") return "Sent";
   if (s === "in_progress" || s === "in progress") return "In progress";
   if (s === "submitted") return "Submitted";
+  if (s === "locked") return "Submitted";
   return raw!;
 }
 
@@ -47,10 +66,49 @@ function statusPillClasses(raw?: string | null) {
   const s = (raw || "").toLowerCase();
   // neutral + subtle accents (no bright colors)
   if (s === "submitted") return "bg-zinc-900 text-white border-zinc-900";
+  if (s === "locked") return "bg-zinc-900 text-white border-zinc-900";
   if (s === "in_progress" || s === "in progress") return "bg-white text-zinc-900 border-zinc-300";
   if (s === "sent") return "bg-zinc-50 text-zinc-900 border-zinc-200";
   if (s === "draft") return "bg-white text-zinc-700 border-zinc-200";
   return "bg-white text-zinc-700 border-zinc-200";
+}
+
+function normalizeOnboardingStatus(metrics: MetricsResponse | null) {
+  const by =
+    metrics?.onboardings_by_status ??
+    metrics?.onboardingStatusCounts ??
+    metrics?.onboarding_status ??
+    metrics?.onboardingStatus ??
+    metrics?.status_counts ??
+    {};
+
+  const raw = metrics?.onboardings_by_status_raw ?? {};
+
+  const pickNum = (...vals: any[]) => {
+    for (const v of vals) {
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+    }
+    return 0;
+  };
+
+  const draft = pickNum((raw as any).draft, (by as any).draft, (by as any)["Draft"]);
+  const sent = pickNum((raw as any).sent, (by as any).sent, (by as any)["Sent"]);
+
+  const in_progress = pickNum(
+    (raw as any).in_progress,
+    (by as any).in_progress,
+    (by as any).inProgress,
+    (by as any).inprogress,
+    (by as any)["In progress"],
+    (by as any)["In Progress"],
+    (by as any)["in progress"],
+    (by as any)["in-progress"]
+  );
+
+  const locked = pickNum((raw as any).locked, (by as any).locked, (by as any)["Locked"]);
+  const submitted = pickNum((raw as any).submitted, (by as any).submitted, (by as any)["Submitted"]) || locked;
+
+  return { draft, sent, in_progress, submitted, locked };
 }
 
 function MetricCard({
@@ -162,10 +220,16 @@ export default function DashboardPage() {
 
   const clients = metrics?.clients ?? 0;
   const templates = metrics?.templates ?? 0;
-  const onboardings = metrics?.onboardings ?? 0;
-  const followups = metrics?.followups_due ?? 0;
+  const onboardings = metrics?.onboardings ?? metrics?.onboardings_total ?? metrics?.onboardings_count ?? 0;
+  const followups =
+    metrics?.followups_due ??
+    metrics?.followups_due_count ??
+    metrics?.followupsDueCount ??
+    metrics?.followupsDue ??
+    metrics?.followupsDueTotal ??
+    0;
 
-  const statusCounts = metrics?.status_counts ?? {};
+  const status = normalizeOnboardingStatus(metrics);
   const recent = metrics?.recent_onboardings ?? [];
 
   return (
@@ -212,7 +276,7 @@ export default function DashboardPage() {
         <MetricCard label="Clients" value={loading ? "—" : clients} href="/dashboard/clients" />
         <MetricCard label="Templates" value={loading ? "—" : templates} href="/dashboard/templates" />
         <MetricCard label="Onboardings" value={loading ? "—" : onboardings} href="/dashboard/onboardings" />
-        <MetricCard label="Follow-ups due" value={loading ? "—" : followups} href="/dashboard/settings" />
+        <MetricCard label="Follow-ups due" value={loading ? "—" : followups} href="/dashboard/followups" />
       </div>
 
       {/* Two-column: Status + Recent */}
@@ -244,7 +308,7 @@ export default function DashboardPage() {
                     <div key={row.key} className="flex items-center justify-between gap-3">
                       <div className="text-sm text-zinc-700">{row.label}</div>
                       <div className="text-sm font-semibold tabular-nums text-zinc-900">
-                        {statusCounts[row.key] ?? 0}
+                        {(status as any)[row.key] ?? 0}
                       </div>
                     </div>
                   ))}
@@ -323,7 +387,7 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="col-span-4 min-w-0">
-                            <div className="truncate text-sm text-zinc-900">{o.title || "—"}</div>
+                            <div className="truncate text-sm text-zinc-900">{o.title ?? (o as any).name ?? (o as any).onboarding_title ?? "—"}</div>
                           </div>
 
                           <div className="col-span-2">

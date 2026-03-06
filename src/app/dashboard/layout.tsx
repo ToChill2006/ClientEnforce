@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import SidebarNav from "@/components/layout/SidebarNav";
@@ -22,21 +23,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       {/* Fixed, full-height sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 w-72 border-r border-zinc-200 bg-white">
+      <aside className="fixed inset-y-0 left-0 z-40 w-[240px] bg-white">
         <div className="flex h-full flex-col">
-          {/* Brand */}
-          <div className="px-5 pt-5">
-            <Link href="/dashboard" className="flex items-center gap-3">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-sm font-semibold text-zinc-900">
-                {initials}
-              </span>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold tracking-tight text-zinc-900">ClientEnforce</div>
-                <div className="text-[12px] text-zinc-500">Workspace</div>
-              </div>
-            </Link>
-          </div>
-
           {/* Nav (client-side active state) */}
           <SidebarNav />
 
@@ -62,14 +50,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 </button>
               </form>
             </div>
-
-            <div className="mt-3 px-2 text-[11px] text-zinc-500">Secure workspace</div>
           </div>
         </div>
       </aside>
 
       {/* Main content: shifted right by sidebar width */}
-      <div className="pl-72">
+      <div className="pl-[240px]">
         <main className="min-h-screen px-6 py-8">
           <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>

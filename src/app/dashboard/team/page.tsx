@@ -77,7 +77,23 @@ export default function TeamPage() {
       const mJson = await mRes.json();
       const tJson = await tRes.json();
 
-      setMembers(Array.isArray(mJson?.members) ? mJson.members : []);
+      const rawMembers = Array.isArray(mJson?.members) ? mJson.members : [];
+      const normalizedMembers: Member[] = rawMembers.map((m: any) => {
+        const email = (m?.email ?? m?.user_email ?? m?.user?.email ?? null) as string | null;
+        const full =
+          (m?.full_name ?? m?.name ?? m?.display_name ?? m?.user_full_name ?? m?.profile_full_name ?? null) as
+            | string
+            | null;
+        const fallback = email ? email.split("@")[0].replace(/[._-]+/g, " ").trim() : null;
+        return {
+          user_id: (m?.user_id ?? m?.id ?? m?.profile_id ?? "") as string,
+          role: (m?.role ?? "member") as Member["role"],
+          email,
+          full_name: (full && String(full).trim()) ? String(full).trim() : fallback,
+        };
+      });
+
+      setMembers(normalizedMembers);
       setTasks(Array.isArray(tJson?.tasks) ? tJson.tasks : []);
     } catch (e: any) {
       setErr(e?.message ?? "Failed to load");
@@ -249,8 +265,8 @@ export default function TeamPage() {
                   filteredMembers.map((m) => (
                     <tr key={m.user_id} className="hover:bg-zinc-50">
                       <td className="py-2">
-                        <div className="font-medium text-zinc-900">{m.full_name ?? m.email ?? "—"}</div>
-                        <div className="text-xs text-zinc-600">{m.email ?? "—"}</div>
+                        <div className="font-medium text-zinc-900">{m.full_name ?? "—"}</div>
+                        <div className="text-xs text-zinc-600">{m.email ? m.email : "—"}</div>
                       </td>
                       <td className="py-2 text-zinc-700">{m.role}</td>
                       <td className="py-2 font-mono text-xs text-zinc-600">{m.user_id}</td>
@@ -278,7 +294,9 @@ export default function TeamPage() {
               >
                 <option value="">Select a member</option>
                 {members.map((m) => {
-                  const label = `${(m.full_name ?? m.email ?? "User").trim()} — ${(m.email ?? "").trim()}`;
+                  const name = (m.full_name ?? "Member").trim();
+                  const email = (m.email ?? "").trim();
+                  const label = email ? `${name} — ${email}` : name;
                   return (
                     <option key={m.user_id} value={m.user_id}>
                       {label}
@@ -325,7 +343,6 @@ export default function TeamPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-medium text-zinc-900">Tasks</div>
-              <div className="mt-1 text-xs text-zinc-600">Status updates are permissioned via RLS.</div>
             </div>
           </div>
 

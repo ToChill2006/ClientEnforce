@@ -359,9 +359,6 @@ export default function ClientsPage() {
             )}
           </div>
 
-          <div className="mt-3 text-xs text-zinc-500">
-            Tip: click an email to copy it. Clients with “Missing name” should be updated so onboarding dropdowns display properly.
-          </div>
         </CardContent>
       </Card>
 

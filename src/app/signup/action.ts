@@ -7,6 +7,7 @@ export async function signupAction(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
+  const next = String(formData.get("next") || "").trim() || "/dashboard";
 
   if (!email || !password) {
     redirect(`/signup?error=${encodeURIComponent("Email and password are required.")}`);
@@ -18,7 +19,7 @@ export async function signupAction(formData: FormData) {
 
   const supabase = await supabaseServer();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -30,5 +31,25 @@ export async function signupAction(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/dashboard");
+  if (data?.user) {
+    try {
+      await supabase
+        .from("profiles")
+        .upsert(
+          {
+            user_id: data.user.id,
+            email,
+            full_name: fullName || null,
+            org_id: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+    } catch (e) {
+      console.error("[signup] profile upsert failed", e);
+    }
+  }
+
+  redirect(next);
 }
