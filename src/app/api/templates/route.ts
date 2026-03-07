@@ -102,7 +102,13 @@ export async function GET() {
       return true;
     }) as any;
   }
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) {
+    console.error("[templates.get] failed", { error });
+    return NextResponse.json(
+      { error: error?.message || error?.details || error?.hint || "Failed to load templates" },
+      { status: 400 }
+    );
+  }
   return NextResponse.json({ items: templates ?? [] });
 }
 
@@ -158,7 +164,14 @@ export async function POST(req: Request) {
     }
 
     if (countError) {
-      return NextResponse.json({ error: countError.message }, { status: 400 });
+      console.error("[templates.post] count failed", {
+        orgId: profile.org_id,
+        error: countError,
+      });
+      return NextResponse.json(
+        { error: countError?.message || countError?.details || countError?.hint || "Failed to count templates" },
+        { status: 400 }
+      );
     }
 
     if (templateCount >= maxTemplates) {
@@ -208,9 +221,12 @@ export async function POST(req: Request) {
   if (error) {
     console.error("[templates.post] insert failed", {
       orgId: profile.org_id,
-      error: error.message,
+      error,
     });
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(
+      { error: error?.message || error?.details || error?.hint || "Failed to create template" },
+      { status: 400 }
+    );
   }
   const template = created as { id: string; name: string; created_at: string; updated_at: string };
 
