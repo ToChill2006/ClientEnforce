@@ -74,7 +74,8 @@ export async function POST(req: Request) {
     if (authError || !user) {
       return authError!;
     }
-    const userEmail = (user.email ?? "").toLowerCase();
+    const authedUser = user;
+    const userEmail = (authedUser.email ?? "").toLowerCase();
 
     // Fetch invite
     const { data: invite, error: inviteErr } = await admin
@@ -103,21 +104,21 @@ export async function POST(req: Request) {
     if (invitedEmail && userEmail && invitedEmail !== userEmail) {
       return jsonError(403, "This invite is for a different email", {
         invited_email: invite.invited_email,
-        signed_in_as: user.email,
+        signed_in_as: authedUser.email,
       });
     }
 
     // Ensure a profile row exists for this user (team page often joins memberships -> profiles)
     const fullNameFromMetaRaw =
-      (user.user_metadata as any)?.full_name ||
-      (user.user_metadata as any)?.name ||
-      (user.user_metadata as any)?.display_name ||
+      (authedUser.user_metadata as any)?.full_name ||
+      (authedUser.user_metadata as any)?.name ||
+      (authedUser.user_metadata as any)?.display_name ||
       null;
 
     const fullNameFromMeta =
       (typeof fullNameFromMetaRaw === "string" && fullNameFromMetaRaw.trim()
         ? fullNameFromMetaRaw.trim()
-        : null) || nameFromEmail(user.email) || "Member";
+        : null) || nameFromEmail(authedUser.email) || "Member";
 
     // Different projects use different schemas:
     //  - profiles(id = auth.users.id, ...)
@@ -138,8 +139,8 @@ export async function POST(req: Request) {
       // (Your DB currently has at least: user_id, email, created_at, updated_at)
       const { data: pA, error: eA } = await tryUpsertProfile(
         {
-          user_id: user.id,
-          email: user.email ?? null,
+          user_id: authedUser.id,
+          email: authedUser.email ?? null,
         },
         "user_id"
       );
@@ -153,8 +154,8 @@ export async function POST(req: Request) {
         if (msg.includes("user_id") || msg.includes("column") || msg.includes("does not exist")) {
           const { data: pB, error: eB } = await tryUpsertProfile(
             {
-              id: user.id,
-              email: user.email ?? null,
+              id: authedUser.id,
+              email: authedUser.email ?? null,
             },
             "id"
           );
@@ -174,12 +175,12 @@ export async function POST(req: Request) {
       if (invite?.org_id) patch.org_id = invite.org_id;
 
       if (Object.keys(patch).length) {
-        const r1 = await admin.from("profiles").update(patch).eq("user_id", user.id);
+        const r1 = await admin.from("profiles").update(patch).eq("user_id", authedUser.id);
         const msg1 = String((r1 as any)?.error?.message ?? "").toLowerCase();
 
         // Fallback: profiles(id = auth.users.id)
         if ((r1 as any)?.error && (msg1.includes("user_id") || msg1.includes("does not exist") || msg1.includes("column"))) {
-          await admin.from("profiles").update(patch).eq("id", user.id);
+          await admin.from("profiles").update(patch).eq("id", authedUser.id);
         }
       }
     } catch {
@@ -191,7 +192,7 @@ export async function POST(req: Request) {
       const { data: existing } = await admin
         .from("profiles")
         .select("id, full_name, email")
-        .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+        .or(`user_id.eq.${authedUser.id},id.eq.${authedUser.id}`)
         .maybeSingle();
 
       if (existing?.id) {
@@ -201,12 +202,12 @@ export async function POST(req: Request) {
         if (needsName || needsEmail) {
           const patch: any = {};
           if (needsName) patch.full_name = fullNameFromMeta;
-          if (needsEmail) patch.email = user.email ?? null;
+          if (needsEmail) patch.email = authedUser.email ?? null;
           // Try both possible key styles
-          const r1 = await admin.from("profiles").update(patch).eq("user_id", user.id);
+          const r1 = await admin.from("profiles").update(patch).eq("user_id", authedUser.id);
           const msg1 = String((r1 as any)?.error?.message ?? "").toLowerCase();
           if ((r1 as any)?.error && (msg1.includes("user_id") || msg1.includes("does not exist"))) {
-            await admin.from("profiles").update(patch).eq("id", user.id);
+            await admin.from("profiles").update(patch).eq("id", authedUser.id);
           }
         }
       }
@@ -217,7 +218,7 @@ export async function POST(req: Request) {
     // If we still don't know the profile id, try resolving it in both common ways.
     if (!profileId) {
       try {
-        const { data: p1 } = await admin.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
+        const { data: p1 } = await admin.from("profiles").select("id").eq("user_id", authedUser.id).maybeSingle();
         profileId = (p1 as any)?.id ?? null;
       } catch {
         // ignore
@@ -226,7 +227,7 @@ export async function POST(req: Request) {
 
     if (!profileId) {
       try {
-        const { data: p2 } = await admin.from("profiles").select("id").eq("id", user.id).maybeSingle();
+        const { data: p2 } = await admin.from("profiles").select("id").eq("id", authedUser.id).maybeSingle();
         profileId = (p2 as any)?.id ?? null;
       } catch {
         // ignore
@@ -240,7 +241,7 @@ export async function POST(req: Request) {
         .upsert(
           {
             org_id: args.org_id,
-            user_id: user.id,
+            user_id: authedUser.id,
             role: args.role,
           } as any,
           { onConflict: "org_id,user_id" }
@@ -255,7 +256,7 @@ export async function POST(req: Request) {
         if (!profileId) {
           // Try to resolve profile id if the earlier upsert didn't return it.
           try {
-            const r1 = await admin.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
+            const r1 = await admin.from("profiles").select("id").eq("user_id", authedUser.id).maybeSingle();
             profileId = (r1 as any)?.id ?? (r1 as any)?.data?.id ?? null;
             // note: depending on supabase-js version, maybeSingle returns { data, error }
             if (!profileId && (r1 as any)?.data?.id) profileId = (r1 as any).data.id;
@@ -266,7 +267,7 @@ export async function POST(req: Request) {
 
         if (!profileId) {
           try {
-            const r2 = await admin.from("profiles").select("id").eq("id", user.id).maybeSingle();
+            const r2 = await admin.from("profiles").select("id").eq("id", authedUser.id).maybeSingle();
             profileId = (r2 as any)?.id ?? (r2 as any)?.data?.id ?? null;
             if (!profileId && (r2 as any)?.data?.id) profileId = (r2 as any).data.id;
           } catch {
@@ -296,7 +297,7 @@ export async function POST(req: Request) {
           .upsert(
             {
               org_id: args.org_id,
-              member_user_id: user.id,
+              member_user_id: authedUser.id,
               role: args.role,
             } as any,
             { onConflict: "org_id,member_user_id" } as any
@@ -323,12 +324,12 @@ export async function POST(req: Request) {
       const patchOrg: any = { org_id: invite.org_id };
 
       // Try profiles(user_id = auth.users.id)
-      const r1 = await admin.from("profiles").update(patchOrg).eq("user_id", user.id);
+      const r1 = await admin.from("profiles").update(patchOrg).eq("user_id", authedUser.id);
       const msg1 = String((r1 as any)?.error?.message ?? "").toLowerCase();
 
       // Fallback: profiles(id = auth.users.id)
       if ((r1 as any)?.error && (msg1.includes("user_id") || msg1.includes("does not exist") || msg1.includes("column"))) {
-        const r2 = await admin.from("profiles").update(patchOrg).eq("id", user.id);
+        const r2 = await admin.from("profiles").update(patchOrg).eq("id", authedUser.id);
         const msg2 = String((r2 as any)?.error?.message ?? "").toLowerCase();
 
         // If org_id column doesn't exist in this environment, ignore.
@@ -344,7 +345,7 @@ export async function POST(req: Request) {
     const acceptedPatch: any = {
       status: "accepted",
       accepted_at: new Date().toISOString(),
-      accepted_by_user_id: user.id,
+      accepted_by_user_id: authedUser.id,
     };
 
     let updateErr = (await admin.from("invites").update(acceptedPatch).eq("id", invite.id)).error as any;

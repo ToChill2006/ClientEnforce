@@ -146,13 +146,9 @@ export async function GET(req: Request) {
     let actorLabel = pickActorLabel(event, actorProfile);
 
     // Fallback to the current signed-in profile when the actor id matches the requester.
-    if (!actorLabel && actorId && (actorId === profile.user_id || actorId === profile.id)) {
+    if (!actorLabel && actorId && actorId === profile.user_id) {
       actorLabel =
         profile.full_name ||
-        profile.display_name ||
-        [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
-        profile.name ||
-        profile.username ||
         profile.email ||
         null;
     }
