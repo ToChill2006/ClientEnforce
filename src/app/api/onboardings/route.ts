@@ -48,6 +48,44 @@ function maxActiveOnboardingsForTier(tier: "free" | "pro" | "business") {
   return 5;
 }
 
+// Helper to select org tier, falling back if columns are missing
+async function selectOrganizationTier(supabase: Awaited<ReturnType<typeof supabaseServer>>, org_id: string) {
+  const primary = await supabase
+    .from("organizations")
+    .select("tier, plan_tier")
+    .eq("id", org_id)
+    .single();
+
+  if (!(primary as any)?.error) {
+    return { data: (primary as any).data ?? null, error: null as any };
+  }
+
+  const err = (primary as any).error;
+  const msg = String(err?.message || "").toLowerCase();
+
+  if (msg.includes("plan_tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await supabase
+      .from("organizations")
+      .select("tier")
+      .eq("id", org_id)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  if (msg.includes("tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await supabase
+      .from("organizations")
+      .select("plan_tier")
+      .eq("id", org_id)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  return { data: null, error: err };
+}
+
 const CreatePayload = z.union([
   // ID-based (admin UI can use this)
   z.object({
@@ -544,11 +582,7 @@ export async function POST(req: Request) {
     return jsonError(403, "Forbidden");
   }
 
-  const { data: org, error: orgError } = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", org_id)
-    .single();
+  const { data: org, error: orgError } = await selectOrganizationTier(supabase, org_id);
 
   if (orgError) return jsonError(400, orgError.message);
 
