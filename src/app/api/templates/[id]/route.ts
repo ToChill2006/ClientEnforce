@@ -37,7 +37,7 @@ async function selectTemplateById(
   supa: any,
   id: string
 ): Promise<{ item: any | null; error: any | null }> {
-  // Try the newer schema first, then fallback.
+  // Try the newer schema first, then fallback across older schema variants.
   const primary = await supa
     .from("templates")
     .select("id, org_id, name, definition, created_at, updated_at, deleted_at")
@@ -46,6 +46,41 @@ async function selectTemplateById(
   if (!(primary as any)?.error) return { item: (primary as any).data ?? null, error: null };
 
   const e = (primary as any).error;
+
+  if (isMissingColumn(e, "deleted_at")) {
+    const retryWithoutDeletedAt = await supa
+      .from("templates")
+      .select("id, org_id, name, definition, created_at, updated_at")
+      .eq("id", id)
+      .single();
+
+    if (!(retryWithoutDeletedAt as any)?.error) {
+      const d = (retryWithoutDeletedAt as any).data ?? null;
+      if (d && !("deleted_at" in d)) (d as any).deleted_at = null;
+      return { item: d, error: null };
+    }
+
+    const eNoDeletedAt = (retryWithoutDeletedAt as any).error;
+    if (isMissingColumn(eNoDeletedAt, "definition")) {
+      const fallbackNoDeletedAt = await supa
+        .from("templates")
+        .select("id, org_id, name, definition_json, created_at, updated_at")
+        .eq("id", id)
+        .single();
+
+      if (!(fallbackNoDeletedAt as any)?.error) {
+        const d = (fallbackNoDeletedAt as any).data ?? null;
+        if (d && d.definition_json && !d.definition) (d as any).definition = (d as any).definition_json;
+        if (d && !("deleted_at" in d)) (d as any).deleted_at = null;
+        return { item: d, error: null };
+      }
+
+      return { item: null, error: (fallbackNoDeletedAt as any).error };
+    }
+
+    return { item: null, error: eNoDeletedAt };
+  }
+
   if (isMissingColumn(e, "definition")) {
     const fallback = await supa
       .from("templates")
@@ -58,7 +93,26 @@ async function selectTemplateById(
       if (d && d.definition_json && !d.definition) (d as any).definition = (d as any).definition_json;
       return { item: d, error: null };
     }
-    return { item: null, error: (fallback as any).error };
+
+    const eFallback = (fallback as any).error;
+    if (isMissingColumn(eFallback, "deleted_at")) {
+      const fallbackNoDeletedAt = await supa
+        .from("templates")
+        .select("id, org_id, name, definition_json, created_at, updated_at")
+        .eq("id", id)
+        .single();
+
+      if (!(fallbackNoDeletedAt as any)?.error) {
+        const d = (fallbackNoDeletedAt as any).data ?? null;
+        if (d && d.definition_json && !d.definition) (d as any).definition = (d as any).definition_json;
+        if (d && !("deleted_at" in d)) (d as any).deleted_at = null;
+        return { item: d, error: null };
+      }
+
+      return { item: null, error: (fallbackNoDeletedAt as any).error };
+    }
+
+    return { item: null, error: eFallback };
   }
 
   return { item: null, error: e };
