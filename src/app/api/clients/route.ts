@@ -40,6 +40,61 @@ export async function GET(req: Request) {
   return NextResponse.json({ items: normalized });
 }
 
+export async function POST(req: Request) {
+  const supabase = await supabaseServer();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const profile = await requireProfile();
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "clients_write")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch {
+    body = null;
+  }
+
+  const full_name = String(body?.full_name ?? body?.name ?? "").trim();
+  const email = String(body?.email ?? "").trim().toLowerCase();
+
+  if (!full_name) {
+    return NextResponse.json({ error: "Client name is required" }, { status: 400 });
+  }
+
+  if (!email) {
+    return NextResponse.json({ error: "Client email is required" }, { status: 400 });
+  }
+
+  const { data: created, error } = await supabase
+    .from("clients")
+    .insert({
+      org_id: profile.org_id,
+      full_name,
+      email,
+    })
+    .select("id, email, full_name, created_at, updated_at")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message || "Failed to create client" }, { status: 400 });
+  }
+
+  return NextResponse.json(
+    {
+      item: {
+        ...created,
+        name: created.full_name ?? null,
+      },
+    },
+    { status: 201 }
+  );
+}
+
 export async function DELETE(req: Request) {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
