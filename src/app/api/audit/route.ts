@@ -79,7 +79,8 @@ export async function GET(req: Request) {
   const profile = await requireProfile();
   const role = await requireRole(["owner", "admin", "member"]);
 
-  if (!roleHasPermission(role, "audit_view")) {
+  const isPrivilegedRole = role === "owner" || role === "admin";
+  if (!isPrivilegedRole && !roleHasPermission(role, "audit_view")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
