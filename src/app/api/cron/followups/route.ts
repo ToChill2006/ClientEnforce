@@ -33,11 +33,25 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { data: org, error: orgError } = await supabase
+  const primary = await supabase
     .from("organizations")
     .select("tier, plan_tier")
     .eq("id", profile.org_id)
     .single();
+
+  let org = primary.data as any;
+  let orgError = primary.error as any;
+
+  if (orgError && /plan_tier/i.test(String(orgError?.message || ""))) {
+    const fallback = await supabase
+      .from("organizations")
+      .select("tier")
+      .eq("id", profile.org_id)
+      .single();
+
+    org = fallback.data as any;
+    orgError = fallback.error as any;
+  }
 
   if (orgError) {
     return NextResponse.json({ error: orgError.message }, { status: 400 });
