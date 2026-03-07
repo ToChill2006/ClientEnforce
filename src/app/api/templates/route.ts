@@ -128,16 +128,19 @@ export async function POST(req: Request) {
   const { data: org, error: orgError } = await selectOrganizationTier(admin, profile.org_id);
 
   if (orgError) {
-    return NextResponse.json({ error: orgError.message }, { status: 400 });
+    console.warn("[templates.post] tier lookup failed, defaulting to free", {
+      orgId: profile.org_id,
+      error: orgError.message,
+    });
   }
 
-  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
+  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier ?? "free");
   const maxTemplates = maxTemplatesForTier(tier);
 
   if (Number.isFinite(maxTemplates)) {
     const countWithDeletedAt = await admin
       .from("templates")
-      .select("id", { count: "exact", head: true })
+      .select("*", { count: "exact", head: true })
       .eq("org_id", profile.org_id)
       .is("deleted_at", null);
 
@@ -147,7 +150,7 @@ export async function POST(req: Request) {
     if (countError && /column .*deleted_at.* does not exist/i.test(countError.message)) {
       const countWithoutDeletedAt = await admin
         .from("templates")
-        .select("id", { count: "exact", head: true })
+        .select("*", { count: "exact", head: true })
         .eq("org_id", profile.org_id);
 
       templateCount = countWithoutDeletedAt.count ?? 0;
@@ -170,6 +173,13 @@ export async function POST(req: Request) {
       );
     }
   }
+
+  console.log("[templates.post] creating template", {
+    orgId: profile.org_id,
+    tier,
+    maxTemplates,
+    templateName: parsed.data.name,
+  });
 
   const insertWith = async (definitionColumn: "definition" | "definition_json") => {
     const payload: any = {
@@ -195,17 +205,31 @@ export async function POST(req: Request) {
     error = retry.error as any;
   }
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) {
+    console.error("[templates.post] insert failed", {
+      orgId: profile.org_id,
+      error: error.message,
+    });
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
   const template = created as { id: string; name: string; created_at: string; updated_at: string };
 
-  await admin.from("audit_logs").insert({
-    org_id: profile.org_id,
-    actor_user_id: profile.user_id,
-    action: "template.created",
-    entity_type: "template",
-    entity_id: template.id,
-    metadata: { name: template.name },
-  });
+  try {
+    await admin.from("audit_logs").insert({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      action: "template.created",
+      entity_type: "template",
+      entity_id: template.id,
+      metadata: { name: template.name },
+    });
+  } catch (auditError: any) {
+    console.warn("[templates.post] audit insert failed", {
+      orgId: profile.org_id,
+      templateId: template.id,
+      error: auditError?.message ?? String(auditError),
+    });
+  }
 
   return NextResponse.json({ item: template }, { status: 201 });
 }
