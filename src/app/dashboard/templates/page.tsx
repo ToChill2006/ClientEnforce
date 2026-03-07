@@ -98,7 +98,6 @@ export default function TemplatesPage() {
             return;
           }
 
-          setCanCreateTemplate(false);
           notify({
             title: "Permission required",
             description: "You do not have permission to create templates.",
@@ -108,7 +107,6 @@ export default function TemplatesPage() {
         }
         throw new Error(JSON.stringify(json.error ?? json));
       }
-      setCanCreateTemplate(true);
       setUpgradeMessage(null);
       notify({ title: "Template created", variant: "success" });
       setName("");
@@ -140,7 +138,6 @@ export default function TemplatesPage() {
       const json = await res.json();
       if (!res.ok) {
         if (res.status === 403) {
-          setCanEditTemplate(false);
           notify({
             title: "Permission required",
             description: "You do not have permission to edit templates.",
@@ -150,7 +147,6 @@ export default function TemplatesPage() {
         }
         throw new Error(JSON.stringify(json.error ?? json));
       }
-      setCanEditTemplate(true);
       notify({ title: "Saved", variant: "success" });
       await load();
     } catch (e: any) {
@@ -165,7 +161,6 @@ export default function TemplatesPage() {
       const json = await res.json();
       if (!res.ok) {
         if (res.status === 403) {
-          setCanDeleteTemplate(false);
           notify({
             title: "Permission required",
             description: "You do not have permission to delete templates.",
@@ -175,7 +170,6 @@ export default function TemplatesPage() {
         }
         throw new Error(JSON.stringify(json.error ?? json));
       }
-      setCanDeleteTemplate(true);
       notify({ title: "Deleted", variant: "success" });
       setSelected(null);
       await load();
@@ -197,7 +191,7 @@ export default function TemplatesPage() {
               <label className="text-sm font-medium">New template name</label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Standard onboarding" />
             </div>
-            {canCreateTemplate ? <Button onClick={create}>Create</Button> : null}
+            <Button onClick={create}>Create</Button>
             {upgradeMessage ? (
               <div className="text-sm text-amber-700">{upgradeMessage}</div>
             ) : null}
@@ -236,9 +230,7 @@ export default function TemplatesPage() {
           <CardHeader>
             <CardTitle>Edit template</CardTitle>
             <CardDescription>
-              {(canEditTemplate || canDeleteTemplate)
-                ? "Owner/Admin only. Changes affect future onboardings only."
-                : "You can view this template, but only admins and owners can change it."}
+              Owner/Admin only. Changes affect future onboardings only.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -246,7 +238,6 @@ export default function TemplatesPage() {
               <label className="text-sm font-medium">Name</label>
               <Input
                 value={selected.name}
-                disabled={!canEditTemplate}
                 onChange={(e) => setSelected({ ...selected, name: e.target.value })}
               />
             </div>
@@ -263,7 +254,6 @@ export default function TemplatesPage() {
                         <select
                           className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
                           value={r.type}
-                          disabled={!canEditTemplate}
                           onChange={(e) => {
                             const type = e.target.value as any;
                             const reqs = selected.definition.requirements.map((x, i) => (i === idx ? { ...x, type } : x));
@@ -279,7 +269,6 @@ export default function TemplatesPage() {
                       <div className="md:col-span-6">
                         <Input
                           value={r.label}
-                          disabled={!canEditTemplate}
                           onChange={(e) => {
                             const label = e.target.value;
                             const reqs = selected.definition.requirements.map((x, i) => (i === idx ? { ...x, label } : x));
@@ -292,7 +281,6 @@ export default function TemplatesPage() {
                         <input
                           type="checkbox"
                           checked={r.is_required}
-                          disabled={!canEditTemplate}
                           onChange={(e) => {
                             const is_required = e.target.checked;
                             const reqs = selected.definition.requirements.map((x, i) =>
@@ -305,46 +293,40 @@ export default function TemplatesPage() {
                       </div>
 
                       <div className="md:col-span-1">
-                        {canEditTemplate ? (
-                          <Button
-                            variant="secondary"
-                            onClick={() => {
-                              const reqs = selected.definition.requirements.filter((_, i) => i !== idx).map((x, i) => ({
-                                ...x,
-                                sort_order: i,
-                              }));
-                              setSelected({ ...selected, definition: { requirements: reqs } });
-                            }}
-                          >
-                            ✕
-                          </Button>
-                        ) : null}
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            const reqs = selected.definition.requirements.filter((_, i) => i !== idx).map((x, i) => ({
+                              ...x,
+                              sort_order: i,
+                            }));
+                            setSelected({ ...selected, definition: { requirements: reqs } });
+                          }}
+                        >
+                          ✕
+                        </Button>
                       </div>
                     </div>
                   ))}
 
-                {canEditTemplate ? (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      const reqs = selected.definition.requirements.slice();
-                      reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
-                      setSelected({ ...selected, definition: { requirements: reqs } });
-                    }}
-                  >
-                    Add requirement
-                  </Button>
-                ) : null}
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    const reqs = selected.definition.requirements.slice();
+                    reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
+                    setSelected({ ...selected, definition: { requirements: reqs } });
+                  }}
+                >
+                  Add requirement
+                </Button>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {canEditTemplate ? <Button onClick={saveSelected}>Save</Button> : null}
-              {canDeleteTemplate ? (
-                <Button variant="secondary" onClick={deleteSelected}>
-                  Delete
-                </Button>
-              ) : null}
+              <Button onClick={saveSelected}>Save</Button>
+              <Button variant="secondary" onClick={deleteSelected}>
+                Delete
+              </Button>
             </div>
           </CardContent>
         </Card>
