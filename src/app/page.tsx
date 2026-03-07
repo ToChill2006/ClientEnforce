@@ -198,7 +198,7 @@ function MarketingNav() {
 
 export default function MarketingPage() {
   return (
-    <div className="min-h-screen bg-white pb-24 text-zinc-900 sm:pb-0">
+    <div className="min-h-screen bg-white text-zinc-900">
       <MarketingNav />
 
       {/* Hero */}
@@ -776,22 +776,6 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 p-3 backdrop-blur sm:hidden">
-        <div className="mx-auto flex max-w-md items-center gap-3">
-          <Link
-            href="/signup"
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-          >
-            Start free
-          </Link>
-          <a
-            href="#pricing"
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-          >
-            Pricing
-          </a>
-        </div>
-      </div>
     </div>
   );
 }
