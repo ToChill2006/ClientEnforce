@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 export async function GET() {
   const supabase = await supabaseServer();
@@ -8,6 +9,12 @@ export async function GET() {
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
+
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "team_members_view")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   // Only members can view members list; admins will use it for assignment.
   const { data: memberships, error: memErr } = await supabase

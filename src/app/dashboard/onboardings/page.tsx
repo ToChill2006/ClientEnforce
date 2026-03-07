@@ -53,7 +53,7 @@ function statusLabel(raw?: string | null) {
   if (s === "sent") return "Sent";
   if (s === "in_progress" || s === "in progress") return "In progress";
   if (s === "submitted") return "Submitted";
-  if (s === "locked") return "Locked";
+  if (s === "locked") return "Submitted";
   return raw!;
 }
 
@@ -68,7 +68,7 @@ function statusPillClasses(raw?: string | null) {
   const s = (raw || "").toLowerCase();
   // subtle, enterprise
   if (s === "submitted") return "border-zinc-900 bg-zinc-900 text-white";
-  if (s === "locked") return "border-zinc-300 bg-white text-zinc-700";
+  if (s === "locked") return "border-zinc-900 bg-zinc-900 text-white";
   if (s === "in_progress" || s === "in progress") return "border-zinc-300 bg-white text-zinc-900";
   if (s === "sent") return "border-zinc-200 bg-zinc-50 text-zinc-900";
   return "border-zinc-200 bg-white text-zinc-700";

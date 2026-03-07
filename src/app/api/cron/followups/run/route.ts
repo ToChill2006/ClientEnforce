@@ -1,18 +1,33 @@
 import { NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabase-server";
+import { requireRole, requireProfile } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
 
 export const runtime = "nodejs";
+
+function json(status: number, body: any) {
+  return NextResponse.json(body, { status });
+}
+
+function normalizeTier(raw: unknown): "free" | "pro" | "business" {
+  const value = String(raw ?? "free").trim().toLowerCase();
+  if (value === "business") return "business";
+  if (value === "pro") return "pro";
+  if (value === "starter") return "free";
+  return "free";
+}
+
+function followupsEnabledForTier(tier: "free" | "pro" | "business") {
+  return tier === "pro" || tier === "business";
+}
 
 function authCron(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
   const hdr = req.headers.get("authorization") || "";
   return hdr === `Bearer ${secret}`;
-}
-
-function json(status: number, body: any) {
-  return NextResponse.json(body, { status });
 }
 
 function missingColumnFromMessage(message?: string | null): string | null {
@@ -46,7 +61,36 @@ async function safeUpdateFollowupJob(admin: ReturnType<typeof supabaseAdmin>, id
 }
 
 export async function POST(req: Request) {
-  if (!authCron(req)) return json(401, { error: "Unauthorized" });
+  const isCronRequest = authCron(req);
+
+  if (!isCronRequest) {
+    const supabase = await supabaseServer();
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return json(401, { error: "Unauthorized" });
+
+    const role = await requireRole(["owner", "admin", "member"]);
+    if (!roleHasPermission(role, "followups_run")) {
+      return json(403, { error: "Forbidden" });
+    }
+
+    const profile = await requireProfile();
+
+    const { data: org, error: orgError } = await supabase
+      .from("organizations")
+      .select("tier, plan_tier")
+      .eq("id", profile.org_id)
+      .single();
+
+    if (orgError) return json(400, { error: orgError.message });
+
+    const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
+
+    if (!followupsEnabledForTier(tier)) {
+      return json(403, {
+        error: "Follow-up automation is not included in your current plan. Upgrade to Pro to run reminders.",
+      });
+    }
+  }
 
   if (!process.env.RESEND_API_KEY) {
     return json(500, { error: "RESEND_API_KEY is not set" });

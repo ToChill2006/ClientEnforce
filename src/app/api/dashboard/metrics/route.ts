@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
-import { requireProfile } from "@/lib/rbac";
+import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 
@@ -42,10 +43,17 @@ async function safeCount(
   table: string,
   orgId: string
 ) {
-  const res = await supabase
+  let query = supabase
     .from(table)
     .select("id", { count: "exact", head: true })
     .eq("org_id", orgId);
+
+  // Templates are soft-deleted via `deleted_at`, so only count active ones.
+  if (table === "templates") {
+    query = query.is("deleted_at", null);
+  }
+
+  const res = await query;
 
   if (res.error) {
     warnings.push({ key, message: res.error.message || `Failed counting ${table}` });
@@ -64,6 +72,23 @@ async function safeFollowupsDue(supabase: any, warnings: Warning[], orgId: strin
 
   const nowIso = new Date().toISOString();
   let lastHardError: any = null;
+
+  // Quick path: count queued follow-up jobs for this org regardless of due time.
+  // This matches the Follow-ups page and fixes dashboard cards that should show
+  // total queued follow-ups, not only overdue ones.
+  const quickQueued = await supabase
+    .from("followup_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("org_id", orgId)
+    .eq("status", "queued");
+
+  if (!quickQueued.error) {
+    return quickQueued.count ?? 0;
+  }
+
+  if (!isMissingColumnOrRelation(quickQueued.error?.message || "")) {
+    lastHardError = quickQueued.error;
+  }
 
   type Candidate = {
     table: string;
@@ -710,6 +735,11 @@ export async function GET() {
 
     const warnings: Warning[] = [];
     const profile = await requireProfile();
+    const role = await requireRole(["owner", "admin", "member"]);
+
+    if (!roleHasPermission(role, "dashboard_view")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const [
       clients,

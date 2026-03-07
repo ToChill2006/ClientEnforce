@@ -57,6 +57,9 @@ export default function FollowupsPage() {
   const [tz, setTz] = React.useState("UTC");
   const [saving, setSaving] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
+  const [canEditSettings, setCanEditSettings] = React.useState(true);
+  const [canRunCron, setCanRunCron] = React.useState(true);
+
   React.useEffect(() => {
     setMounted(true);
   }, []);
@@ -80,22 +83,18 @@ export default function FollowupsPage() {
   ]);
 
   React.useEffect(() => {
-    // Populate a fuller timezone list on the client (prevents SSR/CSR hydration mismatch).
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const anyIntl: any = Intl as any;
       if (anyIntl?.supportedValuesOf) {
         const list = anyIntl.supportedValuesOf("timeZone") as string[];
         if (Array.isArray(list) && list.length > 0) {
           setTimezones(list);
-          // Keep current selection valid
           setTz((prev) => (list.includes(prev) ? prev : "UTC"));
         }
       }
     } catch {
       // ignore
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendPreview = React.useMemo(() => {
@@ -133,7 +132,6 @@ export default function FollowupsPage() {
   }
 
   async function loadJobs() {
-    // Use your existing endpoint (do not change backend behavior)
     const res = await fetch("/api/cron/followups", { method: "GET", cache: "no-store" });
     const json = await res.json().catch(() => null);
     if (!res.ok) throw new Error(json?.error || "Failed to load follow-ups");
@@ -155,7 +153,6 @@ export default function FollowupsPage() {
 
   React.useEffect(() => {
     loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function saveTiming() {
@@ -175,12 +172,19 @@ export default function FollowupsPage() {
       });
 
       const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Save failed");
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanEditSettings(false);
+          setAlert({ variant: "info", title: "Permission required", description: "You do not have permission to change follow-up settings." });
+          return;
+        }
+        throw new Error(json?.error || "Save failed");
+      }
 
+      setCanEditSettings(true);
       setAlert({ variant: "success", title: "Saved", description: "Follow-up timing updated for future schedules." });
       await loadSettings();
     } catch (e: any) {
-      console.error(e);
       setAlert({ variant: "error", title: "Save failed", description: e?.message ?? "Unknown error" });
     } finally {
       setSaving(false);
@@ -191,7 +195,15 @@ export default function FollowupsPage() {
     try {
       const res = await fetch("/api/cron/followups/run-now", { method: "POST" });
       const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error ?? "Failed");
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanRunCron(false);
+          setAlert({ variant: "info", title: "Permission required", description: "You do not have permission to run follow-ups manually." });
+          return;
+        }
+        throw new Error(json?.error ?? "Failed");
+      }
+      setCanRunCron(true);
       setAlert({
         variant: "success",
         title: "Cron executed",
@@ -199,7 +211,6 @@ export default function FollowupsPage() {
       });
       await loadJobs();
     } catch (e: any) {
-      console.error(e);
       setAlert({ variant: "error", title: "Run failed", description: e?.message ?? "Unknown error" });
     }
   }
@@ -220,6 +231,7 @@ export default function FollowupsPage() {
         <h1 className="text-lg font-semibold text-zinc-900">Follow-ups</h1>
         <p className="mt-1 text-sm text-zinc-600">Configure timing and monitor scheduled reminder emails.</p>
       </div>
+
       {alert ? (
         <div
           className={
@@ -250,18 +262,22 @@ export default function FollowupsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Timing</CardTitle>
-          <CardDescription>These settings apply when new follow-up jobs are scheduled.</CardDescription>
+          <CardDescription>
+            {canEditSettings
+              ? "These settings apply when new follow-up jobs are scheduled."
+              : "You can view follow-up timing, but only admins and owners can change it."}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid gap-3 md:grid-cols-4">
             <div className="space-y-1">
               <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Delay (days)</div>
-              <Input value={delayDays} onChange={(e) => setDelayDays(e.target.value)} />
+              <Input value={delayDays} disabled={!canEditSettings} onChange={(e) => setDelayDays(e.target.value)} />
             </div>
 
             <div className="space-y-1">
               <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Max follow-ups</div>
-              <Input value={maxCount} onChange={(e) => setMaxCount(e.target.value)} />
+              <Input value={maxCount} disabled={!canEditSettings} onChange={(e) => setMaxCount(e.target.value)} />
             </div>
 
             <div className="space-y-1">
@@ -269,6 +285,7 @@ export default function FollowupsPage() {
               <select
                 className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm"
                 value={sendHour}
+                disabled={!canEditSettings}
                 onChange={(e) => setSendHour(e.target.value)}
               >
                 {Array.from({ length: 24 }).map((_, h) => {
@@ -287,6 +304,7 @@ export default function FollowupsPage() {
               <select
                 className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm"
                 value={tz}
+                disabled={!canEditSettings}
                 onChange={(e) => setTz(e.target.value)}
               >
                 {timezones.map((z) => (
@@ -297,6 +315,7 @@ export default function FollowupsPage() {
               </select>
             </div>
           </div>
+
           {sendPreview ? (
             <div className="text-xs text-zinc-500">
               Preview: sends at about <span className="font-medium text-zinc-700">{sendPreview}</span> in <span className="font-medium text-zinc-700">{tz}</span>
@@ -304,21 +323,26 @@ export default function FollowupsPage() {
           ) : null}
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={saveTiming} disabled={saving}>
-              {saving ? "Saving..." : "Save timing"}
+            <Button onClick={saveTiming} disabled={saving || !canEditSettings}>
+              {saving ? "Saving..." : canEditSettings ? "Save timing" : "Admins can change timing"}
             </Button>
             <Button variant="secondary" onClick={loadAll}>
               Refresh
             </Button>
-            <Button variant="secondary" onClick={runCronNow}>
-              Run cron now
+            <Button variant="secondary" onClick={runCronNow} disabled={!canRunCron}>
+              {canRunCron ? "Run cron now" : "Admins can run cron"}
             </Button>
           </div>
 
           {settings ? (
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800">
-              Current: {settings.followup_max_count} follow-ups, every {settings.followup_delay_days} day(s), send hour{" "}
-              {settings.followup_send_hour} ({settings.followup_timezone})
+              Current: {settings.followup_max_count} follow-ups, every {settings.followup_delay_days} day(s), send hour {settings.followup_send_hour} ({settings.followup_timezone})
+              {!canEditSettings || !canRunCron ? (
+                <div className="mt-2 text-xs text-zinc-500">
+                  {!canEditSettings ? "Only admins and owners can change follow-up timing. " : ""}
+                  {!canRunCron ? "Only admins and owners can run follow-ups manually." : ""}
+                </div>
+              ) : null}
             </div>
           ) : null}
         </CardContent>
@@ -366,7 +390,7 @@ export default function FollowupsPage() {
                     <tr key={j.id} className="hover:bg-zinc-50">
                       <td className="px-4 py-3">
                         <div className="font-medium text-zinc-900">{j.to_email}</div>
-                        <div className="text-xs text-zinc-500 font-mono">{j.onboarding_id}</div>
+                        <div className="font-mono text-xs text-zinc-500">{j.onboarding_id}</div>
                       </td>
                       <td className="px-4 py-3 text-zinc-800">{j.subject}</td>
                       <td className="px-4 py-3 text-zinc-700">{fmt(j.due_at)}</td>

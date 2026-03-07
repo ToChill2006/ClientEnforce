@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabase-server";
+import { requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 
 const ALLOWED_TIERS = ["pro", "business"] as const;
+const ALLOWED_INTERVALS = ["monthly", "yearly"] as const;
 
 type Tier = (typeof ALLOWED_TIERS)[number];
+type BillingInterval = (typeof ALLOWED_INTERVALS)[number];
 
 function json(status: number, body: any) {
   return NextResponse.json(body, { status });
@@ -30,29 +34,53 @@ export async function POST(req: Request) {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return json(401, { error: "Unauthorized" });
 
+  const role = await requireRole(["owner", "admin", "member"]);
+  if (!roleHasPermission(role, "billing_manage")) {
+    return json(403, { error: "Forbidden" });
+  }
+
   const body = await req.json().catch(() => null);
   const tier = String(body?.tier || "").trim().toLowerCase() as Tier;
+  const interval = String(body?.interval || "monthly").trim().toLowerCase() as BillingInterval;
 
   if (!ALLOWED_TIERS.includes(tier)) {
     return json(400, { error: "Invalid tier" });
+  }
+
+  if (!ALLOWED_INTERVALS.includes(interval)) {
+    return json(400, { error: "Invalid interval" });
   }
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return json(500, { error: "STRIPE_SECRET_KEY missing" });
   }
 
-  const pricePro = process.env.STRIPE_PRICE_PRO;
-  const priceBusiness = process.env.STRIPE_PRICE_BUSINESS;
+  const PRICE_IDS = {
+    pro: {
+      monthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
+      yearly: process.env.STRIPE_PRICE_PRO_YEARLY,
+    },
+    business: {
+      monthly: process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
+      yearly: process.env.STRIPE_PRICE_BUSINESS_YEARLY,
+    },
+  } as const;
 
-  const priceId =
-    tier === "pro" ? pricePro : tier === "business" ? priceBusiness : undefined;
+  console.log("[stripe.checkout] config", {
+    keyMode: process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_") ? "live" : process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ? "test" : "unknown",
+    tier,
+    interval,
+    proMonthly: PRICE_IDS.pro.monthly,
+    proYearly: PRICE_IDS.pro.yearly,
+    businessMonthly: PRICE_IDS.business.monthly,
+    businessYearly: PRICE_IDS.business.yearly,
+  });
+
+  const priceId = PRICE_IDS[tier]?.[interval];
 
   if (!priceId) {
     return json(500, {
-      error:
-        tier === "pro"
-          ? "STRIPE_PRICE_PRO missing"
-          : "STRIPE_PRICE_BUSINESS missing",
+      error: `Missing Stripe price for ${tier} ${interval}`,
     });
   }
 
@@ -127,27 +155,62 @@ export async function POST(req: Request) {
     }
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${returnUrl}?billing=success`,
-    cancel_url: `${returnUrl}?billing=cancel`,
-    allow_promotion_codes: true,
-    subscription_data: {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer: customerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${returnUrl}?billing=success`,
+      cancel_url: `${returnUrl}?billing=cancel`,
+      allow_promotion_codes: true,
+      subscription_data: {
+        metadata: {
+          org_id: org.id,
+          tier,
+          interval,
+          old_subscription_id: existingSubId || "",
+        },
+      },
       metadata: {
         org_id: org.id,
+        user_id: userData.user.id,
         tier,
+        interval,
         old_subscription_id: existingSubId || "",
       },
-    },
-    metadata: {
-      org_id: org.id,
-      user_id: userData.user.id,
-      tier,
-      old_subscription_id: existingSubId || "",
-    },
-  });
+    });
 
-  return json(200, { url: session.url });
+    return json(200, { url: session.url });
+  } catch (e: any) {
+    const message = String(e?.message || "Stripe checkout failed");
+
+    console.error("[stripe.checkout] failed", {
+      code: e?.code,
+      type: e?.type,
+      message,
+      tier,
+      interval,
+      priceId,
+    });
+
+    if (
+      e?.code === "resource_missing" &&
+      message.toLowerCase().includes("similar object exists in live mode")
+    ) {
+      return json(400, {
+        error:
+          "Stripe mode mismatch: this price exists in live mode, but the server is using a test secret key. Use test price IDs with sk_test_ keys, or live price IDs with sk_live_ keys.",
+      });
+    }
+
+    if (e?.code === "resource_missing") {
+      return json(400, {
+        error: `Stripe price not found for ${tier} ${interval}. Check the configured STRIPE_PRICE_* environment variables.`,
+      });
+    }
+
+    return json(500, {
+      error: message,
+    });
+  }
 }

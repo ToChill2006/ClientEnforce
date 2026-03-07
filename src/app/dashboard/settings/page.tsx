@@ -87,6 +87,8 @@ export default function SettingsPage() {
   const [pageSuccess, setPageSuccess] = React.useState<string | null>(null);
   // When returning from Stripe, we may need to wait a moment for the webhook to update DB.
   const [syncingBilling, setSyncingBilling] = React.useState(false);
+  const [canManageBilling, setCanManageBilling] = React.useState(true);
+  const [canInviteMembers, setCanInviteMembers] = React.useState(true);
 
   async function load() {
     setLoading(true);
@@ -185,10 +187,17 @@ export default function SettingsPage() {
         const { res, json } = await postJson(url, { email, role: inviteRole });
         if (res.status === 404) continue;
         if (!res.ok) {
+          if (res.status === 403) {
+            setCanInviteMembers(false);
+            setPageError("You do not have permission to invite team members.");
+            setPageSuccess(null);
+            return;
+          }
           lastErr = json?.error || res.statusText || "Invite failed";
           break;
         }
 
+        setCanInviteMembers(true);
         setInviteEmail("");
         setInviteRole("member");
         setPageSuccess("Invite created.");
@@ -223,7 +232,14 @@ export default function SettingsPage() {
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Failed to open billing portal");
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanManageBilling(false);
+          throw new Error("You do not have permission to manage billing.");
+        }
+        throw new Error(json?.error || "Failed to open billing portal");
+      }
+      setCanManageBilling(true);
       if (!json?.url) throw new Error("Billing portal URL missing");
       window.location.href = json.url;
     } catch (e: any) {
@@ -231,7 +247,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function startUpgrade(plan: "pro" | "business") {
+  async function startUpgrade(plan: "pro" | "business", interval: "monthly" | "yearly" = "monthly") {
     setPageError(null);
     setPageSuccess(null);
 
@@ -242,6 +258,7 @@ export default function SettingsPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           tier: plan, // checkout expects `tier`: "pro" | "business"
+          interval,
           return_url: `${window.location.origin}/dashboard/settings`,
         }),
       });
@@ -252,7 +269,14 @@ export default function SettingsPage() {
         return;
       }
 
-      if (!res.ok) throw new Error(json?.error || "Failed to start upgrade");
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanManageBilling(false);
+          throw new Error("You do not have permission to manage billing.");
+        }
+        throw new Error(json?.error || "Failed to start upgrade");
+      }
+      setCanManageBilling(true);
       if (!json?.url) throw new Error("Checkout URL missing");
       window.location.href = json.url;
     } catch (e: any) {
@@ -393,7 +417,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="md:col-span-3 flex flex-wrap gap-2">
-            <Button onClick={openBillingPortal}>Manage billing</Button>
+            {canManageBilling ? <Button onClick={openBillingPortal}>Manage billing</Button> : null}
             <Button variant="secondary" onClick={load} disabled={loading}>
               {loading ? "Refreshing…" : "Refresh"}
             </Button>
@@ -423,6 +447,7 @@ export default function SettingsPage() {
                   : currentTier === "pro"
                     ? "You’re currently on Pro."
                     : "You’re currently on Business."}
+                {!canManageBilling ? " Billing changes are restricted for your role." : ""}
               </div>
             </div>
 
@@ -469,7 +494,10 @@ export default function SettingsPage() {
                   <div>
                     <div className="text-sm font-semibold text-zinc-900">Pro</div>
                     <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
-                      £19<span className="text-base font-semibold text-zinc-500">/mo</span>
+                      £29<span className="text-base font-semibold text-zinc-500">/mo</span>
+                    </div>
+                    <div className="mt-1 text-sm text-zinc-600">
+                      £278.40 yearly <span className="text-zinc-500">(20% off)</span>
                     </div>
                     <div className="mt-1 text-sm text-zinc-600">For solo operators + small teams who want automation.</div>
                   </div>
@@ -486,13 +514,23 @@ export default function SettingsPage() {
                   <li className="text-zinc-500">• Up to 50 active onboardings</li>
                 </ul>
 
-                <Button
-                  className="mt-6 w-full"
-                  onClick={() => startUpgrade("pro")}
-                  disabled={currentTier === "pro" || currentTier === "business"}
-                >
-                  {currentTier === "pro" ? "Current plan" : currentTier === "business" ? "Already on Business" : "Upgrade to Pro"}
-                </Button>
+                <div className="mt-6 grid gap-2">
+                  <Button
+                    className="w-full"
+                    onClick={() => startUpgrade("pro", "monthly")}
+                    disabled={!canManageBilling || currentTier === "pro" || currentTier === "business"}
+                  >
+                    {currentTier === "pro" ? "Current plan" : currentTier === "business" ? "Already on Business" : "Subscribe monthly"}
+                  </Button>
+                  <Button
+                    className="w-full"
+                    variant="secondary"
+                    onClick={() => startUpgrade("pro", "yearly")}
+                    disabled={!canManageBilling || currentTier === "pro" || currentTier === "business"}
+                  >
+                    {currentTier === "pro" ? "Current plan" : currentTier === "business" ? "Already on Business" : "Subscribe yearly"}
+                  </Button>
+                </div>
               </div>
 
               {/* Business */}
@@ -501,7 +539,10 @@ export default function SettingsPage() {
                   <div>
                     <div className="text-sm font-semibold text-zinc-900">Business</div>
                     <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
-                      £49<span className="text-base font-semibold text-zinc-500">/mo</span>
+                      £89<span className="text-base font-semibold text-zinc-500">/mo</span>
+                    </div>
+                    <div className="mt-1 text-sm text-zinc-600">
+                      £854.40 yearly <span className="text-zinc-500">(20% off)</span>
                     </div>
                     <div className="mt-1 text-sm text-zinc-600">For teams onboarding clients at scale.</div>
                   </div>
@@ -524,14 +565,23 @@ export default function SettingsPage() {
                   <li className="text-zinc-500">• Up to 200 active onboardings</li>
                 </ul>
 
-                <Button
-                  className="mt-6 w-full"
-                  variant="secondary"
-                  onClick={() => startUpgrade("business")}
-                  disabled={currentTier === "business"}
-                >
-                  {currentTier === "business" ? "Current plan" : "Upgrade to Business"}
-                </Button>
+                <div className="mt-6 grid gap-2">
+                  <Button
+                    className="w-full"
+                    variant="secondary"
+                    onClick={() => startUpgrade("business", "monthly")}
+                    disabled={!canManageBilling || currentTier === "business"}
+                  >
+                    {currentTier === "business" ? "Current plan" : "Subscribe monthly"}
+                  </Button>
+                  <Button
+                    className="w-full"
+                    onClick={() => startUpgrade("business", "yearly")}
+                    disabled={!canManageBilling || currentTier === "business"}
+                  >
+                    {currentTier === "business" ? "Current plan" : "Subscribe yearly"}
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -545,7 +595,9 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>Invite members</CardTitle>
           <CardDescription>
-            Create an invite link for a teammate. Admins can invite and assign roles.
+            {canInviteMembers
+              ? "Create an invite link for a teammate. Admins can invite and assign roles."
+              : "You can view team information, but only admins and owners can invite teammates."}
           </CardDescription>
         </CardHeader>
 
@@ -556,6 +608,7 @@ export default function SettingsPage() {
               <Input
                 id="inviteEmail"
                 value={inviteEmail}
+                disabled={!canInviteMembers}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="teammate@company.com"
               />
@@ -567,6 +620,7 @@ export default function SettingsPage() {
                 id="inviteRole"
                 className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
                 value={inviteRole}
+                disabled={!canInviteMembers}
                 onChange={(e) => setInviteRole(e.target.value as any)}
               >
                 <option value="member">Member</option>
@@ -576,9 +630,11 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={createInvite} disabled={inviting || !inviteEmail.trim() || (seatsLimit > 0 && seatsUsed >= seatsLimit)}>
-              {inviting ? "Creating…" : "Create invite"}
-            </Button>
+            {canInviteMembers ? (
+              <Button onClick={createInvite} disabled={inviting || !inviteEmail.trim() || (seatsLimit > 0 && seatsUsed >= seatsLimit)}>
+                {inviting ? "Creating…" : "Create invite"}
+              </Button>
+            ) : null}
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">

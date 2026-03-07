@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
-import { requireProfile } from "@/lib/rbac";
+import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 export async function GET(req: Request) {
   const supabase = await supabaseServer();
@@ -8,6 +9,11 @@ export async function GET(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "clients_view")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") || "").trim().toLowerCase();
 
@@ -40,6 +46,11 @@ export async function DELETE(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "clients_delete")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   let body: any = null;
   try {

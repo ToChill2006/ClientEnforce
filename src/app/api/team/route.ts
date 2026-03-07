@@ -2,7 +2,8 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireProfile } from "@/lib/rbac";
+import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,12 @@ export async function GET() {
   if (!userData.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
+
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "team_members_view")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   // Fetch memberships without embedded relationship
   const { data: memberships, error: mErr } = await supabase
@@ -101,6 +108,20 @@ function makeInviteToken() {
   return crypto.randomBytes(32).toString("base64url");
 }
 
+function normalizeTier(raw: unknown): "free" | "pro" | "business" {
+  const value = String(raw ?? "free").trim().toLowerCase();
+  if (value === "business") return "business";
+  if (value === "pro") return "pro";
+  if (value === "starter") return "free";
+  return "free";
+}
+
+function maxAdminsForTier(tier: "free" | "pro" | "business") {
+  if (tier === "business") return 15;
+  if (tier === "pro") return 5;
+  return 1;
+}
+
 export async function POST(req: Request) {
   const supabase = await supabaseServer();
 
@@ -108,6 +129,12 @@ export async function POST(req: Request) {
   if (!userData.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
+
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "invites_create")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   let body: any = null;
   try {
@@ -118,7 +145,56 @@ export async function POST(req: Request) {
 
   const emailRaw = (body?.email ?? body?.to_email ?? body?.invitee_email ?? body?.invited_email ?? "") as string;
   const email = String(emailRaw).trim().toLowerCase();
-  const role = String(body?.role ?? "member").trim();
+  const inviteRole = String(body?.role ?? "member").trim();
+
+  const admin = supabaseAdmin();
+
+  const { data: org, error: orgErr } = await admin
+    .from("organizations")
+    .select("tier, plan_tier")
+    .eq("id", profile.org_id)
+    .single();
+
+  if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 400 });
+
+  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
+  const maxAdmins = maxAdminsForTier(tier);
+
+  if (inviteRole === "admin") {
+    const [{ count: currentAdmins, error: adminErr }, { count: pendingAdminInvites, error: inviteErr }] = await Promise.all([
+      admin
+        .from("memberships")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", profile.org_id)
+        .in("role", ["owner", "admin"]),
+      admin
+        .from("invites")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", profile.org_id)
+        .eq("role", "admin")
+        .is("accepted_at", null)
+        .gt("expires_at", new Date().toISOString()),
+    ]);
+
+    if (adminErr) return NextResponse.json({ error: adminErr.message }, { status: 400 });
+    if (inviteErr) return NextResponse.json({ error: inviteErr.message }, { status: 400 });
+
+    const totalAdmins = (currentAdmins || 0) + (pendingAdminInvites || 0);
+
+    if (totalAdmins >= maxAdmins) {
+      return NextResponse.json(
+        {
+          error:
+            tier === "free"
+              ? "Your current plan allows 1 admin user. Upgrade to Pro to add more admins."
+              : tier === "pro"
+                ? "Your current plan allows up to 5 admin users. Upgrade to Business to add more admins."
+                : `Your current plan allows up to ${maxAdmins} admin users.`,
+        },
+        { status: 403 }
+      );
+    }
+  }
 
   if (!email) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -133,8 +209,7 @@ export async function POST(req: Request) {
     .insert({
       org_id: profile.org_id,
       invited_email: email,
-      role,
-      token,
+      role: inviteRole,
       status: "pending",
       expires_at: expiresAt,
       invited_by_user_id: userData.user.id,

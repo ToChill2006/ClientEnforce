@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 import { TemplateDefinitionSchema } from "@/lib/onboarding-schema";
 
 async function writeAudit(
@@ -39,7 +40,7 @@ async function selectTemplateById(
   // Try the newer schema first, then fallback.
   const primary = await supa
     .from("templates")
-    .select("id, org_id, name, definition, created_at, updated_at")
+    .select("id, org_id, name, definition, created_at, updated_at, deleted_at")
     .eq("id", id)
     .single();
   if (!(primary as any)?.error) return { item: (primary as any).data ?? null, error: null };
@@ -48,7 +49,7 @@ async function selectTemplateById(
   if (isMissingColumn(e, "definition")) {
     const fallback = await supa
       .from("templates")
-      .select("id, org_id, name, definition_json, created_at, updated_at")
+      .select("id, org_id, name, definition_json, created_at, updated_at, deleted_at")
       .eq("id", id)
       .single();
     if (!(fallback as any)?.error) {
@@ -121,11 +122,20 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   const profile = await requireProfile();
 
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "templates_view")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { item, error } = await selectTemplateById(supabase, id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (item.org_id !== profile.org_id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if ("deleted_at" in item && item.deleted_at !== null) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ item });
 }
@@ -133,10 +143,15 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
+  let role;
   try {
-    await requireRole(["owner", "admin"]);
+    role = await requireRole(["owner", "admin", "member"]);
   } catch (e: any) {
     return NextResponse.json({ error: e?.message ?? "Forbidden" }, { status: 403 });
+  }
+
+  if (!roleHasPermission(role, "templates_write")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const profile = await requireProfile();
@@ -179,10 +194,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
+  let role;
   try {
-    await requireRole(["owner", "admin"]);
+    role = await requireRole(["owner", "admin", "member"]);
   } catch (e: any) {
     return NextResponse.json({ error: e?.message ?? "Forbidden" }, { status: 403 });
+  }
+
+  if (!roleHasPermission(role, "templates_delete")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const profile = await requireProfile();

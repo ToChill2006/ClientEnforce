@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { HttpError, requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 type StorageItem = {
@@ -119,7 +120,11 @@ async function listOrgObjects(bucket: string, orgPrefix: string, orgId: string):
 
 export async function GET(_req: Request) {
   const profile = await requireProfile();
-  await requireRole(["owner", "admin", "member"]);
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "storage_list")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const orgId = profile.org_id;
   if (!orgId) return NextResponse.json({ error: "No organization" }, { status: 400 });

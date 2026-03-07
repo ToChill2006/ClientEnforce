@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireProfile } from "@/lib/rbac";
+import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 
@@ -47,6 +48,11 @@ function parseBucketAndObjectPath(pathParam: string, bucketParam?: string | null
 export async function GET(req: Request) {
   try {
     const profile = await requireProfile();
+    const role = await requireRole(["owner", "admin", "member"]);
+
+    if (!roleHasPermission(role, "storage_download")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const orgId = (profile as any).org_id as string | undefined;
     if (!orgId) return NextResponse.json({ error: "No org_id on profile" }, { status: 401 });
 

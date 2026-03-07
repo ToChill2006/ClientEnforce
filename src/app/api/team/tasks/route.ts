@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 const CreateTask = z.object({
   assigned_to: z.string().uuid(),
@@ -24,6 +25,11 @@ export async function GET(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "team_tasks_view")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const url = new URL(req.url);
   const status = (url.searchParams.get("status") || "").trim();
 
@@ -47,7 +53,11 @@ export async function POST(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
-  await requireRole(["owner", "admin"]); // admin-only assignment
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "team_tasks_create")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const json = await req.json().catch(() => null);
   const parsed = CreateTask.safeParse(json);
@@ -80,6 +90,11 @@ export async function PATCH(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "team_tasks_update_any") && !roleHasPermission(role, "team_tasks_update_own")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const json = await req.json().catch(() => null);
   const parsed = UpdateTask.safeParse(json);
@@ -104,7 +119,11 @@ export async function DELETE(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await requireProfile();
-  await requireRole(["owner", "admin"]);
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "team_tasks_delete")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const json = await req.json().catch(() => null);
   const id = String(json?.id ?? "").trim();

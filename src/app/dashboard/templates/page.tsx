@@ -39,6 +39,10 @@ export default function TemplatesPage() {
   const [selected, setSelected] = React.useState<TemplateDetail | null>(null);
   const [name, setName] = React.useState("");
   const [loading, setLoading] = React.useState(true);
+  const [canCreateTemplate, setCanCreateTemplate] = React.useState(true);
+  const [canEditTemplate, setCanEditTemplate] = React.useState(true);
+  const [canDeleteTemplate, setCanDeleteTemplate] = React.useState(true);
+  const [upgradeMessage, setUpgradeMessage] = React.useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -79,7 +83,33 @@ export default function TemplatesPage() {
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(json.error ?? json));
+      if (!res.ok) {
+        if (res.status === 403) {
+          const message = String(json?.error ?? "");
+          const looksLikePlanLimit = /upgrade|current plan|allows|templates/i.test(message);
+
+          if (looksLikePlanLimit) {
+            setUpgradeMessage(message || "Your current subscription does not allow more templates.");
+            notify({
+              title: "Upgrade required",
+              description: message || "Your current subscription does not allow more templates.",
+              variant: "error",
+            });
+            return;
+          }
+
+          setCanCreateTemplate(false);
+          notify({
+            title: "Permission required",
+            description: "You do not have permission to create templates.",
+            variant: "error",
+          });
+          return;
+        }
+        throw new Error(JSON.stringify(json.error ?? json));
+      }
+      setCanCreateTemplate(true);
+      setUpgradeMessage(null);
       notify({ title: "Template created", variant: "success" });
       setName("");
       await load();
@@ -108,7 +138,19 @@ export default function TemplatesPage() {
         body: JSON.stringify({ name: selected.name, definition: selected.definition }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(json.error ?? json));
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanEditTemplate(false);
+          notify({
+            title: "Permission required",
+            description: "You do not have permission to edit templates.",
+            variant: "error",
+          });
+          return;
+        }
+        throw new Error(JSON.stringify(json.error ?? json));
+      }
+      setCanEditTemplate(true);
       notify({ title: "Saved", variant: "success" });
       await load();
     } catch (e: any) {
@@ -121,7 +163,19 @@ export default function TemplatesPage() {
     try {
       const res = await fetch(`/api/templates/${selected.id}`, { method: "DELETE" });
       const json = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(json.error ?? json));
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanDeleteTemplate(false);
+          notify({
+            title: "Permission required",
+            description: "You do not have permission to delete templates.",
+            variant: "error",
+          });
+          return;
+        }
+        throw new Error(JSON.stringify(json.error ?? json));
+      }
+      setCanDeleteTemplate(true);
       notify({ title: "Deleted", variant: "success" });
       setSelected(null);
       await load();
@@ -143,10 +197,18 @@ export default function TemplatesPage() {
               <label className="text-sm font-medium">New template name</label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Standard onboarding" />
             </div>
-            <Button onClick={create}>Create</Button>
+            {canCreateTemplate ? <Button onClick={create}>Create</Button> : null}
+            {upgradeMessage ? (
+              <div className="text-sm text-amber-700">{upgradeMessage}</div>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-zinc-200">
+            {upgradeMessage ? (
+              <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {upgradeMessage}
+              </div>
+            ) : null}
             <div className="border-b border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600">
               {loading ? "Loading..." : `${items.length} templates`}
             </div>
@@ -173,12 +235,20 @@ export default function TemplatesPage() {
         <Card>
           <CardHeader>
             <CardTitle>Edit template</CardTitle>
-            <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
+            <CardDescription>
+              {(canEditTemplate || canDeleteTemplate)
+                ? "Owner/Admin only. Changes affect future onboardings only."
+                : "You can view this template, but only admins and owners can change it."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Name</label>
-              <Input value={selected.name} onChange={(e) => setSelected({ ...selected, name: e.target.value })} />
+              <Input
+                value={selected.name}
+                disabled={!canEditTemplate}
+                onChange={(e) => setSelected({ ...selected, name: e.target.value })}
+              />
             </div>
 
             <div className="rounded-xl border border-zinc-200 p-3">
@@ -193,6 +263,7 @@ export default function TemplatesPage() {
                         <select
                           className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
                           value={r.type}
+                          disabled={!canEditTemplate}
                           onChange={(e) => {
                             const type = e.target.value as any;
                             const reqs = selected.definition.requirements.map((x, i) => (i === idx ? { ...x, type } : x));
@@ -208,6 +279,7 @@ export default function TemplatesPage() {
                       <div className="md:col-span-6">
                         <Input
                           value={r.label}
+                          disabled={!canEditTemplate}
                           onChange={(e) => {
                             const label = e.target.value;
                             const reqs = selected.definition.requirements.map((x, i) => (i === idx ? { ...x, label } : x));
@@ -220,6 +292,7 @@ export default function TemplatesPage() {
                         <input
                           type="checkbox"
                           checked={r.is_required}
+                          disabled={!canEditTemplate}
                           onChange={(e) => {
                             const is_required = e.target.checked;
                             const reqs = selected.definition.requirements.map((x, i) =>
@@ -232,40 +305,46 @@ export default function TemplatesPage() {
                       </div>
 
                       <div className="md:col-span-1">
-                        <Button
-                          variant="secondary"
-                          onClick={() => {
-                            const reqs = selected.definition.requirements.filter((_, i) => i !== idx).map((x, i) => ({
-                              ...x,
-                              sort_order: i,
-                            }));
-                            setSelected({ ...selected, definition: { requirements: reqs } });
-                          }}
-                        >
-                          ✕
-                        </Button>
+                        {canEditTemplate ? (
+                          <Button
+                            variant="secondary"
+                            onClick={() => {
+                              const reqs = selected.definition.requirements.filter((_, i) => i !== idx).map((x, i) => ({
+                                ...x,
+                                sort_order: i,
+                              }));
+                              setSelected({ ...selected, definition: { requirements: reqs } });
+                            }}
+                          >
+                            ✕
+                          </Button>
+                        ) : null}
                       </div>
                     </div>
                   ))}
 
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    const reqs = selected.definition.requirements.slice();
-                    reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
-                    setSelected({ ...selected, definition: { requirements: reqs } });
-                  }}
-                >
-                  Add requirement
-                </Button>
+                {canEditTemplate ? (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      const reqs = selected.definition.requirements.slice();
+                      reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
+                      setSelected({ ...selected, definition: { requirements: reqs } });
+                    }}
+                  >
+                    Add requirement
+                  </Button>
+                ) : null}
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={saveSelected}>Save</Button>
-              <Button variant="secondary" onClick={deleteSelected}>
-                Delete
-              </Button>
+              {canEditTemplate ? <Button onClick={saveSelected}>Save</Button> : null}
+              {canDeleteTemplate ? (
+                <Button variant="secondary" onClick={deleteSelected}>
+                  Delete
+                </Button>
+              ) : null}
             </div>
           </CardContent>
         </Card>

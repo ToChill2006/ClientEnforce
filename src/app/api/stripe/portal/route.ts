@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabase-server";
+import { requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 
@@ -8,6 +10,11 @@ export async function POST(req: Request) {
   const supabase = await supabaseServer();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const role = await requireRole(["owner", "admin", "member"]);
+  if (!roleHasPermission(role, "billing_manage")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { data: profile, error: pErr } = await supabase
     .from("profiles")

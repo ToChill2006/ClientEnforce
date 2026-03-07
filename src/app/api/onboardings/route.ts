@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
+import { requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 import { randomUUID } from "crypto";
 
 function jsonError(status: number, message: string) {
@@ -30,6 +32,20 @@ async function getOrgIdForUser(supabase: Awaited<ReturnType<typeof supabaseServe
 
   if (error || !profile?.org_id) return { user, org_id: null as string | null };
   return { user, org_id: profile.org_id as string };
+}
+
+function normalizeTier(raw: unknown): "free" | "pro" | "business" {
+  const value = String(raw ?? "free").trim().toLowerCase();
+  if (value === "business") return "business";
+  if (value === "pro") return "pro";
+  if (value === "starter") return "free";
+  return "free";
+}
+
+function maxActiveOnboardingsForTier(tier: "free" | "pro" | "business") {
+  if (tier === "business") return 200;
+  if (tier === "pro") return 50;
+  return 5;
 }
 
 const CreatePayload = z.union([
@@ -333,6 +349,10 @@ export async function GET() {
   const { user, org_id } = await getOrgIdForUser(supabase);
   if (!user) return jsonError(401, "Unauthorized");
   if (!org_id) return jsonError(403, "No organization");
+  const role = await requireRole(["owner", "admin", "member"]);
+  if (!roleHasPermission(role, "onboardings_view")) {
+    return jsonError(403, "Forbidden");
+  }
 
   // Prefer richer columns if they exist in your schema, but be defensive: some deployments
   // won't have denormalized fields like `client_full_name` / `client_email`.
@@ -519,6 +539,42 @@ export async function POST(req: Request) {
   const { user, org_id } = await getOrgIdForUser(supabase);
   if (!user) return jsonError(401, "Unauthorized");
   if (!org_id) return jsonError(403, "No organization");
+  const role = await requireRole(["owner", "admin", "member"]);
+  if (!roleHasPermission(role, "onboardings_write")) {
+    return jsonError(403, "Forbidden");
+  }
+
+  const { data: org, error: orgError } = await supabase
+    .from("organizations")
+    .select("tier, plan_tier")
+    .eq("id", org_id)
+    .single();
+
+  if (orgError) return jsonError(400, orgError.message);
+
+  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
+  const maxActiveOnboardings = maxActiveOnboardingsForTier(tier);
+
+  const activeStatuses = ["draft", "sent", "in_progress", "in progress", "submitted", "locked"];
+
+  const { count: activeCount, error: activeCountError } = await supabase
+    .from("onboardings")
+    .select("id", { count: "exact", head: true })
+    .eq("org_id", org_id)
+    .in("status", activeStatuses);
+
+  if (activeCountError) return jsonError(400, activeCountError.message);
+
+  if ((activeCount ?? 0) >= maxActiveOnboardings) {
+    return jsonError(
+      403,
+      tier === "free"
+        ? "Your current plan allows up to 5 active onboardings. Upgrade to Pro to create more."
+        : tier === "pro"
+          ? "Your current plan allows up to 50 active onboardings. Upgrade to Business to create more."
+          : `Your current plan allows up to ${maxActiveOnboardings} active onboardings.`
+    );
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = CreatePayload.safeParse(body);

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 function getAdminClient() {
@@ -10,7 +11,11 @@ function getAdminClient() {
 
 export async function GET(req: Request) {
   const profile = await requireProfile();
-  await requireRole(["owner", "admin"]);
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "storage_download")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const url = new URL(req.url);
   const ref = url.searchParams.get("ref"); // ref can be "bucket:path" or "path"

@@ -182,7 +182,7 @@ export default function SidebarNav() {
           <NavItem href="/dashboard" label="Dashboard" icon={IconGrid} />
           <NavItem href="/dashboard/onboardings" label="Onboardings" icon={IconClipboard} />
           <NavItem href="/dashboard/templates" label="Templates" icon={IconLayers} />
-          <NavItem href="/dashboard/followups" label="Follow-ups & Automation" icon={IconBell} />
+          <NavItem href="/dashboard/followups" label="Follow-ups" icon={IconBell} />
           <NavItem href="/dashboard/audit" label="Activity & Timeline" icon={IconClock} />
           <NavItem href="/dashboard/storage" label="Files & Signatures" icon={IconFolder} />
           <NavItem href="/dashboard/clients" label="Clients" icon={IconUser} />

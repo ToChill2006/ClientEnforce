@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireAdmin, requireProfile } from "@/lib/rbac";
+import { requireRole, requireProfile } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 import { resend } from "@/lib/resend";
 
 const Schema = z.object({
@@ -19,6 +20,20 @@ function makeInviteToken() {
   return crypto.randomBytes(32).toString("base64url");
 }
 
+function normalizeTier(raw: unknown): "free" | "pro" | "business" {
+  const value = String(raw ?? "free").trim().toLowerCase();
+  if (value === "business") return "business";
+  if (value === "pro") return "pro";
+  if (value === "starter") return "free";
+  return "free";
+}
+
+function maxAdminsForTier(tier: "free" | "pro" | "business") {
+  if (tier === "business") return 15;
+  if (tier === "pro") return 5;
+  return 1;
+}
+
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
@@ -31,7 +46,11 @@ export async function POST(req: Request) {
   let admin: any;
 
   try {
-    await requireAdmin();
+    const role = await requireRole(["owner", "admin", "member"]);
+    if (!roleHasPermission(role, "invites_create")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     profile = await requireProfile();
 
     const body = await req.json().catch(() => null);
@@ -50,7 +69,7 @@ export async function POST(req: Request) {
   // Seat check: memberships + pending invites <= seats_limit
   const { data: org, error: orgErr } = await (admin as any)
     .from("organizations")
-    .select("seats_limit")
+    .select("seats_limit, tier, plan_tier")
     .eq("id", profile!.org_id)
     .single();
   if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 400 });
@@ -71,6 +90,44 @@ export async function POST(req: Request) {
   const used = (memberCount || 0) + (inviteCount || 0);
   if (used >= org.seats_limit) {
     return NextResponse.json({ error: `Seat limit reached (${org.seats_limit}). Upgrade to add more seats.` }, { status: 409 });
+  }
+
+  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
+  const maxAdmins = maxAdminsForTier(tier);
+
+  if (parsed!.data.role === "admin") {
+    const [{ count: currentAdminCount, error: adminCountErr }, { count: pendingAdminInviteCount, error: adminInviteCountErr }] = await Promise.all([
+      (admin as any)
+        .from("memberships")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", profile!.org_id)
+        .in("role", ["owner", "admin"]),
+      (admin as any)
+        .from("invites")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", profile!.org_id)
+        .eq("role", "admin")
+        .is("accepted_at", null)
+        .gt("expires_at", new Date().toISOString()),
+    ]);
+
+    if (adminCountErr) return NextResponse.json({ error: adminCountErr.message }, { status: 400 });
+    if (adminInviteCountErr) return NextResponse.json({ error: adminInviteCountErr.message }, { status: 400 });
+
+    const totalAdmins = (currentAdminCount || 0) + (pendingAdminInviteCount || 0);
+    if (totalAdmins >= maxAdmins) {
+      return NextResponse.json(
+        {
+          error:
+            tier === "free"
+              ? "Your current plan allows 1 admin user. Upgrade to Pro to add more admins."
+              : tier === "pro"
+                ? "Your current plan allows up to 5 admin users. Upgrade to Business to add more admins."
+                : `Your current plan allows up to ${maxAdmins} admin users.`,
+        },
+        { status: 403 }
+      );
+    }
   }
 
   // Prevent duplicate invite for same email (active)

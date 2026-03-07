@@ -33,6 +33,31 @@ function nameFromEmail(email?: string | null) {
     .join(" ");
 }
 
+async function resolveAuthenticatedUser(req: Request, supabase: Awaited<ReturnType<typeof supabaseServer>>) {
+  // Normal browser flow: resolve the signed-in user from cookies.
+  let { data: userData, error: userErr } = await supabase.auth.getUser();
+
+  // Fallback: support Authorization: Bearer <access_token> for non-cookie clients.
+  if (userErr || !userData?.user) {
+    const authHeader = req.headers.get("authorization") || "";
+    const m = authHeader.match(/^Bearer\s+(.+)$/i);
+    if (m?.[1]) {
+      ({ data: userData, error: userErr } = await supabase.auth.getUser(m[1]));
+    }
+  }
+
+  if (userErr || !userData?.user) {
+    return {
+      user: null,
+      error: jsonError(401, "Unauthorized", {
+        hint: "Sign in first, then retry. If calling from a client fetch, ensure cookies are sent (credentials: include) or send Authorization: Bearer <access_token>.",
+      }),
+    };
+  }
+
+  return { user: userData.user, error: null };
+}
+
 export async function POST(req: Request) {
   try {
     const url = new URL(req.url);
@@ -44,25 +69,11 @@ export async function POST(req: Request) {
 
     const supabase = await supabaseServer();
     const admin = supabaseAdmin();
-    // Try to resolve the signed-in user from cookies (normal browser flow)
-    let { data: userData, error: userErr } = await supabase.auth.getUser();
 
-    // Fallback: if cookies aren't present (e.g. fetch without credentials), allow Bearer token
-    if (userErr || !userData?.user) {
-      const authHeader = req.headers.get("authorization") || "";
-      const m = authHeader.match(/^Bearer\s+(.+)$/i);
-      if (m?.[1]) {
-        ({ data: userData, error: userErr } = await supabase.auth.getUser(m[1]));
-      }
+    const { user, error: authError } = await resolveAuthenticatedUser(req, supabase);
+    if (authError || !user) {
+      return authError!;
     }
-
-    if (userErr || !userData?.user) {
-      return jsonError(401, "Unauthorized", {
-        hint: "Sign in first, then retry. If calling from a client fetch, ensure cookies are sent (credentials: include) or send Authorization: Bearer <access_token>.",
-      });
-    }
-
-    const user = userData.user;
     const userEmail = (user.email ?? "").toLowerCase();
 
     // Fetch invite

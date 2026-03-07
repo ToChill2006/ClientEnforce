@@ -6,6 +6,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-02-25.clover",
 });
 
+export const runtime = "nodejs";
+
+function getWebhookSecret() {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error("Missing STRIPE_WEBHOOK_SECRET");
+  }
+  return secret;
+}
+
 function asStripeId(v: any): string | null {
   if (!v) return null;
   if (typeof v === "string") return v;
@@ -109,9 +119,11 @@ async function cancelOtherSubscriptions(customerId: string, keepSubscriptionId: 
 }
 
 export async function POST(req: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: "Missing STRIPE_WEBHOOK_SECRET" }, { status: 500 });
+  let secret: string;
+  try {
+    secret = getWebhookSecret();
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? "Missing STRIPE_WEBHOOK_SECRET" }, { status: 500 });
   }
 
   const sig = req.headers.get("stripe-signature");
