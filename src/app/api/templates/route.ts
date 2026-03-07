@@ -144,40 +144,48 @@ export async function POST(req: Request) {
   const maxTemplates = maxTemplatesForTier(tier);
 
   if (Number.isFinite(maxTemplates)) {
-    const countWithDeletedAt = await admin
+    const listWithDeletedAt = await admin
       .from("templates")
-      .select("*", { count: "exact", head: true })
-      .eq("org_id", profile.org_id)
-      .is("deleted_at", null);
+      .select("id, deleted_at")
+      .eq("org_id", profile.org_id);
 
-    let templateCount = countWithDeletedAt.count ?? 0;
-    let countError = countWithDeletedAt.error;
+    let templateRows = listWithDeletedAt.data as any[] | null;
+    let listError = listWithDeletedAt.error as any;
 
-    if (countError && /column .*deleted_at.* does not exist/i.test(countError.message)) {
-      const countWithoutDeletedAt = await admin
+    if (listError && /deleted_at/i.test(String(listError?.message || ""))) {
+      const listWithoutDeletedAt = await admin
         .from("templates")
-        .select("*", { count: "exact", head: true })
+        .select("id")
         .eq("org_id", profile.org_id);
 
-      templateCount = countWithoutDeletedAt.count ?? 0;
-      countError = countWithoutDeletedAt.error;
+      templateRows = listWithoutDeletedAt.data as any[] | null;
+      listError = listWithoutDeletedAt.error as any;
     }
 
-    if (countError) {
-      console.error("[templates.post] count failed; skipping plan limit enforcement", {
+    if (listError) {
+      console.error("[templates.post] template list failed", {
         orgId: profile.org_id,
-        error: countError,
+        error: listError,
       });
-    } else if (templateCount >= maxTemplates) {
-      return NextResponse.json(
-        {
-          error:
-            tier === "free"
-              ? "Your current plan allows 1 template. Upgrade to Pro to create more templates."
-              : `Your current plan allows up to ${maxTemplates} templates. Upgrade to Business for unlimited templates.`,
-        },
-        { status: 403 }
-      );
+    } else {
+      const activeTemplateCount = (templateRows ?? []).filter((row: any) => {
+        if (row && typeof row === "object" && "deleted_at" in row) {
+          return row.deleted_at == null;
+        }
+        return true;
+      }).length;
+
+      if (activeTemplateCount >= maxTemplates) {
+        return NextResponse.json(
+          {
+            error:
+              tier === "free"
+                ? "Your current plan allows 1 template. Upgrade to Pro to create more templates."
+                : `Your current plan allows up to ${maxTemplates} templates. Upgrade to Business for unlimited templates.`,
+          },
+          { status: 403 }
+        );
+      }
     }
   }
 
