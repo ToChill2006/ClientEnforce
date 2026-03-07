@@ -27,6 +27,43 @@ function followupsEnabledForTier(tier: "free" | "pro" | "business") {
   return tier === "pro" || tier === "business";
 }
 
+async function selectOrganizationTier(supabase: Awaited<ReturnType<typeof supabaseServer>>, orgId: string) {
+  const primary = await supabase
+    .from("organizations")
+    .select("tier, plan_tier")
+    .eq("id", orgId)
+    .single();
+
+  if (!(primary as any)?.error) {
+    return { data: (primary as any).data ?? null, error: null as any };
+  }
+
+  const err = (primary as any).error;
+  const msg = String(err?.message || "").toLowerCase();
+
+  if (msg.includes("plan_tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await supabase
+      .from("organizations")
+      .select("tier")
+      .eq("id", orgId)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  if (msg.includes("tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await supabase
+      .from("organizations")
+      .select("plan_tier")
+      .eq("id", orgId)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  return { data: null, error: err };
+}
+
 export async function GET() {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
@@ -39,11 +76,7 @@ export async function GET() {
     return json(403, { error: "Forbidden" });
   }
 
-  const { data: orgTier, error: tierError } = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", profile.org_id)
-    .single();
+  const { data: orgTier, error: tierError } = await selectOrganizationTier(supabase, profile.org_id);
 
   if (tierError) return json(400, { error: tierError.message });
 
@@ -76,11 +109,7 @@ export async function PATCH(req: Request) {
     return json(403, { error: "Forbidden" });
   }
 
-  const { data: orgTier, error: tierError } = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", profile.org_id)
-    .single();
+  const { data: orgTier, error: tierError } = await selectOrganizationTier(supabase, profile.org_id);
 
   if (tierError) return json(400, { error: tierError.message });
 

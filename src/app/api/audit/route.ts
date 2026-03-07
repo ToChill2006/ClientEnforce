@@ -38,6 +38,43 @@ function auditEnabledForTier(tier: "free" | "pro" | "business") {
   return tier === "pro" || tier === "business";
 }
 
+async function selectOrganizationTier(admin: any, orgId: string) {
+  const primary = await admin
+    .from("organizations")
+    .select("tier, plan_tier")
+    .eq("id", orgId)
+    .single();
+
+  if (!(primary as any)?.error) {
+    return { data: (primary as any).data ?? null, error: null as any };
+  }
+
+  const err = (primary as any).error;
+  const msg = String(err?.message || "").toLowerCase();
+
+  if (msg.includes("plan_tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await admin
+      .from("organizations")
+      .select("tier")
+      .eq("id", orgId)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  if (msg.includes("tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await admin
+      .from("organizations")
+      .select("plan_tier")
+      .eq("id", orgId)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  return { data: null, error: err };
+}
+
 export async function GET(req: Request) {
   const profile = await requireProfile();
   const role = await requireRole(["owner", "admin", "member"]);
@@ -51,11 +88,7 @@ export async function GET(req: Request) {
       ? (supabaseAdmin as any)()
       : (supabaseAdmin as any);
 
-  const { data: org, error: orgError } = await admin
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", profile.org_id)
-    .single();
+  const { data: org, error: orgError } = await selectOrganizationTier(admin, profile.org_id);
 
   if (orgError) {
     return NextResponse.json({ error: orgError.message }, { status: 400 });
