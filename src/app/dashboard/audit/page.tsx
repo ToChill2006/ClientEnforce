@@ -38,12 +38,23 @@ export default function AuditPage() {
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
+        const message = String(json?.error ?? "");
+
         if (res.status === 403) {
+          const isPlanRestriction = /current plan|upgrade|not included/i.test(message);
+
+          if (isPlanRestriction) {
+            setErr(message || "Audit log is not included in your current plan.");
+            setEvents([]);
+            return;
+          }
+
           setErr("You do not have permission to view the audit log.");
           setEvents([]);
           return;
         }
-        throw new Error(json?.error || "Failed to load audit log");
+
+        throw new Error(message || "Failed to load audit log");
       }
 
       setEvents(json?.events ?? []);
@@ -98,11 +109,15 @@ export default function AuditPage() {
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i}><td colSpan={5} className="px-4 py-3"><div className="h-4 rounded bg-zinc-100" /></td></tr>
                 ))
-              ) : err && err.includes("permission") ? (
+              ) : err && /permission/i.test(err) ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-10">
-                    <div className="text-sm font-medium text-zinc-900">Audit is not available for your role</div>
-                    <div className="mt-1 text-sm text-zinc-500">Ask an admin or owner if you need access to workspace activity history.</div>
+                    <div className="text-sm font-medium text-zinc-900">
+                      {err && /plan/i.test(err) ? "Plan upgrade required" : "Audit is not available for your role"}
+                    </div>
+                    <div className="mt-1 text-sm text-zinc-500">
+                      {err}
+                    </div>
                   </td>
                 </tr>
               ) : events.length === 0 ? (
