@@ -15,15 +15,17 @@ export type Tier = "free" | "pro" | "business";
 export const TIER_SEATS: Record<Tier, number> = {
   free: 1,
   pro: 5,
-  business: 25,
+  business: 15,
 };
 
 export function tierFromPriceId(priceId: string | null | undefined): Tier {
-  const pro = process.env.STRIPE_PRICE_PRO;
-  const biz = process.env.STRIPE_PRICE_BUSINESS;
+  const proMonthly = process.env.STRIPE_PRICE_PRO_MONTHLY;
+  const proYearly = process.env.STRIPE_PRICE_PRO_YEARLY;
+  const businessMonthly = process.env.STRIPE_PRICE_BUSINESS_MONTHLY;
+  const businessYearly = process.env.STRIPE_PRICE_BUSINESS_YEARLY;
 
-  if (priceId && biz && priceId === biz) return "business";
-  if (priceId && pro && priceId === pro) return "pro";
+  if (priceId && (priceId === businessMonthly || priceId === businessYearly)) return "business";
+  if (priceId && (priceId === proMonthly || priceId === proYearly)) return "pro";
   return "free";
 }
 
