@@ -119,9 +119,9 @@ function classNames(...c: Array<string | false | null | undefined>) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
-      <div className="text-2xl font-semibold tracking-tight text-zinc-900">{value}</div>
-      <div className="mt-1 text-sm text-zinc-700">{label}</div>
+    <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 shadow-sm sm:px-5">
+      <div className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">{value}</div>
+      <div className="mt-1 text-xs text-zinc-700 sm:text-sm">{label}</div>
     </div>
   );
 }
@@ -136,7 +136,7 @@ function FeatureCard({
   desc: string;
 }) {
   return (
-    <div className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
       <div className="flex items-center gap-3">
         <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900">
           {icon}
@@ -150,7 +150,7 @@ function FeatureCard({
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-700 shadow-sm">
+    <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] text-zinc-700 shadow-sm sm:text-xs">
       <span className="h-1.5 w-1.5 rounded-full bg-zinc-900" />
       {children}
     </span>
@@ -159,40 +159,34 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 function MarketingNav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/75 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="relative h-7 w-7 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+        <Link href="/" className="flex min-w-0 items-center gap-2">
+          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white">
             <Image src="/C.png" alt="ClientEnforce" fill className="object-contain p-1" priority />
           </span>
-          <span className="text-sm font-semibold tracking-tight text-zinc-900">ClientEnforce</span>
+          <span className="truncate text-sm font-semibold tracking-tight text-zinc-900 sm:text-base">
+            ClientEnforce
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-zinc-700 md:flex">
-          <a href="#features" className="hover:text-zinc-900">
-            Features
-          </a>
-          <a href="#how" className="hover:text-zinc-900">
-            How it works
-          </a>
-          <a href="#security" className="hover:text-zinc-900">
-            Security
-          </a>
-          <a href="#pricing" className="hover:text-zinc-900">
-            Pricing
-          </a>
+          <a href="#features" className="hover:text-zinc-900">Features</a>
+          <a href="#how" className="hover:text-zinc-900">How it works</a>
+          <a href="#security" className="hover:text-zinc-900">Security</a>
+          <a href="#pricing" className="hover:text-zinc-900">Pricing</a>
         </nav>
 
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 md:inline-flex"
+            className="hidden rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 sm:inline-flex md:inline-flex"
           >
             Sign in
           </Link>
           <Link
             href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
+            className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 sm:px-4"
           >
             Start free
           </Link>
@@ -204,7 +198,7 @@ function MarketingNav() {
 
 export default function MarketingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-24 text-zinc-900 sm:pb-0">
       <MarketingNav />
 
       {/* Hero */}
@@ -214,27 +208,29 @@ export default function MarketingPage() {
           <div className="absolute -bottom-40 -left-40 h-[520px] w-[520px] rounded-full bg-zinc-100/70 blur-3xl" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8 lg:py-18">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
             <div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[11px] font-medium text-zinc-700 sm:hidden">
+                Trusted for client onboarding workflows
+              </div>
+              <div className="mt-3 hidden flex-wrap items-center gap-2 sm:flex">
                 <Pill>Purpose-built for client onboarding</Pill>
                 <Pill>Files • Signatures • Timeline</Pill>
               </div>
 
-              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
-                Make onboarding feel effortless — for you and your clients.
+              <h1 className="mt-5 max-w-2xl text-[2.15rem] font-semibold leading-tight tracking-tight text-zinc-900 sm:mt-6 sm:text-5xl sm:leading-tight">
+                Client onboarding that clients actually complete.
               </h1>
 
-              <p className="mt-4 max-w-xl text-base leading-7 text-zinc-800 sm:text-lg">
-                ClientEnforce turns messy email chains into a clean, trackable flow: templates,
-                client links, instant progress, follow-ups, and an audit-ready timeline.
+              <p className="mt-4 max-w-xl text-[15px] leading-7 text-zinc-800 sm:text-lg">
+                Replace chaotic email chains with one secure flow for uploads, signatures, progress tracking, reminders, and a complete audit trail.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
+                  className="inline-flex min-h-12 items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
                 >
                   Start free
                   <span className="ml-2">
@@ -242,10 +238,10 @@ export default function MarketingPage() {
                   </span>
                 </Link>
                 <Link
-                  href="/dashboard"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50"
+                  href="#pricing"
+                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50"
                 >
-                  View dashboard
+                  See plans
                 </Link>
               </div>
 
@@ -254,23 +250,23 @@ export default function MarketingPage() {
                   <span className="text-zinc-900">
                     <CheckIcon />
                   </span>
-                  Client portal links
+                  Secure client links
                 </div>
                 <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-800 shadow-sm">
                   <span className="text-zinc-900">
                     <CheckIcon />
                   </span>
-                  Auto follow-ups
+                  Automated reminders
                 </div>
                 <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-800 shadow-sm">
                   <span className="text-zinc-900">
                     <CheckIcon />
                   </span>
-                  Audit timeline
+                  Full activity trail
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-3">
                 <Stat label="Fewer chase emails" value="-60%" />
                 <Stat label="Faster completion" value="2×" />
                 <Stat label="Proof on demand" value="Always" />
@@ -278,9 +274,9 @@ export default function MarketingPage() {
             </div>
 
             {/* Mock / Preview */}
-            <div className="relative isolate">
-              <div className="rounded-3xl border border-zinc-200 bg-white shadow-sm">
-                <div className="border-b border-zinc-200 p-4">
+            <div className="relative isolate lg:pl-4">
+              <div className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-sm">
+                <div className="border-b border-zinc-200 p-4 sm:p-5">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold text-zinc-900">Acme Onboarding</div>
@@ -292,7 +288,11 @@ export default function MarketingPage() {
                   </div>
                 </div>
 
-                <div className="p-5">
+                <div className="p-4 sm:p-5">
+                  <div className="mb-4 flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-xs text-zinc-700 sm:hidden">
+                    <span>Completion tracking</span>
+                    <span className="font-semibold text-zinc-900">Live</span>
+                  </div>
                   <div className="space-y-4">
                     <div className="rounded-2xl border border-zinc-200 bg-white p-4">
                       <div className="flex items-center justify-between">
@@ -392,7 +392,7 @@ export default function MarketingPage() {
 
       {/* Features */}
       <section id="features" className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-2 lg:items-end">
             <div className="max-w-2xl">
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Features</div>
@@ -458,7 +458,7 @@ export default function MarketingPage() {
 
       {/* How it works */}
       <section id="how" className="bg-zinc-50">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-3">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">How it works</div>
@@ -527,7 +527,7 @@ export default function MarketingPage() {
 
       {/* Security */}
       <section id="security" className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-2">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Security</div>
@@ -566,7 +566,7 @@ export default function MarketingPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-8">
+            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
               <div className="text-sm font-semibold text-zinc-900">Security checklist</div>
               <div className="mt-4 grid gap-3">
                 {[
@@ -594,18 +594,20 @@ export default function MarketingPage() {
 
       {/* Pricing */}
       <section id="pricing" className="bg-zinc-50">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Pricing</div>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900">
               Simple plans that scale.
             </h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-700">Start small. Upgrade when you’re ready.</p>
+            <p className="mt-3 text-sm leading-6 text-zinc-700">
+              Start with the essentials, then unlock automation and team scale as your onboarding volume grows.
+            </p>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <div className="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-3 lg:gap-6">
             {/* Starter */}
-            <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-semibold text-zinc-900">Starter</div>
                 <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-700">
@@ -640,13 +642,13 @@ export default function MarketingPage() {
             </div>
 
             {/* Pro */}
-            <div className="relative rounded-3xl border border-zinc-900 bg-white p-8 shadow-sm">
+            <div className="relative rounded-3xl border border-zinc-900 bg-white p-6 sm:p-8 shadow-sm">
               <div className="absolute right-6 top-6 rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white">
                 Most popular
               </div>
               <div className="text-sm font-semibold text-zinc-900">Pro</div>
               <div className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900">
-                £19<span className="text-base font-medium text-zinc-700">/mo</span>
+                £29<span className="text-base font-medium text-zinc-700">/mo</span>
               </div>
               <div className="mt-2 text-sm text-zinc-700">For solo operators + small teams who want automation.</div>
 
@@ -657,6 +659,7 @@ export default function MarketingPage() {
                   "Automated reminders (email)",
                   "Audit timeline",
                   "Evidence pack export",
+                  "Up to 50 active onboardings",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-3">
                     <span className="mt-0.5 text-zinc-900">
@@ -676,7 +679,7 @@ export default function MarketingPage() {
             </div>
 
             {/* Business */}
-            <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-semibold text-zinc-900">Business</div>
                 <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-700">
@@ -684,7 +687,7 @@ export default function MarketingPage() {
                 </span>
               </div>
               <div className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900">
-                £49<span className="text-base font-medium text-zinc-700">/mo</span>
+                £89<span className="text-base font-medium text-zinc-700">/mo</span>
               </div>
               <div className="mt-2 text-sm text-zinc-700">For teams onboarding clients at volume.</div>
 
@@ -692,9 +695,10 @@ export default function MarketingPage() {
                 {[
                   "Up to 15 admin users",
                   "Unlimited templates",
+                  "Everything in Pro",
                   "Advanced reporting (coming soon)",
                   "Priority support",
-                  "Everything in Pro",
+                  "Up to 200 active onboardings",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-3">
                     <span className="mt-0.5 text-zinc-900">
@@ -718,18 +722,18 @@ export default function MarketingPage() {
 
       {/* Final CTA */}
       <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-10">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-10">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <div className="text-2xl font-semibold tracking-tight text-zinc-900">
+                <div className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
                   Turn onboarding into your competitive advantage.
                 </div>
-                <div className="mt-2 text-sm text-zinc-700">
-                  Clean, fast, and trackable — your clients will actually complete it.
+                <div className="mt-2 max-w-2xl text-sm leading-6 text-zinc-700">
+                  Clean, fast, and trackable for your team — simple and reassuring for every client.
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
                   href="/signup"
                   className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
@@ -755,7 +759,7 @@ export default function MarketingPage() {
                   <span className="text-zinc-600">•</span>
                   <span className="text-zinc-600">Client onboarding, enforced.</span>
                 </div>
-                <div className="flex items-center gap-5">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-5">
                   <a className="hover:text-zinc-900" href="#features">
                     Features
                   </a>
@@ -772,6 +776,22 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 p-3 backdrop-blur sm:hidden">
+        <div className="mx-auto flex max-w-md items-center gap-3">
+          <Link
+            href="/signup"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
+          >
+            Start free
+          </Link>
+          <a
+            href="#pricing"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50"
+          >
+            Pricing
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
