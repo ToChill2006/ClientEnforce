@@ -28,7 +28,11 @@ export async function signupAction(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+    redirect(`/signup?error=${encodeURIComponent(error.message || "Signup failed")}`);
+  }
+
+  if (!data?.user) {
+    redirect(`/signup?error=${encodeURIComponent("Signup failed")}`);
   }
 
   if (data?.user) {
@@ -51,5 +55,11 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  redirect(next);
+  // If email confirmation is disabled, Supabase returns a session immediately
+  if (data?.session) {
+    redirect(next);
+  }
+
+  // If confirmation emails are enabled, user must confirm first
+  redirect(`/login?message=${encodeURIComponent("Check your email to confirm your account.")}`);
 }
