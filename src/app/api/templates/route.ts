@@ -164,17 +164,11 @@ export async function POST(req: Request) {
     }
 
     if (countError) {
-      console.error("[templates.post] count failed", {
+      console.error("[templates.post] count failed; skipping plan limit enforcement", {
         orgId: profile.org_id,
         error: countError,
       });
-      return NextResponse.json(
-        { error: countError?.message || countError?.details || countError?.hint || "Failed to count templates" },
-        { status: 400 }
-      );
-    }
-
-    if (templateCount >= maxTemplates) {
+    } else if (templateCount >= maxTemplates) {
       return NextResponse.json(
         {
           error:
