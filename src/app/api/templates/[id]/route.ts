@@ -30,7 +30,16 @@ async function writeAudit(
 
 function isMissingColumn(err: any, col: string) {
   const msg = String(err?.message || "");
-  return msg.toLowerCase().includes("does not exist") && msg.includes(col);
+  const lower = msg.toLowerCase();
+  const colLower = col.toLowerCase();
+
+  return (
+    msg.includes(col) && lower.includes("does not exist")
+  ) || (
+    lower.includes(colLower) && lower.includes("schema cache")
+  ) || (
+    lower.includes(`could not find the '${colLower}' column`)
+  );
 }
 
 async function selectTemplateById(
