@@ -1,0 +1,9 @@
+-- Intentionally left blank.
+--
+-- The auto-generated schema diff for this migration included destructive drops
+-- (policies, triggers, constraints, and the audit_events table) that do not
+-- reflect an intentional schema change for this project.
+--
+-- Keep the explicit hand-written migrations instead (for example,
+-- 008_pending_downgrade.sql) and do not use this generated sync migration to
+-- push schema changes.

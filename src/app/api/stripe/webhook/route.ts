@@ -73,7 +73,7 @@ async function updateOrg(orgId: string, patch: Record<string, any>) {
 async function getOrg(orgId: string) {
   const { data, error } = await supabaseAdmin
     .from("organizations")
-    .select("id, stripe_subscription_id")
+    .select("id, stripe_subscription_id, pending_tier, pending_interval, pending_seats_limit")
     .eq("id", orgId)
     .maybeSingle();
 
@@ -156,6 +156,9 @@ export async function POST(req: Request) {
         const patch: Record<string, any> = {
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
+          pending_tier: null,
+          pending_interval: null,
+          pending_seats_limit: null,
         };
 
         // Only set tier when we are sure this was a subscription checkout.
@@ -218,9 +221,28 @@ export async function POST(req: Request) {
       };
 
       if (event.type === "customer.subscription.deleted") {
-        patch.tier = "free";
-        patch.seats_limit = tierToSeatsLimit("free");
+        const pendingTier = String((org as any)?.pending_tier ?? "").trim().toLowerCase();
+        const pendingSeatsLimitRaw = (org as any)?.pending_seats_limit;
+        const pendingSeatsLimit =
+          typeof pendingSeatsLimitRaw === "number"
+            ? pendingSeatsLimitRaw
+            : Number.isFinite(Number(pendingSeatsLimitRaw))
+              ? Number(pendingSeatsLimitRaw)
+              : null;
+
+        if (pendingTier === "pro" || pendingTier === "free" || pendingTier === "business") {
+          patch.tier = pendingTier;
+          patch.seats_limit = pendingSeatsLimit ?? tierToSeatsLimit(pendingTier);
+        } else {
+          patch.tier = "free";
+          patch.seats_limit = tierToSeatsLimit("free");
+        }
+
         patch.stripe_subscription_status = "canceled";
+        patch.pending_tier = null;
+        patch.pending_interval = null;
+        patch.pending_seats_limit = null;
+        patch.stripe_subscription_id = null;
       } else if (status === "active" || status === "trialing") {
         const nextTier = (tier ?? "pro").toLowerCase();
         patch.tier = nextTier;
@@ -280,6 +302,9 @@ export async function POST(req: Request) {
         stripe_subscription_status: "active",
         tier: nextTier,
         seats_limit: tierToSeatsLimit(nextTier),
+        pending_tier: null,
+        pending_interval: null,
+        pending_seats_limit: null,
       });
 
       return NextResponse.json({ received: true });

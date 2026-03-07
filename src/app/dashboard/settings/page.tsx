@@ -284,6 +284,37 @@ export default function SettingsPage() {
     }
   }
 
+  async function startDowngrade(plan: "free" | "pro", interval: "monthly" | "yearly" = "monthly") {
+    setPageError(null);
+    setPageSuccess(null);
+
+    try {
+      const res = await fetch("/api/stripe/downgrade", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          tier: plan,
+          interval,
+        }),
+      });
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanManageBilling(false);
+          throw new Error("You do not have permission to manage billing.");
+        }
+        throw new Error(json?.error || "Failed to schedule downgrade");
+      }
+
+      setCanManageBilling(true);
+      setPageSuccess(json?.message || `Downgrade to ${plan} scheduled.`);
+      await load();
+    } catch (e: any) {
+      setPageError(e?.message ?? "Downgrade failed");
+    }
+  }
+
   async function logout() {
     setLoggingOut(true);
     setPageError(null);
@@ -479,13 +510,21 @@ export default function SettingsPage() {
                   <li className="text-zinc-500">• Up to 5 active onboardings</li>
                 </ul>
 
-                <button
-                  type="button"
-                  className="mt-6 inline-flex h-10 w-full items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 disabled:opacity-60"
-                  disabled
-                >
-                  {currentTier === "free" ? "Current plan" : "Included"}
-                </button>
+                <div className="mt-6 grid gap-2">
+                  <button
+                    type="button"
+                    className="inline-flex h-10 w-full items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 disabled:opacity-60"
+                    disabled={currentTier === "free"}
+                    onClick={() => startDowngrade("free", "monthly")}
+                  >
+                    {currentTier === "free" ? "Current plan" : "Downgrade to Starter"}
+                  </button>
+                  {currentTier !== "free" ? (
+                    <div className="text-xs text-zinc-500">
+                      Your current paid plan will remain active until the end of the billing period, then downgrade to Starter.
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               {/* Pro */}
@@ -515,21 +554,46 @@ export default function SettingsPage() {
                 </ul>
 
                 <div className="mt-6 grid gap-2">
-                  <Button
-                    className="w-full"
-                    onClick={() => startUpgrade("pro", "monthly")}
-                    disabled={!canManageBilling || currentTier === "pro" || currentTier === "business"}
-                  >
-                    {currentTier === "pro" ? "Current plan" : currentTier === "business" ? "Already on Business" : "Subscribe monthly"}
-                  </Button>
-                  <Button
-                    className="w-full"
-                    variant="secondary"
-                    onClick={() => startUpgrade("pro", "yearly")}
-                    disabled={!canManageBilling || currentTier === "pro" || currentTier === "business"}
-                  >
-                    {currentTier === "pro" ? "Current plan" : currentTier === "business" ? "Already on Business" : "Subscribe yearly"}
-                  </Button>
+                  {currentTier === "business" ? (
+                    <>
+                      <Button
+                        className="w-full"
+                        onClick={() => startDowngrade("pro", "monthly")}
+                        disabled={!canManageBilling}
+                      >
+                        Downgrade to Pro monthly
+                      </Button>
+                      <Button
+                        className="w-full"
+                        variant="secondary"
+                        onClick={() => startDowngrade("pro", "yearly")}
+                        disabled={!canManageBilling}
+                      >
+                        Downgrade to Pro yearly
+                      </Button>
+                      <div className="text-xs text-zinc-500">
+                        Your Business plan will stay active until the end of the billing period, then downgrade to Pro.
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        className="w-full"
+                        onClick={() => startUpgrade("pro", "monthly")}
+                        disabled={!canManageBilling || currentTier === "pro"}
+                      >
+                        {currentTier === "pro" ? "Current plan" : "Subscribe monthly"}
+                      </Button>
+                      <Button
+                        className="w-full"
+                        variant="secondary"
+                        onClick={() => startUpgrade("pro", "yearly")}
+                        disabled={!canManageBilling || currentTier === "pro"}
+                      >
+                        {currentTier === "pro" ? "Current plan" : "Subscribe yearly"}
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
