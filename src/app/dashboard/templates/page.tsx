@@ -27,6 +27,25 @@ type TemplateDetail = {
   definition: { requirements: Array<z.infer<typeof RequirementSchema>> };
 };
 
+function normalizeTemplateDetail(input: any): TemplateDetail {
+  const requirements = Array.isArray(input?.definition?.requirements)
+    ? input.definition.requirements.map((r: any, i: number) => ({
+        type: r?.type === "file" || r?.type === "signature" ? r.type : "text",
+        label: typeof r?.label === "string" && r.label.trim() ? r.label : "New requirement",
+        is_required: Boolean(r?.is_required),
+        sort_order: typeof r?.sort_order === "number" ? r.sort_order : i,
+      }))
+    : [];
+
+  return {
+    id: String(input?.id ?? ""),
+    name: typeof input?.name === "string" ? input.name : "Untitled template",
+    definition: {
+      requirements,
+    },
+  };
+}
+
 export default function TemplatesPage() {
   const toastApi = useToast() as any;
   const notify: (t: any) => void =
@@ -61,11 +80,11 @@ export default function TemplatesPage() {
         const next = { ...prev };
         for (const row of rows) {
           if (!next[row.id] && row?.name) {
-            next[row.id] = {
+            next[row.id] = normalizeTemplateDetail({
               id: row.id,
               name: row.name,
               definition: { requirements: [] },
-            };
+            });
           }
         }
         return next;
@@ -129,7 +148,8 @@ export default function TemplatesPage() {
         throw new Error(JSON.stringify(json.error ?? json));
       }
 
-      const created = (json?.item ?? null) as TemplateDetail | null;
+      const createdRaw = json?.item ?? null;
+      const created = createdRaw ? normalizeTemplateDetail(createdRaw) : null;
       setUpgradeMessage(null);
       notify({ title: "Template created", variant: "success" });
       setName("");
@@ -161,9 +181,11 @@ export default function TemplatesPage() {
     if (openingId === id) return;
 
     const cached = detailCache[id];
-    if (cached && cached.definition?.requirements?.length > 0) {
-      setSelected(cached);
-      return;
+    if (cached) {
+      setSelected(normalizeTemplateDetail(cached));
+      if (cached.definition?.requirements?.length > 0) {
+        return;
+      }
     }
 
     // Show instant shell from list data while fetching full detail.
@@ -171,12 +193,12 @@ export default function TemplatesPage() {
     if (row) {
       setSelected((prev) =>
         prev?.id === id
-          ? prev
-          : {
+          ? normalizeTemplateDetail(prev)
+          : normalizeTemplateDetail({
               id: row.id,
               name: row.name,
               definition: cached?.definition ?? { requirements: [] },
-            }
+            })
       );
     }
 
@@ -185,8 +207,9 @@ export default function TemplatesPage() {
       const res = await fetch(`/api/templates/${id}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Failed");
-      setSelected(json.item);
-      setDetailCache((prev) => ({ ...prev, [id]: json.item }));
+      const normalized = normalizeTemplateDetail(json.item);
+      setSelected(normalized);
+      setDetailCache((prev) => ({ ...prev, [id]: normalized }));
     } catch (e: any) {
       notify({ title: "Open failed", description: e?.message ?? "Unknown error", variant: "error" });
     } finally {
@@ -196,16 +219,17 @@ export default function TemplatesPage() {
 
   async function saveSelected() {
     if (!selected || saving) return;
+    const safeSelected = normalizeTemplateDetail(selected);
     setSaving(true);
     try {
       const optimistic = {
-        ...selected,
+        ...safeSelected,
         definition: {
-          requirements: selected.definition.requirements.map((r, i) => ({ ...r, sort_order: i })),
+          requirements: safeSelected.definition.requirements.map((r, i) => ({ ...r, sort_order: i })),
         },
       };
 
-      const res = await fetch(`/api/templates/${selected.id}`, {
+      const res = await fetch(`/api/templates/${safeSelected.id}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name: optimistic.name, definition: optimistic.definition }),
@@ -223,7 +247,7 @@ export default function TemplatesPage() {
         throw new Error(JSON.stringify(json.error ?? json));
       }
 
-      const saved = (json?.item ?? optimistic) as TemplateDetail;
+      const saved = normalizeTemplateDetail(json?.item ?? optimistic);
       setSelected(saved);
       setDetailCache((prev) => ({ ...prev, [saved.id]: saved }));
       setItems((prev) =>
@@ -349,7 +373,7 @@ export default function TemplatesPage() {
             <div className="rounded-xl border border-zinc-200 p-3">
               <div className="text-sm font-semibold">Requirements</div>
               <div className="mt-3 flex flex-col gap-3">
-                {selected.definition.requirements
+                {(selected.definition?.requirements ?? [])
                   .slice()
                   .sort((a, b) => a.sort_order - b.sort_order)
                   .map((r, idx) => (
@@ -416,7 +440,7 @@ export default function TemplatesPage() {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    const reqs = selected.definition.requirements.slice();
+                    const reqs = (selected.definition?.requirements ?? []).slice();
                     reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
                     setSelected({ ...selected, definition: { requirements: reqs } });
                   }}
