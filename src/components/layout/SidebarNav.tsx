@@ -3,6 +3,144 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+function LoggedInUserCard() {
+  const [fullName, setFullName] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  function pickFirstArray(value: any): any[] {
+    if (Array.isArray(value)) return value;
+    if (Array.isArray(value?.items)) return value.items;
+    if (Array.isArray(value?.members)) return value.members;
+    if (Array.isArray(value?.users)) return value.users;
+    if (Array.isArray(value?.data)) return value.data;
+    return [];
+  }
+
+  function extractName(row: any): string | null {
+    const candidates = [
+      row?.full_name,
+      row?.display_name,
+      row?.name,
+      row?.user?.full_name,
+      row?.user?.display_name,
+      row?.user?.name,
+      [row?.first_name, row?.last_name].filter(Boolean).join(" "),
+      [row?.user?.first_name, row?.user?.last_name].filter(Boolean).join(" "),
+    ];
+
+    for (const value of candidates) {
+      if (typeof value === "string" && value.trim()) return value.trim();
+    }
+
+    return null;
+  }
+
+  function extractEmail(row: any): string | null {
+    const candidates = [row?.email, row?.user?.email];
+    for (const value of candidates) {
+      if (typeof value === "string" && value.trim()) return value.trim();
+    }
+    return null;
+  }
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function applyUser(payload: { fullName: string | null; email: string | null }) {
+      if (!mounted) return;
+      setFullName(payload.fullName);
+      setEmail(payload.email);
+      setLoading(false);
+    }
+
+    async function loadUser() {
+      try {
+        const teamRes = await fetch("/api/team", { cache: "no-store" });
+        const teamJson = await teamRes.json().catch(() => null);
+
+        if (teamRes.ok) {
+          const rows = pickFirstArray(teamJson);
+          const currentUserId =
+            teamJson?.current_user_id ??
+            teamJson?.currentUserId ??
+            teamJson?.me?.user_id ??
+            teamJson?.me?.id ??
+            null;
+
+          const preferred =
+            rows.find((row: any) => row?.is_current_user || row?.current || row?.me || row?.self) ||
+            rows.find((row: any) => currentUserId && (row?.user_id === currentUserId || row?.id === currentUserId)) ||
+            rows[0] ||
+            null;
+
+          if (preferred) {
+            await applyUser({
+              fullName: extractName(preferred),
+              email: extractEmail(preferred),
+            });
+            return;
+          }
+        }
+
+        const settingsRes = await fetch("/api/stripe/portal", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+        }).catch(() => null);
+
+        if (!mounted) return;
+
+        if (!settingsRes || !settingsRes.ok) {
+          setFullName(null);
+          setEmail(null);
+          setLoading(false);
+          return;
+        }
+
+        setFullName("Signed in");
+        setEmail(null);
+        setLoading(false);
+      } catch {
+        if (!mounted) return;
+        setFullName(null);
+        setEmail(null);
+        setLoading(false);
+      }
+    }
+
+    loadUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const initials = (fullName || email || "U")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "U";
+
+  return (
+    <div className="mx-3 mb-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-3">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <div className="truncate text-sm font-medium text-zinc-900">
+            {fullName || email || (loading ? "Loading profile..." : "Signed in")}
+          </div>
+          <div className="truncate text-xs text-zinc-500">
+            {loading ? "Loading account..." : email || "No email available"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function isActive(currentPath: string, href: string) {
   if (href === "/dashboard") return currentPath === "/dashboard";
@@ -190,6 +328,8 @@ export default function SidebarNav() {
           <NavItem href="/dashboard/settings" label="Settings" icon={IconSettings} />
         </div>
       </nav>
+
+      <LoggedInUserCard />
     </aside>
   );
 }

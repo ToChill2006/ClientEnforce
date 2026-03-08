@@ -67,6 +67,11 @@ export default async function LoginPage({
               </div>
 
               <Button type="submit">Log in</Button>
+              <Link href="/forgot-password" className="w-full">
+                <Button type="button" variant="ghost" className="w-full text-sm">
+                  Forgot your password?
+                </Button>
+              </Link>
             </form>
 
             <div className="flex items-center gap-3">
