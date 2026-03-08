@@ -192,6 +192,7 @@ export default function OnboardingsPage() {
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
 
   const [rowBusy, setRowBusy] = React.useState<Record<string, boolean>>({});
+  const [rowAction, setRowAction] = React.useState<Record<string, "copy" | "send" | "lock" | null>>({});
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
 
   async function load() {
@@ -422,7 +423,7 @@ export default function OnboardingsPage() {
         throw new Error(text || `Create failed (${res.status})`);
       }
 
-      await res.json().catch(() => null);
+      const json = await res.json().catch(() => null) as any;
 
       setCreateOpen(false);
       setTitle("");
@@ -432,8 +433,19 @@ export default function OnboardingsPage() {
       setSelectedClientId("");
       // keep selectedTemplateId so the next onboarding uses the same template
 
+      const created = (json?.item ?? json?.onboarding ?? null) as OnboardingRow | null;
+
+      if (created?.id) {
+        setRows((prev) => {
+          const next = [created, ...prev.filter((x) => x.id !== created.id)];
+          return next;
+        });
+        if (created.id) void loadProgress([created.id]);
+      } else {
+        await load();
+      }
+
       setBanner({ kind: "success", msg: "Onboarding created." });
-      await load();
     } catch (err: any) {
       setCreateErr(err?.message || "Failed to create onboarding.");
     } finally {
@@ -450,6 +462,7 @@ export default function OnboardingsPage() {
 
   async function copyLink(row: OnboardingRow) {
     setRowBusy((p) => ({ ...p, [row.id]: true }));
+    setRowAction((p) => ({ ...p, [row.id]: "copy" }));
     try {
       const link = await getClientLink(row);
       if (!link) throw new Error("Client link not available on this onboarding record.");
@@ -459,11 +472,13 @@ export default function OnboardingsPage() {
       setBanner({ kind: "error", msg: e?.message || "Copy failed." });
     } finally {
       setRowBusy((p) => ({ ...p, [row.id]: false }));
+      setRowAction((p) => ({ ...p, [row.id]: null }));
     }
   }
 
   async function sendEmail(row: OnboardingRow) {
     setRowBusy((p) => ({ ...p, [row.id]: true }));
+    setRowAction((p) => ({ ...p, [row.id]: "send" }));
     try {
       const res = await fetch("/api/onboardings/send", {
         method: "POST",
@@ -477,17 +492,29 @@ export default function OnboardingsPage() {
       }
 
       await res.json().catch(() => null);
+      setRows((prev) =>
+        prev.map((x) =>
+          x.id === row.id
+            ? {
+                ...x,
+                status: "sent",
+                updated_at: new Date().toISOString(),
+              }
+            : x
+        )
+      );
       setBanner({ kind: "success", msg: "Email sent." });
-      await load();
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message || "Send failed." });
     } finally {
       setRowBusy((p) => ({ ...p, [row.id]: false }));
+      setRowAction((p) => ({ ...p, [row.id]: null }));
     }
   }
 
   async function lock(row: OnboardingRow) {
     setRowBusy((p) => ({ ...p, [row.id]: true }));
+    setRowAction((p) => ({ ...p, [row.id]: "lock" }));
     try {
       const res = await fetch("/api/onboardings/lock", {
         method: "POST",
@@ -501,12 +528,23 @@ export default function OnboardingsPage() {
       }
 
       await res.json().catch(() => null);
+      setRows((prev) =>
+        prev.map((x) =>
+          x.id === row.id
+            ? {
+                ...x,
+                status: "locked",
+                updated_at: new Date().toISOString(),
+              }
+            : x
+        )
+      );
       setBanner({ kind: "success", msg: "Onboarding locked." });
-      await load();
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message || "Lock failed." });
     } finally {
       setRowBusy((p) => ({ ...p, [row.id]: false }));
+      setRowAction((p) => ({ ...p, [row.id]: null }));
     }
   }
 
@@ -659,6 +697,7 @@ export default function OnboardingsPage() {
                 list.map((r) => {
                   const pct = progress[r.id] ?? 0;
                   const busy = !!rowBusy[r.id];
+                  const action = rowAction[r.id] ?? null;
                   const sKey = statusKeyForFilter(r.status);
 
                   return (
@@ -705,24 +744,25 @@ export default function OnboardingsPage() {
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/dashboard/onboardings/${r.id}`}
+                            prefetch
                             className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200"
                           >
                             View
                           </Link>
 
                           <SmallButton variant="secondary" onClick={() => copyLink(r)} disabled={busy} title="Copy link">
-                            Copy link
+                            {busy && action === "copy" ? "Copying..." : "Copy link"}
                           </SmallButton>
 
                           {sKey !== "submitted" && sKey !== "locked" ? (
                             <SmallButton variant="secondary" onClick={() => sendEmail(r)} disabled={busy} title="Send email">
-                              Send
+                              {busy && action === "send" ? "Sending..." : "Send"}
                             </SmallButton>
                           ) : null}
 
                           {sKey === "submitted" ? (
                             <SmallButton variant="secondary" onClick={() => lock(r)} disabled={busy} title="Lock submission">
-                              Lock
+                              {busy && action === "lock" ? "Locking..." : "Lock"}
                             </SmallButton>
                           ) : null}
                         </div>

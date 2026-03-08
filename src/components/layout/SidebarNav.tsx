@@ -272,6 +272,7 @@ function NavItem({ href, label, icon: Icon }: NavItemProps) {
   return (
     <Link
       href={href}
+      prefetch
       className={
         "group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-normal transition-colors " +
         (active
@@ -297,6 +298,7 @@ export default function SidebarNav() {
       <div className="px-3 pt-3 sm:px-4">
         <Link
           href="/dashboard"
+          prefetch
           className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-zinc-900 hover:bg-zinc-50"
           aria-label="ClientEnforce"
         >

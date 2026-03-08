@@ -43,6 +43,11 @@ export default function TemplatesPage() {
   const [canEditTemplate, setCanEditTemplate] = React.useState(true);
   const [canDeleteTemplate, setCanDeleteTemplate] = React.useState(true);
   const [upgradeMessage, setUpgradeMessage] = React.useState<string | null>(null);
+  const [detailCache, setDetailCache] = React.useState<Record<string, TemplateDetail>>({});
+  const [creating, setCreating] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+  const [openingId, setOpeningId] = React.useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -50,7 +55,21 @@ export default function TemplatesPage() {
       const res = await fetch("/api/templates");
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Failed");
-      setItems(json.items || []);
+      const rows = json.items || [];
+      setItems(rows);
+      setDetailCache((prev) => {
+        const next = { ...prev };
+        for (const row of rows) {
+          if (!next[row.id] && row?.name) {
+            next[row.id] = {
+              id: row.id,
+              name: row.name,
+              definition: { requirements: [] },
+            };
+          }
+        }
+        return next;
+      });
     } catch (e: any) {
       notify({ title: "Load failed", description: e?.message ?? "Unknown error", variant: "error" });
     } finally {
@@ -63,10 +82,12 @@ export default function TemplatesPage() {
   }, []);
 
   async function create() {
-    if (!name.trim()) {
-      notify({ title: "Name required", variant: "error" });
+    if (!name.trim() || creating) {
+      if (!name.trim()) notify({ title: "Name required", variant: "error" });
       return;
     }
+
+    setCreating(true);
     try {
       const res = await fetch("/api/templates", {
         method: "POST",
@@ -107,33 +128,87 @@ export default function TemplatesPage() {
         }
         throw new Error(JSON.stringify(json.error ?? json));
       }
+
+      const created = (json?.item ?? null) as TemplateDetail | null;
       setUpgradeMessage(null);
       notify({ title: "Template created", variant: "success" });
       setName("");
-      await load();
+
+      if (created?.id) {
+        const now = new Date().toISOString();
+        setItems((prev) => [
+          {
+            id: created.id,
+            name: created.name,
+            created_at: (created as any).created_at ?? now,
+            updated_at: (created as any).updated_at ?? now,
+          },
+          ...prev.filter((x) => x.id !== created.id),
+        ]);
+        setDetailCache((prev) => ({ ...prev, [created.id]: created }));
+        setSelected(created);
+      } else {
+        void load();
+      }
     } catch (e: any) {
       notify({ title: "Create failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setCreating(false);
     }
   }
 
   async function openTemplate(id: string) {
+    if (openingId === id) return;
+
+    const cached = detailCache[id];
+    if (cached && cached.definition?.requirements?.length > 0) {
+      setSelected(cached);
+      return;
+    }
+
+    // Show instant shell from list data while fetching full detail.
+    const row = items.find((x) => x.id === id);
+    if (row) {
+      setSelected((prev) =>
+        prev?.id === id
+          ? prev
+          : {
+              id: row.id,
+              name: row.name,
+              definition: cached?.definition ?? { requirements: [] },
+            }
+      );
+    }
+
+    setOpeningId(id);
     try {
       const res = await fetch(`/api/templates/${id}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Failed");
       setSelected(json.item);
+      setDetailCache((prev) => ({ ...prev, [id]: json.item }));
     } catch (e: any) {
       notify({ title: "Open failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setOpeningId(null);
     }
   }
 
   async function saveSelected() {
-    if (!selected) return;
+    if (!selected || saving) return;
+    setSaving(true);
     try {
+      const optimistic = {
+        ...selected,
+        definition: {
+          requirements: selected.definition.requirements.map((r, i) => ({ ...r, sort_order: i })),
+        },
+      };
+
       const res = await fetch(`/api/templates/${selected.id}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: selected.name, definition: selected.definition }),
+        body: JSON.stringify({ name: optimistic.name, definition: optimistic.definition }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -147,17 +222,35 @@ export default function TemplatesPage() {
         }
         throw new Error(JSON.stringify(json.error ?? json));
       }
+
+      const saved = (json?.item ?? optimistic) as TemplateDetail;
+      setSelected(saved);
+      setDetailCache((prev) => ({ ...prev, [saved.id]: saved }));
+      setItems((prev) =>
+        prev.map((t) =>
+          t.id === saved.id
+            ? {
+                ...t,
+                name: saved.name,
+                updated_at: new Date().toISOString(),
+              }
+            : t
+        )
+      );
       notify({ title: "Saved", variant: "success" });
-      await load();
     } catch (e: any) {
       notify({ title: "Save failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setSaving(false);
     }
   }
 
   async function deleteSelected() {
-    if (!selected) return;
+    if (!selected || deleting) return;
+    const doomed = selected;
+    setDeleting(true);
     try {
-      const res = await fetch(`/api/templates/${selected.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/templates/${doomed.id}`, { method: "DELETE" });
       const json = await res.json();
       if (!res.ok) {
         if (res.status === 403) {
@@ -170,11 +263,19 @@ export default function TemplatesPage() {
         }
         throw new Error(JSON.stringify(json.error ?? json));
       }
-      notify({ title: "Deleted", variant: "success" });
+
+      setItems((prev) => prev.filter((t) => t.id !== doomed.id));
+      setDetailCache((prev) => {
+        const next = { ...prev };
+        delete next[doomed.id];
+        return next;
+      });
       setSelected(null);
-      await load();
+      notify({ title: "Deleted", variant: "success" });
     } catch (e: any) {
       notify({ title: "Delete failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -191,7 +292,9 @@ export default function TemplatesPage() {
               <label className="text-sm font-medium">New template name</label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Standard onboarding" />
             </div>
-            <Button onClick={create}>Create</Button>
+            <Button onClick={create} disabled={creating}>
+              {creating ? "Creating..." : "Create"}
+            </Button>
             {upgradeMessage ? (
               <div className="text-sm text-amber-700">{upgradeMessage}</div>
             ) : null}
@@ -212,9 +315,12 @@ export default function TemplatesPage() {
                   key={t.id}
                   className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-zinc-50"
                   onClick={() => openTemplate(t.id)}
+                  disabled={openingId === t.id}
                 >
                   <div className="text-sm font-medium text-zinc-900">{t.name}</div>
-                  <div className="text-xs text-zinc-500">{new Date(t.updated_at).toLocaleString()}</div>
+                  <div className="text-xs text-zinc-500">
+                    {openingId === t.id ? "Opening..." : new Date(t.updated_at).toLocaleString()}
+                  </div>
                 </button>
               ))}
               {!items.length && !loading ? (
@@ -229,9 +335,7 @@ export default function TemplatesPage() {
         <Card>
           <CardHeader>
             <CardTitle>Edit template</CardTitle>
-            <CardDescription>
-              Owner/Admin only. Changes affect future onboardings only.
-            </CardDescription>
+            <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
@@ -323,9 +427,11 @@ export default function TemplatesPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={saveSelected}>Save</Button>
-              <Button variant="secondary" onClick={deleteSelected}>
-                Delete
+              <Button onClick={saveSelected} disabled={saving || deleting}>
+                {saving ? "Saving..." : "Save"}
+              </Button>
+              <Button variant="secondary" onClick={deleteSelected} disabled={saving || deleting}>
+                {deleting ? "Deleting..." : "Delete"}
               </Button>
             </div>
           </CardContent>
