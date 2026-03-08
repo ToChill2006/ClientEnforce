@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 
 const RequirementSchema = z.object({
@@ -19,6 +20,14 @@ type TemplateRow = {
   name: string;
   created_at: string;
   updated_at: string;
+};
+
+type TemplateApiItem = {
+  id?: string;
+  name?: string;
+  created_at?: string;
+  updated_at?: string;
+  definition?: unknown;
 };
 
 type TemplateDetail = {
@@ -44,6 +53,14 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
       requirements,
     },
   };
+}
+
+function defaultRequirements(): Array<z.infer<typeof RequirementSchema>> {
+  return [
+    { type: "text", label: "Primary contact name", is_required: true, sort_order: 0 },
+    { type: "file", label: "Upload contract", is_required: true, sort_order: 1 },
+    { type: "signature", label: "Signature", is_required: true, sort_order: 2 },
+  ];
 }
 
 export default function TemplatesPage() {
@@ -106,24 +123,44 @@ export default function TemplatesPage() {
       return;
     }
 
+    const templateName = name.trim();
+    const tempId = `temp-${Date.now()}`;
+    const now = new Date().toISOString();
+    const previousSelected = selected;
+    const optimisticDetail = normalizeTemplateDetail({
+      id: tempId,
+      name: templateName,
+      definition: { requirements: defaultRequirements() },
+    });
+
+    setName("");
+    setUpgradeMessage(null);
+    setItems((prev) => [{ id: tempId, name: templateName, created_at: now, updated_at: now }, ...prev]);
+    setDetailCache((prev) => ({ ...prev, [tempId]: optimisticDetail }));
+    setSelected(optimisticDetail);
     setCreating(true);
     try {
       const res = await fetch("/api/templates", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          name: name.trim(),
+          name: templateName,
           definition: {
-            requirements: [
-              { type: "text", label: "Primary contact name", is_required: true, sort_order: 0 },
-              { type: "file", label: "Upload contract", is_required: true, sort_order: 1 },
-              { type: "signature", label: "Signature", is_required: true, sort_order: 2 },
-            ],
+            requirements: defaultRequirements(),
           },
         }),
       });
       const json = await res.json();
       if (!res.ok) {
+        setItems((prev) => prev.filter((x) => x.id !== tempId));
+        setDetailCache((prev) => {
+          const next = { ...prev };
+          delete next[tempId];
+          return next;
+        });
+        setSelected(previousSelected ?? null);
+        setName(templateName);
+
         if (res.status === 403) {
           const message = String(json?.error ?? "");
           const looksLikePlanLimit = /upgrade|current plan|allows|templates/i.test(message);
@@ -148,29 +185,44 @@ export default function TemplatesPage() {
         throw new Error(JSON.stringify(json.error ?? json));
       }
 
-      const createdRaw = json?.item ?? null;
+      const createdRaw = (json?.item ?? null) as TemplateApiItem | null;
       const created = createdRaw ? normalizeTemplateDetail(createdRaw) : null;
       setUpgradeMessage(null);
       notify({ title: "Template created", variant: "success" });
-      setName("");
 
       if (created?.id) {
-        const now = new Date().toISOString();
-        setItems((prev) => [
-          {
-            id: created.id,
-            name: created.name,
-            created_at: (created as any).created_at ?? now,
-            updated_at: (created as any).updated_at ?? now,
-          },
-          ...prev.filter((x) => x.id !== created.id),
-        ]);
-        setDetailCache((prev) => ({ ...prev, [created.id]: created }));
-        setSelected(created);
+        const createdRow = {
+          id: created.id,
+          name: created.name,
+          created_at: createdRaw?.created_at ?? now,
+          updated_at: createdRaw?.updated_at ?? now,
+        };
+        setItems((prev) => [createdRow, ...prev.filter((x) => x.id !== tempId && x.id !== created.id)]);
+        setDetailCache((prev) => {
+          const next = { ...prev };
+          delete next[tempId];
+          next[created.id] = created;
+          return next;
+        });
+        setSelected((prev) => (prev?.id === tempId ? created : prev));
       } else {
+        setItems((prev) => prev.filter((x) => x.id !== tempId));
+        setDetailCache((prev) => {
+          const next = { ...prev };
+          delete next[tempId];
+          return next;
+        });
         void load();
       }
     } catch (e: any) {
+      setItems((prev) => prev.filter((x) => x.id !== tempId));
+      setDetailCache((prev) => {
+        const next = { ...prev };
+        delete next[tempId];
+        return next;
+      });
+      setSelected(previousSelected ?? null);
+      setName(templateName);
       notify({ title: "Create failed", description: e?.message ?? "Unknown error", variant: "error" });
     } finally {
       setCreating(false);
@@ -272,12 +324,26 @@ export default function TemplatesPage() {
   async function deleteSelected() {
     if (!selected || deleting) return;
     const doomed = selected;
+    const previousItems = items;
+    const previousSelected = selected;
+    const previousCache = detailCache;
+
+    setItems((prev) => prev.filter((t) => t.id !== doomed.id));
+    setDetailCache((prev) => {
+      const next = { ...prev };
+      delete next[doomed.id];
+      return next;
+    });
+    setSelected((prev) => (prev?.id === doomed.id ? null : prev));
     setDeleting(true);
     try {
       const res = await fetch(`/api/templates/${doomed.id}`, { method: "DELETE" });
       const json = await res.json();
       if (!res.ok) {
         if (res.status === 403) {
+          setItems(previousItems);
+          setDetailCache(previousCache);
+          setSelected(previousSelected);
           notify({
             title: "Permission required",
             description: "You do not have permission to delete templates.",
@@ -288,15 +354,11 @@ export default function TemplatesPage() {
         throw new Error(JSON.stringify(json.error ?? json));
       }
 
-      setItems((prev) => prev.filter((t) => t.id !== doomed.id));
-      setDetailCache((prev) => {
-        const next = { ...prev };
-        delete next[doomed.id];
-        return next;
-      });
-      setSelected(null);
       notify({ title: "Deleted", variant: "success" });
     } catch (e: any) {
+      setItems(previousItems);
+      setDetailCache(previousCache);
+      setSelected(previousSelected);
       notify({ title: "Delete failed", description: e?.message ?? "Unknown error", variant: "error" });
     } finally {
       setDeleting(false);
@@ -305,7 +367,7 @@ export default function TemplatesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
+      <Card className="card-polish">
         <CardHeader>
           <CardTitle>Templates</CardTitle>
           <CardDescription>Define requirements that will be snapshotted into each onboarding.</CardDescription>
@@ -316,7 +378,7 @@ export default function TemplatesPage() {
               <label className="text-sm font-medium">New template name</label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Standard onboarding" />
             </div>
-            <Button onClick={create} disabled={creating}>
+            <Button onClick={create} disabled={creating} className="button-polish">
               {creating ? "Creating..." : "Create"}
             </Button>
             {upgradeMessage ? (
@@ -334,29 +396,37 @@ export default function TemplatesPage() {
               {loading ? "Loading..." : `${items.length} templates`}
             </div>
             <div className="divide-y divide-zinc-200">
-              {items.map((t) => (
-                <button
-                  key={t.id}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-zinc-50"
-                  onClick={() => openTemplate(t.id)}
-                  disabled={openingId === t.id}
-                >
-                  <div className="text-sm font-medium text-zinc-900">{t.name}</div>
-                  <div className="text-xs text-zinc-500">
-                    {openingId === t.id ? "Opening..." : new Date(t.updated_at).toLocaleString()}
-                  </div>
-                </button>
-              ))}
-              {!items.length && !loading ? (
-                <div className="px-4 py-4 text-sm text-zinc-600">No templates yet.</div>
-              ) : null}
+              {loading ? (
+                <div className="space-y-2 p-3">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : (
+                <>
+                  {items.map((t) => (
+                    <button
+                      key={t.id}
+                      className="button-polish flex w-full items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 disabled:opacity-60"
+                      onClick={() => openTemplate(t.id)}
+                      disabled={openingId === t.id}
+                    >
+                      <div className="text-sm font-medium text-zinc-900">{t.name}</div>
+                      <div className="text-xs text-zinc-500">
+                        {openingId === t.id ? "Opening..." : new Date(t.updated_at).toLocaleString()}
+                      </div>
+                    </button>
+                  ))}
+                  {!items.length ? <div className="px-4 py-4 text-sm text-zinc-600">No templates yet.</div> : null}
+                </>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
 
       {selected ? (
-        <Card>
+        <Card className="card-polish">
           <CardHeader>
             <CardTitle>Edit template</CardTitle>
             <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
@@ -423,6 +493,7 @@ export default function TemplatesPage() {
                       <div className="md:col-span-1">
                         <Button
                           variant="secondary"
+                          className="button-polish"
                           onClick={() => {
                             const reqs = selected.definition.requirements.filter((_, i) => i !== idx).map((x, i) => ({
                               ...x,
@@ -439,6 +510,7 @@ export default function TemplatesPage() {
 
                 <Button
                   variant="secondary"
+                  className="button-polish"
                   onClick={() => {
                     const reqs = (selected.definition?.requirements ?? []).slice();
                     reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
@@ -451,10 +523,10 @@ export default function TemplatesPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={saveSelected} disabled={saving || deleting}>
+              <Button onClick={saveSelected} disabled={saving || deleting} className="button-polish">
                 {saving ? "Saving..." : "Save"}
               </Button>
-              <Button variant="secondary" onClick={deleteSelected} disabled={saving || deleting}>
+              <Button variant="secondary" onClick={deleteSelected} disabled={saving || deleting} className="button-polish">
                 {deleting ? "Deleting..." : "Delete"}
               </Button>
             </div>

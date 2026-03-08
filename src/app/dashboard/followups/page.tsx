@@ -4,6 +4,7 @@ import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Settings = {
   id: string;
@@ -56,6 +57,8 @@ export default function FollowupsPage() {
   const [sendHour, setSendHour] = React.useState("9");
   const [tz, setTz] = React.useState("UTC");
   const [saving, setSaving] = React.useState(false);
+  const [runningCron, setRunningCron] = React.useState(false);
+  const [markingJobId, setMarkingJobId] = React.useState<string | null>(null);
   const [mounted, setMounted] = React.useState(false);
   const [canEditSettings, setCanEditSettings] = React.useState(true);
   const [canRunCron, setCanRunCron] = React.useState(true);
@@ -192,6 +195,7 @@ export default function FollowupsPage() {
   }
 
   async function runCronNow() {
+    setRunningCron(true);
     try {
       const res = await fetch("/api/cron/followups/run-now", { method: "POST" });
       const json = await res.json().catch(() => null);
@@ -212,6 +216,42 @@ export default function FollowupsPage() {
       await loadJobs();
     } catch (e: any) {
       setAlert({ variant: "error", title: "Run failed", description: e?.message ?? "Unknown error" });
+    } finally {
+      setRunningCron(false);
+    }
+  }
+
+  async function markDone(job: Job) {
+    if (markingJobId) return;
+    const previousJobs = jobs;
+
+    setMarkingJobId(job.id);
+    setJobs((prev) =>
+      prev.map((x) =>
+        x.id === job.id
+          ? {
+              ...x,
+              status: "sent",
+              last_error: null,
+            }
+          : x
+      )
+    );
+
+    try {
+      const res = await fetch("/api/cron/followups", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: job.id, status: "sent" }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Update failed");
+      setAlert({ variant: "success", title: "Job updated", description: "Marked as done." });
+    } catch (e: any) {
+      setJobs(previousJobs);
+      setAlert({ variant: "error", title: "Update failed", description: e?.message ?? "Unknown error" });
+    } finally {
+      setMarkingJobId(null);
     }
   }
 
@@ -259,7 +299,7 @@ export default function FollowupsPage() {
         </div>
       ) : null}
 
-      <Card>
+      <Card className="card-polish">
         <CardHeader>
           <CardTitle>Timing</CardTitle>
           <CardDescription>
@@ -329,8 +369,8 @@ export default function FollowupsPage() {
             <Button variant="secondary" onClick={loadAll}>
               Refresh
             </Button>
-            <Button variant="secondary" onClick={runCronNow} disabled={!canRunCron}>
-              {canRunCron ? "Run cron now" : "Admins can run cron"}
+            <Button variant="secondary" onClick={runCronNow} disabled={!canRunCron || runningCron}>
+              {runningCron ? "Running..." : canRunCron ? "Run cron now" : "Admins can run cron"}
             </Button>
           </div>
 
@@ -348,7 +388,7 @@ export default function FollowupsPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="card-polish">
         <CardHeader>
           <CardTitle>Upcoming jobs</CardTitle>
           <CardDescription>Queued reminder emails and their due times.</CardDescription>
@@ -370,24 +410,34 @@ export default function FollowupsPage() {
                   <th className="px-4 py-2 text-left">Due</th>
                   <th className="px-4 py-2 text-left">Status</th>
                   <th className="px-4 py-2 text-left">Last error</th>
+                  <th className="px-4 py-2 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
                 {loading ? (
-                  <tr>
-                    <td className="px-4 py-3 text-zinc-600" colSpan={5}>
-                      Loading…
-                    </td>
-                  </tr>
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3" colSpan={6}>
+                        <div className="grid grid-cols-12 gap-3">
+                          <Skeleton className="col-span-3 h-4 w-full" />
+                          <Skeleton className="col-span-3 h-4 w-full" />
+                          <Skeleton className="col-span-2 h-4 w-full" />
+                          <Skeleton className="col-span-1 h-4 w-full" />
+                          <Skeleton className="col-span-2 h-4 w-full" />
+                          <Skeleton className="col-span-1 h-4 w-full" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td className="px-4 py-3 text-zinc-600" colSpan={5}>
+                    <td className="px-4 py-3 text-zinc-600" colSpan={6}>
                       No follow-up jobs found.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((j) => (
-                    <tr key={j.id} className="hover:bg-zinc-50">
+                    <tr key={j.id} className="transition-colors duration-150 hover:bg-zinc-50">
                       <td className="px-4 py-3">
                         <div className="font-medium text-zinc-900">{j.to_email}</div>
                         <div className="font-mono text-xs text-zinc-500">{j.onboarding_id}</div>
@@ -398,6 +448,20 @@ export default function FollowupsPage() {
                         <span className={statusPill(j.status)}>{j.status}</span>
                       </td>
                       <td className="px-4 py-3 text-xs text-zinc-600">{j.last_error ?? "—"}</td>
+                      <td className="px-4 py-3 text-right">
+                        {j.status !== "sent" && j.status !== "cancelled" ? (
+                          <button
+                            type="button"
+                            onClick={() => markDone(j)}
+                            className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-60"
+                            disabled={markingJobId === j.id}
+                          >
+                            {markingJobId === j.id ? "Marking..." : "Mark done"}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-zinc-400">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}

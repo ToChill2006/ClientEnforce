@@ -67,11 +67,25 @@ export async function POST(req: Request) {
   }
 
   // Seat check: memberships + pending invites <= seats_limit
-  const { data: org, error: orgErr } = await (admin as any)
+  const primaryOrg = await (admin as any)
     .from("organizations")
     .select("seats_limit, tier, plan_tier")
     .eq("id", profile!.org_id)
     .single();
+
+  let org = primaryOrg.data as any;
+  let orgErr = primaryOrg.error as any;
+
+  if (orgErr && /plan_tier/i.test(String(orgErr?.message || ""))) {
+    const fallbackOrg = await (admin as any)
+      .from("organizations")
+      .select("seats_limit, tier")
+      .eq("id", profile!.org_id)
+      .single();
+    org = fallbackOrg.data as any;
+    orgErr = fallbackOrg.error as any;
+  }
+
   if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 400 });
 
   const [{ count: memberCount, error: mcErr }, { count: inviteCount, error: icErr }] = await Promise.all([
@@ -88,8 +102,13 @@ export async function POST(req: Request) {
   if (icErr) return NextResponse.json({ error: icErr.message }, { status: 400 });
 
   const used = (memberCount || 0) + (inviteCount || 0);
-  if (used >= org.seats_limit) {
-    return NextResponse.json({ error: `Seat limit reached (${org.seats_limit}). Upgrade to add more seats.` }, { status: 409 });
+  const seatsLimit =
+    typeof (org as any)?.seats_limit === "number" && Number.isFinite((org as any).seats_limit)
+      ? (org as any).seats_limit
+      : 0;
+
+  if (seatsLimit > 0 && used >= seatsLimit) {
+    return NextResponse.json({ error: `Seat limit reached (${seatsLimit}). Upgrade to add more seats.` }, { status: 409 });
   }
 
   const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);

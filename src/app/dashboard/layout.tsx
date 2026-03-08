@@ -1,8 +1,7 @@
-import Link from "next/link";
-import Image from "next/image";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import SidebarNav from "@/components/layout/SidebarNav";
+import PageTransition from "@/components/layout/PageTransition";
 
 function initialsFromEmail(email?: string | null) {
   if (!email) return "U";
@@ -57,7 +56,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Main content: shifted right by sidebar width */}
       <div className="pl-[240px]">
         <main className="min-h-screen px-6 py-8">
-          <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <div className="mx-auto w-full max-w-7xl">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </main>
       </div>
     </div>

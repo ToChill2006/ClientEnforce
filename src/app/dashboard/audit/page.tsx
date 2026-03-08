@@ -1,6 +1,10 @@
 "use client";
 import * as React from "react";
 
+function Skeleton({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-md bg-zinc-200/70 ${className}`} />;
+}
+
 type AuditEvent = {
   id: string;
   action: string;
@@ -76,13 +80,13 @@ export default function AuditPage() {
         </div>
         <button
           onClick={load}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+          className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
         >
           Refresh
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+      <div className="card-polish overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
         {err ? (
           <div className="p-4">
             <div className="text-sm font-medium text-zinc-900">
@@ -107,7 +111,11 @@ export default function AuditPage() {
             <tbody className="divide-y divide-zinc-100">
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={i}><td colSpan={5} className="px-4 py-3"><div className="h-4 rounded bg-zinc-100" /></td></tr>
+                  <tr key={i}>
+                    <td colSpan={5} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
                 ))
               ) : err && /permission/i.test(err) ? (
                 <tr>

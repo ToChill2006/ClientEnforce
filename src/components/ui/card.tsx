@@ -5,7 +5,7 @@ import * as React from "react";
 export function Card({ className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={["rounded-xl border border-zinc-200 bg-white shadow-sm", className].join(" ")}
+      className={["card-polish rounded-xl border border-zinc-200 bg-white shadow-sm", className].join(" ")}
       {...props}
     />
   );

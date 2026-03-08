@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Item = {
   id: string;
@@ -89,6 +90,15 @@ export default function StoragePage() {
   const [loading, setLoading] = React.useState(true);
   const [err, setErr] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
+  const [previewingPath, setPreviewingPath] = React.useState<string | null>(null);
+  const [downloadingPath, setDownloadingPath] = React.useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [previewName, setPreviewName] = React.useState<string>("File preview");
+  const [previewLoading, setPreviewLoading] = React.useState(false);
+  const [previewError, setPreviewError] = React.useState<string | null>(null);
+  const [previewIsImage, setPreviewIsImage] = React.useState(false);
+  const [previewImageReady, setPreviewImageReady] = React.useState(false);
 
   async function load() {
     setLoading(true);
@@ -107,6 +117,75 @@ export default function StoragePage() {
   }
 
   React.useEffect(() => { load(); }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  function closePreview() {
+    setPreviewOpen(false);
+    setPreviewLoading(false);
+    setPreviewError(null);
+    setPreviewIsImage(false);
+    setPreviewImageReady(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  }
+
+  async function openPreview(path: string, name: string) {
+    setPreviewingPath(path);
+    setPreviewName(name || "File preview");
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewImageReady(false);
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+
+    try {
+      const res = await fetch(`/api/storage/preview?path=${encodeURIComponent(path)}`);
+      if (!res.ok) throw new Error("Preview failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const contentType = blob.type || "";
+      setPreviewIsImage(contentType.startsWith("image/"));
+      setPreviewUrl(url);
+    } catch (e: any) {
+      setPreviewError(e?.message || "Preview failed.");
+    } finally {
+      setPreviewingPath(null);
+      setPreviewLoading(false);
+    }
+  }
+
+  async function downloadFile(path: string, name: string) {
+    setDownloadingPath(path);
+    setErr(null);
+    try {
+      const res = await fetch(`/api/storage/download?path=${encodeURIComponent(path)}`);
+      if (!res.ok) throw new Error("Download failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name || "download";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setErr(e?.message || "Download failed");
+    } finally {
+      setDownloadingPath(null);
+    }
+  }
 
   const filteredItems = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -164,14 +243,15 @@ export default function StoragePage() {
 
           <button
             onClick={load}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+            className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-60"
+            disabled={loading}
           >
-            Refresh
+            {loading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+      <div className="card-polish rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
         {err ? (
           <div className="p-4">
             <div className="text-sm font-medium text-zinc-900">Could not load</div>
@@ -193,7 +273,17 @@ export default function StoragePage() {
             <tbody className="divide-y divide-zinc-100">
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={i}><td colSpan={5} className="px-4 py-3"><div className="h-4 rounded bg-zinc-100" /></td></tr>
+                  <tr key={i}>
+                    <td colSpan={5} className="px-4 py-3">
+                      <div className="grid grid-cols-12 gap-3">
+                        <Skeleton className="col-span-1 h-4 w-full" />
+                        <Skeleton className="col-span-4 h-4 w-full" />
+                        <Skeleton className="col-span-3 h-4 w-full" />
+                        <Skeleton className="col-span-2 h-4 w-full" />
+                        <Skeleton className="col-span-2 h-4 w-full" />
+                      </div>
+                    </td>
+                  </tr>
                 ))
               ) : filteredItems.length === 0 ? (
                 <tr>
@@ -226,9 +316,11 @@ export default function StoragePage() {
 
                   // Use stable unique key when possible.
                   const rowKey = `${it.id || ""}|${path ?? ""}|${it.onboarding_id ?? ""}|${pickCreatedAt(it) ?? ""}|${idx}`;
+                  const previewBusy = !!path && previewingPath === path;
+                  const downloadBusy = !!path && downloadingPath === path;
 
                   return (
-                    <tr key={rowKey} className="hover:bg-zinc-50">
+                    <tr key={rowKey} className="transition-colors duration-150 hover:bg-zinc-50">
                       <td className="px-4 py-3 text-sm text-zinc-700">{kind}</td>
                       <td className="px-4 py-3 text-sm text-zinc-900">
                         <div className="flex flex-col">
@@ -260,22 +352,22 @@ export default function StoragePage() {
                       <td className="px-4 py-3 text-right">
                         {path ? (
                           <div className="inline-flex items-center gap-2">
-                            <a
-                              className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
-                              href={`/api/storage/preview?path=${encodeURIComponent(path)}`}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              type="button"
+                              className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-60"
+                              onClick={() => openPreview(path, name)}
+                              disabled={previewBusy || downloadBusy}
                             >
-                              Preview
-                            </a>
-                            <a
-                              className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
-                              href={`/api/storage/download?path=${encodeURIComponent(path)}`}
-                              target="_blank"
-                              rel="noreferrer"
+                              {previewBusy ? "Previewing..." : "Preview"}
+                            </button>
+                            <button
+                              type="button"
+                              className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-60"
+                              onClick={() => downloadFile(path, name)}
+                              disabled={previewBusy || downloadBusy}
                             >
-                              Download
-                            </a>
+                              {downloadBusy ? "Downloading..." : "Download"}
+                            </button>
                           </div>
                         ) : (
                           <span className="text-xs text-zinc-400">—</span>
@@ -289,6 +381,49 @@ export default function StoragePage() {
           </table>
         </div>
       </div>
+
+      {previewOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-4xl rounded-xl border border-zinc-200 bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
+              <div className="truncate text-sm font-medium text-zinc-900">{previewName}</div>
+              <button
+                type="button"
+                className="button-polish rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-900 hover:bg-zinc-50"
+                onClick={closePreview}
+              >
+                Close
+              </button>
+            </div>
+            <div className="max-h-[75vh] overflow-auto p-4">
+              {previewLoading ? (
+                <Skeleton className="h-80 w-full" />
+              ) : previewError ? (
+                <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+                  {previewError}
+                </div>
+              ) : previewUrl ? (
+                previewIsImage ? (
+                  <div className="relative min-h-[320px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                    {!previewImageReady ? <Skeleton className="absolute inset-0 h-full w-full" /> : null}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={previewUrl}
+                      alt={previewName}
+                      onLoad={() => setPreviewImageReady(true)}
+                      className={`max-h-[70vh] w-full object-contain transition-opacity ${previewImageReady ? "opacity-100" : "opacity-0"}`}
+                    />
+                  </div>
+                ) : (
+                  <iframe src={previewUrl} title={previewName} className="h-[70vh] w-full rounded-lg border border-zinc-200" />
+                )
+              ) : (
+                <div className="text-sm text-zinc-600">No preview available.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

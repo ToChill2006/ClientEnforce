@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type OnboardingRow = {
   id: string;
@@ -108,7 +109,7 @@ function SmallButton({
       onClick={onClick}
       disabled={disabled}
       className={cx(
-        "inline-flex items-center justify-center rounded-lg px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:opacity-50",
+        "button-polish inline-flex items-center justify-center rounded-lg px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:opacity-50",
         variant === "primary" && "bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm",
         variant === "secondary" && "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 shadow-sm",
         variant === "ghost" && "text-zinc-700 hover:bg-zinc-100"
@@ -266,6 +267,24 @@ export default function OnboardingsPage() {
 
       if (Object.keys(normalized).length) {
         setProgress((prev) => ({ ...prev, ...normalized }));
+        setRows((prev) =>
+          prev.map((row) => {
+            const pct = normalized[row.id];
+            if (typeof pct !== "number") return row;
+            const key = statusKeyForFilter(row.status);
+            if (key === "locked") return row;
+
+            if (pct >= 100 && key !== "submitted") {
+              return { ...row, status: "submitted", updated_at: new Date().toISOString() };
+            }
+
+            if (pct > 0 && (key === "draft" || key === "sent")) {
+              return { ...row, status: "in_progress", updated_at: new Date().toISOString() };
+            }
+
+            return row;
+          })
+        );
       }
     } finally {
       setProgressLoading(false);
@@ -571,7 +590,7 @@ export default function OnboardingsPage() {
       </div>
 
       {banner ? (
-        <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900">
+        <div className="card-polish rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900">
           <div className="flex items-start justify-between gap-3">
             <div>{banner.msg}</div>
             <button
@@ -585,7 +604,7 @@ export default function OnboardingsPage() {
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
+      <div className="card-polish rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex-1">
@@ -627,7 +646,7 @@ export default function OnboardingsPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+      <div className="card-polish overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-[1100px] w-full border-collapse">
             <thead className="bg-zinc-50">
@@ -674,7 +693,14 @@ export default function OnboardingsPage() {
                   {Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i}>
                       <td colSpan={7} className="px-4 py-3">
-                        <div className="h-4 w-full rounded bg-zinc-100" />
+                        <div className="grid grid-cols-12 gap-3">
+                          <Skeleton className="col-span-3 h-4 w-full" />
+                          <Skeleton className="col-span-2 h-4 w-full" />
+                          <Skeleton className="col-span-2 h-4 w-full" />
+                          <Skeleton className="col-span-1 h-4 w-full" />
+                          <Skeleton className="col-span-2 h-4 w-full" />
+                          <Skeleton className="col-span-2 h-4 w-full" />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -701,7 +727,7 @@ export default function OnboardingsPage() {
                   const sKey = statusKeyForFilter(r.status);
 
                   return (
-                    <tr key={r.id} className="hover:bg-zinc-50">
+                    <tr key={r.id} className="transition-colors duration-150 hover:bg-zinc-50">
                       <td className="px-4 py-3 align-middle">
                         <div className="min-w-0">
                           <div className="truncate text-sm text-zinc-700 max-w-[260px]">{r.title || "—"}</div>
@@ -745,7 +771,7 @@ export default function OnboardingsPage() {
                           <Link
                             href={`/dashboard/onboardings/${r.id}`}
                             prefetch
-                            className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200"
+                            className="button-polish inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200"
                           >
                             View
                           </Link>

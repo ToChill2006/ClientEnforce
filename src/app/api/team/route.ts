@@ -149,11 +149,24 @@ export async function POST(req: Request) {
 
   const admin = supabaseAdmin();
 
-  const { data: org, error: orgErr } = await admin
+  const primaryOrg = await admin
     .from("organizations")
     .select("tier, plan_tier")
     .eq("id", profile.org_id)
     .single();
+
+  let org = primaryOrg.data as any;
+  let orgErr = primaryOrg.error as any;
+
+  if (orgErr && /plan_tier/i.test(String(orgErr?.message || ""))) {
+    const fallbackOrg = await admin
+      .from("organizations")
+      .select("tier")
+      .eq("id", profile.org_id)
+      .single();
+    org = fallbackOrg.data as any;
+    orgErr = fallbackOrg.error as any;
+  }
 
   if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 400 });
 

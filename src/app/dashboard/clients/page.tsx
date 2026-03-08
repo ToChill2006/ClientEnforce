@@ -3,6 +3,10 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+function Skeleton({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-md bg-zinc-200/70 ${className}`} />;
+}
+
 type Client = {
   id: string;
   email: string;
@@ -44,6 +48,10 @@ export default function ClientsPage() {
   const [fullName, setFullName] = React.useState("");
   const [formErr, setFormErr] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
+  const [creatingClient, setCreatingClient] = React.useState(false);
+  const [savingClientId, setSavingClientId] = React.useState<string | null>(null);
+  const [deletingClientId, setDeletingClientId] = React.useState<string | null>(null);
+  const [copyingEmail, setCopyingEmail] = React.useState<string | null>(null);
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -69,7 +77,7 @@ export default function ClientsPage() {
           : Array.isArray(json)
             ? json
             : [];
-      setClients(list);
+      setClients(list as Client[]);
     } catch (e: any) {
       setError(e?.message ?? "Unknown error");
     } finally {
@@ -128,19 +136,19 @@ export default function ClientsPage() {
     }
 
     setSaving(true);
+    if (editing?.id) setSavingClientId(editing.id);
+    else setCreatingClient(true);
+
     try {
-      // Prefer PATCH /api/clients/:id if it exists, otherwise fall back to PUT on /api/clients
       if (editing?.id) {
         const payload = { id: editing.id, email: em, full_name: nm };
 
-        // Try PATCH /api/clients/:id
         let res = await fetch(`/api/clients/${editing.id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ email: em, full_name: nm }),
         });
 
-        // Fallback: PUT /api/clients
         if (res.status === 404 || res.status === 405) {
           res = await fetch("/api/clients", {
             method: "PUT",
@@ -152,6 +160,15 @@ export default function ClientsPage() {
         const json = await res.json().catch(() => null);
         if (!res.ok) throw new Error(json?.error || "Save failed");
 
+        const updated = (json?.item ?? {
+          ...editing,
+          email: em,
+          full_name: nm,
+          name: nm,
+          updated_at: new Date().toISOString(),
+        }) as Client;
+
+        setClients((prev) => prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)));
         setStatus("Saved.");
       } else {
         const res = await fetch("/api/clients", {
@@ -161,15 +178,30 @@ export default function ClientsPage() {
         });
         const json = await res.json().catch(() => null);
         if (!res.ok) throw new Error(json?.error || "Create failed");
+
+        const created = (json?.item ?? {
+          id: `temp-${Date.now()}`,
+          email: em,
+          full_name: nm,
+          name: nm,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }) as Client;
+
+        setClients((prev) => [created, ...prev.filter((c) => c.id !== created.id)]);
         setStatus("Created.");
       }
 
-      await load();
       setModalOpen(false);
+      setEditing(null);
+      setEmail("");
+      setFullName("");
     } catch (e: any) {
       setFormErr(e?.message ?? "Unknown error");
     } finally {
       setSaving(false);
+      setSavingClientId(null);
+      setCreatingClient(false);
     }
   }
 
@@ -178,11 +210,10 @@ export default function ClientsPage() {
     if (!ok) return;
     setStatus(null);
     setError(null);
+    setDeletingClientId(c.id);
 
     try {
-      // Try DELETE /api/clients/:id
       let res = await fetch(`/api/clients/${c.id}`, { method: "DELETE" });
-      // Fallback: DELETE /api/clients with body
       if (res.status === 404 || res.status === 405) {
         res = await fetch("/api/clients", {
           method: "DELETE",
@@ -193,20 +224,22 @@ export default function ClientsPage() {
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Delete failed");
 
+      setClients((prev) => prev.filter((x) => x.id !== c.id));
       setStatus("Deleted.");
-      await load();
     } catch (e: any) {
       setError(e?.message ?? "Unknown error");
+    } finally {
+      setDeletingClientId(null);
     }
   }
 
   async function copy(text: string) {
+    setCopyingEmail(text);
     try {
       await navigator.clipboard.writeText(text);
       setStatus("Copied to clipboard.");
       window.setTimeout(() => setStatus(null), 1500);
     } catch {
-      // fallback
       try {
         const ta = document.createElement("textarea");
         ta.value = text;
@@ -220,6 +253,8 @@ export default function ClientsPage() {
         setStatus("Couldn't copy.");
         window.setTimeout(() => setStatus(null), 1500);
       }
+    } finally {
+      setCopyingEmail(null);
     }
   }
 
@@ -234,16 +269,17 @@ export default function ClientsPage() {
           <button
             type="button"
             onClick={() => load()}
-            className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+            className="button-polish rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
           >
             Refresh
           </button>
           <button
             type="button"
             onClick={openCreate}
-            className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+            className="button-polish rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+            disabled={creatingClient}
           >
-            New client
+            {creatingClient ? "Creating..." : "New client"}
           </button>
         </div>
       </div>
@@ -256,7 +292,7 @@ export default function ClientsPage() {
         </div>
       )}
 
-      <Card>
+      <Card className="card-polish">
         <CardHeader>
           <CardTitle>Directory</CardTitle>
           <CardDescription>
@@ -291,7 +327,11 @@ export default function ClientsPage() {
             </div>
 
             {loading ? (
-              <div className="px-3 py-6 text-sm text-zinc-500">Loading clients…</div>
+              <div className="space-y-3 px-3 py-6">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
             ) : filtered.length === 0 ? (
               <div className="px-3 py-8 text-center">
                 <div className="text-sm font-medium text-zinc-900">No clients found</div>
@@ -299,7 +339,7 @@ export default function ClientsPage() {
                 <button
                   type="button"
                   onClick={openCreate}
-                  className="mt-4 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                  className="button-polish mt-4 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800"
                 >
                   New client
                 </button>
@@ -309,6 +349,10 @@ export default function ClientsPage() {
                 {filtered.map((c) => {
                   const nm = displayName(c);
                   const missingName = nm === "Unnamed";
+                  const rowSaving = savingClientId === c.id;
+                  const rowDeleting = deletingClientId === c.id;
+                  const rowBusy = rowSaving || rowDeleting;
+                  const rowCopying = copyingEmail === c.email;
                   return (
                     <li key={c.id} className="grid grid-cols-12 items-center gap-2 px-3 py-3">
                       <div className="col-span-4">
@@ -330,7 +374,7 @@ export default function ClientsPage() {
                           onClick={() => copy(c.email)}
                           title="Copy email"
                         >
-                          {c.email}
+                          {rowCopying ? "Copying..." : c.email}
                         </button>
                       </div>
 
@@ -340,16 +384,18 @@ export default function ClientsPage() {
                         <button
                           type="button"
                           onClick={() => openEdit(c)}
-                          className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                          className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-60"
+                          disabled={rowBusy}
                         >
-                          Edit
+                          {rowSaving ? "Saving..." : "Edit"}
                         </button>
                         <button
                           type="button"
                           onClick={() => onDelete(c)}
-                          className="rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
+                          className="button-polish rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+                          disabled={rowBusy}
                         >
-                          Delete
+                          {rowDeleting ? "Deleting..." : "Delete"}
                         </button>
                       </div>
                     </li>
@@ -423,17 +469,17 @@ export default function ClientsPage() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                  className="button-polish rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
                   disabled={saving}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+                  className="button-polish rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
                   disabled={saving}
                 >
-                  {saving ? "Saving…" : editing ? "Save" : "Create"}
+                  {saving ? (editing ? "Saving..." : "Creating...") : editing ? "Save" : "Create"}
                 </button>
               </div>
             </form>

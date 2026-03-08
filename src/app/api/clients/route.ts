@@ -95,6 +95,66 @@ export async function POST(req: Request) {
   );
 }
 
+export async function PUT(req: Request) {
+  const supabase = await supabaseServer();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const profile = await requireProfile();
+  const role = await requireRole(["owner", "admin", "member"]);
+
+  if (!roleHasPermission(role, "clients_write")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch {
+    body = null;
+  }
+
+  const id = String(body?.id ?? "").trim();
+  const full_name = String(body?.full_name ?? body?.name ?? "").trim();
+  const email = String(body?.email ?? "").trim().toLowerCase();
+
+  const uuidOk = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+  if (!uuidOk) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+
+  if (!full_name) {
+    return NextResponse.json({ error: "Client name is required" }, { status: 400 });
+  }
+
+  if (!email) {
+    return NextResponse.json({ error: "Client email is required" }, { status: 400 });
+  }
+
+  const { data: updated, error } = await supabase
+    .from("clients")
+    .update({
+      full_name,
+      email,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("org_id", profile.org_id)
+    .eq("id", id)
+    .select("id, email, full_name, created_at, updated_at")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message || "Failed to update client" }, { status: 400 });
+  }
+
+  return NextResponse.json({
+    item: {
+      ...updated,
+      name: updated.full_name ?? null,
+    },
+  });
+}
+
 export async function DELETE(req: Request) {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
