@@ -209,8 +209,8 @@ export async function POST(req: Request) {
   const appUrl = envAppUrl || origin || "";
   // If we don't know the absolute origin, fall back to a relative URL.
   const inviteUrl = appUrl
-    ? `${appUrl.replace(/\/$/, "")}/dashboard/settings?invite=${invite.token}`
-    : `/dashboard/settings?invite=${invite.token}`;
+    ? `${appUrl.replace(/\/$/, "")}/invite/${invite.token}`
+    : `/invite/${invite.token}`;
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
