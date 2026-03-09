@@ -197,30 +197,39 @@ function parseStorageRef(ref: string, defaultBucket: string) {
   return { bucket: defaultBucket, path: raw.replace(/^\/+/, "") };
 }
 
-async function previewRef(ref: string, defaultBucket: string) {
+function previewRef(ref: string, defaultBucket: string) {
   const raw = (ref || "").trim();
   if (!raw) throw new Error("Missing file reference");
 
-  // If already a public URL, just open it.
+  // If already a public URL, use it directly.
   if (isHttpUrl(raw)) {
-    window.open(raw, "_blank", "noopener,noreferrer");
-    return;
+    return raw;
   }
 
   const { bucket, path } = parseStorageRef(raw, defaultBucket);
   if (!path) throw new Error("Missing storage path");
 
-  const url = `/api/storage/preview?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
+  return `/api/storage/preview?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`;
 }
 
-async function downloadRef(ref: string, defaultBucket: string) {
+function triggerBrowserDownload(url: string, filename?: string) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.rel = "noopener noreferrer";
+  a.target = "_blank";
+  if (filename) a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function downloadRef(ref: string, defaultBucket: string, filename?: string) {
   const raw = (ref || "").trim();
   if (!raw) throw new Error("Missing file reference");
 
-  // If already a public URL, navigate to it (browser download behaviour depends on headers)
+  // If already a public URL, trigger browser download/open behavior.
   if (isHttpUrl(raw)) {
-    window.location.href = raw;
+    triggerBrowserDownload(raw, filename);
     return;
   }
 
@@ -228,7 +237,7 @@ async function downloadRef(ref: string, defaultBucket: string) {
   if (!path) throw new Error("Missing storage path");
 
   const url = `/api/storage/download?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`;
-  window.location.href = url;
+  triggerBrowserDownload(url, filename);
 }
 
 async function fetchRequirementsDirect(onboardingId: string): Promise<Requirement[]> {
@@ -271,6 +280,7 @@ export default function OnboardingDetailAdminPage() {
   const [progress, setProgress] = React.useState(0);
   const [locking, setLocking] = React.useState(false);
   const [downloadingPdf, setDownloadingPdf] = React.useState(false);
+  const [previewAsset, setPreviewAsset] = React.useState<{ url: string; name: string } | null>(null);
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
 
   async function loadDetail() {
@@ -731,9 +741,11 @@ export default function OnboardingDetailAdminPage() {
                             </span>
                             <div className="ml-auto flex items-center gap-2">
                               <button
-                                onClick={async () => {
+                                onClick={() => {
                                   try {
-                                    await previewRef(String(preview.v), "clientenforce-uploads");
+                                    const name = fileNameFromPath(String(preview.v));
+                                    const url = previewRef(String(preview.v), "clientenforce-uploads");
+                                    setPreviewAsset({ url, name });
                                   } catch (e: any) {
                                     setBanner({ kind: "error", msg: e?.message || "Could not preview file." });
                                   }
@@ -743,9 +755,13 @@ export default function OnboardingDetailAdminPage() {
                                 Preview
                               </button>
                               <button
-                                onClick={async () => {
+                                onClick={() => {
                                   try {
-                                    await downloadRef(String(preview.v), "clientenforce-uploads");
+                                    downloadRef(
+                                      String(preview.v),
+                                      "clientenforce-uploads",
+                                      fileNameFromPath(String(preview.v)),
+                                    );
                                     setBanner({ kind: "success", msg: "Download started." });
                                   } catch (e: any) {
                                     setBanner({ kind: "error", msg: e?.message || "Could not download file." });
@@ -764,9 +780,11 @@ export default function OnboardingDetailAdminPage() {
                             </span>
                             <div className="ml-auto flex items-center gap-2">
                               <button
-                                onClick={async () => {
+                                onClick={() => {
                                   try {
-                                    await previewRef(String(preview.v), "clientenforce-signatures");
+                                    const name = fileNameFromPath(String(preview.v));
+                                    const url = previewRef(String(preview.v), "clientenforce-signatures");
+                                    setPreviewAsset({ url, name });
                                   } catch (e: any) {
                                     setBanner({ kind: "error", msg: e?.message || "Could not preview signature." });
                                   }
@@ -776,9 +794,13 @@ export default function OnboardingDetailAdminPage() {
                                 Preview
                               </button>
                               <button
-                                onClick={async () => {
+                                onClick={() => {
                                   try {
-                                    await downloadRef(String(preview.v), "clientenforce-signatures");
+                                    downloadRef(
+                                      String(preview.v),
+                                      "clientenforce-signatures",
+                                      fileNameFromPath(String(preview.v)),
+                                    );
                                     setBanner({ kind: "success", msg: "Download started." });
                                   } catch (e: any) {
                                     setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
@@ -812,6 +834,40 @@ export default function OnboardingDetailAdminPage() {
           </table>
         </div>
       </div>
+
+      {previewAsset ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
+              <div className="min-w-0 truncate text-sm font-medium text-zinc-900" title={previewAsset.name}>
+                {previewAsset.name}
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewAsset.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                >
+                  Open new tab
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewAsset(null)}
+                  className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <iframe
+              src={previewAsset.url}
+              title={previewAsset.name}
+              className="h-[78vh] w-full bg-white"
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

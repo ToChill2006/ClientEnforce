@@ -120,7 +120,7 @@ export default function ContactPage() {
 
                   <form
                     className="mt-5 grid gap-4 sm:grid-cols-2"
-                    action="mailto:info@cleintenforce.com?subject=ClientEnforce%20Contact%20Form"
+                    action="mailto:info@clientenforce.com?subject=ClientEnforce%20Contact%20Form"
                     method="post"
                     encType="text/plain"
                   >
