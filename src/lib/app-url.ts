@@ -1,6 +1,7 @@
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);
 const PROD_FALLBACK_ORIGIN = "https://clientenforce.com";
 const DEV_FALLBACK_ORIGIN = "http://localhost:3000";
+const REDIRECT_QUERY_KEYS = ["redirect_to", "redirect_uri", "redirectUrl", "return_to", "next"];
 
 function toOrigin(raw?: string | null): string | null {
   const value = String(raw ?? "").trim();
@@ -18,6 +19,19 @@ function toOrigin(raw?: string | null): string | null {
 function isLocalHostname(hostname: string) {
   const host = hostname.toLowerCase();
   return LOCAL_HOSTS.has(host) || host.endsWith(".local");
+}
+
+function rewriteLocalAbsoluteUrl(raw: string, targetOrigin: URL) {
+  const value = String(raw ?? "").trim();
+  if (!value) return value;
+
+  try {
+    const parsed = new URL(value);
+    if (!isLocalHostname(parsed.hostname)) return parsed.toString();
+    return `${targetOrigin.protocol}//${targetOrigin.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return value;
+  }
 }
 
 export function appOrigin() {
@@ -48,10 +62,23 @@ export function normalizeAuthEmailLink(rawLink?: string | null) {
 
   try {
     const url = new URL(link);
-    if (process.env.NODE_ENV === "production" && isLocalHostname(url.hostname)) {
+    if (process.env.NODE_ENV === "production") {
       const target = new URL(appOrigin());
-      url.protocol = target.protocol;
-      url.host = target.host;
+
+      if (isLocalHostname(url.hostname)) {
+        url.protocol = target.protocol;
+        url.host = target.host;
+      }
+
+      for (const key of REDIRECT_QUERY_KEYS) {
+        const current = url.searchParams.get(key);
+        if (!current) continue;
+        const nextValue = rewriteLocalAbsoluteUrl(current, target);
+        if (nextValue !== current) {
+          url.searchParams.set(key, nextValue);
+        }
+      }
+
       return url.toString();
     }
     return url.toString();
@@ -60,4 +87,3 @@ export function normalizeAuthEmailLink(rawLink?: string | null) {
     return link;
   }
 }
-

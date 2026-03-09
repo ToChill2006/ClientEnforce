@@ -182,14 +182,14 @@ export async function POST(req: Request) {
     console.error("audit_logs insert failed", e);
   }
 
-  // Build an invite URL safely (do not crash if env is missing)
-  const envAppUrl = process.env.NEXT_PUBLIC_APP_URL || appOrigin();
+  // Build an invite URL safely. `appOrigin()` already avoids localhost fallbacks in production.
+  const configuredOrigin = appOrigin();
   const xfProto = req.headers.get("x-forwarded-proto");
   const xfHost = req.headers.get("x-forwarded-host");
   const host = xfHost || req.headers.get("host");
   const proto = xfProto || "http";
-  const origin = req.headers.get("origin") || (host ? `${proto}://${host}` : undefined);
-  const appUrl = envAppUrl || origin || "";
+  const requestOrigin = req.headers.get("origin") || (host ? `${proto}://${host}` : undefined);
+  const appUrl = configuredOrigin || requestOrigin || "";
   // If we don't know the absolute origin, fall back to a relative URL.
   const inviteUrl = appUrl
     ? `${appUrl.replace(/\/$/, "")}/invite/${invite.token}`
