@@ -1797,11 +1797,14 @@ export const comparisonPaths = [
   "/client-onboarding-software-for-agencies",
 ] as const;
 
+export const legalAndContactPaths = ["/privacy", "/terms", "/contact"] as const;
+
 export const seoBlogPaths = blogPostSlugs.map((slug) => `/blog/${slug}`);
 
 export const allSeoPaths = [
   "/",
   "/blog",
+  ...legalAndContactPaths,
   ...coreSeoPaths,
   ...comparisonPaths,
   ...seoBlogPaths,
@@ -1813,6 +1816,7 @@ export const sitemapPublicPaths = [
   "/pricing",
   "/about",
   "/blog",
+  ...legalAndContactPaths,
   ...coreSeoPaths,
   ...comparisonPaths,
   ...seoBlogPaths,

@@ -160,6 +160,10 @@ export function PublicHeader() {
               </Link>
             </div>
           </details>
+
+          <Link href="/contact" className={navItemClassName()}>
+            Contact
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -216,11 +220,30 @@ const comparisonLinks = [
   },
 ];
 
+const companyLinks = [
+  {
+    href: "/about",
+    label: "About",
+  },
+  {
+    href: "/contact",
+    label: "Contact",
+  },
+  {
+    href: "/privacy",
+    label: "Privacy",
+  },
+  {
+    href: "/terms",
+    label: "Terms",
+  },
+];
+
 export function PublicFooter() {
   return (
     <footer className="border-t border-zinc-200 bg-white">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-4">
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
             <div className="text-sm font-semibold text-zinc-900">Client onboarding, enforced.</div>
             <p className="mt-2 text-sm leading-6 text-zinc-700">
@@ -260,6 +283,19 @@ export function PublicFooter() {
             <div className="text-sm font-semibold text-zinc-900">Comparisons</div>
             <ul className="mt-3 space-y-2 text-sm text-zinc-700">
               {comparisonLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-sm font-semibold text-zinc-900">Company</div>
+            <ul className="mt-3 space-y-2 text-sm text-zinc-700">
+              {companyLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
                     {link.label}

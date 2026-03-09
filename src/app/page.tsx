@@ -190,6 +190,7 @@ function MarketingNav() {
           <a href="#how" className="hover:text-zinc-900">How it works</a>
           <a href="#security" className="hover:text-zinc-900">Security</a>
           <a href="#pricing" className="hover:text-zinc-900">Pricing</a>
+          <Link href="/contact" className="hover:text-zinc-900">Contact</Link>
           <details className="group relative">
             <summary className="list-none cursor-pointer select-none hover:text-zinc-900">
               <span className="inline-flex items-center gap-1">
@@ -917,6 +918,15 @@ export default function MarketingPage() {
                   <a className="hover:text-zinc-900" href="#resources">
                     Resources
                   </a>
+                  <Link className="hover:text-zinc-900" href="/contact">
+                    Contact
+                  </Link>
+                  <Link className="hover:text-zinc-900" href="/privacy">
+                    Privacy
+                  </Link>
+                  <Link className="hover:text-zinc-900" href="/terms">
+                    Terms
+                  </Link>
                   <Link className="hover:text-zinc-900" href="/dubsado-alternative">
                     Dubsado alternative
                   </Link>
