@@ -43,39 +43,66 @@ async function safeCount(
   table: string,
   orgId: string
 ) {
-  const baseQuery = () =>
-    supabase
+  // Org scoping has drifted across deployments.
+  const scopeCols = ["org_id", "organization_id", "workspace_id", "team_id"];
+  let lastSchemaError: string | null = null;
+
+  const buildHeadCount = (scopeCol: string, onlyActiveTemplates: boolean) => {
+    let q = supabase
       .from(table)
       .select("id", { count: "exact", head: true })
-      .eq("org_id", orgId);
+      .eq(scopeCol, orgId);
+    if (table === "templates" && onlyActiveTemplates) q = q.is("deleted_at", null);
+    return q;
+  };
 
-  if (table === "templates") {
-    // Newer schemas use soft-delete. Older schemas do not have `deleted_at`.
-    // Try active-only first, then retry without deleted_at filtering.
-    const withDeletedAt = await baseQuery().is("deleted_at", null);
-    if (!withDeletedAt.error) return withDeletedAt.count ?? 0;
+  const buildLengthFallback = (scopeCol: string, onlyActiveTemplates: boolean) => {
+    let q = supabase
+      .from(table)
+      .select("id")
+      .eq(scopeCol, orgId);
+    if (table === "templates" && onlyActiveTemplates) q = q.is("deleted_at", null);
+    return q;
+  };
 
-    if (!isMissingColumnOrRelation(withDeletedAt.error?.message || "")) {
-      warnings.push({ key, message: withDeletedAt.error.message || `Failed counting ${table}` });
-      return 0;
+  for (const scopeCol of scopeCols) {
+    const tryActiveFirst = table === "templates";
+    const modes = tryActiveFirst ? [true, false] : [false];
+
+    for (const onlyActiveTemplates of modes) {
+      const headRes = await buildHeadCount(scopeCol, onlyActiveTemplates);
+
+      if (!headRes.error) {
+        if (typeof headRes.count === "number") return headRes.count;
+
+        // Some PostgREST deployments return null count even when query succeeds.
+        // Fallback to a non-HEAD select and compute length.
+        const lenRes = await buildLengthFallback(scopeCol, onlyActiveTemplates);
+        if (!lenRes.error) return Array.isArray(lenRes.data) ? lenRes.data.length : 0;
+
+        if (!isMissingColumnOrRelation(lenRes.error?.message || "")) {
+          warnings.push({ key, message: lenRes.error.message || `Failed counting ${table}` });
+          return 0;
+        }
+
+        lastSchemaError = lenRes.error?.message || lastSchemaError;
+        continue;
+      }
+
+      if (!isMissingColumnOrRelation(headRes.error?.message || "")) {
+        warnings.push({ key, message: headRes.error.message || `Failed counting ${table}` });
+        return 0;
+      }
+
+      lastSchemaError = headRes.error?.message || lastSchemaError;
     }
-
-    const withoutDeletedAt = await baseQuery();
-    if (!withoutDeletedAt.error) return withoutDeletedAt.count ?? 0;
-
-    warnings.push({
-      key,
-      message: withoutDeletedAt.error.message || withDeletedAt.error.message || `Failed counting ${table}`,
-    });
-    return 0;
   }
 
-  const res = await baseQuery();
-  if (res.error) {
-    warnings.push({ key, message: res.error.message || `Failed counting ${table}` });
-    return 0;
-  }
-  return res.count ?? 0;
+  warnings.push({
+    key,
+    message: lastSchemaError || `Could not count ${table} (no compatible org scope columns found).`,
+  });
+  return 0;
 }
 
 async function safeFollowupsDue(supabase: any, warnings: Warning[], orgId: string) {
