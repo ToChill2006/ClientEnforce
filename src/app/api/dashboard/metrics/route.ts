@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 
@@ -101,6 +102,68 @@ async function safeCount(
   warnings.push({
     key,
     message: lastSchemaError || `Could not count ${table} (no compatible org scope columns found).`,
+  });
+  return 0;
+}
+
+async function safeTemplatesCount(admin: any, warnings: Warning[], orgId: string) {
+  const scopeCols = ["org_id", "organization_id", "workspace_id", "team_id"];
+  let lastSchemaError: string | null = null;
+
+  for (const scopeCol of scopeCols) {
+    const withDeletedAt = await admin
+      .from("templates")
+      .select("id, deleted_at")
+      .eq(scopeCol, orgId);
+
+    if (!withDeletedAt.error) {
+      const rows = Array.isArray(withDeletedAt.data) ? withDeletedAt.data : [];
+      return rows.filter((row: any) => {
+        if (row && typeof row === "object" && "deleted_at" in row) {
+          return row.deleted_at == null;
+        }
+        return true;
+      }).length;
+    }
+
+    const msg = withDeletedAt.error?.message || "";
+    if (!isMissingColumnOrRelation(msg)) {
+      warnings.push({
+        key: "templates",
+        message: msg || "Failed counting templates",
+      });
+      return 0;
+    }
+
+    // Missing `deleted_at` is common in older schemas. Retry without it.
+    if (msg.toLowerCase().includes("deleted_at")) {
+      const withoutDeletedAt = await admin
+        .from("templates")
+        .select("id")
+        .eq(scopeCol, orgId);
+
+      if (!withoutDeletedAt.error) {
+        return Array.isArray(withoutDeletedAt.data) ? withoutDeletedAt.data.length : 0;
+      }
+
+      if (!isMissingColumnOrRelation(withoutDeletedAt.error?.message || "")) {
+        warnings.push({
+          key: "templates",
+          message: withoutDeletedAt.error?.message || "Failed counting templates",
+        });
+        return 0;
+      }
+
+      lastSchemaError = withoutDeletedAt.error?.message || lastSchemaError;
+      continue;
+    }
+
+    lastSchemaError = msg || lastSchemaError;
+  }
+
+  warnings.push({
+    key: "templates",
+    message: lastSchemaError || "Could not count templates (no compatible scope columns found).",
   });
   return 0;
 }
@@ -780,6 +843,7 @@ async function safeRecentOnboardings(supabase: any, warnings: Warning[], orgId: 
 export async function GET() {
   try {
     const supabase = await supabaseServer();
+    const admin = supabaseAdmin();
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -802,7 +866,7 @@ export async function GET() {
       recent_onboardings,
     ] = await Promise.all([
       safeCount(supabase, warnings, "clients", "clients", profile.org_id),
-      safeCount(supabase, warnings, "templates", "templates", profile.org_id),
+      safeTemplatesCount(admin, warnings, profile.org_id),
       safeOnboardings(supabase, warnings, profile.org_id),
       safeFollowupsDue(supabase, warnings, profile.org_id),
       safeFollowupsScheduled(supabase, warnings, profile.org_id),
