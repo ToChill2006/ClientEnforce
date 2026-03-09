@@ -1,11 +1,19 @@
- import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Features | ClientEnforce – Client Onboarding Automation",
   description:
     "Explore ClientEnforce features: client portal, document uploads, e-signatures, onboarding workflows, reminders, and audit-ready tracking for a smoother onboarding process.",
-};
+  path: "/features",
+  keywords: [
+    "client onboarding features",
+    "client onboarding software",
+    "client onboarding workflow",
+  ],
+  type: "website",
+});
 
 const features = [
   {

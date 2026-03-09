@@ -1,5 +1,24 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+import { JsonLd } from "@/components/marketing/public-shell";
+import { buildPageMetadata, buildSoftwareApplicationSchema } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "ClientEnforce | Client Onboarding Software and Automation",
+  description:
+    "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, templates, and progress tracking in one secure client portal.",
+  path: "/",
+  keywords: [
+    "client onboarding software",
+    "client onboarding platform",
+    "client onboarding automation",
+    "client onboarding process",
+    "best client onboarding tools",
+  ],
+  type: "website",
+});
 
 function CheckIcon() {
   return (
@@ -113,10 +132,6 @@ function TimelineIcon() {
   );
 }
 
-function classNames(...c: Array<string | false | null | undefined>) {
-  return c.filter(Boolean).join(" ");
-}
-
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 shadow-sm sm:px-5">
@@ -175,6 +190,10 @@ function MarketingNav() {
           <a href="#how" className="hover:text-zinc-900">How it works</a>
           <a href="#security" className="hover:text-zinc-900">Security</a>
           <a href="#pricing" className="hover:text-zinc-900">Pricing</a>
+          <Link href="/client-onboarding-software" className="hover:text-zinc-900">
+            Client onboarding software
+          </Link>
+          <a href="#resources" className="hover:text-zinc-900">Resources</a>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -720,6 +739,81 @@ export default function MarketingPage() {
         </div>
       </section>
 
+      {/* Resources */}
+      <section id="resources" className="bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-end">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Resources</div>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900">
+                Learn the client onboarding playbook.
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-700">
+                Explore practical guides for client onboarding software, client onboarding checklist
+                design, client onboarding automation, and best client onboarding tools.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6">
+              <div className="text-sm font-semibold text-zinc-900">Start here</div>
+              <div className="mt-4 grid gap-3 text-sm text-zinc-700">
+                <Link href="/client-onboarding-software" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
+                  Client onboarding software
+                </Link>
+                <Link href="/client-onboarding-checklist" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
+                  Client onboarding checklist
+                </Link>
+                <Link href="/client-onboarding-automation" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
+                  Client onboarding automation
+                </Link>
+                <Link href="/client-onboarding-tools" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
+                  Best client onboarding tools
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Link
+              href="/blog"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+            >
+              <div className="text-sm font-semibold text-zinc-900">Blog hub</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-700">
+                Practical guides, checklists, templates, and software comparisons.
+              </div>
+            </Link>
+            <Link
+              href="/blog/client-onboarding-process"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+            >
+              <div className="text-sm font-semibold text-zinc-900">Client onboarding process guide</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-700">
+                Build a repeatable workflow from contract to kickoff.
+              </div>
+            </Link>
+            <Link
+              href="/blog/client-onboarding-checklist"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+            >
+              <div className="text-sm font-semibold text-zinc-900">Client onboarding checklist guide</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-700">
+                Use a 10-step checklist to reduce onboarding delays.
+              </div>
+            </Link>
+            <Link
+              href="/blog/best-client-onboarding-software"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+            >
+              <div className="text-sm font-semibold text-zinc-900">Best client onboarding software</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-700">
+                Compare onboarding tools with a fair buying framework.
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
@@ -766,6 +860,18 @@ export default function MarketingPage() {
                   <a className="hover:text-zinc-900" href="#pricing">
                     Pricing
                   </a>
+                  <a className="hover:text-zinc-900" href="#resources">
+                    Resources
+                  </a>
+                  <Link className="hover:text-zinc-900" href="/dubsado-alternative">
+                    Dubsado alternative
+                  </Link>
+                  <Link className="hover:text-zinc-900" href="/honeybook-alternative">
+                    HoneyBook alternative
+                  </Link>
+                  <Link className="hover:text-zinc-900" href="/blog">
+                    Blog
+                  </Link>
                   <Link className="hover:text-zinc-900" href="/login">
                     Sign in
                   </Link>
@@ -776,6 +882,7 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
+      <JsonLd data={buildSoftwareApplicationSchema("/")} />
     </div>
   );
 }

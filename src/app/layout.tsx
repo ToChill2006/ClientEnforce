@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { ToastProvider } from "@/components/ui/toast";
+import { appOrigin } from "@/lib/app-url";
 
 export const viewport = {
   width: "device-width",
@@ -9,8 +10,26 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "ClientEnforce",
-  description: "Client onboarding automation for modern teams.",
+  metadataBase: new URL(appOrigin()),
+  title: {
+    default: "ClientEnforce | Client onboarding software",
+    template: "%s",
+  },
+  description: "Client onboarding software with templates, automation, and progress tracking.",
+  openGraph: {
+    title: "ClientEnforce | Client onboarding software",
+    description:
+      "Client onboarding software with templates, document collection, signatures, and automation.",
+    type: "website",
+    url: "/",
+    siteName: "ClientEnforce",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ClientEnforce | Client onboarding software",
+    description:
+      "Client onboarding software with templates, document collection, signatures, and automation.",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },

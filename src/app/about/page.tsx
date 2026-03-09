@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "About | ClientEnforce – Why we built it",
   description:
     "Learn why ClientEnforce exists: to replace chaotic onboarding with structured workflows, document uploads, and signatures—so teams onboard clients faster and with fewer mistakes.",
-};
+  path: "/about",
+  keywords: ["client onboarding software", "client onboarding workflow", "client onboarding process"],
+  type: "website",
+});
 
 function Container({ children }: { children: React.ReactNode }) {
   return <div className="mx-auto w-full max-w-6xl px-6">{children}</div>;

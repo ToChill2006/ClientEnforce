@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Pricing | ClientEnforce – Simple plans for onboarding",
   description:
     "ClientEnforce pricing for client onboarding automation. Choose a plan for client portals, document uploads, signatures, and workflow tracking.",
-};
+  path: "/pricing",
+  keywords: [
+    "client onboarding software pricing",
+    "client onboarding platform",
+    "client onboarding automation",
+  ],
+  type: "website",
+});
 
 type Plan = {
   name: string;
