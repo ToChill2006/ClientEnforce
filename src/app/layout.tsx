@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { ToastProvider } from "@/components/ui/toast";
 
 export const viewport = {
   width: "device-width",
@@ -23,21 +24,23 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="min-h-screen bg-zinc-50 text-zinc-950 antialiased overflow-x-hidden selection:bg-black selection:text-white">
-        <style>{`
-          @keyframes pageFadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(4px);
+        <ToastProvider>
+          <style>{`
+            @keyframes pageFadeIn {
+              from {
+                opacity: 0;
+                transform: translateY(4px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
             }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}</style>
-        <div className="min-h-screen w-full bg-gradient-to-b from-white via-zinc-50 to-zinc-100 [animation:pageFadeIn_.18s_ease-out]">
-          {children}
-        </div>
+          `}</style>
+          <div className="min-h-screen w-full bg-gradient-to-b from-white via-zinc-50 to-zinc-100 [animation:pageFadeIn_.18s_ease-out]">
+            {children}
+          </div>
+        </ToastProvider>
       </body>
     </html>
   );

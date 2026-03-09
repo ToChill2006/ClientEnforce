@@ -1,7 +1,12 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { resend } from "@/lib/resend";
+
+function appUrl() {
+  return process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+}
 
 export async function signupAction(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
@@ -17,13 +22,25 @@ export async function signupAction(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent("Password must be at least 8 characters.")}`);
   }
 
-  const supabase = await supabaseServer();
+  if (!process.env.RESEND_API_KEY) {
+    redirect(`/signup?error=${encodeURIComponent("RESEND_API_KEY is not configured.")}`);
+  }
 
-  const { data, error } = await supabase.auth.signUp({
+  const admin = supabaseAdmin();
+
+  const loginRedirect = new URL("/login", appUrl());
+  loginRedirect.searchParams.set("verified", "1");
+  if (next && next.startsWith("/")) {
+    loginRedirect.searchParams.set("next", next);
+  }
+
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "signup",
     email,
     password,
     options: {
       data: { full_name: fullName || null },
+      redirectTo: loginRedirect.toString(),
     },
   });
 
@@ -35,9 +52,9 @@ export async function signupAction(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent("Signup failed")}`);
   }
 
-  if (data?.user) {
+  if (data.user) {
     try {
-      await supabase
+      await admin
         .from("profiles")
         .upsert(
           {
@@ -55,11 +72,35 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  // If email confirmation is disabled, Supabase returns a session immediately
-  if (data?.session) {
-    redirect(next);
+  const verifyLink = data?.properties?.action_link;
+  if (!verifyLink) {
+    redirect(`/signup?error=${encodeURIComponent("Could not generate verification link.")}`);
   }
 
-  // If confirmation emails are enabled, user must confirm first
-  redirect(`/login?message=${encodeURIComponent("Check your email to confirm your account.")}`);
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
+
+  const send = await resend.emails.send({
+    from: `${fromName} <${fromEmail}>`,
+    to: email,
+    subject: "Verify your ClientEnforce account",
+    html: `
+      <h2>Verify your email</h2>
+      <p>Click the button below to verify your account and finish signup.</p>
+      <p>
+        <a href="${verifyLink}"
+          style="display:inline-block;padding:12px 20px;background:#18181b;color:#fff;border-radius:8px;text-decoration:none;">
+          Verify account
+        </a>
+      </p>
+      <p>If you didn't request this, you can ignore this email.</p>
+    `,
+  });
+
+  if (send && "error" in send && send.error) {
+    const message = typeof send.error.message === "string" ? send.error.message : "Failed to send verification email.";
+    redirect(`/signup?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(`/login?message=${encodeURIComponent("Check your email for a verification link.")}&next=${encodeURIComponent(next)}`);
 }

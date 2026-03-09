@@ -4,6 +4,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+
+function nameFromEmail(value?: string | null) {
+  const email = (value ?? "").trim();
+  if (!email || !email.includes("@")) return null;
+  const local = email.split("@")[0] || "";
+  const cleaned = local.replace(/[._-]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!cleaned) return null;
+  return cleaned
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 function LoggedInUserCard() {
   const [fullName, setFullName] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
@@ -50,13 +64,29 @@ function LoggedInUserCard() {
 
     async function applyUser(payload: { fullName: string | null; email: string | null }) {
       if (!mounted) return;
-      setFullName(payload.fullName);
-      setEmail(payload.email);
+      const nextEmail = payload.email?.trim() || null;
+      const nextName = payload.fullName?.trim() || nameFromEmail(nextEmail) || null;
+      setFullName(nextName);
+      setEmail(nextEmail);
       setLoading(false);
     }
 
     async function loadUser() {
       try {
+        const meRes = await fetch("/api/me", { cache: "no-store" });
+        const meJson = await meRes.json().catch(() => null);
+
+        if (meRes.ok) {
+          const me = meJson?.user ?? meJson ?? null;
+          if (me) {
+            await applyUser({
+              fullName: extractName(me),
+              email: extractEmail(me),
+            });
+            return;
+          }
+        }
+
         const teamRes = await fetch("/api/team", { cache: "no-store" });
         const teamJson = await teamRes.json().catch(() => null);
 
@@ -84,21 +114,8 @@ function LoggedInUserCard() {
           }
         }
 
-        const settingsRes = await fetch("/api/stripe/portal", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-        }).catch(() => null);
-
         if (!mounted) return;
-
-        if (!settingsRes || !settingsRes.ok) {
-          setFullName(null);
-          setEmail(null);
-          setLoading(false);
-          return;
-        }
-
-        setFullName("Signed in");
+        setFullName(null);
         setEmail(null);
         setLoading(false);
       } catch {
@@ -131,7 +148,7 @@ function LoggedInUserCard() {
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-medium text-zinc-900">
-            {fullName || email || (loading ? "Loading profile..." : "Signed in")}
+            {fullName || (loading ? "Loading profile..." : "Signed in")}
           </div>
           <div className="truncate text-xs text-zinc-500">
             {loading ? "Loading account..." : email || "No email available"}

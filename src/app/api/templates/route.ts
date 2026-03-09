@@ -249,5 +249,14 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json({ item: template }, { status: 201 });
+  return NextResponse.json(
+    {
+      item: {
+        ...template,
+        // Ensure clients can render requirements immediately after create.
+        definition: parsed.data.definition,
+      },
+    },
+    { status: 201 }
+  );
 }

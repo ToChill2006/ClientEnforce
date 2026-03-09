@@ -92,11 +92,18 @@ export async function POST(req: Request) {
       return jsonError(404, "Invite not found");
     }
 
-    if (invite.status !== "pending") {
-      return jsonError(400, "Invite is not pending", { status: invite.status });
+    const inviteStatus = String(invite.status ?? "").toLowerCase();
+    const alreadyAccepted = inviteStatus === "accepted";
+
+    if (inviteStatus === "revoked" || inviteStatus === "expired") {
+      return jsonError(400, "Invite is no longer active", { status: invite.status });
     }
 
-    if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
+    if (inviteStatus && inviteStatus !== "pending" && inviteStatus !== "accepted") {
+      return jsonError(400, "Invite is not usable", { status: invite.status });
+    }
+
+    if (!alreadyAccepted && invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
       return jsonError(400, "Invite expired");
     }
 
@@ -318,49 +325,133 @@ export async function POST(req: Request) {
       return jsonError(500, membershipErr.message || "Failed to create membership");
     }
 
-    // Ensure the invited user profile is linked to the org (some UIs filter profiles by org_id)
-    // This is best-effort and should not block accepting the invite if the schema differs.
+    // Verify membership now exists for this org/user.
+    // (Some schema variants use profile_id/member_user_id; try those if user_id is unavailable.)
+    let hasMembership = false;
     try {
-      const patchOrg: any = { org_id: invite.org_id };
+      const m1 = await admin
+        .from("memberships")
+        .select("id")
+        .eq("org_id", invite.org_id)
+        .eq("user_id", authedUser.id)
+        .maybeSingle();
 
-      // Try profiles(user_id = auth.users.id)
-      const r1 = await admin.from("profiles").update(patchOrg).eq("user_id", authedUser.id);
-      const msg1 = String((r1 as any)?.error?.message ?? "").toLowerCase();
+      if (!(m1 as any)?.error && (m1 as any)?.data?.id) {
+        hasMembership = true;
+      } else {
+        const msg1 = String((m1 as any)?.error?.message ?? "").toLowerCase();
 
-      // Fallback: profiles(id = auth.users.id)
-      if ((r1 as any)?.error && (msg1.includes("user_id") || msg1.includes("does not exist") || msg1.includes("column"))) {
-        const r2 = await admin.from("profiles").update(patchOrg).eq("id", authedUser.id);
-        const msg2 = String((r2 as any)?.error?.message ?? "").toLowerCase();
+        if (msg1.includes("user_id") && msg1.includes("does not exist") && profileId) {
+          const m2 = await admin
+            .from("memberships")
+            .select("id")
+            .eq("org_id", invite.org_id)
+            .eq("profile_id", profileId)
+            .maybeSingle();
+          if (!(m2 as any)?.error && (m2 as any)?.data?.id) hasMembership = true;
+        }
 
-        // If org_id column doesn't exist in this environment, ignore.
-        if ((r2 as any)?.error && (msg2.includes("org_id") && (msg2.includes("does not exist") || msg2.includes("column")))) {
-          // no-op
+        if (!hasMembership && msg1.includes("user_id") && msg1.includes("column")) {
+          const m3 = await admin
+            .from("memberships")
+            .select("id")
+            .eq("org_id", invite.org_id)
+            .eq("member_user_id", authedUser.id)
+            .maybeSingle();
+          if (!(m3 as any)?.error && (m3 as any)?.data?.id) hasMembership = true;
         }
       }
     } catch {
-      // ignore
+      // handled below
     }
 
-    // Mark invite accepted (some schemas may not have accepted_by_user_id)
-    const acceptedPatch: any = {
-      status: "accepted",
-      accepted_at: new Date().toISOString(),
-      accepted_by_user_id: authedUser.id,
+    if (!hasMembership) {
+      return jsonError(500, "Invite accepted but membership could not be verified");
+    }
+
+    // Ensure the invited user's active profile org is switched to the invited org.
+    // This is required because the app scopes workspace context by profiles.org_id.
+    const profilePayload = {
+      org_id: invite.org_id,
+      email: authedUser.email ?? null,
+      full_name: fullNameFromMeta,
     };
 
-    let updateErr = (await admin.from("invites").update(acceptedPatch).eq("id", invite.id)).error as any;
+    let profileLinked = false;
+    let profileErrMsg = "";
 
-    if (updateErr) {
-      const msg = String(updateErr?.message ?? "").toLowerCase();
-      if (msg.includes("accepted_by_user_id") && (msg.includes("does not exist") || msg.includes("column"))) {
-        delete acceptedPatch.accepted_by_user_id;
-        updateErr = (await admin.from("invites").update(acceptedPatch).eq("id", invite.id)).error as any;
+    try {
+      const up1 = await admin
+        .from("profiles")
+        .upsert(
+          {
+            user_id: authedUser.id,
+            ...profilePayload,
+          } as any,
+          { onConflict: "user_id" } as any
+        )
+        .select("user_id, org_id")
+        .maybeSingle();
+
+      if (!(up1 as any)?.error) {
+        profileLinked = true;
+      } else {
+        profileErrMsg = String((up1 as any)?.error?.message ?? "");
+      }
+    } catch (e: any) {
+      profileErrMsg = e?.message ?? profileErrMsg;
+    }
+
+    if (!profileLinked) {
+      try {
+        const up2 = await admin
+          .from("profiles")
+          .upsert(
+            {
+              id: authedUser.id,
+              ...profilePayload,
+            } as any,
+            { onConflict: "id" } as any
+          )
+          .select("id")
+          .maybeSingle();
+
+        if (!(up2 as any)?.error) {
+          profileLinked = true;
+        } else {
+          profileErrMsg = String((up2 as any)?.error?.message ?? profileErrMsg);
+        }
+      } catch (e: any) {
+        profileErrMsg = e?.message ?? profileErrMsg;
       }
     }
 
-    if (updateErr) return jsonError(500, updateErr.message);
+    if (!profileLinked) {
+      return jsonError(500, `Accepted invite but failed to link profile to org: ${profileErrMsg || "unknown error"}`);
+    }
 
-    return NextResponse.json({ ok: true, org_id: invite.org_id });
+    if (!alreadyAccepted) {
+      // Mark invite accepted (some schemas may not have accepted_by_user_id)
+      const acceptedPatch: any = {
+        status: "accepted",
+        accepted_at: new Date().toISOString(),
+        accepted_by_user_id: authedUser.id,
+      };
+
+      let updateErr = (await admin.from("invites").update(acceptedPatch).eq("id", invite.id)).error as any;
+
+      if (updateErr) {
+        const msg = String(updateErr?.message ?? "").toLowerCase();
+        if (msg.includes("accepted_by_user_id") && (msg.includes("does not exist") || msg.includes("column"))) {
+          delete acceptedPatch.accepted_by_user_id;
+          updateErr = (await admin.from("invites").update(acceptedPatch).eq("id", invite.id)).error as any;
+        }
+      }
+
+      if (updateErr) return jsonError(500, updateErr.message);
+    }
+
+    return NextResponse.json({ ok: true, org_id: invite.org_id, invite_status: invite.status });
   } catch (e: any) {
     return jsonError(500, e?.message || "Unexpected error");
   }

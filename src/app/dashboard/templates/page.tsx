@@ -186,7 +186,12 @@ export default function TemplatesPage() {
       }
 
       const createdRaw = (json?.item ?? null) as TemplateApiItem | null;
-      const created = createdRaw ? normalizeTemplateDetail(createdRaw) : null;
+      const created = createdRaw
+        ? normalizeTemplateDetail({
+            ...createdRaw,
+            definition: createdRaw?.definition ?? optimisticDetail.definition,
+          })
+        : null;
       setUpgradeMessage(null);
       notify({ title: "Template created", variant: "success" });
 

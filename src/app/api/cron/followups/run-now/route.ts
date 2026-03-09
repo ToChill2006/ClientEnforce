@@ -15,9 +15,46 @@ function followupsEnabledForTier(tier: "free" | "pro" | "business") {
   return tier === "pro" || tier === "business";
 }
 
+async function selectOrganizationTier(supabase: Awaited<ReturnType<typeof supabaseServer>>, orgId: string) {
+  const primary = await supabase
+    .from("organizations")
+    .select("tier, plan_tier")
+    .eq("id", orgId)
+    .single();
+
+  if (!(primary as any)?.error) {
+    return { data: (primary as any).data ?? null, error: null as any };
+  }
+
+  const err = (primary as any).error;
+  const msg = String(err?.message || "").toLowerCase();
+
+  if (msg.includes("plan_tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await supabase
+      .from("organizations")
+      .select("tier")
+      .eq("id", orgId)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  if (msg.includes("tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
+    const fallback = await supabase
+      .from("organizations")
+      .select("plan_tier")
+      .eq("id", orgId)
+      .single();
+
+    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
+  }
+
+  return { data: null, error: err };
+}
+
 export const runtime = "nodejs";
 
-export async function POST() {
+export async function POST(req: Request) {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,11 +72,7 @@ export async function POST() {
 
   const profile = await requireProfile();
 
-  const { data: org, error: orgError } = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", profile.org_id)
-    .single();
+  const { data: org, error: orgError } = await selectOrganizationTier(supabase, profile.org_id);
 
   if (orgError) {
     return NextResponse.json({ error: orgError.message }, { status: 400 });
@@ -57,7 +90,9 @@ export async function POST() {
   const secret = process.env.CRON_SECRET;
   if (!secret) return NextResponse.json({ error: "CRON_SECRET is not set" }, { status: 500 });
 
-  const base = process.env.NEXT_PUBLIC_APP_URL!;
+  const fromEnv = process.env.NEXT_PUBLIC_APP_URL;
+  const reqUrl = new URL(req.url);
+  const base = fromEnv?.trim() ? fromEnv : reqUrl.origin;
   const res = await fetch(`${base}/api/cron/followups/run`, {
     method: "POST",
     headers: { authorization: `Bearer ${secret}` },

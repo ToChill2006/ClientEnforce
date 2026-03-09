@@ -4,19 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import LoginToasts from "./toasts";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; created?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; created?: string; verified?: string; message?: string; next?: string }>;
 }) {
   const sp = await searchParams;
   const error = sp?.error ? decodeURIComponent(sp.error) : null;
   const created = sp?.created === "1";
+  const verified = sp?.verified === "1";
+  const message = sp?.message ? decodeURIComponent(sp.message) : null;
   const next = sp?.next && sp.next.startsWith("/") ? sp.next : "/dashboard";
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
+      <LoginToasts verified={verified} />
       <div className="mx-auto flex max-w-md flex-col px-6 py-14">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
@@ -34,6 +38,12 @@ export default async function LoginPage({
             {created ? (
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
                 Account created. Please log in.
+              </div>
+            ) : null}
+
+            {message ? (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+                {message}
               </div>
             ) : null}
 

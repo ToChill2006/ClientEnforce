@@ -76,12 +76,12 @@ export async function POST(req: Request) {
       due_at: due_at ?? null,
       status: "open",
     })
-    .select("id")
+    .select("id, org_id, created_by, assigned_to, title, description, status, due_at, created_at, updated_at")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  return NextResponse.json({ ok: true, id: inserted.id });
+  return NextResponse.json({ ok: true, id: inserted.id, item: inserted });
 }
 
 export async function PATCH(req: Request) {
@@ -102,13 +102,16 @@ export async function PATCH(req: Request) {
 
   const { id, ...patch } = parsed.data;
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("team_tasks")
     .update(patch)
     .eq("org_id", profile.org_id)
-    .eq("id", id);
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (!updated) return NextResponse.json({ error: "Task not found or not permitted" }, { status: 404 });
 
   return NextResponse.json({ ok: true });
 }
@@ -130,8 +133,16 @@ export async function DELETE(req: Request) {
   const uuidOk = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
   if (!uuidOk) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
-  const { error } = await supabase.from("team_tasks").delete().eq("org_id", profile.org_id).eq("id", id);
+  const { data: deleted, error } = await supabase
+    .from("team_tasks")
+    .delete()
+    .eq("org_id", profile.org_id)
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (!deleted) return NextResponse.json({ error: "Task not found" }, { status: 404 });
 
   return NextResponse.json({ ok: true });
 }
