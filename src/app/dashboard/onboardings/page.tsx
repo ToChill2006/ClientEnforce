@@ -56,6 +56,7 @@ function statusLabel(raw?: string | null) {
   if (s === "in_progress" || s === "in progress") return "In progress";
   if (s === "submitted") return "Submitted";
   if (s === "locked") return "Submitted";
+  if (s === "archived") return "Archived";
   return raw!;
 }
 
@@ -71,6 +72,7 @@ function statusPillClasses(raw?: string | null) {
   // subtle, enterprise
   if (s === "submitted") return "border-zinc-900 bg-zinc-900 text-white";
   if (s === "locked") return "border-zinc-900 bg-zinc-900 text-white";
+  if (s === "archived") return "border-zinc-200 bg-zinc-100 text-zinc-700";
   if (s === "in_progress" || s === "in progress") return "border-zinc-300 bg-white text-zinc-900";
   if (s === "sent") return "border-zinc-200 bg-zinc-50 text-zinc-900";
   return "border-zinc-200 bg-white text-zinc-700";
@@ -101,7 +103,7 @@ function SmallButton({
   disabled?: boolean;
   title?: string;
   type?: "button" | "submit";
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
 }) {
   return (
     <button
@@ -113,7 +115,8 @@ function SmallButton({
         "button-polish inline-flex items-center justify-center rounded-lg px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:opacity-50",
         variant === "primary" && "bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm",
         variant === "secondary" && "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 shadow-sm",
-        variant === "ghost" && "text-zinc-700 hover:bg-zinc-100"
+        variant === "ghost" && "text-zinc-700 hover:bg-zinc-100",
+        variant === "danger" && "border border-red-200 bg-white text-red-700 hover:bg-red-50 shadow-sm"
       )}
     >
       {children}
@@ -194,7 +197,7 @@ export default function OnboardingsPage() {
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
 
   const [rowBusy, setRowBusy] = React.useState<Record<string, boolean>>({});
-  const [rowAction, setRowAction] = React.useState<Record<string, "copy" | "send" | "lock" | null>>({});
+  const [rowAction, setRowAction] = React.useState<Record<string, "copy" | "send" | "lock" | "archive" | "delete" | null>>({});
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
 
   async function load() {
@@ -568,6 +571,59 @@ export default function OnboardingsPage() {
     }
   }
 
+  async function archive(row: OnboardingRow) {
+    setRowBusy((p) => ({ ...p, [row.id]: true }));
+    setRowAction((p) => ({ ...p, [row.id]: "archive" }));
+    try {
+      const res = await fetch(`/api/onboardings/${encodeURIComponent(row.id)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status: "archived" }),
+      });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `Archive failed (${res.status})`);
+      }
+
+      setRows((prev) => prev.filter((x) => x.id !== row.id));
+      setBanner({ kind: "success", msg: "Onboarding archived." });
+    } catch (e: any) {
+      setBanner({ kind: "error", msg: e?.message || "Archive failed." });
+    } finally {
+      setRowBusy((p) => ({ ...p, [row.id]: false }));
+      setRowAction((p) => ({ ...p, [row.id]: null }));
+    }
+  }
+
+  async function deleteOnboarding(row: OnboardingRow) {
+    const ok = window.confirm(
+      `Delete onboarding "${row.title || "Untitled"}"? This cannot be undone.`
+    );
+    if (!ok) return;
+
+    setRowBusy((p) => ({ ...p, [row.id]: true }));
+    setRowAction((p) => ({ ...p, [row.id]: "delete" }));
+    try {
+      const res = await fetch(`/api/onboardings/${encodeURIComponent(row.id)}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `Delete failed (${res.status})`);
+      }
+
+      setRows((prev) => prev.filter((x) => x.id !== row.id));
+      setBanner({ kind: "success", msg: "Onboarding deleted." });
+    } catch (e: any) {
+      setBanner({ kind: "error", msg: e?.message || "Delete failed." });
+    } finally {
+      setRowBusy((p) => ({ ...p, [row.id]: false }));
+      setRowAction((p) => ({ ...p, [row.id]: null }));
+    }
+  }
+
   const list = sortByUpdatedDesc(filtered());
 
   return (
@@ -807,6 +863,16 @@ export default function OnboardingsPage() {
                               {busy && action === "lock" ? "Locking..." : "Lock"}
                             </SmallButton>
                           ) : null}
+
+                          {sKey !== "archived" ? (
+                            <SmallButton variant="ghost" onClick={() => archive(r)} disabled={busy} title="Archive onboarding">
+                              {busy && action === "archive" ? "Archiving..." : "Archive"}
+                            </SmallButton>
+                          ) : null}
+
+                          <SmallButton variant="danger" onClick={() => deleteOnboarding(r)} disabled={busy} title="Delete onboarding">
+                            {busy && action === "delete" ? "Deleting..." : "Delete"}
+                          </SmallButton>
                         </div>
                       </td>
                     </tr>

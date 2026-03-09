@@ -397,7 +397,11 @@ export async function GET() {
 
   if (error) return jsonError(400, error.message);
 
-  const rows = data ?? [];
+  const rows = (data ?? []).filter((r: any) => {
+    const s = String(r?.status ?? "").trim().toLowerCase();
+    if (!s) return true;
+    return s !== "archived" && s !== "deleted";
+  });
   if (rows.length === 0) return NextResponse.json({ onboardings: [] });
 
   // --- Enrich with client + template display data without depending on optional columns/relations ---

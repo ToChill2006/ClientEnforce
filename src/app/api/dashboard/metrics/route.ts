@@ -43,24 +43,38 @@ async function safeCount(
   table: string,
   orgId: string
 ) {
-  let query = supabase
-    .from(table)
-    .select("id", { count: "exact", head: true })
-    .eq("org_id", orgId);
+  const baseQuery = () =>
+    supabase
+      .from(table)
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", orgId);
 
-  // Templates are soft-deleted via `deleted_at`, so only count active ones.
   if (table === "templates") {
-    query = query.is("deleted_at", null);
-  }
+    // Newer schemas use soft-delete. Older schemas do not have `deleted_at`.
+    // Try active-only first, then retry without deleted_at filtering.
+    const withDeletedAt = await baseQuery().is("deleted_at", null);
+    if (!withDeletedAt.error) return withDeletedAt.count ?? 0;
 
-  const res = await query;
+    if (!isMissingColumnOrRelation(withDeletedAt.error?.message || "")) {
+      warnings.push({ key, message: withDeletedAt.error.message || `Failed counting ${table}` });
+      return 0;
+    }
 
-  if (res.error) {
-    warnings.push({ key, message: res.error.message || `Failed counting ${table}` });
-    // If the table/column is missing, treat as 0 instead of breaking the dashboard.
+    const withoutDeletedAt = await baseQuery();
+    if (!withoutDeletedAt.error) return withoutDeletedAt.count ?? 0;
+
+    warnings.push({
+      key,
+      message: withoutDeletedAt.error.message || withDeletedAt.error.message || `Failed counting ${table}`,
+    });
     return 0;
   }
 
+  const res = await baseQuery();
+  if (res.error) {
+    warnings.push({ key, message: res.error.message || `Failed counting ${table}` });
+    return 0;
+  }
   return res.count ?? 0;
 }
 
@@ -585,6 +599,9 @@ async function safeOnboardings(
   const draft = raw.draft || 0;
   const sent = raw.sent || 0;
   const in_progress = raw.in_progress || 0;
+  const archived = raw.archived || 0;
+  const deleted = raw.deleted || 0;
+  const cancelled = raw.cancelled || 0;
 
   // Treat locked as submitted for the dashboard distribution (but also expose locked explicitly)
   const locked = raw.locked || 0;
@@ -616,8 +633,9 @@ async function safeOnboardings(
   };
 
   const computedTotal = total ?? rows.length;
+  const activeTotal = Math.max(0, computedTotal - archived - deleted - cancelled);
 
-  return { total: computedTotal, byStatus, raw };
+  return { total: activeTotal, byStatus, raw };
 }
 
 async function safeRecentOnboardings(supabase: any, warnings: Warning[], orgId: string) {
@@ -686,6 +704,11 @@ async function safeRecentOnboardings(supabase: any, warnings: Warning[], orgId: 
   }
 
   return onboardings.map((o) => {
+    const normalizedStatus = String(o.status ?? "").trim().toLowerCase();
+    if (normalizedStatus === "archived" || normalizedStatus === "deleted") {
+      return null;
+    }
+
     const c = o.client_id ? clientsById[String(o.client_id)] : null;
 
     const clientName =
@@ -724,7 +747,7 @@ async function safeRecentOnboardings(supabase: any, warnings: Warning[], orgId: 
           }
         : null,
     };
-  });
+  }).filter(Boolean);
 }
 
 export async function GET() {

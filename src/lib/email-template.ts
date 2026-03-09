@@ -32,9 +32,9 @@ function paragraphHtml(value: string) {
 }
 
 function renderCta(cta: EmailCta, variant: "primary" | "secondary") {
-  const bg = variant === "primary" ? "#f97316" : "#ffffff";
-  const fg = variant === "primary" ? "#ffffff" : "#0f172a";
-  const border = variant === "primary" ? "1px solid #ea580c" : "1px solid #d4d4d8";
+  const bg = variant === "primary" ? "#18181b" : "#ffffff";
+  const fg = variant === "primary" ? "#ffffff" : "#18181b";
+  const border = variant === "primary" ? "1px solid #18181b" : "1px solid #d4d4d8";
 
   return `
     <a
@@ -100,24 +100,26 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
     <meta charSet="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>${escapeHtml(options.title)}</title>
   </head>
-  <body style="margin:0;padding:0;background:#eef2f7;">
+  <body style="margin:0;padding:0;background:#fafafa;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
       ${escapeHtml(preheader)}
     </div>
 
-    <table role="presentation" width="100%" cellPadding="0" cellSpacing="0" border="0" style="background:#eef2f7;">
+    <table role="presentation" width="100%" cellPadding="0" cellSpacing="0" border="0" style="background:#fafafa;">
       <tr>
         <td align="center" style="padding:24px 10px;">
           <table role="presentation" width="620" cellPadding="0" cellSpacing="0" border="0" style="width:100%;max-width:620px;border-collapse:separate;border-spacing:0;">
             <tr>
-              <td style="padding:14px 20px;border:1px solid #d4d4d8;border-bottom:none;border-radius:14px 14px 0 0;background:#ffffff;">
+              <td style="padding:14px 20px;border:1px solid #18181b;border-bottom:none;border-radius:14px 14px 0 0;background:#18181b;">
                 <table role="presentation" width="100%" cellPadding="0" cellSpacing="0" border="0">
                   <tr>
                     <td style="vertical-align:middle;">
                       <img src="${escapeHtml(logoUrl)}" width="24" height="24" alt="ClientEnforce" style="display:inline-block;vertical-align:middle;border:0;outline:none;text-decoration:none;border-radius:6px;" />
-                      <span style="display:inline-block;margin-left:10px;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;letter-spacing:0.02em;color:#111827;">CLIENTENFORCE</span>
+                      <span style="display:inline-block;margin-left:10px;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;letter-spacing:0.02em;color:#ffffff;">CLIENTENFORCE</span>
                     </td>
                   </tr>
                 </table>
@@ -125,18 +127,18 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
             </tr>
 
             <tr>
-              <td style="padding:28px 26px;background:#0891b2;border-left:1px solid #0e7490;border-right:1px solid #0e7490;">
+              <td style="padding:28px 26px;background:#f4f4f5;border-left:1px solid #e4e4e7;border-right:1px solid #e4e4e7;">
                 ${
                   options.eyebrow
-                    ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;font-weight:700;letter-spacing:0.08em;color:#cffafe;text-transform:uppercase;">${escapeHtml(options.eyebrow)}</div>`
+                    ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;font-weight:700;letter-spacing:0.08em;color:#52525b;text-transform:uppercase;">${escapeHtml(options.eyebrow)}</div>`
                     : ""
                 }
-                <h1 style="margin:8px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:34px;line-height:1.12;font-weight:800;color:#ffffff;">
+                <h1 style="margin:8px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:34px;line-height:1.12;font-weight:800;color:#18181b;">
                   ${escapeHtml(options.title)}
                 </h1>
                 ${
                   options.subtitle
-                    ? `<p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.45;color:#ecfeff;">${paragraphHtml(options.subtitle)}</p>`
+                    ? `<p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.45;color:#3f3f46;">${paragraphHtml(options.subtitle)}</p>`
                     : ""
                 }
                 ${
@@ -189,9 +191,9 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
                   ${escapeHtml(options.footerNote || "Sent by ClientEnforce")}
                 </p>
                 <p style="margin:6px 0 0 0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#71717a;">
-                  <a href="${escapeHtml(appOrigin())}" style="color:#0f766e;text-decoration:underline;">clientenforce.com</a>
+                  <a href="${escapeHtml(appOrigin())}" style="color:#18181b;text-decoration:underline;">clientenforce.com</a>
                   &nbsp;|&nbsp;
-                  <a href="mailto:support@clientenforce.com" style="color:#0f766e;text-decoration:underline;">support@clientenforce.com</a>
+                  <a href="mailto:support@clientenforce.com" style="color:#18181b;text-decoration:underline;">support@clientenforce.com</a>
                 </p>
               </td>
             </tr>
