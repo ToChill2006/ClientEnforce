@@ -314,7 +314,7 @@ export default function SidebarNav() {
     <aside className="flex h-screen w-[240px] shrink-0 flex-col border-r border-zinc-100 bg-white">
       <div className="px-3 pt-3 sm:px-4">
         <Link
-          href="/dashboard"
+          href="/"
           prefetch
           className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-zinc-900 hover:bg-zinc-50"
           aria-label="ClientEnforce"

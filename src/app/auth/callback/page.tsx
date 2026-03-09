@@ -1,7 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabaseBrowser } from "@/lib/supabase";
 
 function safeNextPath(raw: string | null, fallback = "/dashboard") {
@@ -21,6 +25,7 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = React.useState("Finishing sign-in…");
+  const [errorText, setErrorText] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
@@ -55,9 +60,13 @@ export default function AuthCallbackPage() {
 
         router.replace("/login");
       } catch {
-        if (mounted) setStatus("This authentication link is invalid or expired. Redirecting to login…");
+        const message = "Authentication link is invalid or expired.";
+        if (mounted) {
+          setErrorText(message);
+          setStatus("Authentication failed. Redirecting to login…");
+        }
         window.setTimeout(() => {
-          router.replace("/login?error=" + encodeURIComponent("Authentication link is invalid or expired."));
+          router.replace("/login?error=" + encodeURIComponent(message));
         }, 600);
       }
     }
@@ -70,11 +79,44 @@ export default function AuthCallbackPage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
-      <div className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6">
-        <div className="card-polish w-full rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="text-sm font-medium text-zinc-900">{status}</div>
-          <div className="mt-2 text-sm text-zinc-600">Please wait a moment.</div>
-        </div>
+      <div className="mx-auto flex max-w-md flex-col px-6 py-14">
+        <Link href="/" className="mb-6 flex w-fit items-center gap-3 rounded-md">
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
+            <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
+          </div>
+          <div className="text-sm font-semibold">ClientEnforce</div>
+        </Link>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="mb-2">{errorText ? "Authentication failed" : "Authenticating"}</CardTitle>
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-4">
+            <div
+              className={
+                "rounded-lg border p-3 text-sm " +
+                (errorText
+                  ? "border-red-200 bg-red-50 text-red-800"
+                  : "border-blue-200 bg-blue-50 text-blue-900")
+              }
+            >
+              {status}
+            </div>
+
+            <p className="text-sm leading-6 text-zinc-600">
+              {errorText
+                ? "We will take you back to log in in a moment."
+                : "Please wait while we verify your link and complete sign-in."}
+            </p>
+
+            <Link href="/login" className="w-full">
+              <Button type="button" variant="secondary" className="w-full">
+                Back to log in
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );

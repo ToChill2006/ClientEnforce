@@ -34,7 +34,7 @@ export default async function SignupPage({
     <main className="min-h-[calc(100vh-0px)] bg-gradient-to-b from-white to-zinc-50">
       <div className="mx-auto flex w-full max-w-md flex-col items-center px-6 py-16">
         {/* Brand */}
-        <div className="mb-6 flex w-full items-center gap-3">
+        <Link href="/" className="mb-6 flex w-full items-center gap-3 rounded-md">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white overflow-hidden">
             <Image
               src="/C.png"
@@ -48,7 +48,7 @@ export default async function SignupPage({
           <div className="leading-tight">
             <div className="text-sm font-semibold">ClientEnforce</div>
           </div>
-        </div>
+        </Link>
 
         <Card className="w-full shadow-sm">
           <CardHeader className="pb-4">

@@ -38,12 +38,12 @@ export default async function LoginPage({
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
       <LoginToasts verified={verified} reset={reset} />
       <div className="mx-auto flex max-w-md flex-col px-6 py-14">
-        <div className="mb-6 flex items-center gap-3">
+        <Link href="/" className="mb-6 flex w-fit items-center gap-3 rounded-md">
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
           <div className="text-sm font-semibold">ClientEnforce</div>
-        </div>
+        </Link>
 
         <Card>
           <CardHeader className="pb-2">

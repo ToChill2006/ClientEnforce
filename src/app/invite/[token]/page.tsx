@@ -1,8 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabaseBrowser } from "@/lib/supabase";
 
 export default function InvitePage() {
@@ -28,6 +31,13 @@ export default function InvitePage() {
   const [checking, setChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const messageTone = useMemo(() => {
+    if (!msg) return null;
+    const text = msg.toLowerCase();
+    if (text.includes("accepted") || text.includes("redirecting")) return "success";
+    if (text.includes("please sign in") || text.includes("create an account")) return "info";
+    return "error";
+  }, [msg]);
 
   const acceptInvite = useCallback(async () => {
     if (!token) {
@@ -67,9 +77,9 @@ export default function InvitePage() {
       setLoading(false);
       setMsg("Invite accepted. Redirecting…");
       router.replace("/dashboard");
-    } catch (e: any) {
+    } catch (error) {
       setLoading(false);
-      setMsg(e?.message ?? "Failed to accept invite");
+      setMsg(error instanceof Error ? error.message : "Failed to accept invite");
     }
   }, [token, router]);
 
@@ -91,8 +101,9 @@ export default function InvitePage() {
 
     // After login/signup redirect back here, auth state changes; try again.
     const { data: sub } = sb.auth.onAuthStateChange((event) => {
-      console.log("[invite] auth state changed:", event);
-      acceptInvite();
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        acceptInvite();
+      }
     });
 
     return () => {
@@ -102,28 +113,70 @@ export default function InvitePage() {
   }, [token, sb, acceptInvite]);
 
   return (
-    <div className="mx-auto max-w-md p-6 text-center">
-      <h1 className="text-xl font-semibold">You’ve been invited</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {checking
-          ? "Checking your invite…"
-          : "Sign in (or create an account) to accept the invite."}
-      </p>
+    <main className="min-h-screen bg-zinc-50 text-zinc-900">
+      <div className="mx-auto flex max-w-md flex-col px-6 py-14">
+        <Link href="/" className="mb-6 flex w-fit items-center gap-3 rounded-md">
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
+            <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
+          </div>
+          <div className="text-sm font-semibold">ClientEnforce</div>
+        </Link>
 
-      <div className="mt-6 flex justify-center gap-2">
-        <Link className="rounded-md bg-black px-4 py-2 text-white" href={loginHref}>
-          Sign in
-        </Link>
-        <Link className="rounded-md border px-4 py-2" href={signupHref}>
-          Create account
-        </Link>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="mb-2">Accept invite</CardTitle>
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-4">
+            <p className="text-sm leading-6 text-zinc-600">
+              {checking
+                ? "Checking your invite…"
+                : "Sign in (or create an account) to accept this invite to your team."}
+            </p>
+
+            {loading ? (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+                Accepting invite…
+              </div>
+            ) : null}
+
+            {msg ? (
+              <div
+                className={
+                  "rounded-lg border p-3 text-sm " +
+                  (messageTone === "success"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : messageTone === "info"
+                      ? "border-blue-200 bg-blue-50 text-blue-900"
+                      : "border-red-200 bg-red-50 text-red-800")
+                }
+              >
+                {msg}
+              </div>
+            ) : null}
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button
+                type="button"
+                onClick={() => router.push(loginHref)}
+                disabled={loading || checking}
+                className="w-full"
+              >
+                Sign in
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => router.push(signupHref)}
+                disabled={loading || checking}
+                className="w-full"
+              >
+                Create account
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {msg && (
-        <div className="mt-6">
-          <p className="text-sm text-muted-foreground">{msg}</p>
-        </div>
-      )}
-    </div>
+    </main>
   );
 }
