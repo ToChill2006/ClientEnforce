@@ -7,6 +7,7 @@ import { requireRole, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { resend } from "@/lib/resend";
 import { appOrigin } from "@/lib/app-url";
+import { renderClientEnforceEmail } from "@/lib/email-template";
 import {
   adminLimitMessage,
   permissionDenied,
@@ -201,17 +202,29 @@ export async function POST(req: Request) {
 
   if (process.env.RESEND_API_KEY) {
     try {
+      const inviteExpiry = new Date(invite.expires_at).toLocaleString();
+      const emailTemplate = renderClientEnforceEmail({
+        preheader: "You are invited to join ClientEnforce",
+        eyebrow: "Team invite",
+        title: "You are invited",
+        subtitle: "Join your team workspace in ClientEnforce.",
+        paragraphs: [
+          `You were invited as ${invite.role === "admin" ? "an admin" : "a member"} to collaborate in ClientEnforce.`,
+          `This invite expires on ${inviteExpiry}.`,
+        ],
+        primaryCta: {
+          label: "Accept invite",
+          href: inviteUrl,
+        },
+        footerNote: "This is a transactional email from ClientEnforce.",
+      });
+
       await resend.emails.send({
         from,
         to: [(invite as any)[INVITE_EMAIL_COL]],
         subject: "You’ve been invited to ClientEnforce",
-        html: `
-          <div style="font-family: ui-sans-serif, system-ui; line-height: 1.5;">
-            <p>You’ve been invited to join a team on ClientEnforce.</p>
-            <p><a href="${inviteUrl}">${inviteUrl}</a></p>
-            <p>This invite expires on ${new Date(invite.expires_at).toLocaleString()}.</p>
-          </div>
-        `,
+        html: emailTemplate.html,
+        text: emailTemplate.text,
       });
     } catch (e: any) {
       // Email failures should not block invite creation.

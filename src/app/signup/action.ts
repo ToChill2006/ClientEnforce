@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
 import { appOrigin, buildAuthTokenLink, normalizeAuthEmailLink } from "@/lib/app-url";
+import { renderClientEnforceEmail } from "@/lib/email-template";
 
 export async function signupAction(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
@@ -84,22 +85,28 @@ export async function signupAction(formData: FormData) {
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
+  const emailTemplate = renderClientEnforceEmail({
+    preheader: "Verify your ClientEnforce account",
+    eyebrow: "Account security",
+    title: "Verify your email",
+    subtitle: "Confirm your account to finish signup.",
+    paragraphs: [
+      "Use the button below to verify your email and activate your ClientEnforce account.",
+      "If you did not create this account, you can safely ignore this message.",
+    ],
+    primaryCta: {
+      label: "Verify account",
+      href: verifyLink,
+    },
+    footerNote: "This is a transactional email from ClientEnforce.",
+  });
 
   const send = await resend.emails.send({
     from: `${fromName} <${fromEmail}>`,
     to: email,
     subject: "Verify your ClientEnforce account",
-    html: `
-      <h2>Verify your email</h2>
-      <p>Click the button below to verify your account and finish signup.</p>
-      <p>
-        <a href="${verifyLink}"
-          style="display:inline-block;padding:12px 20px;background:#18181b;color:#fff;border-radius:8px;text-decoration:none;">
-          Verify account
-        </a>
-      </p>
-      <p>If you didn't request this, you can ignore this email.</p>
-    `,
+    html: emailTemplate.html,
+    text: emailTemplate.text,
   });
 
   if (send && "error" in send && send.error) {

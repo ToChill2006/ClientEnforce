@@ -4,6 +4,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 
 type MetricsResponse = {
   clients?: number;
@@ -214,9 +215,13 @@ function SkeletonRow() {
 }
 
 export default function DashboardPage() {
+  const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [metrics, setMetrics] = React.useState<MetricsResponse | null>(null);
+  const [feedbackRating, setFeedbackRating] = React.useState<number | null>(null);
+  const [feedbackText, setFeedbackText] = React.useState("");
+  const [feedbackSubmitting, setFeedbackSubmitting] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -251,6 +256,54 @@ export default function DashboardPage() {
       cancelled = true;
     };
   }, []);
+
+  async function submitFeedback(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (feedbackRating === null) {
+      toast({
+        title: "Select a rating first",
+        description: "Choose a score from 1 to 5 before sending feedback.",
+        variant: "error",
+      });
+      return;
+    }
+
+    setFeedbackSubmitting(true);
+
+    try {
+      const res = await fetch("/api/dashboard/feedback", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          rating: feedbackRating,
+          feedback: feedbackText.trim() || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.error || "Could not send feedback.");
+      }
+
+      toast({
+        title: "Feedback received",
+        description: "Thanks. This helps us improve the dashboard experience.",
+        variant: "success",
+      });
+      setFeedbackRating(null);
+      setFeedbackText("");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Please try again.";
+      toast({
+        title: "Feedback was not sent",
+        description: message,
+        variant: "error",
+      });
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  }
 
   const clients = metrics?.clients ?? 0;
   const templates = metrics?.templates ?? 0;
@@ -328,6 +381,63 @@ export default function DashboardPage() {
           href="/dashboard/followups"
         />
       </div>
+
+      <section className="card-polish rounded-xl border border-zinc-200 bg-white shadow-sm">
+        <div className="border-b border-zinc-200 px-4 py-3">
+          <div className="text-sm font-semibold text-zinc-900">Rate your dashboard experience</div>
+          <div className="mt-0.5 text-sm text-zinc-500">
+            Share quick feedback so we can improve ClientEnforce.
+          </div>
+        </div>
+
+        <form onSubmit={submitFeedback} className="space-y-3 px-4 py-4">
+          <div className="flex flex-wrap gap-2">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFeedbackRating(value)}
+                aria-pressed={feedbackRating === value}
+                className={cx(
+                  "button-polish inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-zinc-200",
+                  feedbackRating === value
+                    ? "border-zinc-900 bg-zinc-900 text-white"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+                )}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-xs text-zinc-500">1 = Needs work, 5 = Excellent</div>
+
+          <div>
+            <label htmlFor="dashboard-feedback" className="text-sm font-medium text-zinc-800">
+              Feedback (optional)
+            </label>
+            <textarea
+              id="dashboard-feedback"
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              maxLength={2000}
+              placeholder="What would make your dashboard experience better?"
+              className="mt-1 min-h-24 w-full resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200"
+            />
+            <div className="mt-1 text-right text-xs text-zinc-500">{feedbackText.length}/2000</div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={feedbackSubmitting || feedbackRating === null}
+              className="button-polish inline-flex items-center justify-center rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:opacity-50"
+            >
+              {feedbackSubmitting ? "Sending..." : "Send feedback"}
+            </button>
+          </div>
+        </form>
+      </section>
 
       {/* Two-column: Status + Recent */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">

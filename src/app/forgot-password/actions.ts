@@ -5,6 +5,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
 import { appOrigin, buildAuthTokenLink, normalizeAuthEmailLink } from "@/lib/app-url";
+import { renderClientEnforceEmail } from "@/lib/email-template";
 
 function isLocalSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -67,30 +68,29 @@ export async function forgotPasswordAction(formData: FormData) {
       next: "/reset-password",
     }) || normalizeAuthEmailLink(data.properties.action_link);
 
+  const emailTemplate = renderClientEnforceEmail({
+    preheader: "Reset your ClientEnforce password",
+    eyebrow: "Account security",
+    title: "Reset your password",
+    subtitle: "Use this secure link to set a new password.",
+    paragraphs: [
+      "You requested a password reset for your ClientEnforce account.",
+      "If you did not request this, you can safely ignore this email.",
+    ],
+    primaryCta: {
+      label: "Reset password",
+      href: resetLink,
+    },
+    footerNote: "This is a transactional email from ClientEnforce.",
+  });
+
   // Send email using Resend
   const resendResult = await resend.emails.send({
     from: "ClientEnforce <support@clientenforce.com>",
     to: email,
     subject: "Reset your ClientEnforce password",
-    html: `
-      <h2>Reset your password</h2>
-      <p>You requested a password reset.</p>
-      <p>Click the button below to set a new password:</p>
-
-      <a href="${resetLink}" 
-        style="
-          display:inline-block;
-          padding:12px 20px;
-          background:#000;
-          color:#fff;
-          border-radius:8px;
-          text-decoration:none;
-        ">
-        Reset password
-      </a>
-
-      <p>If you didn't request this you can ignore this email.</p>
-    `,
+    html: emailTemplate.html,
+    text: emailTemplate.text,
   });
 
   if (resendResult && "error" in resendResult && resendResult.error) {

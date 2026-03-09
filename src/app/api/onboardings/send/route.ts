@@ -11,6 +11,7 @@ import {
   selectOrganizationTier,
 } from "@/lib/plan-enforcement";
 import { appOrigin } from "@/lib/app-url";
+import { renderClientEnforceEmail } from "@/lib/email-template";
 
 export async function POST(req: Request) {
   const supabase = await supabaseServer();
@@ -61,20 +62,29 @@ export async function POST(req: Request) {
 
   const subject = `Action required: ${onboarding.title}`;
   const greeting = client.full_name ? `Hi ${client.full_name},` : "Hi,";
-  const html = `
-    <div style="font-family: ui-sans-serif, system-ui; line-height: 1.5;">
-      <p>${greeting}</p>
-      <p>Please complete your onboarding:</p>
-      <p><a href="${link}">${link}</a></p>
-      <p>Thank you.</p>
-    </div>
-  `;
+  const emailTemplate = renderClientEnforceEmail({
+    preheader: `Complete your onboarding: ${onboarding.title}`,
+    eyebrow: "Client onboarding",
+    title: "Complete your onboarding",
+    subtitle: onboarding.title,
+    intro: greeting,
+    paragraphs: [
+      "Please complete your onboarding in ClientEnforce so your team can continue the next step.",
+      `If the button does not work, copy and paste this link into your browser:\n${link}`,
+    ],
+    primaryCta: {
+      label: "Open onboarding",
+      href: link,
+    },
+    footerNote: "This is a transactional email from ClientEnforce.",
+  });
 
   const { error: emailErr } = await resend.emails.send({
     from: "ClientEnforce <info@clientenforce.com>",
     to: [client.email],
     subject,
-    html,
+    html: emailTemplate.html,
+    text: emailTemplate.text,
   });
 
   if (emailErr) return NextResponse.json({ error: emailErr.message }, { status: 400 });

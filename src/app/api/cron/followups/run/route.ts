@@ -4,6 +4,7 @@ import { requireRole, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
+import { renderClientEnforceEmail } from "@/lib/email-template";
 import {
   followupsEnabledForTier,
   followupsUnavailableMessage,
@@ -31,10 +32,16 @@ function missingColumnFromMessage(message?: string | null): string | null {
   return m?.[1] ?? null;
 }
 
+function firstHttpUrl(value?: string | null) {
+  const text = String(value ?? "");
+  const match = text.match(/https?:\/\/[^\s<>"']+/i);
+  return match?.[0] ?? null;
+}
+
 async function safeUpdateFollowupJob(admin: ReturnType<typeof supabaseAdmin>, id: string, fields: Record<string, any>) {
   // If the DB schema doesn't have some columns, PostgREST returns PGRST204.
   // We retry after removing the missing column.
-  let payload: Record<string, any> = { ...fields };
+  const payload: Record<string, any> = { ...fields };
 
   for (let i = 0; i < 6; i++) {
     const { error } = await admin.from("followup_jobs").update(payload).eq("id", id);
@@ -169,17 +176,35 @@ export async function POST(req: Request) {
     }
 
     try {
-      const html = `
-        <div style="font-family: ui-sans-serif, system-ui; line-height: 1.5;">
-          <p>${String(job.body || "").replaceAll("\n", "<br/>")}</p>
-        </div>
-      `;
+      const paragraphs = String(job.body || "")
+        .split(/\n{2,}/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const ctaUrl = firstHttpUrl(job.body);
+      const emailTemplate = renderClientEnforceEmail({
+        preheader: job.subject,
+        eyebrow: "Follow-up reminder",
+        title: "Reminder: action needed",
+        subtitle: job.subject,
+        paragraphs:
+          paragraphs.length > 0
+            ? paragraphs
+            : ["Please complete your onboarding in ClientEnforce."],
+        primaryCta: ctaUrl
+          ? {
+              label: "Open onboarding",
+              href: ctaUrl,
+            }
+          : null,
+        footerNote: "This is an automated reminder from ClientEnforce.",
+      });
 
       const { error: emailErr } = await resend.emails.send({
         from,
         to: [job.to_email],
         subject: job.subject,
-        html,
+        html: emailTemplate.html,
+        text: emailTemplate.text,
       });
 
       if (emailErr) throw new Error(emailErr.message);
