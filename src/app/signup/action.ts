@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
-import { appOrigin, normalizeAuthEmailLink } from "@/lib/app-url";
+import { appOrigin, buildAuthTokenLink, normalizeAuthEmailLink } from "@/lib/app-url";
 
 export async function signupAction(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
@@ -72,7 +72,12 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  const verifyLink = normalizeAuthEmailLink(data?.properties?.action_link);
+  const verifyLink =
+    buildAuthTokenLink({
+      tokenHash: data?.properties?.hashed_token,
+      type: "signup",
+      next: `${loginRedirect.pathname}${loginRedirect.search}`,
+    }) || normalizeAuthEmailLink(data?.properties?.action_link);
   if (!verifyLink) {
     redirect(`/signup?error=${encodeURIComponent("Could not generate verification link.")}`);
   }

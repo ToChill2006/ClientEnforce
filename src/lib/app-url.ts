@@ -87,3 +87,27 @@ export function normalizeAuthEmailLink(rawLink?: string | null) {
     return link;
   }
 }
+
+type BuildAuthTokenLinkArgs = {
+  tokenHash?: string | null;
+  type?: string | null;
+  next?: string | null;
+};
+
+export function buildAuthTokenLink(args: BuildAuthTokenLinkArgs) {
+  const tokenHash = String(args.tokenHash ?? "").trim();
+  if (!tokenHash) return "";
+
+  const url = new URL("/auth/callback", appOrigin());
+  url.searchParams.set("token_hash", tokenHash);
+
+  const type = String(args.type ?? "").trim();
+  if (type) url.searchParams.set("type", type);
+
+  const next = String(args.next ?? "").trim();
+  if (next && next.startsWith("/") && !next.startsWith("//")) {
+    url.searchParams.set("next", next);
+  }
+
+  return url.toString();
+}

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
-import { appOrigin, normalizeAuthEmailLink } from "@/lib/app-url";
+import { appOrigin, buildAuthTokenLink, normalizeAuthEmailLink } from "@/lib/app-url";
 
 function isLocalSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -43,10 +43,7 @@ export async function forgotPasswordAction(formData: FormData) {
   }
 
   // Generate Supabase recovery link
-  const admin =
-    typeof supabaseAdmin === "function"
-      ? (supabaseAdmin as any)()
-      : (supabaseAdmin as any);
+  const admin = supabaseAdmin();
 
   const { data, error } = await admin.auth.admin.generateLink({
     type: "recovery",
@@ -63,7 +60,12 @@ export async function forgotPasswordAction(formData: FormData) {
     );
   }
 
-  const resetLink = normalizeAuthEmailLink(data.properties.action_link);
+  const resetLink =
+    buildAuthTokenLink({
+      tokenHash: data?.properties?.hashed_token,
+      type: "recovery",
+      next: "/reset-password",
+    }) || normalizeAuthEmailLink(data.properties.action_link);
 
   // Send email using Resend
   const resendResult = await resend.emails.send({
@@ -91,10 +93,14 @@ export async function forgotPasswordAction(formData: FormData) {
     `,
   });
 
-  if ((resendResult as any)?.error) {
+  if (resendResult && "error" in resendResult && resendResult.error) {
+    const message =
+      typeof resendResult.error.message === "string"
+        ? resendResult.error.message
+        : "Failed to send reset email";
     redirect(
       "/forgot-password?error=" +
-        encodeURIComponent((resendResult as any).error.message || "Failed to send reset email")
+        encodeURIComponent(message)
     );
   }
 

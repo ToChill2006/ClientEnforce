@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabaseBrowser } from "@/lib/supabase";
@@ -21,6 +22,13 @@ function safeNextPath(raw: string | null, fallback = "/dashboard") {
   return decoded;
 }
 
+function parseOtpType(raw: string | null): EmailOtpType | null {
+  const value = String(raw ?? "").trim().toLowerCase();
+  if (!value) return null;
+  const allowed: EmailOtpType[] = ["signup", "recovery", "invite", "magiclink", "email_change", "email"];
+  return allowed.includes(value as EmailOtpType) ? (value as EmailOtpType) : null;
+}
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,8 +44,16 @@ export default function AuthCallbackPage() {
       const supabase = supabaseBrowser();
 
       try {
+        const tokenHash = searchParams.get("token_hash");
+        const otpType = parseOtpType(searchParams.get("type"));
         const code = searchParams.get("code");
-        if (code) {
+        if (tokenHash && otpType) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: otpType,
+          });
+          if (error) throw error;
+        } else if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
         } else {
