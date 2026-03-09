@@ -3,12 +3,12 @@ import { MetadataRoute } from "next";
 import { appOrigin } from "@/lib/app-url";
 
 const PRIVATE_PATHS = [
-  "/api",
-  "/auth",
-  "/c",
-  "/dashboard",
+  "/api/",
+  "/auth/",
+  "/c/",
+  "/dashboard/",
   "/forgot-password",
-  "/invite",
+  "/invite/",
   "/login",
   "/reset-password",
   "/signup",
@@ -39,7 +39,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: [...PUBLIC_INDEXABLE_PATHS],
+        allow: ["/", ...PUBLIC_INDEXABLE_PATHS],
         disallow: [...PRIVATE_PATHS],
       },
     ],
