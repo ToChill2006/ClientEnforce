@@ -25,48 +25,104 @@ export function PublicHeader() {
           </span>
         </Link>
 
-        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:gap-2 md:flex">
-          <Link
-            href="/client-onboarding-software"
-            aria-label="Client onboarding software"
-            className={navItemClassName()}
-          >
-            <span className="xl:hidden">Software</span>
-            <span className="hidden xl:inline">Client onboarding software</span>
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 md:flex lg:gap-2">
+          <Link href="/client-onboarding-software" className={navItemClassName()}>
+            Client onboarding software
           </Link>
-          <Link
-            href="/client-onboarding-checklist"
-            aria-label="Client onboarding checklist"
-            className={navItemClassName()}
-          >
-            <span className="xl:hidden">Checklist</span>
-            <span className="hidden xl:inline">Client onboarding checklist</span>
-          </Link>
-          <Link
-            href="/client-onboarding-automation"
-            aria-label="Client onboarding automation"
-            className={navItemClassName()}
-          >
-            <span className="xl:hidden">Automation</span>
-            <span className="hidden xl:inline">Client onboarding automation</span>
-          </Link>
-          <Link
-            href="/client-onboarding-tools"
-            aria-label="Best client onboarding tools"
-            className={navItemClassName()}
-          >
-            <span className="xl:hidden">Tools</span>
-            <span className="hidden xl:inline">Best client onboarding tools</span>
-          </Link>
-          <Link href="/blog" className={navItemClassName()}>
-            Resources
-          </Link>
+
+          <details className="group relative">
+            <summary className={`${navItemClassName()} list-none cursor-pointer select-none`}>
+              <span className="inline-flex items-center gap-1.5">
+                Resources
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4 text-zinc-500 transition group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </summary>
+
+            <div className="invisible absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-zinc-200 bg-white p-2 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
+              <Link
+                href="/blog"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding blog
+              </Link>
+              <Link
+                href="/client-onboarding-checklist"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding checklist
+              </Link>
+              <Link
+                href="/client-onboarding-automation"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding automation
+              </Link>
+              <Link
+                href="/client-onboarding-tools"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Best client onboarding tools
+              </Link>
+            </div>
+          </details>
+
+          <details className="group relative">
+            <summary className={`${navItemClassName()} list-none cursor-pointer select-none`}>
+              <span className="inline-flex items-center gap-1.5">
+                Comparisons
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4 text-zinc-500 transition group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </summary>
+
+            <div className="invisible absolute left-0 top-full z-50 mt-2 w-80 rounded-2xl border border-zinc-200 bg-white p-2 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
+              <Link
+                href="/dubsado-alternative"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Dubsado alternative
+              </Link>
+              <Link
+                href="/honeybook-alternative"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                HoneyBook alternative
+              </Link>
+              <Link
+                href="/client-onboarding-software-for-agencies"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding software for agencies
+              </Link>
+            </div>
+          </details>
         </nav>
 
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 sm:inline-flex"
+            className="hidden whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 lg:inline-flex"
           >
             Sign in
           </Link>
