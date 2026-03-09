@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PublicHeader } from "@/components/marketing/public-shell";
+import { PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -193,6 +193,7 @@ export default function FeaturesPage() {
           </Container>
         </section>
       </main>
+      <PublicFooter />
     </>
   );
 }
