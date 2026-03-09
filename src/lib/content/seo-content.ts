@@ -236,7 +236,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "Read the full process breakdown with role-by-role execution advice.",
           },
           {
-            href: "/blog/how-to-automate-client-onboarding",
+            href: "/blog/automate-client-onboarding",
             label: "how to automate client onboarding",
             description: "Follow a practical rollout plan for automating your onboarding workflow.",
           },
@@ -532,7 +532,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Layer automation on top of your checklist to reduce delays.",
       },
       {
-        href: "/blog/how-to-automate-client-onboarding",
+        href: "/blog/automate-client-onboarding",
         label: "How to automate client onboarding",
         description: "Use a phased automation rollout plan that preserves quality.",
       },
@@ -635,7 +635,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Choose tooling that supports your automation plan.",
       },
       {
-        href: "/blog/how-to-automate-client-onboarding",
+        href: "/blog/automate-client-onboarding",
         label: "How to automate client onboarding",
         description: "Follow a practical rollout process from manual to automated.",
       },
@@ -1084,7 +1084,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Turn your process into a repeatable checklist.",
       },
       {
-        href: "/blog/how-to-automate-client-onboarding",
+        href: "/blog/automate-client-onboarding",
         label: "How to automate client onboarding",
         description: "Roll out automation in stages without losing quality.",
       },
@@ -1291,7 +1291,7 @@ export const blogPosts: Record<string, BlogPost> = {
             description: "Use software that combines workflow control and automation in one place.",
           },
           {
-            href: "/blog/how-to-automate-client-onboarding",
+            href: "/blog/automate-client-onboarding",
             label: "how to automate client onboarding",
             description: "Follow a full implementation roadmap with rollout checkpoints.",
           },
@@ -1420,7 +1420,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Link your template system to reminder automation.",
       },
       {
-        href: "/blog/how-to-automate-client-onboarding",
+        href: "/blog/automate-client-onboarding",
         label: "How to automate client onboarding",
         description: "Build a complete automated communication workflow.",
       },
@@ -1549,9 +1549,9 @@ export const blogPosts: Record<string, BlogPost> = {
       { name: "Client onboarding mistakes", path: "/blog/client-onboarding-mistakes" },
     ],
   },
-  "how-to-automate-client-onboarding": {
-    slug: "how-to-automate-client-onboarding",
-    path: "/blog/how-to-automate-client-onboarding",
+  "automate-client-onboarding": {
+    slug: "automate-client-onboarding",
+    path: "/blog/automate-client-onboarding",
     title: "How to Automate Client Onboarding: Step-by-Step Guide | ClientEnforce",
     description:
       "Follow this step-by-step guide on how to automate client onboarding with templates, reminders, and workflow triggers.",
@@ -1656,8 +1656,363 @@ export const blogPosts: Record<string, BlogPost> = {
       { name: "Blog", path: "/blog" },
       {
         name: "How to automate client onboarding",
-        path: "/blog/how-to-automate-client-onboarding",
+        path: "/blog/automate-client-onboarding",
       },
+    ],
+  },
+  "client-onboarding-workflow": {
+    slug: "client-onboarding-workflow",
+    path: "/blog/client-onboarding-workflow",
+    title: "Client Onboarding Workflow: Steps, Roles, and Automation | ClientEnforce",
+    description:
+      "Build a reliable client onboarding workflow with clear stages, ownership, and automation rules for agencies and service teams.",
+    keywords: [
+      "client onboarding workflow",
+      "client onboarding process",
+      "client onboarding",
+      "automate client onboarding",
+    ],
+    category: "Execution",
+    h1: "Client onboarding workflow: a repeatable model for cleaner project starts",
+    intro:
+      "A client onboarding workflow should move every account from signed agreement to kickoff with minimal delay and zero ambiguity. This guide breaks down the model, ownership rules, and automation checkpoints teams can implement immediately.",
+    readTime: "11 min read",
+    publishedTime: "2026-03-09",
+    modifiedTime: "2026-03-09",
+    highlights: [
+      "Map one workflow with explicit completion states",
+      "Assign one owner for every onboarding stage",
+      "Automate reminders and escalations based on task status",
+    ],
+    sections: [
+      {
+        heading: "What is a client onboarding workflow?",
+        paragraphs: [
+          "A client onboarding workflow is the sequence of required steps a new client completes before delivery begins. It includes information gathering, document submission, signatures, follow-ups, and internal readiness checks.",
+          "The goal is predictable handoff quality. A good workflow prevents teams from starting delivery without the data, approvals, and context needed to execute well.",
+        ],
+      },
+      {
+        heading: "Why client onboarding workflows break",
+        paragraphs: [
+          "Most workflows fail for operational reasons, not strategic ones. Teams often know what they need, but the process is not enforceable.",
+        ],
+        bullets: [
+          "No single source of truth for required onboarding steps",
+          "Responsibilities spread across sales, ops, and delivery without clear ownership",
+          "Manual reminders that depend on individual memory",
+          "No explicit definition of kickoff-ready",
+        ],
+      },
+      {
+        heading: "A practical 6-step workflow model",
+        paragraphs: [
+          "Use this model as your base workflow, then adapt by service line.",
+        ],
+        steps: [
+          {
+            title: "1. Kickoff expectation setting",
+            description:
+              "Share timeline, required inputs, and communication rules so the client understands what blocks kickoff.",
+          },
+          {
+            title: "2. Intake and scope confirmation",
+            description:
+              "Collect core business details, stakeholders, and scope constraints in one structured intake form.",
+          },
+          {
+            title: "3. Onboarding documents and signatures",
+            description:
+              "Request required files, capture approvals, and validate completion in the same portal flow.",
+          },
+          {
+            title: "4. Follow-ups and exception handling",
+            description:
+              "Trigger reminders for overdue tasks and escalate stalled accounts to the owner with context.",
+          },
+          {
+            title: "5. Readiness review",
+            description:
+              "Check dependencies, confirm no missing requirements, and document risks before handoff.",
+          },
+          {
+            title: "6. Delivery handoff",
+            description:
+              "Mark onboarding complete and pass a clean record to delivery so the first sprint starts without rework.",
+          },
+        ],
+      },
+      {
+        heading: "Workflow ownership model by role",
+        paragraphs: [
+          "A repeatable client onboarding workflow needs role clarity. Ownership should stay stable even when teams grow.",
+        ],
+        table: {
+          headers: ["Role", "Primary responsibility", "Success indicator"],
+          rows: [
+            [
+              "Account owner",
+              "Expectation setting, timeline clarity, and client coordination",
+              "Client understands requirements and deadlines from day one",
+            ],
+            [
+              "Operations",
+              "Template quality, workflow governance, and exception rules",
+              "Onboarding runs consistently across accounts",
+            ],
+            [
+              "Delivery lead",
+              "Readiness validation and kickoff acceptance",
+              "Projects start with complete, accurate onboarding inputs",
+            ],
+          ],
+        },
+      },
+      {
+        heading: "Workflow metrics to track every month",
+        paragraphs: [
+          "You cannot improve what you do not measure. Track a small set of metrics consistently.",
+        ],
+        bullets: [
+          "Median days from contract to onboarding completion",
+          "Completion rate within target SLA",
+          "Average reminder count per account",
+          "Number of kickoff delays caused by onboarding gaps",
+        ],
+      },
+      {
+        heading: "How to automate this workflow safely",
+        paragraphs: [
+          "Automate repetitive coordination first: reminder cadence, inactivity alerts, and completion notifications. Keep strategic conversations human.",
+        ],
+        links: [
+          {
+            href: "/client-onboarding-automation",
+            label: "client onboarding automation",
+            description: "See a full automation strategy with trigger examples.",
+          },
+          {
+            href: "/blog/automate-client-onboarding",
+            label: "automate client onboarding",
+            description: "Follow a step-by-step implementation playbook.",
+          },
+          {
+            href: "/client-onboarding-software",
+            label: "client onboarding software",
+            description: "Run this workflow inside one onboarding-focused platform.",
+          },
+        ],
+      },
+    ],
+    checklist: [
+      "Each workflow stage has one accountable owner",
+      "Kickoff-ready criteria are documented and enforced",
+      "Reminder and escalation triggers are active",
+      "Workflow metrics are reviewed monthly",
+    ],
+    relatedLinks: [
+      {
+        href: "/",
+        label: "ClientEnforce homepage",
+        description: "See the product walkthrough and start your onboarding workflow.",
+      },
+      {
+        href: "/client-onboarding-software",
+        label: "Client onboarding software",
+        description: "Explore software capabilities built for workflow execution.",
+      },
+      {
+        href: "/blog/client-onboarding-process",
+        label: "Client onboarding process",
+        description: "Start with the process foundations before workflow optimization.",
+      },
+      {
+        href: "/blog/client-onboarding-checklist",
+        label: "Client onboarding checklist",
+        description: "Turn workflow stages into enforceable required tasks.",
+      },
+    ],
+    cta: commonCta,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+      { name: "Client onboarding workflow", path: "/blog/client-onboarding-workflow" },
+    ],
+  },
+  "onboarding-documents-for-clients": {
+    slug: "onboarding-documents-for-clients",
+    path: "/blog/onboarding-documents-for-clients",
+    title: "Onboarding Documents for Clients: What to Request and Why | ClientEnforce",
+    description:
+      "Use this guide to request the right onboarding documents for clients, reduce delays, and improve kickoff readiness.",
+    keywords: [
+      "onboarding documents for clients",
+      "client onboarding documents",
+      "client onboarding checklist",
+      "client onboarding software",
+    ],
+    category: "Execution",
+    h1: "Onboarding documents for clients: a practical request checklist by use case",
+    intro:
+      "Incomplete documentation is one of the biggest causes of delayed onboarding. This guide helps you define document requirements, request them clearly, and validate completeness before kickoff.",
+    readTime: "10 min read",
+    publishedTime: "2026-03-09",
+    modifiedTime: "2026-03-09",
+    highlights: [
+      "Define required documents before kickoff calls",
+      "Group document requests by onboarding stage",
+      "Validate file quality before handing off to delivery",
+    ],
+    sections: [
+      {
+        heading: "Why onboarding document collection becomes a bottleneck",
+        paragraphs: [
+          "Most teams lose time because document requests are scattered across email threads and late-stage messages. Clients are unclear about what is mandatory, what format is acceptable, and when each item is due.",
+          "A structured document workflow makes completion easier. Clients get one clear request list, and your team gets visibility into what is still missing.",
+        ],
+      },
+      {
+        heading: "Core onboarding documents to request",
+        paragraphs: [
+          "The exact list depends on service type, but these categories appear in most onboarding programs.",
+        ],
+        table: {
+          headers: ["Document category", "Purpose", "Common examples"],
+          rows: [
+            [
+              "Legal and approvals",
+              "Confirm terms and authorization",
+              "Signed agreement, consent forms, compliance acknowledgements",
+            ],
+            [
+              "Business context",
+              "Provide delivery baseline",
+              "Brand guidelines, prior strategy docs, current process map",
+            ],
+            [
+              "Access and credentials",
+              "Enable implementation",
+              "Platform access, admin invitations, account IDs",
+            ],
+            [
+              "Operational references",
+              "Align execution expectations",
+              "SLA targets, escalation contacts, reporting preferences",
+            ],
+          ],
+        },
+      },
+      {
+        heading: "How to request documents without creating friction",
+        paragraphs: [
+          "Clients complete requests faster when instructions are short and specific. Avoid large open-ended asks.",
+        ],
+        steps: [
+          {
+            title: "Step 1: Send one structured request list",
+            description:
+              "Group requests by priority and due date so clients can complete critical items first.",
+          },
+          {
+            title: "Step 2: Define acceptable formats",
+            description:
+              "Specify file type, naming standard, and examples to avoid back-and-forth clarification.",
+          },
+          {
+            title: "Step 3: Add reminder cadence",
+            description:
+              "Schedule reminders for incomplete items automatically instead of relying on manual follow-up.",
+          },
+          {
+            title: "Step 4: Confirm receipt and quality",
+            description:
+              "Validate each document quickly, then notify clients if anything is missing or unusable.",
+          },
+        ],
+      },
+      {
+        heading: "Validation checks before kickoff",
+        paragraphs: [
+          "A received document is not always a usable document. Add a short validation pass before handoff.",
+        ],
+        bullets: [
+          "Is the latest version uploaded?",
+          "Is the file complete and readable?",
+          "Do approvals match required signatories?",
+          "Can delivery start without additional clarification?",
+        ],
+      },
+      {
+        heading: "Security and retention considerations",
+        paragraphs: [
+          "Onboarding documents often include sensitive business information. Use secure upload links, controlled access, and clear retention policies.",
+          "For regulated sectors, keep an auditable activity log so you can prove what was submitted and when.",
+        ],
+        links: [
+          {
+            href: "/client-onboarding-software",
+            label: "client onboarding software",
+            description: "Centralize secure document collection, signatures, and status tracking.",
+          },
+          {
+            href: "/client-onboarding-checklist",
+            label: "client onboarding checklist",
+            description: "Tie document requirements to required onboarding checkpoints.",
+          },
+        ],
+      },
+      {
+        heading: "Implementation plan for agencies and service teams",
+        paragraphs: [
+          "Start with one standard document template per service line. Run that template for 30 days, measure completion time, then refine your required list.",
+        ],
+        links: [
+          {
+            href: "/blog/client-onboarding-workflow",
+            label: "client onboarding workflow",
+            description: "Connect document collection to your broader onboarding workflow.",
+          },
+          {
+            href: "/blog/client-onboarding-email-templates",
+            label: "client onboarding email templates",
+            description: "Use proven email copy for document reminders and escalations.",
+          },
+        ],
+      },
+    ],
+    checklist: [
+      "Required document list is standardized per service line",
+      "Acceptable file formats and owners are documented",
+      "Automated reminders are enabled for missing items",
+      "Validation review happens before kickoff handoff",
+    ],
+    relatedLinks: [
+      {
+        href: "/",
+        label: "ClientEnforce homepage",
+        description: "Return to the product page and launch secure document collection.",
+      },
+      {
+        href: "/client-onboarding-software",
+        label: "Client onboarding software",
+        description: "Run document requests, signatures, and follow-ups in one portal.",
+      },
+      {
+        href: "/blog/client-onboarding-checklist",
+        label: "Client onboarding checklist",
+        description: "Add documents to an enforceable onboarding checklist.",
+      },
+      {
+        href: "/blog/automate-client-onboarding",
+        label: "Automate client onboarding",
+        description: "Automate document reminders and completion alerts.",
+      },
+    ],
+    cta: commonCta,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+      { name: "Onboarding documents for clients", path: "/blog/onboarding-documents-for-clients" },
     ],
   },
   "best-client-onboarding-software": {
@@ -1764,7 +2119,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Map your process before selecting tools.",
       },
       {
-        href: "/blog/how-to-automate-client-onboarding",
+        href: "/blog/automate-client-onboarding",
         label: "How to automate client onboarding",
         description: "Plan your implementation after tool selection.",
       },

@@ -313,6 +313,33 @@ export function BlogPostTemplate({
                 </section>
               ) : null}
 
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Next steps</h2>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Explore the main product pages after this guide to compare plans and launch your workflow.
+                </p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <Link
+                    href="/"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    ClientEnforce homepage
+                  </Link>
+                  <Link
+                    href="/client-onboarding-software"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Client onboarding software
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Pricing
+                  </Link>
+                </div>
+              </section>
+
               <RelatedReading links={post.relatedLinks} />
 
               <CtaPanel
