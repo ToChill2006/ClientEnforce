@@ -5,6 +5,8 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
+import { resend } from "@/lib/resend";
+import { renderClientEnforceEmail } from "@/lib/email-template";
 
 const FeedbackSchema = z.object({
   rating: z.number().int().min(1).max(5),
@@ -50,6 +52,44 @@ export async function POST(req: Request) {
     });
 
   if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 400 });
+
+  const toEmail =
+    process.env.CLIENTENFORCE_FEEDBACK_TO ||
+    process.env.RESEND_FEEDBACK_TO ||
+    "support@clientenforce.com";
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
+
+  const emailTemplate = renderClientEnforceEmail({
+    preheader: `New dashboard feedback (${parsed.data.rating}/5)`,
+    eyebrow: "Product feedback",
+    title: `New dashboard feedback: ${parsed.data.rating}/5`,
+    subtitle: `From ${profile.email || userData.user.email || "unknown user"}`,
+    paragraphs: [
+      `Rating: ${parsed.data.rating}/5`,
+      `User email: ${profile.email || userData.user.email || "Unknown"}`,
+      `User role: ${role}`,
+      `Org ID: ${profile.org_id}`,
+      `Feedback:\n${feedback || "No written feedback provided."}`,
+    ],
+    footerNote: "Automated feedback notification from ClientEnforce.",
+  });
+
+  const send = await resend.emails.send({
+    from: `${fromName} <${fromEmail}>`,
+    to: [toEmail],
+    subject: `ClientEnforce feedback: ${parsed.data.rating}/5`,
+    html: emailTemplate.html,
+    text: emailTemplate.text,
+  });
+
+  if (send && "error" in send && send.error) {
+    const message =
+      typeof send.error.message === "string"
+        ? send.error.message
+        : "Feedback saved, but email notification failed.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
