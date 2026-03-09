@@ -26,21 +26,21 @@ const reasons: ContactReason[] = [
     description:
       "Need help with onboarding workflows, documents, signatures, or account setup? Our support team can help.",
     actionLabel: "Email support",
-    actionHref: "mailto:support@clientenforce.com",
+    actionHref: "mailto:info@clientenforce.com",
   },
   {
     title: "Sales",
     description:
       "Evaluating ClientEnforce for your team? Contact us for plan guidance and onboarding workflow fit.",
     actionLabel: "Talk to sales",
-    actionHref: "mailto:support@clientenforce.com?subject=Sales%20Inquiry",
+    actionHref: "mailto:info@clientenforce.com?subject=Sales%20Inquiry",
   },
   {
     title: "Partnerships",
     description:
       "Interested in a strategic partnership, referral collaboration, or integration opportunity?",
     actionLabel: "Discuss partnerships",
-    actionHref: "mailto:support@clientenforce.com?subject=Partnership%20Inquiry",
+    actionHref: "mailto:info@clientenforce.com?subject=Partnership%20Inquiry",
   },
 ];
 
@@ -72,10 +72,10 @@ export default function ContactPage() {
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
-                  href="mailto:support@clientenforce.com"
+                  href="mailto:info@clientenforce.com"
                   className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
                 >
-                  Email support@clientenforce.com
+                  Email info@clientenforce.com
                 </a>
                 <Link
                   href="/"
@@ -112,13 +112,18 @@ export default function ContactPage() {
                   <p className="mt-2 text-sm leading-6 text-zinc-700">
                     Use this form layout for quick inquiries. For immediate help, email
                     {" "}
-                    <a href="mailto:support@clientenforce.com" className="font-medium text-zinc-900 underline underline-offset-4">
-                      support@clientenforce.com
+                    <a href="mailto:info@clientenforce.com" className="font-medium text-zinc-900 underline underline-offset-4">
+                      info@clientenforce.com
                     </a>
                     .
                   </p>
 
-                  <form className="mt-5 grid gap-4 sm:grid-cols-2" action="#" method="post">
+                  <form
+                    className="mt-5 grid gap-4 sm:grid-cols-2"
+                    action="mailto:info@cleintenforce.com?subject=ClientEnforce%20Contact%20Form"
+                    method="post"
+                    encType="text/plain"
+                  >
                     <div>
                       <Label htmlFor="fullName">Full name</Label>
                       <input
@@ -178,14 +183,11 @@ export default function ContactPage() {
 
                     <div className="sm:col-span-2">
                       <button
-                        type="button"
+                        type="submit"
                         className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
                       >
                         Send message
                       </button>
-                      <p className="mt-2 text-xs text-zinc-600">
-                        This form UI is for launch layout. Messages should be wired to your preferred support workflow.
-                      </p>
                     </div>
                   </form>
                 </section>
@@ -195,13 +197,9 @@ export default function ContactPage() {
                   <div className="mt-4 space-y-4 text-sm leading-6 text-zinc-700">
                     <div>
                       <div className="font-medium text-zinc-900">Support email</div>
-                      <a href="mailto:support@clientenforce.com" className="underline underline-offset-4">
-                        support@clientenforce.com
+                      <a href="mailto:info@clientenforce.com" className="underline underline-offset-4">
+                        info@clientenforce.com
                       </a>
-                    </div>
-                    <div>
-                      <div className="font-medium text-zinc-900">Mailing address</div>
-                      <div>[Insert company address]</div>
                     </div>
                     <div>
                       <div className="font-medium text-zinc-900">Legal</div>
