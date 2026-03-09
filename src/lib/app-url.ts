@@ -62,9 +62,10 @@ export function normalizeAuthEmailLink(rawLink?: string | null) {
 
   try {
     const url = new URL(link);
-    if (process.env.NODE_ENV === "production") {
-      const target = new URL(appOrigin());
+    const target = new URL(appOrigin());
+    const canRewriteToTarget = !isLocalHostname(target.hostname);
 
+    if (canRewriteToTarget) {
       if (isLocalHostname(url.hostname)) {
         url.protocol = target.protocol;
         url.host = target.host;
@@ -78,9 +79,8 @@ export function normalizeAuthEmailLink(rawLink?: string | null) {
           url.searchParams.set(key, nextValue);
         }
       }
-
-      return url.toString();
     }
+
     return url.toString();
   } catch {
     if (link.startsWith("/")) return `${appOrigin()}${link}`;
