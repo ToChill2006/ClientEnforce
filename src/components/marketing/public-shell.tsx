@@ -26,9 +26,52 @@ export function PublicHeader() {
         </Link>
 
         <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 md:flex lg:gap-2">
-          <Link href="/client-onboarding-software" className={navItemClassName()}>
-            Client onboarding software
-          </Link>
+          <details className="group relative">
+            <summary className={`${navItemClassName()} list-none cursor-pointer select-none`}>
+              <span className="inline-flex items-center gap-1.5">
+                Product
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4 text-zinc-500 transition group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </summary>
+
+            <div className="invisible absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-zinc-200 bg-white p-2 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
+              <Link
+                href="/client-onboarding-software"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding software
+              </Link>
+              <Link
+                href="/features"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Features
+              </Link>
+              <Link
+                href="/pricing"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/about"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                About
+              </Link>
+            </div>
+          </details>
 
           <details className="group relative">
             <summary className={`${navItemClassName()} list-none cursor-pointer select-none`}>
