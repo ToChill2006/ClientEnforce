@@ -3,6 +3,14 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { SendOnboardingSchema } from "@/lib/onboarding-schema";
 import { resend } from "@/lib/resend";
+import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
+import {
+  followupsEnabledForTier,
+  permissionDenied,
+  selectOrganizationTier,
+} from "@/lib/plan-enforcement";
+import { appOrigin } from "@/lib/app-url";
 
 export async function POST(req: Request) {
   const supabase = await supabaseServer();
@@ -10,29 +18,18 @@ export async function POST(req: Request) {
   if (userErr) return NextResponse.json({ error: userErr.message }, { status: 401 });
   if (!userData.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const role = await requireRole(["owner", "admin", "member"]);
+  if (!roleHasPermission(role, "onboardings_send")) {
+    return NextResponse.json({ error: permissionDenied("You do not have access to send onboarding links.") }, { status: 403 });
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = SendOnboardingSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid payload", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { data: profile, error: profileErr } = await supabase
-    .from("profiles")
-    .select("org_id")
-    .eq("user_id", userData.user.id)
-    .single();
-  if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 400 });
-
-  const { data: membership, error: membershipErr } = await supabase
-    .from("memberships")
-    .select("role")
-    .eq("org_id", profile.org_id)
-    .eq("user_id", userData.user.id)
-    .single();
-  if (membershipErr) return NextResponse.json({ error: membershipErr.message }, { status: 400 });
-  if (!(membership.role === "owner" || membership.role === "admin")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const profile = await requireProfile();
 
   const admin = supabaseAdmin();
   const orgId = profile.org_id;
@@ -55,7 +52,7 @@ export async function POST(req: Request) {
 
   if (clientErr) return NextResponse.json({ error: clientErr.message }, { status: 400 });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+  const appUrl = appOrigin();
   const link = `${appUrl}/c/${onboarding.client_token}`;
 
   if (!process.env.RESEND_API_KEY) {
@@ -90,71 +87,67 @@ export async function POST(req: Request) {
 
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 400 });
 
-  // Create follow-up jobs using org settings (fallback to 24h if settings missing)
-  try {
-    const { data: orgSettings, error: orgSettingsErr } = await admin
-      .from("organizations")
-      .select("followup_delay_days, followup_max_count, followup_send_hour, followup_timezone")
-      .eq("id", orgId)
-      .single();
+  // Create follow-up jobs only when follow-up automation is enabled for the current plan.
+  const { tier, error: tierError } = await selectOrganizationTier(admin as any, orgId);
+  if (tierError) {
+    console.warn("tier lookup failed in onboarding send", tierError);
+  }
 
-    // Defaults if org does not have settings yet
-    const delayDays = Math.max(1, Number(orgSettings?.followup_delay_days ?? 1));
-    const maxCount = Math.max(0, Number(orgSettings?.followup_max_count ?? 1));
-    const sendHour = Math.min(23, Math.max(0, Number(orgSettings?.followup_send_hour ?? 9)));
-    // Timezone is stored but we schedule in UTC unless you later add a TZ library.
-    const timezone = String(orgSettings?.followup_timezone ?? "UTC");
+  if (followupsEnabledForTier(tier)) {
+    try {
+      const { data: orgSettings, error: orgSettingsErr } = await admin
+        .from("organizations")
+        .select("followup_delay_days, followup_max_count, followup_send_hour, followup_timezone")
+        .eq("id", orgId)
+        .single();
 
-    if (orgSettingsErr) {
-      // If the table/columns aren't present yet, fall back.
-      throw new Error(orgSettingsErr.message);
-    }
+      // Defaults if org does not have settings yet
+      const delayDays = Math.max(1, Number(orgSettings?.followup_delay_days ?? 1));
+      const maxCount = Math.max(0, Number(orgSettings?.followup_max_count ?? 1));
+      const sendHour = Math.min(23, Math.max(0, Number(orgSettings?.followup_send_hour ?? 9)));
 
-    if (maxCount > 0) {
-      const now = new Date();
-
-      // Schedule the first follow-up at `sendHour` UTC on (now + delayDays).
-      const first = new Date(now);
-      first.setUTCDate(first.getUTCDate() + delayDays);
-      first.setUTCHours(sendHour, 0, 0, 0);
-
-      // If that time is still in the past (edge cases), push it 1 day.
-      if (first.getTime() <= now.getTime()) {
-        first.setUTCDate(first.getUTCDate() + 1);
+      if (orgSettingsErr) {
+        // If the table/columns aren't present yet, skip quietly.
+        throw new Error(orgSettingsErr.message);
       }
 
-      const jobs = Array.from({ length: maxCount }).map((_, i) => {
-        const due = new Date(first);
-        due.setUTCDate(due.getUTCDate() + i * delayDays);
-        return {
-          org_id: orgId,
-          onboarding_id: onboarding.id,
-          to_email: client.email,
-          subject: `Reminder: ${onboarding.title}`,
-          body: `Please complete your onboarding: ${link}`,
-          due_at: due.toISOString(),
-          status: "queued" as const,
-        };
-      });
+      if (maxCount > 0) {
+        const now = new Date();
 
-      const { error: jobErr } = await admin.from("followup_jobs").insert(jobs);
-      if (jobErr) {
-        // Don't fail the send just because followups couldn't be queued.
-        console.warn("followup_jobs insert failed", jobErr);
+        // Schedule the first follow-up at `sendHour` UTC on (now + delayDays).
+        const first = new Date(now);
+        first.setUTCDate(first.getUTCDate() + delayDays);
+        first.setUTCHours(sendHour, 0, 0, 0);
+
+        // If that time is still in the past (edge cases), push it 1 day.
+        if (first.getTime() <= now.getTime()) {
+          first.setUTCDate(first.getUTCDate() + 1);
+        }
+
+        const jobs = Array.from({ length: maxCount }).map((_, i) => {
+          const due = new Date(first);
+          due.setUTCDate(due.getUTCDate() + i * delayDays);
+          return {
+            org_id: orgId,
+            onboarding_id: onboarding.id,
+            to_email: client.email,
+            subject: `Reminder: ${onboarding.title}`,
+            body: `Please complete your onboarding: ${link}`,
+            due_at: due.toISOString(),
+            status: "queued" as const,
+          };
+        });
+
+        const { error: jobErr } = await admin.from("followup_jobs").insert(jobs);
+        if (jobErr) {
+          // Don't fail the send just because followups couldn't be queued.
+          console.warn("followup_jobs insert failed", jobErr);
+        }
       }
+    } catch (e) {
+      // Do not fail the send flow if follow-up scheduling fails.
+      console.warn("follow-up schedule skipped", e);
     }
-  } catch (e) {
-    // Fallback: single follow-up in 24h
-    const { error: jobErr } = await admin.from("followup_jobs").insert({
-      org_id: orgId,
-      onboarding_id: onboarding.id,
-      to_email: client.email,
-      subject: `Reminder: ${onboarding.title}`,
-      body: `Please complete your onboarding: ${link}`,
-      due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      status: "queued",
-    });
-    if (jobErr) console.warn("followup_jobs fallback insert failed", jobErr);
   }
 
   await admin.from("audit_logs").insert({

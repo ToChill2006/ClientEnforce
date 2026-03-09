@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { RejectionBanner } from "@/components/ui/rejection-banner";
 
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse rounded-md bg-zinc-200/70 ${className}`} />;
@@ -89,10 +90,10 @@ export default function AuditPage() {
       <div className="card-polish overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
         {err ? (
           <div className="p-4">
-            <div className="text-sm font-medium text-zinc-900">
-              {err.includes("permission") ? "Access restricted" : "Could not load audit"}
-            </div>
-            <div className="mt-1 text-sm text-zinc-500">{err}</div>
+            <RejectionBanner
+              kind={/plan|upgrade/i.test(err) ? "plan" : /permission|access/i.test(err) ? "permission" : "error"}
+              message={err}
+            />
           </div>
         ) : null}
 
@@ -117,15 +118,10 @@ export default function AuditPage() {
                     </td>
                   </tr>
                 ))
-              ) : err && /permission/i.test(err) ? (
+              ) : err ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-10">
-                    <div className="text-sm font-medium text-zinc-900">
-                      {err && /plan/i.test(err) ? "Plan upgrade required" : "Audit is not available for your role"}
-                    </div>
-                    <div className="mt-1 text-sm text-zinc-500">
-                      {err}
-                    </div>
+                    <div className="text-sm text-zinc-500">Audit events are unavailable for this workspace.</div>
                   </td>
                 </tr>
               ) : events.length === 0 ? (

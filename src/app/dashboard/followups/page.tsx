@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RejectionBanner } from "@/components/ui/rejection-banner";
 
 type Settings = {
   id: string;
@@ -273,30 +274,36 @@ export default function FollowupsPage() {
       </div>
 
       {alert ? (
-        <div
-          className={
-            alert.variant === "error"
-              ? "rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
-              : alert.variant === "success"
-                ? "rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
-                : "rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900"
-          }
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="font-medium">{alert.title}</div>
-              {alert.description ? <div className="mt-0.5 text-sm opacity-90">{alert.description}</div> : null}
+        alert.variant === "success" ? (
+          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-medium">{alert.title}</div>
+                {alert.description ? <div className="mt-0.5 text-sm opacity-90">{alert.description}</div> : null}
+              </div>
+              <button
+                type="button"
+                className="text-xs opacity-70 hover:opacity-100"
+                onClick={() => setAlert(null)}
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
             </div>
-            <button
-              type="button"
-              className="text-xs opacity-70 hover:opacity-100"
-              onClick={() => setAlert(null)}
-              aria-label="Dismiss"
-            >
-              ✕
-            </button>
           </div>
-        </div>
+        ) : (
+          <RejectionBanner
+            kind={
+              /plan|upgrade/i.test(`${alert.title} ${alert.description ?? ""}`)
+                ? "plan"
+                : /permission/i.test(alert.title)
+                  ? "permission"
+                  : "error"
+            }
+            message={alert.description ? `${alert.title}: ${alert.description}` : alert.title}
+            onDismiss={() => setAlert(null)}
+          />
+        )
       ) : null}
 
       <Card className="card-polish">

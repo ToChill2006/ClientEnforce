@@ -107,7 +107,19 @@ export async function POST(req: Request) {
 
   if (updErr) return jsonError(400, updErr.message);
 
-  await admin.from("onboardings").update({ updated_at: nowIso }).eq("id", onboarding.id);
+  if (onboarding.status === "sent") {
+    await admin.from("onboardings").update({ status: "in_progress", updated_at: nowIso }).eq("id", onboarding.id);
+    await admin.from("audit_logs").insert({
+      org_id: onboarding.org_id,
+      actor_user_id: null,
+      action: "onboarding.client_started",
+      entity_type: "onboarding",
+      entity_id: onboarding.id,
+      metadata: { requirement_id: reqRow.id },
+    });
+  } else {
+    await admin.from("onboardings").update({ updated_at: nowIso }).eq("id", onboarding.id);
+  }
 
   await admin.from("audit_logs").insert({
     org_id: onboarding.org_id,

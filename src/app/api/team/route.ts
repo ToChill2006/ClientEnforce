@@ -4,6 +4,13 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
+import {
+  adminLimitMessage,
+  permissionDenied,
+  selectOrganizationTier,
+  teamInviteUnavailableMessage,
+  teamInvitesEnabledForTier,
+} from "@/lib/plan-enforcement";
 
 export const runtime = "nodejs";
 
@@ -18,7 +25,7 @@ export async function GET() {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "team_members_view")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to view team members.") }, { status: 403 });
   }
 
   // Fetch memberships without embedded relationship
@@ -92,13 +99,21 @@ export async function GET() {
     created_at: r.created_at ?? null,
   }));
 
-  const { data: org, error: oErr } = await admin
+  const { tier, error: tierErr } = await selectOrganizationTier(admin, profile.org_id);
+  if (tierErr) return NextResponse.json({ error: tierErr.message }, { status: 400 });
+
+  const { data: orgMeta, error: oErr } = await admin
     .from("organizations")
-    .select("tier, seats_limit, stripe_subscription_status")
+    .select("seats_limit, stripe_subscription_status")
     .eq("id", profile.org_id)
     .single();
 
   if (oErr) return NextResponse.json({ error: oErr.message }, { status: 400 });
+
+  const org = {
+    ...(orgMeta ?? {}),
+    tier,
+  };
 
   return NextResponse.json({ members: members ?? [], invites: invites ?? [], org });
 }
@@ -106,20 +121,6 @@ export async function GET() {
 function makeInviteToken() {
   // URL-safe token
   return crypto.randomBytes(32).toString("base64url");
-}
-
-function normalizeTier(raw: unknown): "free" | "pro" | "business" {
-  const value = String(raw ?? "free").trim().toLowerCase();
-  if (value === "business") return "business";
-  if (value === "pro") return "pro";
-  if (value === "starter") return "free";
-  return "free";
-}
-
-function maxAdminsForTier(tier: "free" | "pro" | "business") {
-  if (tier === "business") return 15;
-  if (tier === "pro") return 5;
-  return 1;
 }
 
 export async function POST(req: Request) {
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "invites_create")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to invite team members.") }, { status: 403 });
   }
 
   let body: any = null;
@@ -149,29 +150,50 @@ export async function POST(req: Request) {
 
   const admin = supabaseAdmin();
 
-  const primaryOrg = await admin
+  const { tier, error: tierError } = await selectOrganizationTier(admin, profile.org_id);
+  if (tierError) return NextResponse.json({ error: tierError.message }, { status: 400 });
+
+  const { data: orgLimits, error: orgLimitErr } = await admin
     .from("organizations")
-    .select("tier, plan_tier")
+    .select("seats_limit")
     .eq("id", profile.org_id)
     .single();
+  if (orgLimitErr) return NextResponse.json({ error: orgLimitErr.message }, { status: 400 });
 
-  let org = primaryOrg.data as any;
-  let orgErr = primaryOrg.error as any;
+  const maxAdmins = tier === "business" ? 15 : tier === "pro" ? 5 : 1;
 
-  if (orgErr && /plan_tier/i.test(String(orgErr?.message || ""))) {
-    const fallbackOrg = await admin
-      .from("organizations")
-      .select("tier")
-      .eq("id", profile.org_id)
-      .single();
-    org = fallbackOrg.data as any;
-    orgErr = fallbackOrg.error as any;
+  if (!teamInvitesEnabledForTier(tier)) {
+    return NextResponse.json({ error: teamInviteUnavailableMessage() }, { status: 403 });
   }
 
-  if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 400 });
+  const seatsLimit =
+    typeof orgLimits?.seats_limit === "number" && Number.isFinite(orgLimits.seats_limit)
+      ? orgLimits.seats_limit
+      : 0;
 
-  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
-  const maxAdmins = maxAdminsForTier(tier);
+  const [{ count: memberCount, error: memberCountErr }, { count: inviteCount, error: inviteCountErr }] = await Promise.all([
+    admin
+      .from("memberships")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", profile.org_id),
+    admin
+      .from("invites")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", profile.org_id)
+      .is("accepted_at", null)
+      .gt("expires_at", new Date().toISOString()),
+  ]);
+
+  if (memberCountErr) return NextResponse.json({ error: memberCountErr.message }, { status: 400 });
+  if (inviteCountErr) return NextResponse.json({ error: inviteCountErr.message }, { status: 400 });
+
+  const seatsUsed = (memberCount || 0) + (inviteCount || 0);
+  if (seatsLimit > 0 && seatsUsed >= seatsLimit) {
+    return NextResponse.json(
+      { error: `Plan upgrade required: Seat limit reached (${seatsLimit}). Upgrade to add more team members.` },
+      { status: 409 }
+    );
+  }
 
   if (inviteRole === "admin") {
     const [{ count: currentAdmins, error: adminErr }, { count: pendingAdminInvites, error: inviteErr }] = await Promise.all([
@@ -197,12 +219,7 @@ export async function POST(req: Request) {
     if (totalAdmins >= maxAdmins) {
       return NextResponse.json(
         {
-          error:
-            tier === "free"
-              ? "Your current plan allows 1 admin user. Upgrade to Pro to add more admins."
-              : tier === "pro"
-                ? "Your current plan allows up to 5 admin users. Upgrade to Business to add more admins."
-                : `Your current plan allows up to ${maxAdmins} admin users.`,
+          error: adminLimitMessage(tier, maxAdmins),
         },
         { status: 403 }
       );

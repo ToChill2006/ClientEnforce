@@ -2,18 +2,12 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
-
-function normalizeTier(raw: unknown): "free" | "pro" | "business" {
-  const value = String(raw ?? "free").trim().toLowerCase();
-  if (value === "business") return "business";
-  if (value === "pro") return "pro";
-  if (value === "starter") return "free";
-  return "free";
-}
-
-function followupsEnabledForTier(tier: "free" | "pro" | "business") {
-  return tier === "pro" || tier === "business";
-}
+import {
+  followupsEnabledForTier,
+  followupsUnavailableMessage,
+  permissionDenied,
+  selectOrganizationTier,
+} from "@/lib/plan-enforcement";
 
 export async function GET() {
   const supabase = await supabaseServer();
@@ -30,38 +24,17 @@ export async function GET() {
   }
 
   if (!roleHasPermission(role, "followups_view")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to view follow-up jobs.") }, { status: 403 });
   }
 
-  const primary = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", profile.org_id)
-    .single();
-
-  let org = primary.data as any;
-  let orgError = primary.error as any;
-
-  if (orgError && /plan_tier/i.test(String(orgError?.message || ""))) {
-    const fallback = await supabase
-      .from("organizations")
-      .select("tier")
-      .eq("id", profile.org_id)
-      .single();
-
-    org = fallback.data as any;
-    orgError = fallback.error as any;
-  }
-
+  const { tier, error: orgError } = await selectOrganizationTier(supabase, profile.org_id);
   if (orgError) {
     return NextResponse.json({ error: orgError.message }, { status: 400 });
   }
 
-  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
-
   if (!followupsEnabledForTier(tier)) {
     return NextResponse.json(
-      { error: "Follow-up automation is not included in your current plan. Upgrade to Pro to view reminders." },
+      { error: followupsUnavailableMessage("view") },
       { status: 403 }
     );
   }
@@ -92,37 +65,17 @@ export async function PATCH(req: Request) {
   }
 
   if (!roleHasPermission(role, "followups_run")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to update follow-up jobs.") }, { status: 403 });
   }
 
-  const primary = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", profile.org_id)
-    .single();
-
-  let org = primary.data as any;
-  let orgError = primary.error as any;
-
-  if (orgError && /plan_tier/i.test(String(orgError?.message || ""))) {
-    const fallback = await supabase
-      .from("organizations")
-      .select("tier")
-      .eq("id", profile.org_id)
-      .single();
-
-    org = fallback.data as any;
-    orgError = fallback.error as any;
-  }
-
+  const { tier, error: orgError } = await selectOrganizationTier(supabase, profile.org_id);
   if (orgError) {
     return NextResponse.json({ error: orgError.message }, { status: 400 });
   }
 
-  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
   if (!followupsEnabledForTier(tier)) {
     return NextResponse.json(
-      { error: "Follow-up automation is not included in your current plan. Upgrade to Pro to update reminders." },
+      { error: followupsUnavailableMessage("update") },
       { status: 403 }
     );
   }

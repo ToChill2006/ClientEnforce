@@ -4,6 +4,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RejectionBanner } from "@/components/ui/rejection-banner";
 
 type OnboardingRow = {
   id: string;
@@ -351,7 +352,7 @@ export default function OnboardingsPage() {
 
     loadProgress(ids);
 
-    const t = window.setInterval(() => loadProgress(ids), 20_000);
+    const t = window.setInterval(() => loadProgress(ids), 5_000);
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows.map((r) => r.id).join(",")]);
@@ -590,18 +591,33 @@ export default function OnboardingsPage() {
       </div>
 
       {banner ? (
-        <div className="card-polish rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900">
-          <div className="flex items-start justify-between gap-3">
-            <div>{banner.msg}</div>
-            <button
-              type="button"
-              onClick={() => setBanner(null)}
-              className="rounded-md px-2 py-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
-            >
-              ✕
-            </button>
+        banner.kind === "success" ? (
+          <div className="card-polish rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            <div className="flex items-start justify-between gap-3">
+              <div>{banner.msg}</div>
+              <button
+                type="button"
+                onClick={() => setBanner(null)}
+                className="rounded-md px-2 py-1 text-emerald-700 hover:bg-emerald-100"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <RejectionBanner
+            kind={
+              /plan|upgrade/i.test(banner.msg)
+                ? "plan"
+                : /permission|required/i.test(banner.msg)
+                  ? "permission"
+                  : "error"
+            }
+            message={banner.msg}
+            onDismiss={() => setBanner(null)}
+            className="card-polish rounded-xl"
+          />
+        )
       ) : null}
 
       <div className="card-polish rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">

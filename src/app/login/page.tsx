@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { loginAction } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,22 +10,37 @@ import LoginToasts from "./toasts";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; created?: string; verified?: string; message?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; created?: string; verified?: string; reset?: string; message?: string; next?: string }>;
 }) {
   const sp = await searchParams;
-  const error = sp?.error ? decodeURIComponent(sp.error) : null;
+  const error = (() => {
+    if (!sp?.error) return null;
+    try {
+      return decodeURIComponent(sp.error);
+    } catch {
+      return sp.error;
+    }
+  })();
   const created = sp?.created === "1";
   const verified = sp?.verified === "1";
-  const message = sp?.message ? decodeURIComponent(sp.message) : null;
+  const reset = sp?.reset === "1" || sp?.reset === "success";
+  const message = (() => {
+    if (!sp?.message) return null;
+    try {
+      return decodeURIComponent(sp.message);
+    } catch {
+      return sp.message;
+    }
+  })();
   const next = sp?.next && sp.next.startsWith("/") ? sp.next : "/dashboard";
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
-      <LoginToasts verified={verified} />
+      <LoginToasts verified={verified} reset={reset} />
       <div className="mx-auto flex max-w-md flex-col px-6 py-14">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
-            <img src="/C.png" alt="ClientEnforce logo" className="h-6 w-6 object-contain" />
+            <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
           <div className="text-sm font-semibold">ClientEnforce</div>
         </div>

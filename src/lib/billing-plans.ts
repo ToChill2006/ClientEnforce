@@ -1,6 +1,7 @@
 export type PlanTier = "free" | "pro" | "business";
 
 export type PlanEntitlements = {
+  maxUsers: number;
   maxAdmins: number;
   maxTemplates: number;
   maxActiveOnboardings: number;
@@ -9,11 +10,13 @@ export type PlanEntitlements = {
   exportEvidenceEnabled: boolean;
   teamRolesEnabled: boolean;
   advancedReportingEnabled: boolean;
+  advancedReportingLevel: "none" | "limited" | "full";
   prioritySupport: boolean;
 };
 
 export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
   free: {
+    maxUsers: 1,
     maxAdmins: 1,
     maxTemplates: 1,
     maxActiveOnboardings: 5,
@@ -22,9 +25,11 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     exportEvidenceEnabled: false,
     teamRolesEnabled: false,
     advancedReportingEnabled: false,
+    advancedReportingLevel: "none",
     prioritySupport: false,
   },
   pro: {
+    maxUsers: 5,
     maxAdmins: 5,
     maxTemplates: 10,
     maxActiveOnboardings: 50,
@@ -32,10 +37,12 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     remindersEnabled: true,
     exportEvidenceEnabled: true,
     teamRolesEnabled: true,
-    advancedReportingEnabled: false,
-    prioritySupport: false,
+    advancedReportingEnabled: true,
+    advancedReportingLevel: "limited",
+    prioritySupport: true,
   },
   business: {
+    maxUsers: 15,
     maxAdmins: 15,
     maxTemplates: Infinity,
     maxActiveOnboardings: 200,
@@ -44,6 +51,7 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     exportEvidenceEnabled: true,
     teamRolesEnabled: true,
     advancedReportingEnabled: true,
+    advancedReportingLevel: "full",
     prioritySupport: true,
   },
 };

@@ -3,6 +3,8 @@ import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
+import { permissionDenied } from "@/lib/plan-enforcement";
+import { appOrigin } from "@/lib/app-url";
 
 export const runtime = "nodejs";
 
@@ -16,13 +18,13 @@ function json(status: number, body: any) {
   return NextResponse.json(body, { status });
 }
 
-function safeUrl(input: unknown): string | null {
+function safeSameOriginUrl(input: unknown, origin: string): string | null {
   if (typeof input !== "string") return null;
   const s = input.trim();
   if (!s) return null;
   try {
-    // Allow absolute URLs only. Keeps us safe from open-redirects.
     const u = new URL(s);
+    if (u.origin !== origin) return null;
     return u.toString();
   } catch {
     return null;
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
 
   const role = await requireRole(["owner", "admin", "member"]);
   if (!roleHasPermission(role, "billing_manage")) {
-    return json(403, { error: "Forbidden" });
+    return json(403, { error: permissionDenied("You do not have access to manage billing.") });
   }
 
   const body = await req.json().catch(() => null);
@@ -103,15 +105,14 @@ export async function POST(req: Request) {
   if (!org?.id) return json(400, { error: "Organization missing" });
 
   // Return URL: allow the caller to override, otherwise default to app settings.
-  const fallbackAppUrl =
-    process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-
-  const defaultReturnUrl =
-    process.env.STRIPE_PORTAL_RETURN_URL || `${fallbackAppUrl}/dashboard/settings`;
-
-  const returnUrl = safeUrl(body?.return_url) || safeUrl(body?.returnUrl) || defaultReturnUrl;
+  const origin = appOrigin();
+  const defaultReturnUrl = `${origin}/dashboard/settings`;
+  const configuredPortalReturn = safeSameOriginUrl(process.env.STRIPE_PORTAL_RETURN_URL, origin);
+  const returnUrl =
+    safeSameOriginUrl(body?.return_url, origin) ||
+    safeSameOriginUrl(body?.returnUrl, origin) ||
+    configuredPortalReturn ||
+    defaultReturnUrl;
 
   // Ensure the org has a Stripe customer. If not, create one and persist it.
   let customerId: string | undefined = org.stripe_customer_id || undefined;

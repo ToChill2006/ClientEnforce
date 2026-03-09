@@ -3,10 +3,7 @@
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
-
-function appUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-}
+import { appOrigin, normalizeAuthEmailLink } from "@/lib/app-url";
 
 export async function signupAction(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
@@ -28,11 +25,14 @@ export async function signupAction(formData: FormData) {
 
   const admin = supabaseAdmin();
 
-  const loginRedirect = new URL("/login", appUrl());
+  const loginRedirect = new URL("/login", appOrigin());
   loginRedirect.searchParams.set("verified", "1");
   if (next && next.startsWith("/")) {
     loginRedirect.searchParams.set("next", next);
   }
+
+  const callbackRedirect = new URL("/auth/callback", appOrigin());
+  callbackRedirect.searchParams.set("next", `${loginRedirect.pathname}${loginRedirect.search}`);
 
   const { data, error } = await admin.auth.admin.generateLink({
     type: "signup",
@@ -40,7 +40,7 @@ export async function signupAction(formData: FormData) {
     password,
     options: {
       data: { full_name: fullName || null },
-      redirectTo: loginRedirect.toString(),
+      redirectTo: callbackRedirect.toString(),
     },
   });
 
@@ -72,7 +72,7 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  const verifyLink = data?.properties?.action_link;
+  const verifyLink = normalizeAuthEmailLink(data?.properties?.action_link);
   if (!verifyLink) {
     redirect(`/signup?error=${encodeURIComponent("Could not generate verification link.")}`);
   }

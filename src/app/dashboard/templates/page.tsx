@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
+import { RejectionBanner } from "@/components/ui/rejection-banner";
 
 const RequirementSchema = z.object({
   type: z.enum(["text", "file", "signature"]),
@@ -386,16 +387,11 @@ export default function TemplatesPage() {
             <Button onClick={create} disabled={creating} className="button-polish">
               {creating ? "Creating..." : "Create"}
             </Button>
-            {upgradeMessage ? (
-              <div className="text-sm text-amber-700">{upgradeMessage}</div>
-            ) : null}
           </div>
 
           <div className="rounded-xl border border-zinc-200">
             {upgradeMessage ? (
-              <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                {upgradeMessage}
-              </div>
+              <RejectionBanner kind="plan" message={upgradeMessage} className="rounded-none border-x-0 border-t-0" />
             ) : null}
             <div className="border-b border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600">
               {loading ? "Loading..." : `${items.length} templates`}

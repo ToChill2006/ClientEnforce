@@ -4,6 +4,12 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { randomUUID } from "crypto";
+import {
+  maxActiveOnboardingsForTier,
+  onboardingLimitMessage,
+  permissionDenied,
+  selectOrganizationTier,
+} from "@/lib/plan-enforcement";
 
 function jsonError(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
@@ -32,58 +38,6 @@ async function getOrgIdForUser(supabase: Awaited<ReturnType<typeof supabaseServe
 
   if (error || !profile?.org_id) return { user, org_id: null as string | null };
   return { user, org_id: profile.org_id as string };
-}
-
-function normalizeTier(raw: unknown): "free" | "pro" | "business" {
-  const value = String(raw ?? "free").trim().toLowerCase();
-  if (value === "business") return "business";
-  if (value === "pro") return "pro";
-  if (value === "starter") return "free";
-  return "free";
-}
-
-function maxActiveOnboardingsForTier(tier: "free" | "pro" | "business") {
-  if (tier === "business") return 200;
-  if (tier === "pro") return 50;
-  return 5;
-}
-
-// Helper to select org tier, falling back if columns are missing
-async function selectOrganizationTier(supabase: Awaited<ReturnType<typeof supabaseServer>>, org_id: string) {
-  const primary = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", org_id)
-    .single();
-
-  if (!(primary as any)?.error) {
-    return { data: (primary as any).data ?? null, error: null as any };
-  }
-
-  const err = (primary as any).error;
-  const msg = String(err?.message || "").toLowerCase();
-
-  if (msg.includes("plan_tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
-    const fallback = await supabase
-      .from("organizations")
-      .select("tier")
-      .eq("id", org_id)
-      .single();
-
-    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
-  }
-
-  if (msg.includes("tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
-    const fallback = await supabase
-      .from("organizations")
-      .select("plan_tier")
-      .eq("id", org_id)
-      .single();
-
-    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
-  }
-
-  return { data: null, error: err };
 }
 
 const CreatePayload = z.union([
@@ -389,7 +343,7 @@ export async function GET() {
   if (!org_id) return jsonError(403, "No organization");
   const role = await requireRole(["owner", "admin", "member"]);
   if (!roleHasPermission(role, "onboardings_view")) {
-    return jsonError(403, "Forbidden");
+    return jsonError(403, permissionDenied("You do not have access to view onboardings."));
   }
 
   // Prefer richer columns if they exist in your schema, but be defensive: some deployments
@@ -579,14 +533,13 @@ export async function POST(req: Request) {
   if (!org_id) return jsonError(403, "No organization");
   const role = await requireRole(["owner", "admin", "member"]);
   if (!roleHasPermission(role, "onboardings_write")) {
-    return jsonError(403, "Forbidden");
+    return jsonError(403, permissionDenied("You do not have access to create onboardings."));
   }
 
-  const { data: org, error: orgError } = await selectOrganizationTier(supabase, org_id);
+  const { tier, error: orgError } = await selectOrganizationTier(supabase, org_id);
 
   if (orgError) return jsonError(400, orgError.message);
 
-  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
   const maxActiveOnboardings = maxActiveOnboardingsForTier(tier);
 
   const activeStatuses = ["draft", "sent", "in_progress", "in progress", "submitted", "locked"];
@@ -600,14 +553,7 @@ export async function POST(req: Request) {
   if (activeCountError) return jsonError(400, activeCountError.message);
 
   if ((activeCount ?? 0) >= maxActiveOnboardings) {
-    return jsonError(
-      403,
-      tier === "free"
-        ? "Your current plan allows up to 5 active onboardings. Upgrade to Pro to create more."
-        : tier === "pro"
-          ? "Your current plan allows up to 50 active onboardings. Upgrade to Business to create more."
-          : `Your current plan allows up to ${maxActiveOnboardings} active onboardings.`
-    );
+    return jsonError(403, onboardingLimitMessage(tier, maxActiveOnboardings));
   }
 
   const body = await req.json().catch(() => null);

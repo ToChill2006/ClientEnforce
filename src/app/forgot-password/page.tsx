@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { forgotPasswordAction } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,16 +12,30 @@ export default async function ForgotPasswordPage({
   searchParams: Promise<{ error?: string; sent?: string; email?: string }>;
 }) {
   const sp = await searchParams;
-  const error = sp?.error ? decodeURIComponent(sp.error) : null;
+  const error = (() => {
+    if (!sp?.error) return null;
+    try {
+      return decodeURIComponent(sp.error);
+    } catch {
+      return sp.error;
+    }
+  })();
   const sent = sp?.sent === "1";
-  const email = sp?.email ? decodeURIComponent(sp.email) : "";
+  const email = (() => {
+    if (!sp?.email) return "";
+    try {
+      return decodeURIComponent(sp.email);
+    } catch {
+      return sp.email;
+    }
+  })();
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
       <div className="mx-auto flex max-w-md flex-col px-6 py-14">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
-            <img src="/C.png" alt="ClientEnforce logo" className="h-6 w-6 object-contain" />
+            <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
           <div className="text-sm font-semibold">ClientEnforce</div>
         </div>

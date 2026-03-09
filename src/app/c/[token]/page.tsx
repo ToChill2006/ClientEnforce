@@ -28,7 +28,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 function Panel({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm">{children}</div>;
+  return <div className="card-polish rounded-2xl border border-zinc-200 bg-white shadow-sm">{children}</div>;
 }
 
 function Hint({ title, message }: { title: string; message: string }) {
@@ -381,7 +381,7 @@ export default async function ClientTokenPage({
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="hidden sm:block rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-600 shadow-sm">
+              <div className="card-polish hidden sm:block rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-600 shadow-sm">
                 Secure link • Do not share
               </div>
             </div>
@@ -389,7 +389,7 @@ export default async function ClientTokenPage({
 
           <div className="mt-8">
             {normalizedReqsWithIds.length === 0 && (
-              <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
+              <div className="card-polish rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
                 <div className="font-medium text-zinc-900">No questions have been added yet.</div>
                 <div className="mt-1 text-zinc-600">Ask the sender to configure onboarding requirements.</div>
 

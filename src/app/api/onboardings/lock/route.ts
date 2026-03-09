@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
+import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
+import { permissionDenied } from "@/lib/plan-enforcement";
 
 const BodySchema = z.object({
   id: z.string().uuid(),
@@ -11,6 +14,11 @@ export async function POST(req: Request) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const role = await requireRole(["owner", "admin", "member"]);
+  if (!roleHasPermission(role, "onboardings_lock")) {
+    return NextResponse.json({ error: permissionDenied("You do not have access to lock onboardings.") }, { status: 403 });
   }
 
   let body: unknown;
@@ -25,31 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  // Resolve org + role from profile/memberships
-  const { data: profile, error: profileErr } = await supabase
-    .from("profiles")
-    .select("id, org_id")
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (profileErr || !profile?.org_id) {
-    return NextResponse.json({ error: "Profile not found" }, { status: 403 });
-  }
-
-  const { data: membership, error: membershipErr } = await supabase
-    .from("memberships")
-    .select("role")
-    .eq("org_id", profile.org_id)
-    .eq("profile_id", profile.id)
-    .single();
-
-  if (membershipErr || !membership?.role) {
-    return NextResponse.json({ error: "Membership not found" }, { status: 403 });
-  }
-
-  if (membership.role !== "owner" && membership.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const profile = await requireProfile();
 
   // Lock the onboarding: mark submission locked + status locked + timestamp
   // (Assumes these columns exist per your onboarding engine requirements)
@@ -74,14 +58,26 @@ export async function POST(req: Request) {
   }
 
   // Audit log
-  await supabase.from("audit_logs").insert({
+  const baseAudit = {
     org_id: profile.org_id,
-    actor_profile_id: profile.id,
     action: "onboarding.locked",
     entity_type: "onboarding",
     entity_id: parsed.data.id,
-    meta: { source: "api", route: "/api/onboardings/lock" },
+  };
+
+  let auditResult = await supabase.from("audit_logs").insert({
+    ...baseAudit,
+    actor_user_id: auth.user.id,
+    metadata: { source: "api", route: "/api/onboardings/lock" },
   });
+
+  if ((auditResult as any)?.error) {
+    auditResult = await supabase.from("audit_logs").insert({
+      ...baseAudit,
+      actor_profile_id: (profile as any).id ?? null,
+      meta: { source: "api", route: "/api/onboardings/lock" },
+    } as any);
+  }
 
   return NextResponse.json({ ok: true, id: parsed.data.id });
 }

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useToast } from "@/components/ui/toast";
 
-export default function LoginToasts({ verified }: { verified: boolean }) {
+export default function LoginToasts({ verified, reset }: { verified: boolean; reset: boolean }) {
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -14,6 +14,15 @@ export default function LoginToasts({ verified }: { verified: boolean }) {
       variant: "success",
     });
   }, [verified, toast]);
+
+  React.useEffect(() => {
+    if (!reset) return;
+    toast({
+      title: "Password updated",
+      description: "Use your new password to log in.",
+      variant: "success",
+    });
+  }, [reset, toast]);
 
   return null;
 }

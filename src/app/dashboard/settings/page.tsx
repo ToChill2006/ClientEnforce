@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RejectionBanner } from "@/components/ui/rejection-banner";
 
 type Org = {
   tier?: string | null;
@@ -44,7 +44,7 @@ function fmtDate(s?: string | null) {
   }
 }
 
-function pill(text: string) {
+function pill() {
   return "inline-flex items-center rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs font-medium text-zinc-700";
 }
 
@@ -163,7 +163,7 @@ export default function SettingsPage() {
 
     // Seats gating (if your plan enforces a limit)
     if (seatsLimit > 0 && seatsUsed >= seatsLimit) {
-      setPageError("You’ve reached your seat limit. Upgrade your plan or remove a member to invite someone new.");
+      setPageError(`Plan upgrade required: Seat limit reached (${seatsLimit}). Upgrade to add more team members.`);
       setPageSuccess(null);
       return;
     }
@@ -189,7 +189,7 @@ export default function SettingsPage() {
         if (!res.ok) {
           if (res.status === 403) {
             setCanInviteMembers(false);
-            setPageError("You do not have permission to invite team members.");
+            setPageError("Permission required: You do not have access to invite team members.");
             setPageSuccess(null);
             return;
           }
@@ -235,7 +235,7 @@ export default function SettingsPage() {
       if (!res.ok) {
         if (res.status === 403) {
           setCanManageBilling(false);
-          throw new Error("You do not have permission to manage billing.");
+          throw new Error("Permission required: You do not have access to manage billing.");
         }
         throw new Error(json?.error || "Failed to open billing portal");
       }
@@ -272,7 +272,7 @@ export default function SettingsPage() {
       if (!res.ok) {
         if (res.status === 403) {
           setCanManageBilling(false);
-          throw new Error("You do not have permission to manage billing.");
+          throw new Error("Permission required: You do not have access to manage billing.");
         }
         throw new Error(json?.error || "Failed to start upgrade");
       }
@@ -302,7 +302,7 @@ export default function SettingsPage() {
       if (!res.ok) {
         if (res.status === 403) {
           setCanManageBilling(false);
-          throw new Error("You do not have permission to manage billing.");
+          throw new Error("Permission required: You do not have access to manage billing.");
         }
         throw new Error(json?.error || "Failed to schedule downgrade");
       }
@@ -370,21 +370,17 @@ export default function SettingsPage() {
       </div>
 
       {pageError ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="font-medium">Error</div>
-              <div className="mt-0.5">{pageError}</div>
-            </div>
-            <button
-              className="text-red-700/70 hover:text-red-900"
-              onClick={() => setPageError(null)}
-              aria-label="Dismiss"
-            >
-              ×
-            </button>
-          </div>
-        </div>
+        <RejectionBanner
+          kind={
+            /plan|upgrade|tier|seat limit|template limit|active onboarding limit/i.test(pageError)
+              ? "plan"
+              : /permission|access|forbidden/i.test(pageError)
+                ? "permission"
+                : "error"
+          }
+          message={pageError}
+          onDismiss={() => setPageError(null)}
+        />
       ) : null}
 
       {pageSuccess ? (
@@ -474,7 +470,7 @@ export default function SettingsPage() {
               </div>
               <div className="text-xs text-zinc-500">
                 {currentTier === "free"
-                  ? "You’re currently on Starter (Free)."
+                  ? "You’re currently on Free."
                   : currentTier === "pro"
                     ? "You’re currently on Pro."
                     : "You’re currently on Business."}
@@ -487,12 +483,12 @@ export default function SettingsPage() {
               <div className="flex flex-col rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-sm font-semibold text-zinc-900">Starter</div>
+                    <div className="text-sm font-semibold text-zinc-900">Free</div>
                     <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">£0</div>
-                    <div className="mt-1 text-sm text-zinc-600">For testing the flow + onboarding a few clients.</div>
+                    <div className="mt-1 text-sm text-zinc-600">For solo use and early onboarding workflows.</div>
                   </div>
                   {currentTier === "free" ? (
-                    <span className={pill("Starter")}>Current</span>
+                    <span className={pill()}>Current</span>
                   ) : (
                     <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
                       Free
@@ -502,12 +498,13 @@ export default function SettingsPage() {
 
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
                   <li>• 1 admin user</li>
+                  <li>• Up to 5 active onboardings</li>
                   <li>• 1 onboarding template</li>
-                  <li>• Client portal link per onboarding</li>
-                  <li>• Document uploads + signatures</li>
-                  <li>• Progress tracking / completion %</li>
-                  <li>• Basic email support</li>
-                  <li className="text-zinc-500">• Up to 5 active onboardings</li>
+                  <li>• Client portal links</li>
+                  <li>• Basic progress tracking</li>
+                  <li>• File uploads + signature collection</li>
+                  <li>• Manual follow-ups only</li>
+                  <li>• Basic client directory and settings</li>
                 </ul>
 
                 <div className="mt-6 grid gap-2">
@@ -517,11 +514,11 @@ export default function SettingsPage() {
                     disabled={currentTier === "free"}
                     onClick={() => startDowngrade("free", "monthly")}
                   >
-                    {currentTier === "free" ? "Current plan" : "Downgrade to Starter"}
+                    {currentTier === "free" ? "Current plan" : "Downgrade to Free"}
                   </button>
                   {currentTier !== "free" ? (
                     <div className="text-xs text-zinc-500">
-                      Your current paid plan will remain active until the end of the billing period, then downgrade to Starter.
+                      Your current paid plan will remain active until the end of the billing period, then downgrade to Free.
                     </div>
                   ) : null}
                 </div>
@@ -544,13 +541,15 @@ export default function SettingsPage() {
                 </div>
 
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
-                  <li>• Everything in Starter</li>
-                  <li>• Up to 5 admin users</li>
+                  <li>• Everything in Free</li>
+                  <li>• Up to 5 admin/team users</li>
                   <li>• Up to 10 templates</li>
-                  <li>• Automated reminders (email)</li>
-                  <li>• Audit timeline (who did what, when)</li>
-                  <li>• Export evidence pack (PDF/ZIP)</li>
-                  <li className="text-zinc-500">• Up to 50 active onboardings</li>
+                  <li>• Up to 50 active onboardings</li>
+                  <li>• Automated follow-ups</li>
+                  <li>• Activity timeline + audit log</li>
+                  <li>• Evidence pack / PDF export</li>
+                  <li>• Team management + billing management</li>
+                  <li>• Better reporting + priority support</li>
                 </ul>
 
                 <div className="mt-6 grid gap-2">
@@ -611,7 +610,7 @@ export default function SettingsPage() {
                     <div className="mt-1 text-sm text-zinc-600">For teams onboarding clients at scale.</div>
                   </div>
                   {currentTier === "business" ? (
-                    <span className={pill("Business")}>Current</span>
+                    <span className={pill()}>Current</span>
                   ) : (
                     <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
                       Scale
@@ -621,12 +620,16 @@ export default function SettingsPage() {
 
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
                   <li>• Everything in Pro</li>
-                  <li>• Up to 15 admin users</li>
+                  <li>• Up to 15 users by default</li>
+                  <li>• Up to 200 active onboardings</li>
                   <li>• Unlimited templates</li>
-                  <li>• Team permissions (roles)</li>
-                  <li>• Advanced reporting (coming soon)</li>
-                  <li>• Priority support</li>
-                  <li className="text-zinc-500">• Up to 200 active onboardings</li>
+                  <li>• Advanced team permissions</li>
+                  <li>• Full automation controls</li>
+                  <li>• Full audit history</li>
+                  <li>• Reporting / analytics</li>
+                  <li>• Compliance-ready exports</li>
+                  <li>• Advanced billing controls</li>
+                  <li>• Priority / premium support</li>
                 </ul>
 
                 <div className="mt-6 grid gap-2">
@@ -733,7 +736,7 @@ export default function SettingsPage() {
                         <div className="font-medium text-zinc-900">{inviteEmailOf(i) || "—"}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={pill(i.role)}>{i.role}</span>
+                        <span className={pill()}>{i.role}</span>
                       </td>
                       <td className="px-4 py-3 text-zinc-700">{fmtDate(i.created_at)}</td>
                       <td className="px-4 py-3 text-zinc-700">{fmtDate(i.expires_at)}</td>

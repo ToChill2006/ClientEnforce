@@ -4,6 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { permissionDenied } from "@/lib/plan-enforcement";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "billing_manage")) {
-    return json(403, { error: "Forbidden" });
+    return json(403, { error: permissionDenied("You do not have access to manage billing.") });
   }
 
   let body: any = null;

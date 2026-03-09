@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireProfile } from "@/lib/rbac";
+import { requireProfile, requireRole } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import {
+  exportUnavailableMessage,
+  exportsEnabledForTier,
+  permissionDenied,
+  selectOrganizationTier,
+} from "@/lib/plan-enforcement";
 
 export const runtime = "nodejs";
 
@@ -441,9 +448,19 @@ function buildPdf(pages: PdfPage[]) {
 
 export async function GET(req: Request) {
   try {
+    const role = await requireRole(["owner", "admin", "member"]);
+    if (!roleHasPermission(role, "exports_read")) {
+      return json(403, { error: permissionDenied("You do not have access to export onboarding evidence packs.") });
+    }
+
     const profile = await requireProfile(); // must include org_id on your profile
     const orgId = (profile as any)?.org_id;
     if (!orgId) return json(403, { error: "Missing org context" });
+
+    const admin = supabaseAdmin();
+    const { tier, error: tierError } = await selectOrganizationTier(admin as any, orgId);
+    if (tierError) return json(400, { error: tierError.message });
+    if (!exportsEnabledForTier(tier)) return json(403, { error: exportUnavailableMessage() });
 
     const url = new URL(req.url);
     const onboardingId =
@@ -452,8 +469,6 @@ export async function GET(req: Request) {
       "";
 
     if (!onboardingId) return json(400, { error: "Missing onboarding_id" });
-
-    const admin = supabaseAdmin();
 
     // Onboarding
     const { data: onboarding, error: obErr } = await admin

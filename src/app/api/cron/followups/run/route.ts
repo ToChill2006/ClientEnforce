@@ -4,60 +4,17 @@ import { requireRole, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
+import {
+  followupsEnabledForTier,
+  followupsUnavailableMessage,
+  permissionDenied,
+  selectOrganizationTier,
+} from "@/lib/plan-enforcement";
 
 export const runtime = "nodejs";
 
 function json(status: number, body: any) {
   return NextResponse.json(body, { status });
-}
-
-function normalizeTier(raw: unknown): "free" | "pro" | "business" {
-  const value = String(raw ?? "free").trim().toLowerCase();
-  if (value === "business") return "business";
-  if (value === "pro") return "pro";
-  if (value === "starter") return "free";
-  return "free";
-}
-
-function followupsEnabledForTier(tier: "free" | "pro" | "business") {
-  return tier === "pro" || tier === "business";
-}
-
-async function selectOrganizationTier(supabase: Awaited<ReturnType<typeof supabaseServer>>, orgId: string) {
-  const primary = await supabase
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", orgId)
-    .single();
-
-  if (!(primary as any)?.error) {
-    return { data: (primary as any).data ?? null, error: null as any };
-  }
-
-  const err = (primary as any).error;
-  const msg = String(err?.message || "").toLowerCase();
-
-  if (msg.includes("plan_tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
-    const fallback = await supabase
-      .from("organizations")
-      .select("tier")
-      .eq("id", orgId)
-      .single();
-
-    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
-  }
-
-  if (msg.includes("tier") && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))) {
-    const fallback = await supabase
-      .from("organizations")
-      .select("plan_tier")
-      .eq("id", orgId)
-      .single();
-
-    return { data: (fallback as any).data ?? null, error: (fallback as any).error ?? null };
-  }
-
-  return { data: null, error: err };
 }
 
 function authCron(req: Request) {
@@ -107,20 +64,18 @@ export async function POST(req: Request) {
 
     const role = await requireRole(["owner", "admin", "member"]);
     if (!roleHasPermission(role, "followups_run")) {
-      return json(403, { error: "Forbidden" });
+      return json(403, { error: permissionDenied("You do not have access to run follow-ups manually.") });
     }
 
     const profile = await requireProfile();
 
-    const { data: org, error: orgError } = await selectOrganizationTier(supabase, profile.org_id);
+    const { tier, error: orgError } = await selectOrganizationTier(supabase, profile.org_id);
 
     if (orgError) return json(400, { error: orgError.message });
 
-    const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier);
-
     if (!followupsEnabledForTier(tier)) {
       return json(403, {
-        error: "Follow-up automation is not included in your current plan. Upgrade to Pro to run reminders.",
+        error: followupsUnavailableMessage("run"),
       });
     }
   }
@@ -147,11 +102,36 @@ export async function POST(req: Request) {
 
   if (jobsErr) return json(400, { error: jobsErr.message });
 
+  const orgIds = Array.from(new Set((jobs ?? []).map((job) => String(job.org_id)).filter(Boolean)));
+  const tierByOrg = new Map<string, "free" | "pro" | "business">();
+
+  await Promise.all(
+    orgIds.map(async (orgId) => {
+      try {
+        const { tier } = await selectOrganizationTier(admin as any, orgId);
+        tierByOrg.set(orgId, tier);
+      } catch {
+        tierByOrg.set(orgId, "free");
+      }
+    })
+  );
+
   let sent = 0;
   let failed = 0;
   let skipped = 0;
 
   for (const job of jobs || []) {
+    const orgTier = tierByOrg.get(String(job.org_id)) ?? "free";
+    if (!followupsEnabledForTier(orgTier)) {
+      await safeUpdateFollowupJob(admin, job.id, {
+        status: "cancelled",
+        last_error: followupsUnavailableMessage("run"),
+        updated_at: new Date().toISOString(),
+      });
+      skipped += 1;
+      continue;
+    }
+
     // Lock the job by atomically switching queued -> sending.
     // Use select to confirm we actually updated a row (no error if 0 rows updated).
     const { data: lockedRow, error: lockErr } = await admin

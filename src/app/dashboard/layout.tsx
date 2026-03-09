@@ -75,7 +75,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <form action="/dashboard/logout" method="post" className="mt-3">
                 <button
                   type="submit"
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200"
+                  className="button-polish w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200"
                 >
                   Logout
                 </button>

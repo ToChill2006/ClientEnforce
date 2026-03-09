@@ -1,4 +1,5 @@
-// src/app/dashboard/loading.tsx
+import { PageLoading } from "@/components/ui/page-loading";
+
 export default function Loading() {
-  return <div className="p-6 text-sm text-zinc-500">Loading…</div>;
+  return <PageLoading />;
 }

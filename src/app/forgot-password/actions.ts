@@ -4,15 +4,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
-
-function appUrl() {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000")
-  );
-}
+import { appOrigin, normalizeAuthEmailLink } from "@/lib/app-url";
 
 function isLocalSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -31,9 +23,11 @@ export async function forgotPasswordAction(formData: FormData) {
 
   if (isLocalSupabase()) {
     const supabase = await supabaseServer();
+    const callback = new URL("/auth/callback", appOrigin());
+    callback.searchParams.set("next", "/reset-password");
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${appUrl()}/reset-password`,
+      redirectTo: callback.toString(),
     });
 
     if (error) {
@@ -58,7 +52,7 @@ export async function forgotPasswordAction(formData: FormData) {
     type: "recovery",
     email,
     options: {
-      redirectTo: `${appUrl()}/reset-password`,
+      redirectTo: `${appOrigin()}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
     },
   });
 
@@ -69,7 +63,7 @@ export async function forgotPasswordAction(formData: FormData) {
     );
   }
 
-  const resetLink = data.properties.action_link;
+  const resetLink = normalizeAuthEmailLink(data.properties.action_link);
 
   // Send email using Resend
   const resendResult = await resend.emails.send({

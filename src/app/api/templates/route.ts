@@ -5,55 +5,17 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { TemplateDefinitionSchema } from "@/lib/onboarding-schema";
+import {
+  maxTemplatesForTier,
+  permissionDenied,
+  selectOrganizationTier,
+  templateLimitMessage,
+} from "@/lib/plan-enforcement";
 
 const CreateSchema = z.object({
   name: z.string().min(2).max(80),
   definition: TemplateDefinitionSchema,
 });
-
-function normalizeTier(raw: unknown): "free" | "pro" | "business" {
-  const value = String(raw ?? "free").trim().toLowerCase();
-  if (value === "business") return "business";
-  if (value === "pro") return "pro";
-  if (value === "starter") return "free";
-  return "free";
-}
-
-function maxTemplatesForTier(tier: "free" | "pro" | "business") {
-  if (tier === "business") return Number.POSITIVE_INFINITY;
-  if (tier === "pro") return 10;
-  return 1;
-}
-
-async function selectOrganizationTier(admin: any, orgId: string) {
-  let result = await admin
-    .from("organizations")
-    .select("tier, plan_tier")
-    .eq("id", orgId)
-    .single();
-
-  if (result.error && /column .*plan_tier.* does not exist/i.test(result.error.message)) {
-    const retry = await admin
-      .from("organizations")
-      .select("tier")
-      .eq("id", orgId)
-      .single();
-
-    return { data: retry.data, error: retry.error };
-  }
-
-  if (result.error && /column .*tier.* does not exist/i.test(result.error.message)) {
-    const retry = await admin
-      .from("organizations")
-      .select("plan_tier")
-      .eq("id", orgId)
-      .single();
-
-    return { data: retry.data, error: retry.error };
-  }
-
-  return { data: result.data, error: result.error };
-}
 
 export async function GET() {
   const supabase = await supabaseServer();
@@ -70,7 +32,7 @@ export async function GET() {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "templates_view")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to view templates.") }, { status: 403 });
   }
 
   const fetchWith = async (includeDeletedAt: boolean) => {
@@ -121,7 +83,7 @@ export async function POST(req: Request) {
   }
 
   if (!roleHasPermission(role, "templates_write")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to create templates.") }, { status: 403 });
   }
 
   const body = await req.json().catch(() => null);
@@ -131,7 +93,7 @@ export async function POST(req: Request) {
   const profile = await requireProfile();
   const admin = supabaseAdmin();
 
-  const { data: org, error: orgError } = await selectOrganizationTier(admin, profile.org_id);
+  const { tier, error: orgError } = await selectOrganizationTier(admin, profile.org_id);
 
   if (orgError) {
     console.warn("[templates.post] tier lookup failed, defaulting to free", {
@@ -140,7 +102,6 @@ export async function POST(req: Request) {
     });
   }
 
-  const tier = normalizeTier((org as any)?.tier ?? (org as any)?.plan_tier ?? "free");
   const maxTemplates = maxTemplatesForTier(tier);
 
   if (Number.isFinite(maxTemplates)) {
@@ -178,10 +139,7 @@ export async function POST(req: Request) {
       if (activeTemplateCount >= maxTemplates) {
         return NextResponse.json(
           {
-            error:
-              tier === "free"
-                ? "Your current plan allows 1 template. Upgrade to Pro to create more templates."
-                : `Your current plan allows up to ${maxTemplates} templates. Upgrade to Business for unlimited templates.`,
+            error: templateLimitMessage(tier, maxTemplates),
           },
           { status: 403 }
         );

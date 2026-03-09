@@ -7,13 +7,25 @@ export async function middleware(req: NextRequest) {
   // Only protect dashboard
   if (!pathname.startsWith("/dashboard")) return NextResponse.next();
 
-  let res = NextResponse.next({
+  const nextPath = `${pathname}${req.nextUrl.search || ""}`;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnon) {
+    const loginUrl = req.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.searchParams.set("error", "Authentication is temporarily unavailable.");
+    loginUrl.searchParams.set("next", nextPath);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const res = NextResponse.next({
     request: { headers: req.headers },
   });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnon,
     {
       cookies: {
         getAll() {
@@ -33,7 +45,7 @@ export async function middleware(req: NextRequest) {
   if (!data.user) {
     const loginUrl = req.nextUrl.clone();
     loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", pathname);
+    loginUrl.searchParams.set("next", nextPath);
     return NextResponse.redirect(loginUrl);
   }
 

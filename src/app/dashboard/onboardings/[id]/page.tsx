@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase";
+import { RejectionBanner } from "@/components/ui/rejection-banner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Requirement = {
   id: string;
@@ -503,19 +505,26 @@ export default function OnboardingDetailAdminPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="h-6 w-56 rounded bg-zinc-100" />
-        <div className="h-4 w-72 rounded bg-zinc-100" />
-        <div className="h-24 rounded-xl border border-zinc-200 bg-white" />
+        <Skeleton className="h-6 w-56" />
+        <Skeleton className="h-4 w-72" />
+        <div className="card-polish rounded-xl border border-zinc-200 bg-white p-4">
+          <Skeleton className="h-16 w-full" />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <div className="text-sm font-medium text-zinc-900">Error</div>
-        <div className="mt-1 whitespace-pre-wrap text-sm text-zinc-500">{error}</div>
-        <button onClick={() => router.back()} className="mt-4 text-sm text-zinc-900 underline">
+      <div className="space-y-4">
+        <RejectionBanner
+          kind={/plan|upgrade/i.test(error) ? "plan" : /permission|access|forbidden/i.test(error) ? "permission" : "error"}
+          message={error}
+        />
+        <button
+          onClick={() => router.back()}
+          className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+        >
           Go back
         </button>
       </div>
@@ -525,18 +534,26 @@ export default function OnboardingDetailAdminPage() {
   return (
     <div className="space-y-6">
       {banner ? (
-        <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900">
-          <div className="flex items-start justify-between gap-3">
-            <div>{banner.msg}</div>
-            <button
-              type="button"
-              onClick={() => setBanner(null)}
-              className="rounded-md px-2 py-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
-            >
-              ✕
-            </button>
+        banner.kind === "error" ? (
+          <RejectionBanner
+            kind={/plan|upgrade/i.test(banner.msg) ? "plan" : /permission|access|forbidden/i.test(banner.msg) ? "permission" : "error"}
+            message={banner.msg}
+            onDismiss={() => setBanner(null)}
+          />
+        ) : (
+          <div className="card-polish rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            <div className="flex items-start justify-between gap-3">
+              <div>{banner.msg}</div>
+              <button
+                type="button"
+                onClick={() => setBanner(null)}
+                className="button-polish rounded-md px-2 py-1 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-        </div>
+        )
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -560,7 +577,7 @@ export default function OnboardingDetailAdminPage() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => router.back()}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+            className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
             Back
           </button>
@@ -575,7 +592,7 @@ export default function OnboardingDetailAdminPage() {
                   setBanner({ kind: "error", msg: "Could not copy client link." });
                 }
               }}
-              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+              className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
             >
               Copy client link
             </button>
@@ -584,7 +601,7 @@ export default function OnboardingDetailAdminPage() {
           <button
             onClick={downloadPdf}
             disabled={downloadingPdf}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+            className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-50"
           >
             {downloadingPdf ? "Preparing PDF…" : "Download PDF"}
           </button>
@@ -593,7 +610,7 @@ export default function OnboardingDetailAdminPage() {
             <button
               onClick={lock}
               disabled={locking}
-              className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 disabled:opacity-50"
+              className="button-polish rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 disabled:opacity-50"
             >
               {locking ? "Locking…" : "Lock submission"}
             </button>
@@ -603,7 +620,7 @@ export default function OnboardingDetailAdminPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <div className="lg:col-span-7">
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="card-polish rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm font-semibold text-zinc-900">Progress</div>
@@ -620,7 +637,7 @@ export default function OnboardingDetailAdminPage() {
         </div>
 
         <div className="lg:col-span-5">
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="card-polish rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold text-zinc-900">Details</div>
             <div className="mt-3 space-y-2 text-sm text-zinc-600">
               <div className="flex items-center justify-between gap-3">
@@ -655,7 +672,7 @@ export default function OnboardingDetailAdminPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+      <div className="card-polish overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
         <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
           <div className="text-sm font-semibold text-zinc-900">Responses</div>
           <div className="mt-0.5 text-sm text-zinc-500">Admin view of what the client submitted.</div>
@@ -721,7 +738,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not preview file." });
                                   }
                                 }}
-                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
                               >
                                 Preview
                               </button>
@@ -734,7 +751,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not download file." });
                                   }
                                 }}
-                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
                               >
                                 Download
                               </button>
@@ -754,7 +771,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not preview signature." });
                                   }
                                 }}
-                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
                               >
                                 Preview
                               </button>
@@ -767,7 +784,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
                                   }
                                 }}
-                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
                               >
                                 Download
                               </button>

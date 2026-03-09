@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
+import { permissionDenied } from "@/lib/plan-enforcement";
 
 const CreateTask = z.object({
   assigned_to: z.string().uuid(),
@@ -28,7 +29,7 @@ export async function GET(req: Request) {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "team_tasks_view")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to view team tasks.") }, { status: 403 });
   }
   const url = new URL(req.url);
   const status = (url.searchParams.get("status") || "").trim();
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "team_tasks_create")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to assign team tasks.") }, { status: 403 });
   }
 
   const json = await req.json().catch(() => null);
@@ -93,7 +94,7 @@ export async function PATCH(req: Request) {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "team_tasks_update_any") && !roleHasPermission(role, "team_tasks_update_own")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to update this task.") }, { status: 403 });
   }
 
   const json = await req.json().catch(() => null);
@@ -125,7 +126,7 @@ export async function DELETE(req: Request) {
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "team_tasks_delete")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to delete team tasks.") }, { status: 403 });
   }
 
   const json = await req.json().catch(() => null);

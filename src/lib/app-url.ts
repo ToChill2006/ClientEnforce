@@ -1,0 +1,63 @@
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);
+const PROD_FALLBACK_ORIGIN = "https://clientenforce.com";
+const DEV_FALLBACK_ORIGIN = "http://localhost:3000";
+
+function toOrigin(raw?: string | null): string | null {
+  const value = String(raw ?? "").trim();
+  if (!value) return null;
+
+  const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    const url = new URL(withProtocol);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return null;
+  }
+}
+
+function isLocalHostname(hostname: string) {
+  const host = hostname.toLowerCase();
+  return LOCAL_HOSTS.has(host) || host.endsWith(".local");
+}
+
+export function appOrigin() {
+  const isProd = process.env.NODE_ENV === "production";
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : null,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  ];
+
+  for (const candidate of candidates) {
+    const origin = toOrigin(candidate);
+    if (!origin) continue;
+    const hostname = new URL(origin).hostname;
+    if (isProd && isLocalHostname(hostname)) continue;
+    return origin;
+  }
+
+  return isProd ? PROD_FALLBACK_ORIGIN : DEV_FALLBACK_ORIGIN;
+}
+
+export function normalizeAuthEmailLink(rawLink?: string | null) {
+  const link = String(rawLink ?? "").trim();
+  if (!link) return "";
+
+  try {
+    const url = new URL(link);
+    if (process.env.NODE_ENV === "production" && isLocalHostname(url.hostname)) {
+      const target = new URL(appOrigin());
+      url.protocol = target.protocol;
+      url.host = target.host;
+      return url.toString();
+    }
+    return url.toString();
+  } catch {
+    if (link.startsWith("/")) return `${appOrigin()}${link}`;
+    return link;
+  }
+}
+

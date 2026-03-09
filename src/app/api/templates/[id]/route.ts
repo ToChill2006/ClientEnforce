@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { TemplateDefinitionSchema } from "@/lib/onboarding-schema";
+import { permissionDenied } from "@/lib/plan-enforcement";
 
 async function writeAudit(
   admin: ReturnType<typeof supabaseAdmin>,
@@ -188,14 +189,16 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const role = await requireRole(["owner", "admin", "member"]);
 
   if (!roleHasPermission(role, "templates_view")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to view templates.") }, { status: 403 });
   }
 
   const { item, error } = await selectTemplateById(supabase, id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (item.org_id !== profile.org_id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (item.org_id !== profile.org_id) {
+    return NextResponse.json({ error: permissionDenied("You do not have access to this template.") }, { status: 403 });
+  }
   if ("deleted_at" in item && item.deleted_at !== null) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -214,7 +217,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   if (!roleHasPermission(role, "templates_write")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to edit templates.") }, { status: 403 });
   }
 
   const profile = await requireProfile();
@@ -231,7 +234,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     .single();
 
   if (eErr) return NextResponse.json({ error: eErr.message }, { status: 404 });
-  if (existing.org_id !== profile.org_id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (existing.org_id !== profile.org_id) {
+    return NextResponse.json({ error: permissionDenied("You do not have access to this template.") }, { status: 403 });
+  }
 
   const { item: updated, error } = await updateTemplateById(admin, id, {
     name: parsed.data.name,
@@ -265,7 +270,7 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   }
 
   if (!roleHasPermission(role, "templates_delete")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: permissionDenied("You do not have access to delete templates.") }, { status: 403 });
   }
 
   const profile = await requireProfile();
@@ -278,7 +283,9 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
     .single();
 
   if (eErr) return NextResponse.json({ error: eErr.message }, { status: 404 });
-  if (existing.org_id !== profile.org_id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (existing.org_id !== profile.org_id) {
+    return NextResponse.json({ error: permissionDenied("You do not have access to this template.") }, { status: 403 });
+  }
 
   // Prefer soft-delete so existing onboardings can still resolve the old template name.
   // If the project hasn't been migrated to include `deleted_at`, fall back to hard delete.

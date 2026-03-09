@@ -7,6 +7,13 @@ export async function resetPasswordAction(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
+  if (!password) {
+    redirect(
+      "/reset-password?error=" +
+        encodeURIComponent("Password is required.")
+    );
+  }
+
   if (password.length < 8) {
     redirect(
       "/reset-password?error=" +
@@ -27,8 +34,5 @@ export async function resetPasswordAction(formData: FormData) {
     redirect("/reset-password?error=" + encodeURIComponent(error.message));
   }
 
-  redirect(
-    "/login?created=1&error=" +
-      encodeURIComponent("Password updated. Please log in.")
-  );
+  redirect("/login?reset=1&message=" + encodeURIComponent("Password updated. Please log in."));
 }

@@ -13,8 +13,22 @@ export default async function SignupPage({
   searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const sp = await searchParams;
-  const error = sp?.error ? decodeURIComponent(sp.error) : null;
-  const next = sp?.next ? decodeURIComponent(sp.next) : null;
+  const error = (() => {
+    if (!sp?.error) return null;
+    try {
+      return decodeURIComponent(sp.error);
+    } catch {
+      return sp.error;
+    }
+  })();
+  const next = (() => {
+    if (!sp?.next) return null;
+    try {
+      return decodeURIComponent(sp.next);
+    } catch {
+      return sp.next;
+    }
+  })();
 
   return (
     <main className="min-h-[calc(100vh-0px)] bg-gradient-to-b from-white to-zinc-50">

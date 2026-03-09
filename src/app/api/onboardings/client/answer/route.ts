@@ -72,8 +72,25 @@ export async function POST(req: Request) {
 
   if (uErr || !updated) return json(400, { error: uErr?.message || "Update failed" });
 
-  // Touch onboarding updated_at (optional but makes lists look correct)
-  await admin.from("onboardings").update({ updated_at: now }).eq("id", onboarding.id).eq("org_id", onboarding.org_id);
+  if (isComplete && onboarding.status === "sent") {
+    await admin
+      .from("onboardings")
+      .update({ status: "in_progress", updated_at: now })
+      .eq("id", onboarding.id)
+      .eq("org_id", onboarding.org_id);
+
+    await admin.from("audit_logs").insert({
+      org_id: onboarding.org_id,
+      actor_user_id: null,
+      action: "onboarding.client_started",
+      entity_type: "onboarding",
+      entity_id: onboarding.id,
+      metadata: { requirement_id },
+    });
+  } else {
+    // Touch onboarding updated_at (optional but makes lists look correct)
+    await admin.from("onboardings").update({ updated_at: now }).eq("id", onboarding.id).eq("org_id", onboarding.org_id);
+  }
 
   return json(200, { ok: true, requirement: updated });
 }
