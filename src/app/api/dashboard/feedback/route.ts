@@ -56,7 +56,8 @@ export async function POST(req: Request) {
   const toEmail =
     process.env.CLIENTENFORCE_FEEDBACK_TO ||
     process.env.RESEND_FEEDBACK_TO ||
-    "support@clientenforce.com";
+    process.env.RESEND_FROM_EMAIL ||
+    "info@clientenforce.com";
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
 

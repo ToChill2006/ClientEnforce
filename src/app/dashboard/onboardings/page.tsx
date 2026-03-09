@@ -176,7 +176,7 @@ export default function OnboardingsPage() {
 
   const [query, setQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<
-    "all" | "draft" | "sent" | "in_progress" | "submitted"
+    "all" | "draft" | "sent" | "in_progress" | "submitted" | "archived"
   >("all");
 
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -205,7 +205,7 @@ export default function OnboardingsPage() {
       setLoading(true);
       setLoadError(null);
 
-      const res = await fetch("/api/onboardings", {
+      const res = await fetch("/api/onboardings?include_archived=1", {
         method: "GET",
         cache: "no-store",
       });
@@ -705,6 +705,7 @@ export default function OnboardingsPage() {
                 <option value="sent">Sent</option>
                 <option value="in_progress">In progress</option>
                 <option value="submitted">Submitted</option>
+                <option value="archived">Archived</option>
               </select>
             </div>
           </div>

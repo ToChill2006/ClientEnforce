@@ -336,7 +336,7 @@ async function getClientByIdWithOptionalName(opts: {
   return { data: null, error: e1 };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = await supabaseServer();
   const { user, org_id } = await getOrgIdForUser(supabase);
   if (!user) return jsonError(401, "Unauthorized");
@@ -397,10 +397,15 @@ export async function GET() {
 
   if (error) return jsonError(400, error.message);
 
+  const url = new URL(req.url);
+  const includeArchived = url.searchParams.get("include_archived") === "1";
+
   const rows = (data ?? []).filter((r: any) => {
     const s = String(r?.status ?? "").trim().toLowerCase();
     if (!s) return true;
-    return s !== "archived" && s !== "deleted";
+    if (s === "deleted") return false;
+    if (s === "archived" && !includeArchived) return false;
+    return true;
   });
   if (rows.length === 0) return NextResponse.json({ onboardings: [] });
 
