@@ -6,37 +6,57 @@ import { jsonLdString } from "@/lib/seo";
 
 function navItemClassName(isPrimary = false) {
   if (isPrimary) {
-    return "inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800";
+    return "inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800";
   }
 
-  return "text-sm text-zinc-700 transition hover:text-zinc-900";
+  return "inline-flex items-center whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900";
 }
 
 export function PublicHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-w-0 items-center gap-2">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
           <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white">
             <Image src="/C.png" alt="ClientEnforce" fill className="object-contain p-1" priority />
           </span>
-          <span className="truncate text-sm font-semibold tracking-tight text-zinc-900 sm:text-base">
+          <span className="text-sm font-semibold tracking-tight text-zinc-900 sm:text-base">
             ClientEnforce
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-5 md:flex">
-          <Link href="/client-onboarding-software" className={navItemClassName()}>
-            Client onboarding software
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:gap-2 md:flex">
+          <Link
+            href="/client-onboarding-software"
+            aria-label="Client onboarding software"
+            className={navItemClassName()}
+          >
+            <span className="xl:hidden">Software</span>
+            <span className="hidden xl:inline">Client onboarding software</span>
           </Link>
-          <Link href="/client-onboarding-checklist" className={navItemClassName()}>
-            Client onboarding checklist
+          <Link
+            href="/client-onboarding-checklist"
+            aria-label="Client onboarding checklist"
+            className={navItemClassName()}
+          >
+            <span className="xl:hidden">Checklist</span>
+            <span className="hidden xl:inline">Client onboarding checklist</span>
           </Link>
-          <Link href="/client-onboarding-automation" className={navItemClassName()}>
-            Client onboarding automation
+          <Link
+            href="/client-onboarding-automation"
+            aria-label="Client onboarding automation"
+            className={navItemClassName()}
+          >
+            <span className="xl:hidden">Automation</span>
+            <span className="hidden xl:inline">Client onboarding automation</span>
           </Link>
-          <Link href="/client-onboarding-tools" className={navItemClassName()}>
-            Best client onboarding tools
+          <Link
+            href="/client-onboarding-tools"
+            aria-label="Best client onboarding tools"
+            className={navItemClassName()}
+          >
+            <span className="xl:hidden">Tools</span>
+            <span className="hidden xl:inline">Best client onboarding tools</span>
           </Link>
           <Link href="/blog" className={navItemClassName()}>
             Resources
@@ -46,7 +66,7 @@ export function PublicHeader() {
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 sm:inline-flex"
+            className="hidden whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 sm:inline-flex"
           >
             Sign in
           </Link>
