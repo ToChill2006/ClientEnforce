@@ -190,10 +190,64 @@ function MarketingNav() {
           <a href="#how" className="hover:text-zinc-900">How it works</a>
           <a href="#security" className="hover:text-zinc-900">Security</a>
           <a href="#pricing" className="hover:text-zinc-900">Pricing</a>
-          <Link href="/client-onboarding-software" className="hover:text-zinc-900">
-            Client onboarding software
-          </Link>
-          <a href="#resources" className="hover:text-zinc-900">Resources</a>
+          <details className="group relative">
+            <summary className="list-none cursor-pointer select-none hover:text-zinc-900">
+              <span className="inline-flex items-center gap-1">
+                Resources
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4 text-zinc-500 transition group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </summary>
+
+            <div className="invisible absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-zinc-200 bg-white p-2 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
+              <Link
+                href="/client-onboarding-software"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding software
+              </Link>
+              <Link
+                href="/client-onboarding-checklist"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding checklist
+              </Link>
+              <Link
+                href="/client-onboarding-automation"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding automation
+              </Link>
+              <Link
+                href="/client-onboarding-tools"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Best client onboarding tools
+              </Link>
+              <Link
+                href="/blog"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Blog and guides
+              </Link>
+              <a
+                href="#resources"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Homepage resources section
+              </a>
+            </div>
+          </details>
         </nav>
 
         <div className="flex items-center gap-2">
