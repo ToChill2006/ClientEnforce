@@ -281,6 +281,18 @@ export default function PricingPage() {
                   >
                     See onboarding document requirements
                   </Link>
+                  <Link
+                    href="/dubsado-alternative"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Compare ClientEnforce vs Dubsado
+                  </Link>
+                  <Link
+                    href="/honeybook-alternative"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Compare ClientEnforce vs HoneyBook
+                  </Link>
                 </div>
               </div>
             </div>

@@ -112,14 +112,21 @@ export function buildSoftwareApplicationSchema(path: string) {
     "@id": absoluteUrl(`${path}#softwareapplication`),
     name: "ClientEnforce",
     applicationCategory: "BusinessApplication",
-    applicationSubCategory: "Client onboarding software",
-    operatingSystem: "Web",
+    operatingSystem: "Web browser",
     description:
       "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, progress tracking, templates, and a secure client portal.",
     url: absoluteUrl(path),
-    provider: {
-      "@id": absoluteUrl(ORGANIZATION_ID),
+    brand: {
+      "@type": "Brand",
+      name: SITE_NAME,
     },
+    publisher: {
+      "@type": "Organization",
+      "@id": absoluteUrl(ORGANIZATION_ID),
+      name: SITE_NAME,
+      url: absoluteUrl("/"),
+    },
+    isAccessibleForFree: true,
     featureList: [
       "Client onboarding workflow templates",
       "Document collection and file uploads",
@@ -130,7 +137,7 @@ export function buildSoftwareApplicationSchema(path: string) {
     offers: {
       "@type": "Offer",
       url: absoluteUrl("/pricing"),
-      price: "0.00",
+      price: "0",
       priceCurrency: "GBP",
       availability: "https://schema.org/InStock",
     },

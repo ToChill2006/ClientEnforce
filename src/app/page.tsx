@@ -323,6 +323,10 @@ export default function MarketingPage() {
               <p className="mt-4 max-w-xl text-[15px] leading-7 text-zinc-800 sm:text-lg">
                 Replace chaotic email chains with one secure flow for uploads, signatures, progress tracking, reminders, and a complete audit trail.
               </p>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-700 sm:text-base">
+                ClientEnforce is onboarding software for businesses that want a repeatable client onboarding workflow
+                without extra admin overhead. It is built for agencies, consultants, and operations-led teams.
+              </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center">
                 <Link

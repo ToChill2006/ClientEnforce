@@ -156,7 +156,10 @@ export default function TermsPage() {
                   </a>
                   .
                 </p>
-                <p>Mailing address: [Insert company address]</p>
+                <p>
+                  For formal legal correspondence details, request the appropriate contact information by
+                  email and our team will route it correctly.
+                </p>
                 <p>
                   For general inquiries, visit our
                   {" "}

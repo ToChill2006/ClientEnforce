@@ -5,9 +5,9 @@ import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketin
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Contact | ClientEnforce",
+  title: "Contact ClientEnforce | Support, Sales, and Demo Requests",
   description:
-    "Contact ClientEnforce for support, sales, and partnership inquiries related to client onboarding software.",
+    "Get in touch with ClientEnforce for support, sales, onboarding demo requests, and partnership inquiries.",
   path: "/contact",
   keywords: ["contact clientenforce", "client onboarding software support", "saas contact"],
   type: "website",
@@ -66,8 +66,8 @@ export default function ContactPage() {
                 Contact ClientEnforce
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                We are here to help with support, sales questions, and partnership opportunities.
-                Reach out and our team will respond as quickly as possible.
+                Reach out for support, sales guidance, onboarding demo questions, or partnership discussions.
+                We handle most inquiries by email and aim to respond quickly with practical next steps based on your use case.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -82,6 +82,24 @@ export default function ContactPage() {
                   className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
                 >
                   Back to homepage
+                </Link>
+                <Link
+                  href="/client-onboarding-software"
+                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                >
+                  Explore client onboarding software
+                </Link>
+                <Link
+                  href="/features"
+                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                >
+                  Review product features
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                >
+                  Compare pricing plans
                 </Link>
               </div>
             </div>
@@ -105,6 +123,40 @@ export default function ContactPage() {
                   </article>
                 ))}
               </div>
+
+              <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-xl font-semibold text-zinc-900">How to contact the right team</h2>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Support requests</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Contact support when you need help with onboarding workflows, document collection,
+                      signatures, reminders, or account access.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Sales and onboarding demos</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Contact sales if you are evaluating client intake and onboarding software, comparing
+                      plans, or mapping how to automate client onboarding for your team.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Partnership inquiries</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Use the partnerships route for referral collaboration, integration opportunities,
+                      or strategic ecosystem conversations.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Response expectations</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Include your company name, onboarding goals, and any blockers. Clear context helps
+                      us route your request and respond with useful guidance faster.
+                    </p>
+                  </article>
+                </div>
+              </section>
 
               <div className="mt-8 grid gap-6 lg:grid-cols-5">
                 <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:col-span-3">
@@ -211,6 +263,36 @@ export default function ContactPage() {
                   </div>
                 </aside>
               </div>
+
+              <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  Who ClientEnforce helps
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  ClientEnforce is built for agencies, consultants, and service businesses that need a
+                  clear client onboarding workflow. Teams use it to collect intake information, request
+                  documents, capture signatures, and track completion without long email chains.
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  If you are choosing customer onboarding software, start with our
+                  {" "}
+                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding software overview
+                  </Link>
+                  , review
+                  {" "}
+                  <Link href="/features" className="font-medium text-zinc-900 underline underline-offset-4">
+                    platform features
+                  </Link>
+                  , and compare
+                  {" "}
+                  <Link href="/pricing" className="font-medium text-zinc-900 underline underline-offset-4">
+                    plan options
+                  </Link>
+                  {" "}
+                  before contacting sales.
+                </p>
+              </section>
             </div>
           </PageContainer>
         </section>

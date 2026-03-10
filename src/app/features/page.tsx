@@ -219,6 +219,36 @@ export default function FeaturesPage() {
                 </div>
               </div>
 
+              <div className="mt-12 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  Compare alternatives and plan your rollout
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  If you are comparing onboarding software for agencies or service teams, review our
+                  alternative pages and pricing breakdown to choose the right implementation path.
+                </p>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <Link
+                    href="/dubsado-alternative"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Compare with Dubsado
+                  </Link>
+                  <Link
+                    href="/honeybook-alternative"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Compare with HoneyBook
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Review client onboarding pricing
+                  </Link>
+                </div>
+              </div>
+
               {/* FAQ */}
               <div className="mt-12">
                 <h2 className="text-2xl font-semibold text-zinc-900">FAQ</h2>

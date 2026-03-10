@@ -178,7 +178,10 @@ export default function PrivacyPage() {
                   </a>
                   .
                 </p>
-                <p>Mailing address: [Insert company address]</p>
+                <p>
+                  If you need postal contact details for legal or compliance matters, request them by email
+                  and we will provide the appropriate point of contact.
+                </p>
                 <p>
                   You can also visit our
                   {" "}
