@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { JsonLd } from "@/components/marketing/public-shell";
-import { buildPageMetadata, buildSoftwareApplicationSchema } from "@/lib/seo";
+import { buildFaqPageSchema, buildPageMetadata, buildSoftwareApplicationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "ClientEnforce | Client Onboarding Software and Automation",
@@ -19,6 +19,29 @@ export const metadata: Metadata = buildPageMetadata({
   ],
   type: "website",
 });
+
+const homeFaqItems = [
+  {
+    question: "What is ClientEnforce?",
+    answer:
+      "ClientEnforce is client onboarding software that combines intake steps, document collection, signatures, reminders, and progress tracking in one workflow.",
+  },
+  {
+    question: "Who is ClientEnforce for?",
+    answer:
+      "ClientEnforce is built for agencies, consultants, accountants, and service teams that want a repeatable onboarding workflow instead of manual email follow-ups.",
+  },
+  {
+    question: "How does client onboarding automation work in ClientEnforce?",
+    answer:
+      "You launch onboarding from a template, clients complete required tasks in one portal, and automated follow-ups run when deadlines are missed or steps are incomplete.",
+  },
+  {
+    question: "Can ClientEnforce replace separate tools for intake and onboarding?",
+    answer:
+      "Yes. Teams use ClientEnforce as an onboarding automation platform to manage client intake, approvals, document uploads, and completion tracking together.",
+  },
+] as const;
 
 function CheckIcon() {
   return (
@@ -824,7 +847,37 @@ export default function MarketingPage() {
                 <Link href="/client-onboarding-tools" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
                   Best client onboarding tools
                 </Link>
+                <Link href="/features" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
+                  Client onboarding platform features
+                </Link>
+                <Link href="/pricing" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
+                  Client onboarding software pricing
+                </Link>
               </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-zinc-900">What ClientEnforce is</h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-700">
+                ClientEnforce is client intake and onboarding software that unifies steps, approvals,
+                and client communication in one onboarding automation platform.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-zinc-900">Who it is for</h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-700">
+                It is built for agencies, consultants, accountants, and service operators that want
+                predictable onboarding workflows and fewer delivery delays.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-zinc-900">How automation works</h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-700">
+                Launch a template, assign required tasks, and let automated follow-ups run when clients
+                miss steps so your team can focus on delivery instead of chasing updates.
+              </p>
             </div>
           </div>
 
@@ -865,6 +918,44 @@ export default function MarketingPage() {
                 Compare onboarding tools with a fair buying framework.
               </div>
             </Link>
+            <Link
+              href="/blog/client-onboarding-workflow"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+            >
+              <div className="text-sm font-semibold text-zinc-900">Client onboarding workflow guide</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-700">
+                Define roles, handoffs, and automation triggers across each onboarding stage.
+              </div>
+            </Link>
+            <Link
+              href="/blog/onboarding-documents-for-clients"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+            >
+              <div className="text-sm font-semibold text-zinc-900">Onboarding documents for clients</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-700">
+                Use a practical document request framework to reduce missing files and kickoff delays.
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-zinc-50">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">FAQ</div>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900">
+              Common questions about onboarding software for businesses
+            </h2>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {homeFaqItems.map((item) => (
+              <article key={item.question} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-zinc-900">{item.question}</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-700">{item.answer}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -947,6 +1038,14 @@ export default function MarketingPage() {
         </div>
       </section>
       <JsonLd data={buildSoftwareApplicationSchema("/")} />
+      <JsonLd
+        data={buildFaqPageSchema(
+          homeFaqItems.map((item) => ({
+            question: item.question,
+            answer: item.answer,
+          })),
+        )}
+      />
     </div>
   );
 }

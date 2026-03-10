@@ -203,6 +203,14 @@ const resourceLinks = [
     href: "/blog",
     label: "Client onboarding blog",
   },
+  {
+    href: "/blog/client-onboarding-workflow",
+    label: "Client onboarding workflow guide",
+  },
+  {
+    href: "/blog/onboarding-documents-for-clients",
+    label: "Onboarding documents for clients",
+  },
 ];
 
 const comparisonLinks = [
@@ -342,7 +350,7 @@ export function Breadcrumbs({ items }: { items: Breadcrumb[] }) {
   );
 }
 
-export function JsonLd({ data }: { data: Record<string, unknown> }) {
+export function JsonLd({ data }: { data: unknown }) {
   return (
     <script
       type="application/ld+json"

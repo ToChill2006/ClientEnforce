@@ -4,6 +4,7 @@ import { blogPosts, seoLandingPages } from "@/lib/content/seo-content";
 import {
   buildBlogPostingSchema,
   buildBreadcrumbSchema,
+  buildFaqPageSchema,
   buildPageMetadata,
   buildSoftwareApplicationSchema,
 } from "@/lib/seo";
@@ -40,6 +41,17 @@ export function buildLandingSchemas(
 
   if (options?.includeSoftwareSchema) {
     schema.push(buildSoftwareApplicationSchema(page.path));
+  }
+
+  if (page.faq?.length) {
+    schema.push(
+      buildFaqPageSchema(
+        page.faq.map((item) => ({
+          question: item.question,
+          answer: item.answer,
+        })),
+      ),
+    );
   }
 
   return schema;

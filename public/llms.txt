@@ -1,0 +1,33 @@
+# ClientEnforce
+Canonical: https://clientenforce.com
+Sitemap: https://clientenforce.com/sitemap.xml
+
+ClientEnforce is client onboarding software for businesses. Public marketing pages, guides, and documentation may be accessed for indexing and retrieval.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /c/
+Disallow: /dashboard/
+Disallow: /forgot-password
+Disallow: /invite/
+Disallow: /reset-password
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /

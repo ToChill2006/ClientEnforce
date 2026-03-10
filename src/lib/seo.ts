@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { appOrigin } from "@/lib/app-url";
 
 const SITE_NAME = "ClientEnforce";
+const ORGANIZATION_ID = "/#organization";
 
 function normalizePath(path: string) {
   if (!path) return "/";
@@ -71,28 +72,88 @@ export function buildBreadcrumbSchema(items: BreadcrumbItem[]) {
   };
 }
 
+export function buildOrganizationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": absoluteUrl(ORGANIZATION_ID),
+    name: SITE_NAME,
+    url: absoluteUrl("/"),
+    description:
+      "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, templates, and progress tracking.",
+    logo: {
+      "@type": "ImageObject",
+      url: absoluteUrl("/apple-touch-icon.png"),
+    },
+  };
+}
+
+export function buildWebsiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": absoluteUrl("/#website"),
+    name: SITE_NAME,
+    url: absoluteUrl("/"),
+    description:
+      "ClientEnforce helps service teams automate client onboarding workflows with one secure portal.",
+    publisher: {
+      "@type": "Organization",
+      "@id": absoluteUrl(ORGANIZATION_ID),
+    },
+    inLanguage: "en",
+  };
+}
+
 export function buildSoftwareApplicationSchema(path: string) {
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": absoluteUrl(`${path}#softwareapplication`),
     name: "ClientEnforce",
     applicationCategory: "BusinessApplication",
+    applicationSubCategory: "Client onboarding software",
     operatingSystem: "Web",
     description:
       "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, progress tracking, templates, and a secure client portal.",
     url: absoluteUrl(path),
-    brand: {
-      "@type": "Brand",
-      name: "ClientEnforce",
+    provider: {
+      "@id": absoluteUrl(ORGANIZATION_ID),
     },
+    featureList: [
+      "Client onboarding workflow templates",
+      "Document collection and file uploads",
+      "E-signatures and approval capture",
+      "Automated reminders and follow-ups",
+      "Progress tracking and audit timeline",
+    ],
     offers: {
       "@type": "Offer",
-      price: "0",
-      priceCurrency: "GBP",
-      category: "Client onboarding software",
       url: absoluteUrl("/pricing"),
+      price: "0.00",
+      priceCurrency: "GBP",
       availability: "https://schema.org/InStock",
     },
+  };
+}
+
+export type FaqSchemaItem = {
+  question: string;
+  answer: string;
+};
+
+export function buildFaqPageSchema(items: FaqSchemaItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
   };
 }
 
@@ -117,16 +178,14 @@ export function buildBlogPostingSchema(input: BlogPostingSchemaInput) {
     datePublished: input.publishedTime,
     dateModified: input.modifiedTime,
     inLanguage: "en",
-    keywords: input.keywords,
+    keywords: input.keywords?.join(", "),
     author: {
       "@type": "Organization",
-      name: "ClientEnforce",
-      url: absoluteUrl("/"),
+      "@id": absoluteUrl(ORGANIZATION_ID),
     },
     publisher: {
       "@type": "Organization",
-      name: "ClientEnforce",
-      url: absoluteUrl("/"),
+      "@id": absoluteUrl(ORGANIZATION_ID),
       logo: {
         "@type": "ImageObject",
         url: absoluteUrl("/apple-touch-icon.png"),
@@ -139,6 +198,6 @@ export function buildBlogPostingSchema(input: BlogPostingSchemaInput) {
   };
 }
 
-export function jsonLdString(data: Record<string, unknown>) {
+export function jsonLdString(data: unknown) {
   return JSON.stringify(data);
 }

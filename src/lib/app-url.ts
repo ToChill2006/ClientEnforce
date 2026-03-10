@@ -1,5 +1,5 @@
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);
-const PROD_FALLBACK_ORIGIN = "https://clientenforce.com";
+const CANONICAL_PROD_ORIGIN = "https://clientenforce.com";
 const DEV_FALLBACK_ORIGIN = "http://localhost:3000";
 const REDIRECT_QUERY_KEYS = ["redirect_to", "redirect_uri", "redirectUrl", "return_to", "next"];
 
@@ -35,7 +35,15 @@ function rewriteLocalAbsoluteUrl(raw: string, targetOrigin: URL) {
 }
 
 export function appOrigin() {
-  const isProd = process.env.NODE_ENV === "production";
+  const vercelEnv = String(process.env.VERCEL_ENV ?? "").toLowerCase();
+  const isProductionDeployment = vercelEnv
+    ? vercelEnv === "production"
+    : process.env.NODE_ENV === "production";
+
+  if (isProductionDeployment) {
+    return CANONICAL_PROD_ORIGIN;
+  }
+
   const candidates = [
     process.env.NEXT_PUBLIC_APP_URL,
     process.env.APP_URL,
@@ -48,12 +56,12 @@ export function appOrigin() {
   for (const candidate of candidates) {
     const origin = toOrigin(candidate);
     if (!origin) continue;
-    const hostname = new URL(origin).hostname;
-    if (isProd && isLocalHostname(hostname)) continue;
+    const hostname = new URL(origin).hostname.toLowerCase();
+    if (isLocalHostname(hostname)) continue;
     return origin;
   }
 
-  return isProd ? PROD_FALLBACK_ORIGIN : DEV_FALLBACK_ORIGIN;
+  return DEV_FALLBACK_ORIGIN;
 }
 
 export function normalizeAuthEmailLink(rawLink?: string | null) {

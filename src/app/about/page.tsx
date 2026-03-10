@@ -95,6 +95,44 @@ export default function AboutPage() {
                 </ul>
               </SectionCard>
 
+              <SectionCard title="How client onboarding automation works at ClientEnforce">
+                <p>
+                  We focus on one practical workflow: launch onboarding from a template, collect
+                  required information in one portal, and automatically follow up when tasks are overdue.
+                </p>
+                <p className="mt-3">
+                  This gives teams cleaner starts to delivery, fewer onboarding bottlenecks, and an
+                  audit trail that can be reviewed when questions come up.
+                </p>
+              </SectionCard>
+
+              <SectionCard title="Why onboarding software for businesses needs structure">
+                <p>
+                  Most teams do not fail onboarding because they lack effort. They fail because required
+                  steps are not visible in one place. ClientEnforce is built to enforce a clear sequence
+                  so client intake, approvals, and handoffs happen in the right order.
+                </p>
+                <p className="mt-3">
+                  If you are comparing customer onboarding software, the key signal is how fast your team
+                  can reach kickoff-ready status with complete information.
+                </p>
+                <p className="mt-3">
+                  Explore the
+                  {" "}
+                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding software overview
+                  </Link>
+                  {" "}
+                  or read the
+                  {" "}
+                  <Link href="/blog/client-onboarding-workflow" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding workflow guide
+                  </Link>
+                  {" "}
+                  for implementation detail.
+                </p>
+              </SectionCard>
+
               <SectionCard title="What’s next">
                 <p>
                   We’re focused on making ClientEnforce faster, clearer, and more automated—so onboarding

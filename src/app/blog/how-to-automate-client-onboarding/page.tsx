@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 export default function LegacyHowToAutomateClientOnboardingPage() {
-  redirect("/blog/automate-client-onboarding");
+  permanentRedirect("/blog/automate-client-onboarding");
 }

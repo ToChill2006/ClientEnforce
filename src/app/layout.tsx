@@ -1,7 +1,9 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { ToastProvider } from "@/components/ui/toast";
+import { JsonLd } from "@/components/marketing/public-shell";
 import { appOrigin } from "@/lib/app-url";
+import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/seo";
 
 export const viewport = {
   width: "device-width",
@@ -66,6 +68,8 @@ export default function RootLayout({
           <div className="min-h-screen w-full bg-gradient-to-b from-white via-zinc-50 to-zinc-100 [animation:pageFadeIn_.18s_ease-out]">
             {children}
           </div>
+          <JsonLd data={buildOrganizationSchema()} />
+          <JsonLd data={buildWebsiteSchema()} />
         </ToastProvider>
       </body>
     </html>

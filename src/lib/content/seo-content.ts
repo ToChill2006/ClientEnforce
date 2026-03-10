@@ -287,6 +287,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Learn what to automate first to improve completion rates.",
       },
       {
+        href: "/blog/client-onboarding-workflow",
+        label: "Client onboarding workflow guide",
+        description: "Map roles, handoffs, and reminders across every onboarding stage.",
+      },
+      {
+        href: "/blog/onboarding-documents-for-clients",
+        label: "Onboarding documents for clients",
+        description: "Use a clear document request structure to reduce missing information at kickoff.",
+      },
+      {
         href: "/blog",
         label: "Client onboarding blog",
         description: "Read tactical guides, templates, and comparison insights.",
@@ -974,7 +984,7 @@ export const blogPosts: Record<string, BlogPost> = {
   "client-onboarding-process": {
     slug: "client-onboarding-process",
     path: "/blog/client-onboarding-process",
-    title: "Client Onboarding Process: Steps, Workflow, and Best Practices | ClientEnforce",
+    title: "Client Onboarding Process Guide | ClientEnforce",
     description:
       "Learn a practical client onboarding process with step-by-step workflow guidance, ownership rules, and automation tips to reduce delays.",
     keywords: [

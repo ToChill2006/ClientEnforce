@@ -238,6 +238,51 @@ export default function PricingPage() {
                   </Link>
                 </div>
               </div>
+
+              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  Choosing the right onboarding automation platform tier
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  Most teams start with one service-line template, validate completion speed, then scale
+                  into automation and team access. That rollout keeps implementation focused and avoids
+                  adding process complexity too early.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-zinc-900">Starter fit</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Best for testing client intake and onboarding software with a small number of active clients.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-zinc-900">Pro fit</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Ideal for teams that need to automate client onboarding and reduce manual follow-up effort.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-zinc-900">Business fit</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Built for higher onboarding volume, governance requirements, and multi-user operations.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/blog/client-onboarding-workflow"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Read the client onboarding workflow guide
+                  </Link>
+                  <Link
+                    href="/blog/onboarding-documents-for-clients"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    See onboarding document requirements
+                  </Link>
+                </div>
+              </div>
             </div>
           </Container>
         </section>

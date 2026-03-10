@@ -9,27 +9,16 @@ const PRIVATE_PATHS = [
   "/dashboard/",
   "/forgot-password",
   "/invite/",
-  "/login",
   "/reset-password",
-  "/signup",
 ] as const;
 
-const PUBLIC_INDEXABLE_PATHS = [
-  "/",
-  "/blog",
-  "/client-onboarding-software",
-  "/client-onboarding-tools",
-  "/client-onboarding-checklist",
-  "/client-onboarding-automation",
-  "/dubsado-alternative",
-  "/honeybook-alternative",
-  "/client-onboarding-software-for-agencies",
-  "/pricing",
-  "/features",
-  "/about",
-  "/privacy",
-  "/terms",
-  "/contact",
+const AI_CRAWLERS = [
+  "GPTBot",
+  "ChatGPT-User",
+  "Google-Extended",
+  "CCBot",
+  "PerplexityBot",
+  "ClaudeBot",
 ] as const;
 
 export default function robots(): MetadataRoute.Robots {
@@ -39,7 +28,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", ...PUBLIC_INDEXABLE_PATHS],
+        allow: "/",
+        disallow: [...PRIVATE_PATHS],
+      },
+      {
+        userAgent: [...AI_CRAWLERS],
+        allow: "/",
         disallow: [...PRIVATE_PATHS],
       },
     ],

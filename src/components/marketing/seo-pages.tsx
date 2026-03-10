@@ -416,7 +416,9 @@ export function BlogHubTemplate({
                     </div>
                     <h2 className="mt-3 text-lg font-semibold text-zinc-900">{post.h1}</h2>
                     <p className="mt-3 text-sm leading-6 text-zinc-700">{post.description}</p>
-                    <div className="mt-4 text-sm font-medium text-zinc-900">Read guide</div>
+                    <div className="mt-4 text-sm font-medium text-zinc-900">
+                      Read {post.h1}
+                    </div>
                   </Link>
                 ))}
               </div>

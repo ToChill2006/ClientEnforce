@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
-import { buildPageMetadata } from "@/lib/seo";
+import { JsonLd, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { buildFaqPageSchema, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Features | ClientEnforce – Client Onboarding Automation",
@@ -169,7 +169,52 @@ export default function FeaturesPage() {
                     href="/about"
                     className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
                   >
-                    Learn more
+                    Learn why teams switch to ClientEnforce
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-12 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  How client onboarding automation works in practice
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  Teams launch a standard onboarding template, assign required steps, and keep every
+                  client in one trackable flow. When tasks are late, reminders run automatically so
+                  delivery teams do not need to manually chase status.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <div>
+                    <h3 className="font-semibold text-zinc-900">Step 1: Launch a workflow</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-600">
+                      Start onboarding from reusable templates built for your client intake and handoff process.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-zinc-900">Step 2: Collect requirements</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-600">
+                      Clients upload documents, complete fields, and sign approvals in a single portal.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-zinc-900">Step 3: Track completion</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-600">
+                      Teams monitor progress, resolve blockers, and export audit-ready evidence when onboarding is complete.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/client-onboarding-software"
+                    className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
+                  >
+                    Explore client onboarding software
+                  </Link>
+                  <Link
+                    href="/client-onboarding-automation"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                  >
+                    See onboarding automation examples
                   </Link>
                 </div>
               </div>
@@ -194,6 +239,14 @@ export default function FeaturesPage() {
         </section>
       </main>
       <PublicFooter />
+      <JsonLd
+        data={buildFaqPageSchema(
+          faqs.map((item) => ({
+            question: item.q,
+            answer: item.a,
+          })),
+        )}
+      />
     </>
   );
 }
