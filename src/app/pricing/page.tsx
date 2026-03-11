@@ -293,6 +293,12 @@ export default function PricingPage() {
                   >
                     Compare ClientEnforce vs HoneyBook
                   </Link>
+                  <Link
+                    href="/client-onboarding-software-for-agencies"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Compare onboarding software for agencies
+                  </Link>
                 </div>
               </div>
             </div>

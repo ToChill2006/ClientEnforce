@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { resetPasswordAction } from "./action";
+import { buildNoindexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildNoindexMetadata({
+  title: "Reset Password | ClientEnforce",
+  description: "Set a new ClientEnforce password to continue managing client onboarding workflows securely.",
+  path: "/reset-password",
+});
 
 export default async function ResetPasswordPage({
   searchParams,

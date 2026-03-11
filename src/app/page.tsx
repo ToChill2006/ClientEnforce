@@ -1028,6 +1028,9 @@ export default function MarketingPage() {
                   <Link className="hover:text-zinc-900" href="/honeybook-alternative">
                     HoneyBook alternative
                   </Link>
+                  <Link className="hover:text-zinc-900" href="/client-onboarding-software-for-agencies">
+                    Onboarding software for agencies
+                  </Link>
                   <Link className="hover:text-zinc-900" href="/blog">
                     Blog
                   </Link>

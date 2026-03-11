@@ -227,7 +227,7 @@ export default function FeaturesPage() {
                   If you are comparing onboarding software for agencies or service teams, review our
                   alternative pages and pricing breakdown to choose the right implementation path.
                 </p>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <Link
                     href="/dubsado-alternative"
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
@@ -245,6 +245,12 @@ export default function FeaturesPage() {
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
                     Review client onboarding pricing
+                  </Link>
+                  <Link
+                    href="/client-onboarding-software-for-agencies"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Onboarding software for agencies
                   </Link>
                 </div>
               </div>

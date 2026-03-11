@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { forgotPasswordAction } from "./actions";
@@ -5,6 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { buildNoindexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildNoindexMetadata({
+  title: "Forgot Password | ClientEnforce",
+  description: "Reset your ClientEnforce password and regain access to your onboarding workspace.",
+  path: "/forgot-password",
+});
 
 export default async function ForgotPasswordPage({
   searchParams,

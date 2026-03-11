@@ -527,7 +527,7 @@ export function BlogHubTemplate({
                     </p>
                   </article>
                 </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                   <Link
                     href="/features"
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
@@ -551,6 +551,12 @@ export function BlogHubTemplate({
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
                     HoneyBook alternative
+                  </Link>
+                  <Link
+                    href="/client-onboarding-software-for-agencies"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Onboarding software for agencies
                   </Link>
                 </div>
               </section>

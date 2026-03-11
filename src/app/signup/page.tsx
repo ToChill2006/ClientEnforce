@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -6,6 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { signupAction } from "./action";
+import { buildNoindexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildNoindexMetadata({
+  title: "Sign Up | ClientEnforce",
+  description:
+    "Create your ClientEnforce account to automate client onboarding, collect documents, and track onboarding progress in one portal.",
+  path: "/signup",
+});
 
 export default async function SignupPage({
   searchParams,
@@ -49,6 +58,24 @@ export default async function SignupPage({
             <div className="text-sm font-semibold">ClientEnforce</div>
           </div>
         </Link>
+
+        <section className="mb-6 w-full">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Create your ClientEnforce account</h1>
+          <p className="mt-2 text-sm leading-6 text-zinc-600">
+            Start using client onboarding software built to collect files, capture signatures, and automate
+            onboarding follow-ups in one secure workflow.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-zinc-600">
+            Already have access?{" "}
+            <Link
+              href={next ? `/login?next=${encodeURIComponent(next)}` : "/login?next=%2Fdashboard"}
+              className="font-medium text-zinc-900 underline underline-offset-4"
+            >
+              Log in to your ClientEnforce workspace
+            </Link>
+            .
+          </p>
+        </section>
 
         <Card className="w-full shadow-sm">
           <CardHeader className="pb-4">

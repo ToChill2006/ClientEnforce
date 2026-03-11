@@ -54,6 +54,40 @@ export function buildPageMetadata(input: BuildMetadataInput): Metadata {
   };
 }
 
+type BuildNoindexMetadataInput = {
+  title: string;
+  description: string;
+  path: string;
+};
+
+export function buildNoindexMetadata(input: BuildNoindexMetadataInput): Metadata {
+  const url = absoluteUrl(input.path);
+
+  return {
+    title: input.title,
+    description: input.description,
+    alternates: {
+      canonical: url,
+    },
+    robots: {
+      index: false,
+      follow: true,
+    },
+    openGraph: {
+      title: input.title,
+      description: input.description,
+      url,
+      siteName: SITE_NAME,
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: input.title,
+      description: input.description,
+    },
+  };
+}
+
 export type BreadcrumbItem = {
   name: string;
   path: string;
