@@ -154,6 +154,12 @@ export default function FeaturesPage() {
                     <h3 className="font-semibold text-zinc-900">Less chasing</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-600">
                       Replace long email chains with a portal that shows what’s missing and what’s completed.
+                      If you are looking for a complete platform, explore our
+                      {" "}
+                      <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                        client onboarding software
+                      </Link>
+                      .
                     </p>
                   </div>
                   <div>

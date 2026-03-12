@@ -664,7 +664,13 @@ export default function MarketingPage() {
                 automate client onboarding
               </Link>
               {" "}
-              in one system.
+              in one system. Many agencies choose dedicated
+              {" "}
+              <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                client onboarding software
+              </Link>
+              {" "}
+              to automate workflows end to end.
             </p>
 
             <h2 className="mt-8 text-2xl font-semibold tracking-tight text-zinc-900">

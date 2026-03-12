@@ -783,7 +783,13 @@ export function BlogHubTemplate({
                 <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
                   This blog focuses on practical execution for client intake and onboarding software.
                   You will find process guides, automation playbooks, checklist frameworks, and fair
-                  software comparisons that help teams launch cleaner onboarding workflows.
+                  software comparisons that help teams launch cleaner onboarding workflows. If you want
+                  one complete
+                  {" "}
+                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding platform
+                  </Link>
+                  , start with the product overview before diving into implementation guides.
                 </p>
                 <div className="mt-5 grid gap-4 md:grid-cols-3">
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">

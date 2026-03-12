@@ -675,6 +675,11 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "See how ClientEnforce powers end-to-end onboarding automation.",
           },
           {
+            href: "/client-onboarding-software",
+            label: "client onboarding platform",
+            description: "If you are looking for a complete platform, explore our client onboarding software.",
+          },
+          {
             href: "/blog/client-onboarding-automation",
             label: "client onboarding automation guide",
             description: "Read tactical examples for reminders, escalations, and workflow governance.",
