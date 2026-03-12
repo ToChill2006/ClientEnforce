@@ -258,6 +258,26 @@ export function PublicFooter() {
               Launch a clean onboarding process with one portal for documents, signatures, reminders,
               and progress tracking.
             </p>
+            <p className="mt-3 text-sm leading-6 text-zinc-700">
+              ClientEnforce is built for agencies, consultants, and service teams that need reliable
+              onboarding execution. Instead of managing intake across disconnected tools, your team can
+              run one repeatable workflow from signed agreement to kickoff readiness.
+            </p>
+            <ul className="mt-3 space-y-1 text-sm leading-6 text-zinc-700">
+              <li>Collect required files and approvals in one client portal.</li>
+              <li>Automate follow-ups when onboarding tasks are incomplete.</li>
+              <li>Track progress clearly across every active onboarding.</li>
+              <li>Use templates to standardize delivery handoffs and reduce rework.</li>
+            </ul>
+            <p className="mt-3 text-sm leading-6 text-zinc-700">
+              If you are evaluating client onboarding software, compare features, pricing, and workflow
+              fit before rollout. The guides and comparison pages below are designed to help you choose
+              the right onboarding automation platform for your business.
+            </p>
+            <p className="mt-3 text-sm leading-6 text-zinc-700">
+              Need a starting point? Begin with the client onboarding software overview, then use the
+              checklist and automation pages to design a rollout plan your team can execute consistently.
+            </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link
                 href="/"

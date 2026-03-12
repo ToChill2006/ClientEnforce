@@ -255,6 +255,60 @@ export default function FeaturesPage() {
                 </div>
               </div>
 
+              <div className="mt-12 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  How these onboarding features improve delivery outcomes
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  Good feature lists are not enough on their own. The important question is how each capability
+                  changes daily execution for account managers, operations leads, and delivery teams.
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  ClientEnforce is designed to reduce the most expensive onboarding problems: unclear ownership,
+                  missing files at kickoff, and manual follow-up overhead. With one onboarding workflow and one
+                  client portal, teams can move from contract to readiness with less rework.
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  This structure is especially useful for onboarding software for businesses that handle
+                  multiple service lines. Shared templates and stage-based tracking help teams keep quality
+                  consistent even as account volume grows.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Faster kickoff readiness</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-600">
+                      Required tasks, files, and approvals are visible in one flow so projects start with complete inputs.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Less manual coordination</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-600">
+                      Automated reminders and status visibility reduce time spent chasing clients for updates.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Stronger process governance</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-600">
+                      Audit-ready history gives teams a clear record of what was submitted, approved, and completed.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/client-onboarding-checklist"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Use the onboarding checklist framework
+                  </Link>
+                  <Link
+                    href="/client-onboarding-tools"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Compare client onboarding tools
+                  </Link>
+                </div>
+              </div>
+
               {/* FAQ */}
               <div className="mt-12">
                 <h2 className="text-2xl font-semibold text-zinc-900">FAQ</h2>

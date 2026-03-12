@@ -293,6 +293,116 @@ export default function ContactPage() {
                   before contacting sales.
                 </p>
               </section>
+
+              <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-xl font-semibold text-zinc-900">Before you reach out</h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  To help us provide a useful answer quickly, include your onboarding workflow goals,
+                  current process bottlenecks, and expected rollout timeline. Requests with this context
+                  are easier to route and usually receive more practical guidance.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Sales inquiries</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Share team size, onboarding volume, and the features you need to automate client onboarding.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Support requests</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Include account details, impacted workflow step, and any error screenshots so support can respond faster.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Partnership requests</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Describe audience fit, integration ideas, and collaboration goals so we can evaluate alignment.
+                    </p>
+                  </article>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/client-onboarding-automation"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Explore onboarding automation
+                  </Link>
+                  <Link
+                    href="/client-onboarding-checklist"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Review onboarding checklist
+                  </Link>
+                  <Link
+                    href="/blog"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Read onboarding guides
+                  </Link>
+                </div>
+              </section>
+
+              <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-xl font-semibold text-zinc-900">Contact FAQ</h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  The fastest path is usually to review product fit first, then reach out with specific
+                  implementation questions. If you are still comparing options, focus on how each platform
+                  handles required-step enforcement, document collection, follow-up automation, and kickoff readiness.
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  Our team can help you map ClientEnforce to your onboarding workflow, but sharing detail
+                  about your current process will make that conversation more useful from the start.
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  If your team is preparing a migration from manual onboarding, include expected go-live
+                  dates and service priorities so we can provide rollout guidance that matches your timeline.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">How quickly does ClientEnforce respond?</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Response times vary by request type and volume, but we prioritize clear, actionable next steps in each reply.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Can I request a product walkthrough?</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Yes. Sales inquiries can include walkthrough or onboarding demo questions tailored to your workflow.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Where can I compare alternatives first?</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Start with our
+                      {" "}
+                      <Link href="/dubsado-alternative" className="font-medium text-zinc-900 underline underline-offset-4">
+                        Dubsado alternative
+                      </Link>
+                      {" "}
+                      and
+                      {" "}
+                      <Link href="/honeybook-alternative" className="font-medium text-zinc-900 underline underline-offset-4">
+                        HoneyBook alternative
+                      </Link>
+                      {" "}
+                      pages for side-by-side context.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Is there self-serve guidance available?</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Yes. Browse the
+                      {" "}
+                      <Link href="/blog" className="font-medium text-zinc-900 underline underline-offset-4">
+                        onboarding resource library
+                      </Link>
+                      {" "}
+                      for process, automation, and checklist guides.
+                    </p>
+                  </article>
+                </div>
+              </section>
             </div>
           </PageContainer>
         </section>

@@ -169,6 +169,34 @@ export default function PrivacyPage() {
                 </p>
               </PolicySection>
 
+              <PolicySection title="Customer responsibilities and data handling expectations">
+                <p>
+                  ClientEnforce is used by businesses that collect onboarding data from their own clients.
+                  Customers are responsible for defining lawful collection practices, configuring onboarding
+                  requirements appropriately, and limiting access to authorized internal users.
+                </p>
+                <p>
+                  When building onboarding workflows, customers should request only the information needed
+                  for service delivery and compliance. Teams should also review retention settings regularly
+                  and remove outdated data according to legal and contractual requirements.
+                </p>
+                <p>
+                  For implementation guidance, visit our
+                  {" "}
+                  <Link href="/client-onboarding-checklist" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding checklist
+                  </Link>
+                  {" "}
+                  and
+                  {" "}
+                  <Link href="/blog/onboarding-documents-for-clients" className="font-medium text-zinc-900 underline underline-offset-4">
+                    onboarding documents guide
+                  </Link>
+                  {" "}
+                  to design workflows that are both efficient and privacy-aware.
+                </p>
+              </PolicySection>
+
               <PolicySection title="Contact information">
                 <p>
                   For privacy questions, requests, or complaints, contact

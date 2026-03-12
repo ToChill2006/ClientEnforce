@@ -146,13 +146,14 @@ export function buildSoftwareApplicationSchema(path: string) {
     "@id": absoluteUrl(`${path}#softwareapplication`),
     name: "ClientEnforce",
     applicationCategory: "BusinessApplication",
-    operatingSystem: "Web browser",
+    operatingSystem: "Web",
     description:
       "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, progress tracking, templates, and a secure client portal.",
     url: absoluteUrl(path),
     brand: {
-      "@type": "Brand",
+      "@type": "Organization",
       name: SITE_NAME,
+      url: absoluteUrl("/"),
     },
     publisher: {
       "@type": "Organization",

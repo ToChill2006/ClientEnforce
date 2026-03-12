@@ -147,6 +147,38 @@ export default function TermsPage() {
                 </p>
               </TermsSection>
 
+              <TermsSection title="Operational guidance for customers">
+                <p>
+                  These terms are intended to support responsible use of ClientEnforce in real onboarding
+                  environments. Customers should configure onboarding workflows with clear ownership, maintain
+                  appropriate internal access controls, and keep account information current.
+                </p>
+                <p>
+                  To reduce onboarding risk, teams should document required inputs, review completion criteria,
+                  and validate handoff readiness before kickoff. This helps ensure the platform is used in line
+                  with both business policy and legal obligations.
+                </p>
+                <p>
+                  Customers should also review account permissions regularly, update responsible contacts,
+                  and maintain internal governance for sensitive onboarding records stored in the platform.
+                </p>
+                <p>
+                  For implementation context, review our
+                  {" "}
+                  <Link href="/features" className="font-medium text-zinc-900 underline underline-offset-4">
+                    platform features
+                  </Link>
+                  {" "}
+                  and
+                  {" "}
+                  <Link href="/client-onboarding-automation" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding automation guide
+                  </Link>
+                  {" "}
+                  before rolling out new workflows.
+                </p>
+              </TermsSection>
+
               <TermsSection title="Contact">
                 <p>
                   If you have questions about these terms, contact

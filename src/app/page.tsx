@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { JsonLd } from "@/components/marketing/public-shell";
-import { buildFaqPageSchema, buildPageMetadata, buildSoftwareApplicationSchema } from "@/lib/seo";
+import { SoftwareApplicationJsonLd } from "@/components/seo/software-application-jsonld";
+import { buildFaqPageSchema, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "ClientEnforce | Client Onboarding Software and Automation",
@@ -1044,7 +1045,7 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
-      <JsonLd data={buildSoftwareApplicationSchema("/")} />
+      <SoftwareApplicationJsonLd path="/" />
       <JsonLd
         data={buildFaqPageSchema(
           homeFaqItems.map((item) => ({

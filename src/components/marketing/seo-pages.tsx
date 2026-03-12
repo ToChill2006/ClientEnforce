@@ -239,6 +239,110 @@ export function SeoLandingTemplate({
                 </div>
               </section>
 
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+                  How to evaluate onboarding workflow fit before implementation
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Teams usually do not struggle because they lack effort. They struggle because onboarding
+                  requirements are spread across inboxes, forms, and disconnected task lists. A strong
+                  evaluation process should focus on workflow outcomes instead of isolated features.
+                </p>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Start by mapping your current onboarding sequence from signed agreement to kickoff. Then
+                  identify where clients stall, where internal teams lose visibility, and where handoffs
+                  create avoidable delays. This gives you a clear baseline for software selection.
+                </p>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Use these checkpoints to compare options fairly:
+                </p>
+                <ul className="mt-4 space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-800">
+                  <li className="flex gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                    <span>Can the platform enforce required steps for every new client?</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                    <span>Can clients submit documents, complete forms, and sign in one place?</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                    <span>Can your team automate follow-ups when steps are incomplete?</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                    <span>Can managers see completion status without manual status checks?</span>
+                  </li>
+                </ul>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <Link
+                    href="/client-onboarding-software"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Compare client onboarding software
+                  </Link>
+                  <Link
+                    href="/client-onboarding-tools"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Evaluate onboarding tools
+                  </Link>
+                  <Link
+                    href="/blog/client-onboarding-workflow"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Read workflow implementation guide
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Review onboarding pricing plans
+                  </Link>
+                </div>
+              </section>
+
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+                  Practical 30-60-90 day onboarding rollout plan
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Rolling out onboarding software works best when you phase implementation around measurable
+                  milestones. Teams that launch everything at once often introduce unnecessary complexity.
+                  A phased plan keeps adoption practical and protects onboarding quality.
+                </p>
+                <ol className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Days 1-30: Standardize the workflow</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Define required onboarding tasks, owners, and completion rules. Launch with one template
+                      so every client gets the same core process.
+                    </p>
+                  </li>
+                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Days 31-60: Automate follow-ups</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Add reminder rules for late tasks and incomplete steps. Track cycle time to confirm
+                      automation is reducing manual coordination effort.
+                    </p>
+                  </li>
+                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Days 61-90: Scale and optimize</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Extend templates to additional services, improve handoff readiness criteria, and review
+                      metrics monthly to keep quality high as volume grows.
+                    </p>
+                  </li>
+                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Ongoing: Maintain governance</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Keep one source of truth for onboarding requirements and review exception patterns
+                      regularly to prevent workflow drift across teams.
+                    </p>
+                  </li>
+                </ol>
+              </section>
+
               {page.sections.map((section) => (
                 <SectionContent key={section.heading} section={section} />
               ))}
@@ -557,6 +661,52 @@ export function BlogHubTemplate({
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
                     Onboarding software for agencies
+                  </Link>
+                </div>
+              </section>
+
+              <section className="mt-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+                  How to use these onboarding resources effectively
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  The fastest way to improve onboarding outcomes is to combine strategy pages with execution
+                  guides. Start by documenting your current client onboarding workflow, then use checklist
+                  and automation resources to close the highest-friction gaps first.
+                </p>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Most teams see early gains by reducing missing documents, clarifying ownership, and
+                  automating overdue reminders. After that, comparison pages help you benchmark tooling
+                  choices against your process requirements and service model.
+                </p>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Each guide is written to support implementation, not just theory. Use the linked pages
+                  to move from planning to execution with measurable onboarding quality improvements.
+                </p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <Link
+                    href="/client-onboarding-checklist"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Build your onboarding checklist
+                  </Link>
+                  <Link
+                    href="/client-onboarding-automation"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Plan onboarding automation
+                  </Link>
+                  <Link
+                    href="/dubsado-alternative"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Review Dubsado alternative
+                  </Link>
+                  <Link
+                    href="/honeybook-alternative"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Review HoneyBook alternative
                   </Link>
                 </div>
               </section>

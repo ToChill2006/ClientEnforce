@@ -152,6 +152,10 @@ export default function PricingPage() {
                 goal: helping your team collect documents, signatures, and required client details
                 faster.
               </p>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-700">
+                As your onboarding workflow matures, you can scale from a starter setup to deeper automation
+                and governance without rebuilding your core process.
+              </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -299,6 +303,96 @@ export default function PricingPage() {
                   >
                     Compare onboarding software for agencies
                   </Link>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  How to estimate onboarding ROI before selecting a plan
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  Most teams justify onboarding software by comparing current manual effort against expected
+                  workflow improvements. Start with three baseline metrics: average onboarding cycle time,
+                  manual follow-up volume, and kickoff delays caused by missing requirements.
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  After rollout, track how quickly clients complete required steps and how often delivery teams
+                  begin with complete documentation. Even small reductions in delay can create meaningful gains
+                  in project profitability and team capacity.
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  If you are still deciding, compare your current onboarding workflow against the capabilities
+                  in each plan and prioritize the tier that removes your highest-cost bottlenecks first.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Cycle time</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Measure days from signed agreement to kickoff-ready onboarding completion.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Coordination effort</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Track manual reminders per onboarding before and after automation.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Readiness quality</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Review how often projects start without missing files, approvals, or intake detail.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">Pricing FAQ</h2>
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">
+                      Can I start on Starter and upgrade later?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Yes. Most teams begin with one onboarding template, then upgrade as client volume and team size increase.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">
+                      Which plan is best for agencies?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Agencies often start with Pro for automation and template scale, then move to Business as onboarding volume grows.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">
+                      Do all plans include the client portal?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Yes. Every plan is built around one client portal experience for onboarding submissions and progress.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">
+                      Where can I compare platform capabilities?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Review our
+                      {" "}
+                      <Link href="/features" className="font-medium text-zinc-900 underline underline-offset-4">
+                        feature breakdown
+                      </Link>
+                      {" "}
+                      and
+                      {" "}
+                      <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                        client onboarding software page
+                      </Link>
+                      {" "}
+                      before choosing a plan.
+                    </p>
+                  </article>
                 </div>
               </div>
             </div>

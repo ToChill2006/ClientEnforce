@@ -418,6 +418,28 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
       },
     ],
+    faq: [
+      {
+        question: "What are the most important client onboarding tools?",
+        answer:
+          "The most important tools are those that handle required-step workflows, document collection, signatures, follow-ups, and status visibility in one connected process.",
+      },
+      {
+        question: "Should I use one platform or multiple onboarding tools?",
+        answer:
+          "Most teams start with multiple tools and consolidate over time. A unified onboarding platform usually reduces handoffs and manual coordination overhead.",
+      },
+      {
+        question: "How do I evaluate onboarding tools fairly?",
+        answer:
+          "Compare tools against real onboarding bottlenecks: missing files, delayed approvals, weak status visibility, and high manual follow-up volume.",
+      },
+      {
+        question: "How does ClientEnforce fit into an onboarding tool stack?",
+        answer:
+          "ClientEnforce combines the highest-friction onboarding tasks in one platform, so teams can run repeatable workflows without stitching multiple tools together.",
+      },
+    ],
     relatedLinks: [
       {
         href: "/client-onboarding-checklist",
@@ -530,6 +552,28 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
       },
     ],
+    faq: [
+      {
+        question: "What should every client onboarding checklist include?",
+        answer:
+          "Every checklist should include required documents, legal approvals, key contacts, technical access requirements, and kickoff readiness steps with clear owners.",
+      },
+      {
+        question: "How many steps should a client onboarding checklist have?",
+        answer:
+          "Most teams use 8 to 12 steps. Keep the checklist detailed enough to avoid rework but concise enough that clients can complete it quickly.",
+      },
+      {
+        question: "Can a checklist improve onboarding completion rates?",
+        answer:
+          "Yes. A structured checklist improves completion rates by clarifying what is required, assigning ownership, and reducing missed tasks across teams.",
+      },
+      {
+        question: "How does ClientEnforce use onboarding checklists?",
+        answer:
+          "ClientEnforce lets you run onboarding from reusable templates, enforce required checklist items, and automatically follow up when tasks are overdue.",
+      },
+    ],
     relatedLinks: [
       {
         href: "/client-onboarding-software",
@@ -636,6 +680,28 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "Read tactical examples for reminders, escalations, and workflow governance.",
           },
         ],
+      },
+    ],
+    faq: [
+      {
+        question: "What is client onboarding automation?",
+        answer:
+          "Client onboarding automation uses workflow rules to send reminders, track step completion, and notify teams when onboarding status changes.",
+      },
+      {
+        question: "What should be automated first in onboarding?",
+        answer:
+          "Start with repetitive tasks such as overdue reminders, status updates, and kickoff-readiness checks. These changes usually create the fastest operational gains.",
+      },
+      {
+        question: "Will automation remove the human touch?",
+        answer:
+          "No. Automation should handle repetitive coordination while your team keeps control of strategic conversations, expectations, and delivery planning.",
+      },
+      {
+        question: "How does ClientEnforce support onboarding automation?",
+        answer:
+          "ClientEnforce combines templates, document collection, signatures, follow-up rules, and progress tracking in one onboarding automation platform.",
       },
     ],
     relatedLinks: [
