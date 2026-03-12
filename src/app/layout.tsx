@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ToastProvider } from "@/components/ui/toast";
 import { JsonLd } from "@/components/marketing/public-shell";
-import { appOrigin } from "@/lib/app-url";
+import { canonicalSiteOrigin } from "@/lib/app-url";
 import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/seo";
 
 export const viewport = {
@@ -12,7 +12,7 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(appOrigin()),
+  metadataBase: new URL(canonicalSiteOrigin()),
   title: {
     default: "ClientEnforce | Client onboarding software",
     template: "%s",

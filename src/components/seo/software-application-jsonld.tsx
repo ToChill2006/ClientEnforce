@@ -3,8 +3,9 @@ import { buildSoftwareApplicationSchema } from "@/lib/seo";
 
 type SoftwareApplicationJsonLdProps = {
   path: string;
+  description?: string;
 };
 
-export function SoftwareApplicationJsonLd({ path }: SoftwareApplicationJsonLdProps) {
-  return <JsonLd data={buildSoftwareApplicationSchema(path)} />;
+export function SoftwareApplicationJsonLd({ path, description }: SoftwareApplicationJsonLdProps) {
+  return <JsonLd data={buildSoftwareApplicationSchema({ path, description })} />;
 }

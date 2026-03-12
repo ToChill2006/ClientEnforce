@@ -10,7 +10,7 @@ export default function ClientOnboardingSoftwarePage() {
   return (
     <>
       <SeoLandingTemplate page={page} schema={buildLandingSchemas("client-onboarding-software")} />
-      <SoftwareApplicationJsonLd path="/client-onboarding-software" />
+      <SoftwareApplicationJsonLd path="/client-onboarding-software" description={page.description} />
     </>
   );
 }

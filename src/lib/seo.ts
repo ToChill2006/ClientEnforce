@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { appOrigin } from "@/lib/app-url";
+import { canonicalSiteOrigin } from "@/lib/app-url";
 
 const SITE_NAME = "ClientEnforce";
 const ORGANIZATION_ID = "/#organization";
@@ -11,7 +11,7 @@ function normalizePath(path: string) {
 }
 
 export function siteUrl() {
-  return appOrigin().replace(/\/$/, "");
+  return canonicalSiteOrigin().replace(/\/$/, "");
 }
 
 export function absoluteUrl(path: string) {
@@ -139,43 +139,27 @@ export function buildWebsiteSchema() {
   };
 }
 
-export function buildSoftwareApplicationSchema(path: string) {
+type BuildSoftwareApplicationSchemaInput = {
+  path: string;
+  description?: string;
+  name?: string;
+};
+
+export function buildSoftwareApplicationSchema(input: BuildSoftwareApplicationSchemaInput) {
+  const name = input.name ?? SITE_NAME;
+  const description =
+    input.description ??
+    "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, progress tracking, templates, and a secure client portal.";
+
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "@id": absoluteUrl(`${path}#softwareapplication`),
-    name: "ClientEnforce",
+    "@id": absoluteUrl(`${input.path}#softwareapplication`),
+    name,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    description:
-      "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, progress tracking, templates, and a secure client portal.",
-    url: absoluteUrl(path),
-    brand: {
-      "@type": "Organization",
-      name: SITE_NAME,
-      url: absoluteUrl("/"),
-    },
-    publisher: {
-      "@type": "Organization",
-      "@id": absoluteUrl(ORGANIZATION_ID),
-      name: SITE_NAME,
-      url: absoluteUrl("/"),
-    },
-    isAccessibleForFree: true,
-    featureList: [
-      "Client onboarding workflow templates",
-      "Document collection and file uploads",
-      "E-signatures and approval capture",
-      "Automated reminders and follow-ups",
-      "Progress tracking and audit timeline",
-    ],
-    offers: {
-      "@type": "Offer",
-      url: absoluteUrl("/pricing"),
-      price: "0",
-      priceCurrency: "GBP",
-      availability: "https://schema.org/InStock",
-    },
+    description,
+    url: absoluteUrl(input.path),
   };
 }
 

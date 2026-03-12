@@ -803,6 +803,23 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
       },
     ],
+    faq: [
+      {
+        question: "Who should choose a Dubsado alternative focused on onboarding?",
+        answer:
+          "Teams that prioritize onboarding consistency, completion speed, and clearer kickoff readiness usually benefit from an onboarding-first platform.",
+      },
+      {
+        question: "Can ClientEnforce replace fragmented onboarding workflows?",
+        answer:
+          "Yes. ClientEnforce is designed to run document collection, signatures, reminders, and completion tracking in one onboarding workflow.",
+      },
+      {
+        question: "How should teams evaluate ClientEnforce vs Dubsado?",
+        answer:
+          "Compare both tools against your highest-friction onboarding bottlenecks, then run a pilot to measure completion time, reminder volume, and handoff quality.",
+      },
+    ],
     relatedLinks: [
       {
         href: "/client-onboarding-software-for-agencies",
@@ -900,6 +917,23 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "Compare another onboarding-first alternative.",
           },
         ],
+      },
+    ],
+    faq: [
+      {
+        question: "When is a HoneyBook alternative worth considering?",
+        answer:
+          "It is usually worth considering when delayed kickoff, missing onboarding inputs, and manual follow-up effort are recurring operational issues.",
+      },
+      {
+        question: "Does ClientEnforce support onboarding workflows end to end?",
+        answer:
+          "Yes. Teams can run required-step workflows, collect files and signatures, and automate reminders in one onboarding platform.",
+      },
+      {
+        question: "What should teams compare before switching from HoneyBook?",
+        answer:
+          "Review workflow enforcement depth, completion visibility, reminder automation, and how each platform supports your service-specific onboarding model.",
       },
     ],
     relatedLinks: [
@@ -1011,6 +1045,23 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "See where an onboarding-first platform can be stronger for agency workflows.",
           },
         ],
+      },
+    ],
+    faq: [
+      {
+        question: "What makes onboarding software for agencies different?",
+        answer:
+          "Agency onboarding usually requires repeatable templates, multi-stakeholder document collection, and clear readiness handoffs from account to delivery teams.",
+      },
+      {
+        question: "Is ClientEnforce suitable for multi-service agencies?",
+        answer:
+          "Yes. Agencies can run service-specific templates while keeping one consistent onboarding workflow and completion standard.",
+      },
+      {
+        question: "How do agencies choose the right implementation path?",
+        answer:
+          "Start with one core template, measure completion speed and kickoff quality for 30 days, then scale to additional services with the same governance model.",
       },
     ],
     relatedLinks: [

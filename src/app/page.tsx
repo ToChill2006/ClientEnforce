@@ -1045,7 +1045,10 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
-      <SoftwareApplicationJsonLd path="/" />
+      <SoftwareApplicationJsonLd
+        path="/"
+        description="ClientEnforce is client onboarding software for document collection, signatures, follow-ups, templates, and progress tracking in one secure client portal."
+      />
       <JsonLd
         data={buildFaqPageSchema(
           homeFaqItems.map((item) => ({

@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-import { appOrigin } from "@/lib/app-url";
+import { canonicalSiteOrigin } from "@/lib/app-url";
 
 const PRIVATE_PATHS = [
   "/api/",
@@ -22,7 +22,7 @@ const AI_CRAWLERS = [
 ] as const;
 
 export default function robots(): MetadataRoute.Robots {
-  const origin = appOrigin();
+  const origin = canonicalSiteOrigin();
 
   return {
     rules: [

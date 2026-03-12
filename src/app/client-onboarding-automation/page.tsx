@@ -10,7 +10,7 @@ export default function ClientOnboardingAutomationPage() {
   return (
     <>
       <SeoLandingTemplate page={page} schema={buildLandingSchemas("client-onboarding-automation")} />
-      <SoftwareApplicationJsonLd path="/client-onboarding-automation" />
+      <SoftwareApplicationJsonLd path="/client-onboarding-automation" description={page.description} />
     </>
   );
 }

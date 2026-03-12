@@ -40,7 +40,12 @@ export function buildLandingSchemas(
   ];
 
   if (options?.includeSoftwareSchema) {
-    schema.push(buildSoftwareApplicationSchema(page.path));
+    schema.push(
+      buildSoftwareApplicationSchema({
+        path: page.path,
+        description: page.description,
+      }),
+    );
   }
 
   if (page.faq?.length) {

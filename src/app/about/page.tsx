@@ -133,6 +133,35 @@ export default function AboutPage() {
                 </p>
               </SectionCard>
 
+              <SectionCard title="How to evaluate fit for your team">
+                <p>
+                  Most teams evaluating onboarding software should compare workflow enforcement first, then
+                  feature depth. The key question is whether your team can move clients from signed agreement
+                  to kickoff-ready status with fewer delays and less manual coordination.
+                </p>
+                <p className="mt-3">
+                  Start with the
+                  {" "}
+                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding software
+                  </Link>
+                  {" "}
+                  page, then review
+                  {" "}
+                  <Link href="/features" className="font-medium text-zinc-900 underline underline-offset-4">
+                    onboarding platform features
+                  </Link>
+                  {" "}
+                  and
+                  {" "}
+                  <Link href="/pricing" className="font-medium text-zinc-900 underline underline-offset-4">
+                    pricing plans
+                  </Link>
+                  {" "}
+                  to choose a practical rollout path.
+                </p>
+              </SectionCard>
+
               <SectionCard title="What’s next">
                 <p>
                   We’re focused on making ClientEnforce faster, clearer, and more automated—so onboarding

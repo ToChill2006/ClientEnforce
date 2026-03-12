@@ -3,6 +3,10 @@ const CANONICAL_PROD_ORIGIN = "https://clientenforce.com";
 const DEV_FALLBACK_ORIGIN = "http://localhost:3000";
 const REDIRECT_QUERY_KEYS = ["redirect_to", "redirect_uri", "redirectUrl", "return_to", "next"];
 
+export function canonicalSiteOrigin() {
+  return CANONICAL_PROD_ORIGIN;
+}
+
 function toOrigin(raw?: string | null): string | null {
   const value = String(raw ?? "").trim();
   if (!value) return null;
