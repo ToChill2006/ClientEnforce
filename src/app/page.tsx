@@ -731,6 +731,285 @@ export default function MarketingPage() {
                 client onboarding pricing
               </Link>
             </div>
+
+            <div className="mt-10 rounded-2xl border border-zinc-200 bg-white p-6 sm:p-7">
+              <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+                A Practical Client Onboarding Workflow Playbook
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-zinc-700 sm:text-base">
+                Strong onboarding performance comes from operational clarity, not from adding more tools.
+                Teams that complete onboarding quickly usually define scope early, collect the right documents
+                once, and keep clients moving with clear next actions. When those basics are missing, project
+                delays start before work even begins. ClientEnforce gives teams one operational system to run
+                intake, approvals, uploads, signatures, and follow-ups in the same workflow.
+              </p>
+
+              <h3 className="mt-6 text-lg font-semibold tracking-tight text-zinc-900">
+                1. Confirm scope before kickoff
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                Define exactly what the client must submit before delivery starts. This can include project
+                goals, access credentials, legal documents, stakeholder contacts, and required approvals.
+                Setting requirements at the start avoids confusion later and reduces rework for delivery teams.
+                A structured
+                {" "}
+                <Link href="/client-onboarding-checklist" className="font-medium text-zinc-900 underline underline-offset-4">
+                  client onboarding checklist
+                </Link>
+                {" "}
+                helps teams standardize this step across every account.
+              </p>
+
+              <h3 className="mt-6 text-lg font-semibold tracking-tight text-zinc-900">
+                2. Collect documents and answers in one place
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                Fragmented collection creates unnecessary delays. Instead of asking clients to upload files in
+                one app, sign in another, and answer questions over email, route everything through one portal.
+                This reduces missed requirements and gives account managers a clear status view for every step.
+                A centralized
+                {" "}
+                <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                  client onboarding software
+                </Link>
+                {" "}
+                workflow keeps the process predictable for both teams and clients.
+              </p>
+
+              <h3 className="mt-6 text-lg font-semibold tracking-tight text-zinc-900">
+                3. Use reminders to keep momentum
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                Onboarding stalls when deadlines rely on manual follow-up. Build reminder rules that trigger
+                automatically when tasks are overdue or incomplete. This keeps clients progressing without
+                constant check-ins from your team. If your current process depends on ad hoc emails, start with
+                a focused
+                {" "}
+                <Link href="/client-onboarding-automation" className="font-medium text-zinc-900 underline underline-offset-4">
+                  client onboarding automation
+                </Link>
+                {" "}
+                rollout and expand from there.
+              </p>
+
+              <h3 className="mt-6 text-lg font-semibold tracking-tight text-zinc-900">
+                4. Hand off cleanly from onboarding to delivery
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                A complete onboarding flow should produce a clear handoff package: submitted answers, uploaded
+                files, signatures, and a timeline of completed actions. Delivery teams can start work faster
+                when they do not need to reconstruct context from scattered messages. Clear completion criteria
+                also improve client trust because kickoff happens with fewer surprises.
+              </p>
+
+              <p className="mt-6 text-sm leading-7 text-zinc-700 sm:text-base">
+                For a full walkthrough, explore our
+                {" "}
+                <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                  client onboarding software
+                </Link>
+                {" "}
+                page, review the
+                {" "}
+                <Link href="/client-onboarding-automation" className="font-medium text-zinc-900 underline underline-offset-4">
+                  onboarding automation
+                </Link>
+                {" "}
+                implementation guide, and compare plan fit on
+                {" "}
+                <Link href="/pricing" className="font-medium text-zinc-900 underline underline-offset-4">
+                  pricing
+                </Link>
+                .
+              </p>
+
+              <h3 className="mt-8 text-lg font-semibold tracking-tight text-zinc-900">
+                How different teams use this workflow
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                Marketing agencies usually run onboarding across several stakeholders, which means requirements
+                often arrive out of order. A structured workflow helps agencies collect brand assets, access
+                permissions, legal approvals, and campaign goals without repeatedly asking for updates. It also
+                gives account managers a clear client status before handoff to production teams. If your agency
+                currently relies on email threads and manual reminders, standardizing intake steps is usually
+                the fastest operational win.
+              </p>
+              <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                Consultants and advisory teams often need complete discovery inputs before they can deliver
+                strategic recommendations. A clear onboarding flow ensures statements of work, diagnostic forms,
+                stakeholder context, and supporting files are submitted before kickoff calls. This reduces
+                meetings spent on missing context and improves time-to-value for clients. When teams can trust
+                onboarding quality, they spend more time delivering outcomes and less time chasing preparation.
+              </p>
+              <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                Freelancers and small service teams benefit from having one repeatable system that works across
+                every client type. Instead of rebuilding the onboarding process for each project, they can reuse
+                templates, keep expectations consistent, and protect project margins. Repeatable onboarding also
+                creates a better client experience because next steps are clear from day one. That consistency
+                matters when smaller teams are balancing sales, delivery, and account communication at the same time.
+              </p>
+              <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                Operations and compliance-led businesses use onboarding workflows to document exactly what was
+                requested, what was submitted, and when each step was completed. Centralized records reduce risk
+                in audits and simplify internal review, especially when several team members touch one account
+                before delivery starts. A complete onboarding timeline gives leadership better visibility into
+                process quality and helps identify where clients are most likely to stall.
+              </p>
+
+              <h3 className="mt-8 text-lg font-semibold tracking-tight text-zinc-900">
+                Metrics to track when you automate client onboarding
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                Teams usually see the strongest results when they track operational metrics each week and use
+                those signals to improve templates. Start with completion rate, average time-to-completion,
+                overdue requirement count, and handoff readiness at kickoff. These four metrics reveal whether
+                clients understand what to do, whether reminders are effective, and whether your intake
+                requirements are realistic. As your process matures, you can also monitor rework rate after
+                kickoff and the number of projects delayed by missing onboarding inputs.
+              </p>
+              <ul className="mt-4 space-y-2 text-sm text-zinc-800">
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>
+                    <span className="font-medium text-zinc-900">Completion rate:</span>
+                    {" "}
+                    percentage of onboardings finished by the expected deadline.
+                  </span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>
+                    <span className="font-medium text-zinc-900">Time-to-completion:</span>
+                    {" "}
+                    how long clients take from link open to full submission.
+                  </span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>
+                    <span className="font-medium text-zinc-900">Overdue tasks:</span>
+                    {" "}
+                    open requirements that need reminders or process simplification.
+                  </span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>
+                    <span className="font-medium text-zinc-900">Kickoff readiness:</span>
+                    {" "}
+                    share of projects that start with complete onboarding data.
+                  </span>
+                </li>
+              </ul>
+
+              <p className="mt-6 text-sm leading-7 text-zinc-700 sm:text-base">
+                If you are implementing this process now, start with a single high-volume service and refine
+                your onboarding template for two to four weeks before expanding. You can also compare practical
+                options in our
+                {" "}
+                <Link href="/client-onboarding-tools" className="font-medium text-zinc-900 underline underline-offset-4">
+                  client onboarding tools
+                </Link>
+                {" "}
+                guide and review requirements planning in the
+                {" "}
+                <Link href="/client-onboarding-checklist" className="font-medium text-zinc-900 underline underline-offset-4">
+                  client onboarding checklist
+                </Link>
+                {" "}
+                resource.
+              </p>
+
+              <h3 className="mt-8 text-lg font-semibold tracking-tight text-zinc-900">
+                Common onboarding automation questions
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                Teams evaluating onboarding systems usually ask the same operational questions before rollout.
+                The answers below reflect how most service businesses implement onboarding automation without
+                disrupting delivery operations.
+              </p>
+
+              <div className="mt-5 space-y-5">
+                <div>
+                  <h4 className="text-base font-semibold text-zinc-900">
+                    How long does onboarding setup usually take?
+                  </h4>
+                  <p className="mt-1 text-sm leading-7 text-zinc-700 sm:text-base">
+                    Most teams can launch an initial workflow quickly by starting with one core service template
+                    and a clear definition of required inputs. The fastest implementations avoid overbuilding
+                    and focus on a short list of required questions, uploads, and approvals. Once the first
+                    workflow is stable, additional templates can be added for other service lines.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-semibold text-zinc-900">
+                    Should every client follow the same onboarding flow?
+                  </h4>
+                  <p className="mt-1 text-sm leading-7 text-zinc-700 sm:text-base">
+                    The core process should stay consistent, but templates can still adapt to service type,
+                    contract scope, or client segment. A shared structure makes reporting and handoff easier,
+                    while template-level variations keep requirements relevant. This balance helps teams stay
+                    standardized without forcing one rigid process for every engagement.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-semibold text-zinc-900">
+                    What should be required before kickoff?
+                  </h4>
+                  <p className="mt-1 text-sm leading-7 text-zinc-700 sm:text-base">
+                    Required items should cover anything that blocks delivery if missing: project objectives,
+                    stakeholder contacts, approvals, key files, access credentials, and signed documents.
+                    Optional fields are helpful for context, but mandatory requirements should stay focused so
+                    clients can complete onboarding quickly. Keeping this list practical improves completion
+                    rates and reduces kickoff delays.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-semibold text-zinc-900">
+                    How do teams reduce client drop-off during onboarding?
+                  </h4>
+                  <p className="mt-1 text-sm leading-7 text-zinc-700 sm:text-base">
+                    Drop-off usually decreases when onboarding is simple, time-bounded, and clearly sequenced.
+                    Teams see better results when clients can complete everything in one portal, receive clear
+                    due dates, and get automated reminders before deadlines pass. Reducing unnecessary fields
+                    and making required tasks explicit also improves completion consistency across accounts.
+                  </p>
+                </div>
+              </div>
+
+              <h3 className="mt-8 text-lg font-semibold tracking-tight text-zinc-900">
+                30-day rollout checklist
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                If you want to launch quickly without overcomplicating implementation, run a short 30-day
+                rollout. Week 1: define required onboarding inputs and publish one template. Week 2: send new
+                clients through the process and monitor completion bottlenecks. Week 3: tighten reminder timing
+                and remove questions that do not affect delivery decisions. Week 4: review completion metrics,
+                finalize handoff criteria, and expand to additional service lines. This phased approach keeps
+                adoption practical and gives teams enough feedback to improve onboarding quality before scaling.
+              </p>
+              <ul className="mt-4 space-y-2 text-sm text-zinc-800">
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>Start with one high-volume service, not every service at once.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>Keep required steps focused on information that blocks kickoff if missing.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>Use reminders to reduce manual follow-up workload for account teams.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                  <span>Require a complete handoff package before delivery teams begin execution.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
