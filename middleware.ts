@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(req: NextRequest) {
+  const redirectUrl = req.nextUrl.clone();
+  if (redirectUrl.hostname === "www.clientenforce.com") {
+    redirectUrl.hostname = "clientenforce.com";
+    return NextResponse.redirect(redirectUrl, 301);
+  }
+
   const { pathname } = req.nextUrl;
 
   // Only protect dashboard
@@ -53,5 +59,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/:path*"],
 };

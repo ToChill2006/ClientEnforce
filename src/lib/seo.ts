@@ -149,7 +149,7 @@ export function buildSoftwareApplicationSchema(input: BuildSoftwareApplicationSc
   const name = input.name ?? SITE_NAME;
   const description =
     input.description ??
-    "ClientEnforce is client onboarding software for document collection, signatures, follow-ups, progress tracking, templates, and a secure client portal.";
+    "Client onboarding software that automates client intake, forms, workflows, and onboarding tasks for agencies and service businesses.";
 
   return {
     "@context": "https://schema.org",

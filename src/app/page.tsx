@@ -627,6 +627,104 @@ export default function MarketingPage() {
         </div>
       </section>
 
+      {/* Onboarding SEO content */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              Client Onboarding Software Built for Agencies and Service Businesses
+            </h2>
+            <p className="mt-4 max-w-4xl text-sm leading-7 text-zinc-700 sm:text-base">
+              Slow onboarding usually comes from unclear requirements, disconnected tools, and too many manual
+              follow-ups. ClientEnforce helps teams run one structured onboarding workflow so clients know what
+              to complete, account teams can see what is missing, and delivery can start with full context.
+              Instead of relying on inbox threads or spreadsheet checklists, teams can standardize intake,
+              automate reminders, and track completion in one place.
+            </p>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-zinc-700 sm:text-base">
+              If you are evaluating options, start with the
+              {" "}
+              <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                client onboarding software page
+              </Link>
+              {" "}
+              and the
+              {" "}
+              <Link href="/client-onboarding-automation" className="font-medium text-zinc-900 underline underline-offset-4">
+                client onboarding automation guide
+              </Link>
+              {" "}
+              to map your rollout.
+            </p>
+
+            <h2 className="mt-8 text-2xl font-semibold tracking-tight text-zinc-900">
+              How ClientEnforce Automates Client Onboarding
+            </h2>
+            <ul className="mt-4 space-y-2 rounded-2xl border border-zinc-200 bg-white p-5 text-sm text-zinc-800">
+              <li className="flex gap-2.5">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                <span>Automated workflows that move clients through required onboarding stages.</span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                <span>Onboarding checklists that enforce consistent completion before kickoff.</span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                <span>Document collection and signatures in one secure client portal.</span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
+                <span>Client intake forms that reduce missing details and rework.</span>
+              </li>
+            </ul>
+
+            <h2 className="mt-8 text-2xl font-semibold tracking-tight text-zinc-900">
+              Who ClientEnforce Is For
+            </h2>
+            <ul className="mt-4 grid gap-3 text-sm text-zinc-800 sm:grid-cols-2">
+              {[
+                "Marketing agencies",
+                "Consultants",
+                "Freelancers",
+                "Service businesses",
+              ].map((audience) => (
+                <li key={audience} className="rounded-2xl border border-zinc-200 bg-white px-4 py-3">
+                  {audience}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Link
+                href="/client-onboarding-software"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                client onboarding software
+              </Link>
+              <Link
+                href="/client-onboarding-automation"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                client onboarding automation
+              </Link>
+              <Link
+                href="/client-onboarding-checklist"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                client onboarding checklist
+              </Link>
+              <Link
+                href="/pricing"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                client onboarding pricing
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Security */}
       <section id="security" className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
@@ -1047,7 +1145,7 @@ export default function MarketingPage() {
       </section>
       <SoftwareApplicationJsonLd
         path="/"
-        description="ClientEnforce is client onboarding software for document collection, signatures, follow-ups, templates, and progress tracking in one secure client portal."
+        description="Client onboarding software that automates client intake, forms, workflows, and onboarding tasks for agencies and service businesses."
       />
       <JsonLd
         data={buildFaqPageSchema(
