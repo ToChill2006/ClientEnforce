@@ -139,30 +139,6 @@ export function buildWebsiteSchema() {
   };
 }
 
-type BuildSoftwareApplicationSchemaInput = {
-  path: string;
-  description?: string;
-  name?: string;
-};
-
-export function buildSoftwareApplicationSchema(input: BuildSoftwareApplicationSchemaInput) {
-  const name = input.name ?? SITE_NAME;
-  const description =
-    input.description ??
-    "Client onboarding software that automates client intake, onboarding workflows, and document collection for agencies and service businesses.";
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "@id": absoluteUrl(`${input.path}#softwareapplication`),
-    name,
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    description,
-    url: absoluteUrl(input.path),
-  };
-}
-
 export type FaqSchemaItem = {
   question: string;
   answer: string;

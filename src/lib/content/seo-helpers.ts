@@ -6,7 +6,6 @@ import {
   buildBreadcrumbSchema,
   buildFaqPageSchema,
   buildPageMetadata,
-  buildSoftwareApplicationSchema,
 } from "@/lib/seo";
 
 export function getLandingPage(key: keyof typeof seoLandingPages) {
@@ -27,7 +26,6 @@ export function buildLandingMetadata(key: keyof typeof seoLandingPages): Metadat
 
 export function buildLandingSchemas(
   key: keyof typeof seoLandingPages,
-  options?: { includeSoftwareSchema?: boolean },
 ) {
   const page = getLandingPage(key);
   const schema: Record<string, unknown>[] = [
@@ -38,15 +36,6 @@ export function buildLandingSchemas(
       })),
     ),
   ];
-
-  if (options?.includeSoftwareSchema) {
-    schema.push(
-      buildSoftwareApplicationSchema({
-        path: page.path,
-        description: page.description,
-      }),
-    );
-  }
 
   if (page.faq?.length) {
     schema.push(
