@@ -95,6 +95,18 @@ export default function FeaturesPage() {
               <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">
                 ClientEnforce turns messy client onboarding into a structured workflow.
                 Collect documents, capture signatures, and track every step in one portal—so nothing gets missed.
+                For teams evaluating a
+                {" "}
+                <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                  client onboarding platform
+                </Link>
+                , this is where to
+                {" "}
+                <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                  automate client onboarding
+                </Link>
+                {" "}
+                with consistent workflow controls.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">

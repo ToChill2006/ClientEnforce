@@ -514,6 +514,20 @@ export function BlogPostTemplate({
                   If you are implementing changes immediately, pair this guide with the product resources
                   below so you can move from planning to execution with fewer handoffs.
                 </p>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  If you need a complete
+                  {" "}
+                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding platform
+                  </Link>
+                  , use this guide to
+                  {" "}
+                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                    automate client onboarding
+                  </Link>
+                  {" "}
+                  with repeatable workflow rules.
+                </p>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {guideLinks.map((link) => (
                     <Link

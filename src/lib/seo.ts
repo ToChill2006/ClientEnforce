@@ -149,7 +149,7 @@ export function buildSoftwareApplicationSchema(input: BuildSoftwareApplicationSc
   const name = input.name ?? SITE_NAME;
   const description =
     input.description ??
-    "Client onboarding software that automates client intake, forms, workflows, and onboarding tasks for agencies and service businesses.";
+    "Client onboarding software that automates client intake, onboarding workflows, and document collection for agencies and service businesses.";
 
   return {
     "@context": "https://schema.org",

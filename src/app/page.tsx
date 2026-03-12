@@ -632,7 +632,7 @@ export default function MarketingPage() {
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Client Onboarding Software Built for Agencies and Service Businesses
+              Client Onboarding Software for Agencies and Service Businesses
             </h2>
             <p className="mt-4 max-w-4xl text-sm leading-7 text-zinc-700 sm:text-base">
               Slow onboarding usually comes from unclear requirements, disconnected tools, and too many manual
@@ -654,7 +654,18 @@ export default function MarketingPage() {
                 client onboarding automation guide
               </Link>
               {" "}
-              to map your rollout.
+              to map your rollout. If you need a full
+              {" "}
+              <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                client onboarding platform
+              </Link>
+              , this page also shows how to
+              {" "}
+              <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                automate client onboarding
+              </Link>
+              {" "}
+              in one system.
             </p>
 
             <h2 className="mt-8 text-2xl font-semibold tracking-tight text-zinc-900">
@@ -1145,7 +1156,7 @@ export default function MarketingPage() {
       </section>
       <SoftwareApplicationJsonLd
         path="/"
-        description="Client onboarding software that automates client intake, forms, workflows, and onboarding tasks for agencies and service businesses."
+        description="Client onboarding software that automates client intake, onboarding workflows, and document collection for agencies and service businesses."
       />
       <JsonLd
         data={buildFaqPageSchema(
