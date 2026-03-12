@@ -230,6 +230,10 @@ const comparisonLinks = [
 
 const companyLinks = [
   {
+    href: "/",
+    label: "ClientEnforce homepage",
+  },
+  {
     href: "/about",
     label: "About",
   },
