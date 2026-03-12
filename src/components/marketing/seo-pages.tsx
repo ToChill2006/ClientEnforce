@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type { BlogPost, ContentSection, SeoLandingPage } from "@/lib/content/seo-content";
 import { JsonLd, PublicFooter, PublicHeader, Breadcrumbs, PageContainer } from "@/components/marketing/public-shell";
+import { TrackedCtaLink } from "@/components/marketing/tracked-cta-link";
 
 function headingToId(heading: string) {
   return heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -96,25 +97,39 @@ function SectionContent({ section }: { section: ContentSection }) {
 function HeroActions({
   primary,
   secondary,
+  tracking,
 }: {
   primary: { href: string; label: string };
   secondary?: { href: string; label: string };
+  tracking: { pagePath: string; surface: string };
 }) {
   return (
     <div className="mt-7 flex flex-wrap gap-3">
-      <Link
+      <TrackedCtaLink
         href={primary.href}
+        trackProps={{
+          pagePath: tracking.pagePath,
+          surface: tracking.surface,
+          ctaLabel: primary.label,
+          ctaHref: primary.href,
+        }}
         className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
       >
         {primary.label}
-      </Link>
+      </TrackedCtaLink>
       {secondary ? (
-        <Link
+        <TrackedCtaLink
           href={secondary.href}
+          trackProps={{
+            pagePath: tracking.pagePath,
+            surface: tracking.surface,
+            ctaLabel: secondary.label,
+            ctaHref: secondary.href,
+          }}
           className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50"
         >
           {secondary.label}
-        </Link>
+        </TrackedCtaLink>
       ) : null}
     </div>
   );
@@ -157,17 +172,19 @@ function CtaPanel({
   description,
   primary,
   secondary,
+  tracking,
 }: {
   title: string;
   description: string;
   primary: { href: string; label: string };
   secondary?: { href: string; label: string };
+  tracking: { pagePath: string; surface: string };
 }) {
   return (
     <section className="mt-10 rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
       <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">{title}</h2>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-700 sm:text-base">{description}</p>
-      <HeroActions primary={primary} secondary={secondary} />
+      <HeroActions primary={primary} secondary={secondary} tracking={tracking} />
     </section>
   );
 }
@@ -183,6 +200,7 @@ export function SeoLandingTemplate({
     { href: "/client-onboarding-software", label: "Client onboarding software overview" },
     { href: "/client-onboarding-automation", label: "Client onboarding automation strategies" },
     { href: "/client-onboarding-checklist", label: "Client onboarding checklist framework" },
+    { href: "/best-client-onboarding-software", label: "Best client onboarding software comparison" },
     { href: "/features", label: "Client onboarding platform features" },
     { href: "/pricing", label: "Client onboarding pricing plans" },
     { href: "/dubsado-alternative", label: "Dubsado alternative comparison" },
@@ -204,7 +222,11 @@ export function SeoLandingTemplate({
                 {page.h1}
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">{page.intro}</p>
-              <HeroActions primary={page.cta.primary} secondary={page.cta.secondary} />
+              <HeroActions
+                primary={page.cta.primary}
+                secondary={page.cta.secondary}
+                tracking={{ pagePath: page.path, surface: "hero" }}
+              />
               <HighlightList highlights={page.highlights} />
             </div>
           </PageContainer>
@@ -426,6 +448,7 @@ export function SeoLandingTemplate({
                 description={page.cta.description}
                 primary={page.cta.primary}
                 secondary={page.cta.secondary}
+                tracking={{ pagePath: page.path, surface: "cta_panel" }}
               />
             </div>
           </PageContainer>
@@ -476,7 +499,11 @@ export function BlogPostTemplate({
 
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">{post.intro}</p>
 
-              <HeroActions primary={post.cta.primary} secondary={post.cta.secondary} />
+              <HeroActions
+                primary={post.cta.primary}
+                secondary={post.cta.secondary}
+                tracking={{ pagePath: post.path, surface: "hero" }}
+              />
               <HighlightList highlights={post.highlights} />
             </article>
           </PageContainer>
@@ -719,6 +746,7 @@ export function BlogPostTemplate({
                 description={post.cta.description}
                 primary={post.cta.primary}
                 secondary={post.cta.secondary}
+                tracking={{ pagePath: post.path, surface: "cta_panel" }}
               />
             </div>
           </PageContainer>

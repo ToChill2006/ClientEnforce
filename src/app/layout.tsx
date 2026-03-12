@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react";
 import { ToastProvider } from "@/components/ui/toast";
 import { JsonLd } from "@/components/marketing/public-shell";
 import { canonicalSiteOrigin } from "@/lib/app-url";
@@ -70,6 +71,7 @@ export default function RootLayout({
           </div>
           <JsonLd data={buildOrganizationSchema()} />
           <JsonLd data={buildWebsiteSchema()} />
+          <Analytics />
         </ToastProvider>
       </body>
     </html>

@@ -141,6 +141,12 @@ export function PublicHeader() {
 
             <div className="invisible absolute left-0 top-full z-50 mt-2 w-80 rounded-2xl border border-zinc-200 bg-white p-2 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
               <Link
+                href="/best-client-onboarding-software"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Best client onboarding software
+              </Link>
+              <Link
                 href="/dubsado-alternative"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
@@ -214,6 +220,10 @@ const resourceLinks = [
 ];
 
 const comparisonLinks = [
+  {
+    href: "/best-client-onboarding-software",
+    label: "Best client onboarding software",
+  },
   {
     href: "/dubsado-alternative",
     label: "Dubsado alternative",

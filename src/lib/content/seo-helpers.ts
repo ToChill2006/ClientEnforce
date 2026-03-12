@@ -6,6 +6,7 @@ import {
   buildBreadcrumbSchema,
   buildFaqPageSchema,
   buildPageMetadata,
+  buildSoftwareApplicationSchema,
 } from "@/lib/seo";
 
 export function getLandingPage(key: keyof typeof seoLandingPages) {
@@ -45,6 +46,17 @@ export function buildLandingSchemas(
           answer: item.answer,
         })),
       ),
+    );
+  }
+
+  if (key === "client-onboarding-software") {
+    schema.push(
+      buildSoftwareApplicationSchema({
+        name: "ClientEnforce",
+        description:
+          "Client onboarding software that automates client intake, onboarding workflows, and document collection for agencies and service businesses.",
+        path: page.path,
+      }),
     );
   }
 

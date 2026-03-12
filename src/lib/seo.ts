@@ -139,6 +139,30 @@ export function buildWebsiteSchema() {
   };
 }
 
+type SoftwareApplicationSchemaInput = {
+  name?: string;
+  description: string;
+  path: string;
+  applicationCategory?: string;
+  operatingSystem?: string;
+};
+
+export function buildSoftwareApplicationSchema(input: SoftwareApplicationSchemaInput) {
+  const name = input.name ?? SITE_NAME;
+  const applicationCategory = input.applicationCategory ?? "BusinessApplication";
+  const operatingSystem = input.operatingSystem ?? "Web";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name,
+    applicationCategory,
+    operatingSystem,
+    url: absoluteUrl(input.path),
+    description: input.description,
+  };
+}
+
 export type FaqSchemaItem = {
   question: string;
   answer: string;
