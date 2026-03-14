@@ -53,6 +53,12 @@ export function PublicHeader() {
                 Client onboarding software
               </Link>
               <Link
+                href="/client-onboarding-platform"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Client onboarding platform
+              </Link>
+              <Link
                 href="/client-onboarding-automation"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
@@ -69,6 +75,12 @@ export function PublicHeader() {
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
                 Client onboarding tools
+              </Link>
+              <Link
+                href="/onboarding-workflow-software"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Onboarding workflow software
               </Link>
             </div>
           </details>
@@ -125,6 +137,18 @@ export function PublicHeader() {
                 HoneyBook alternative
               </Link>
               <Link
+                href="/bonsai-alternative"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Bonsai alternative
+              </Link>
+              <Link
+                href="/dubsado-vs-honeybook"
+                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                Dubsado vs HoneyBook
+              </Link>
+              <Link
                 href="/best-client-onboarding-software"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
@@ -155,6 +179,9 @@ export function PublicHeader() {
                 <Link href="/client-onboarding-software" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
                   Client onboarding software
                 </Link>
+                <Link href="/client-onboarding-platform" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Client onboarding platform
+                </Link>
                 <Link href="/client-onboarding-automation" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
                   Client onboarding automation
                 </Link>
@@ -163,6 +190,9 @@ export function PublicHeader() {
                 </Link>
                 <Link href="/client-onboarding-tools" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
                   Client onboarding tools
+                </Link>
+                <Link href="/onboarding-workflow-software" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Onboarding workflow software
                 </Link>
               </div>
 
@@ -193,6 +223,12 @@ export function PublicHeader() {
                 <Link href="/honeybook-alternative" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
                   HoneyBook alternative
                 </Link>
+                <Link href="/bonsai-alternative" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Bonsai alternative
+                </Link>
+                <Link href="/dubsado-vs-honeybook" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Dubsado vs HoneyBook
+                </Link>
                 <Link href="/best-client-onboarding-software" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
                   Best client onboarding software
                 </Link>
@@ -220,6 +256,10 @@ const productLinks = [
     label: "Client onboarding software",
   },
   {
+    href: "/client-onboarding-platform",
+    label: "Client onboarding platform",
+  },
+  {
     href: "/features",
     label: "Features",
   },
@@ -239,6 +279,10 @@ const productLinks = [
     href: "/client-onboarding-tools",
     label: "Client onboarding tools",
   },
+  {
+    href: "/onboarding-workflow-software",
+    label: "Onboarding workflow software",
+  },
 ];
 
 const comparisonLinks = [
@@ -249,6 +293,14 @@ const comparisonLinks = [
   {
     href: "/honeybook-alternative",
     label: "HoneyBook alternative",
+  },
+  {
+    href: "/bonsai-alternative",
+    label: "Bonsai alternative",
+  },
+  {
+    href: "/dubsado-vs-honeybook",
+    label: "Dubsado vs HoneyBook",
   },
   {
     href: "/best-client-onboarding-software",

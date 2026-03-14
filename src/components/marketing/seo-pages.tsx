@@ -198,13 +198,17 @@ export function SeoLandingTemplate({
 }) {
   const supportingLinks = [
     { href: "/client-onboarding-software", label: "Client onboarding software overview" },
+    { href: "/client-onboarding-platform", label: "Client onboarding platform guide" },
     { href: "/client-onboarding-automation", label: "Client onboarding automation strategies" },
+    { href: "/onboarding-workflow-software", label: "Onboarding workflow software guide" },
     { href: "/client-onboarding-checklist", label: "Client onboarding checklist framework" },
     { href: "/best-client-onboarding-software", label: "Best client onboarding software comparison" },
     { href: "/features", label: "Client onboarding platform features" },
     { href: "/pricing", label: "Client onboarding pricing plans" },
     { href: "/dubsado-alternative", label: "Dubsado alternative comparison" },
     { href: "/honeybook-alternative", label: "HoneyBook alternative comparison" },
+    { href: "/bonsai-alternative", label: "Bonsai alternative comparison" },
+    { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook comparison" },
   ].filter((link) => link.href !== page.path);
 
   return (
@@ -472,7 +476,9 @@ export function BlogPostTemplate({
 }) {
   const guideLinks = [
     { href: "/client-onboarding-software", label: "Client onboarding software" },
+    { href: "/client-onboarding-platform", label: "Client onboarding platform" },
     { href: "/client-onboarding-automation", label: "Client onboarding automation" },
+    { href: "/onboarding-workflow-software", label: "Onboarding workflow software" },
     { href: "/client-onboarding-checklist", label: "Client onboarding checklist" },
     { href: "/features", label: "Client onboarding platform features" },
     { href: "/pricing", label: "Client onboarding pricing plans" },
@@ -676,7 +682,7 @@ export function BlogPostTemplate({
                   If you are comparing implementation options, review these side-by-side pages to assess
                   workflow fit, feature depth, and rollout tradeoffs.
                 </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <Link
                     href="/dubsado-alternative"
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
@@ -688,6 +694,18 @@ export function BlogPostTemplate({
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
                     HoneyBook alternative for client onboarding
+                  </Link>
+                  <Link
+                    href="/bonsai-alternative"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Bonsai alternative for client onboarding
+                  </Link>
+                  <Link
+                    href="/dubsado-vs-honeybook"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Dubsado vs HoneyBook comparison
                   </Link>
                 </div>
               </section>
@@ -865,6 +883,18 @@ export function BlogHubTemplate({
                     HoneyBook alternative
                   </Link>
                   <Link
+                    href="/bonsai-alternative"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Bonsai alternative
+                  </Link>
+                  <Link
+                    href="/dubsado-vs-honeybook"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Dubsado vs HoneyBook
+                  </Link>
+                  <Link
                     href="/client-onboarding-software-for-agencies"
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
@@ -889,6 +919,12 @@ export function BlogHubTemplate({
                     client onboarding software
                   </Link>
                   <Link
+                    href="/client-onboarding-platform"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    client onboarding platform
+                  </Link>
+                  <Link
                     href="/client-onboarding-automation"
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
@@ -905,6 +941,24 @@ export function BlogHubTemplate({
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
                     client onboarding tools
+                  </Link>
+                  <Link
+                    href="/onboarding-workflow-software"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    onboarding workflow software
+                  </Link>
+                  <Link
+                    href="/client-intake-and-onboarding-software"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    client intake and onboarding software
+                  </Link>
+                  <Link
+                    href="/onboarding-software-for-service-businesses"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    onboarding software for service businesses
                   </Link>
                 </div>
               </section>
@@ -951,6 +1005,18 @@ export function BlogHubTemplate({
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
                   >
                     Review HoneyBook alternative
+                  </Link>
+                  <Link
+                    href="/bonsai-alternative"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Review Bonsai alternative
+                  </Link>
+                  <Link
+                    href="/dubsado-vs-honeybook"
+                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
+                  >
+                    Review Dubsado vs HoneyBook
                   </Link>
                 </div>
               </section>
