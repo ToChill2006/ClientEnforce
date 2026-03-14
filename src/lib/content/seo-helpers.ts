@@ -52,10 +52,9 @@ export function buildLandingSchemas(
   if (key === "client-onboarding-software") {
     schema.push(
       buildSoftwareApplicationSchema({
-        name: "ClientEnforce",
         description:
-          "Client onboarding software that automates client intake, onboarding workflows, and document collection for agencies and service businesses.",
-        path: page.path,
+          "Client onboarding software for agencies and service businesses that helps automate onboarding workflows, collect client information, and standardize new client setup.",
+        path: "/client-onboarding-software",
       }),
     );
   }

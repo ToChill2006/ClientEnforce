@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { JsonLd } from "@/components/marketing/public-shell";
+import { JsonLd, PublicHeader } from "@/components/marketing/public-shell";
 import { buildFaqPageSchema, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -196,101 +196,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 }
 
 function MarketingNav() {
-  return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-w-0 items-center gap-2">
-          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-            <Image src="/C.png" alt="ClientEnforce" fill className="object-contain p-1" priority />
-          </span>
-          <span className="truncate text-sm font-semibold tracking-tight text-zinc-900 sm:text-base">
-            ClientEnforce
-          </span>
-        </Link>
-
-        <nav className="hidden items-center gap-6 text-sm text-zinc-700 md:flex">
-          <a href="#features" className="hover:text-zinc-900">Features</a>
-          <a href="#how" className="hover:text-zinc-900">How it works</a>
-          <a href="#security" className="hover:text-zinc-900">Security</a>
-          <a href="#pricing" className="hover:text-zinc-900">Pricing</a>
-          <Link href="/contact" className="hover:text-zinc-900">Contact</Link>
-          <details className="group relative">
-            <summary className="list-none cursor-pointer select-none hover:text-zinc-900">
-              <span className="inline-flex items-center gap-1">
-                Resources
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-4 w-4 text-zinc-500 transition group-open:rotate-180"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-            </summary>
-
-            <div className="invisible absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-zinc-200 bg-white p-2 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
-              <Link
-                href="/client-onboarding-software"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Client onboarding software
-              </Link>
-              <Link
-                href="/client-onboarding-checklist"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Client onboarding checklist
-              </Link>
-              <Link
-                href="/client-onboarding-automation"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Client onboarding automation
-              </Link>
-              <Link
-                href="/client-onboarding-tools"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Best client onboarding tools
-              </Link>
-              <Link
-                href="/blog"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Blog and guides
-              </Link>
-              <a
-                href="#resources"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Homepage resources section
-              </a>
-            </div>
-          </details>
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="hidden rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 sm:inline-flex md:inline-flex"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 sm:px-4"
-          >
-            Start free
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
+  return <PublicHeader />;
 }
 
 export default function MarketingPage() {
@@ -1245,6 +1151,9 @@ export default function MarketingPage() {
                 <Link href="/client-onboarding-tools" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
                   Best client onboarding tools
                 </Link>
+                <Link href="/client-onboarding-process" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
+                  Client onboarding process
+                </Link>
                 <Link href="/features" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50">
                   Client onboarding platform features
                 </Link>
@@ -1335,6 +1244,63 @@ export default function MarketingPage() {
               </div>
             </Link>
           </div>
+
+          <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              Why onboarding breaks down without a system
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-700 sm:text-base">
+              Most onboarding failures are operational, not strategic. Teams know what they need from clients,
+              but requirements are spread across email, forms, docs, and reminders with no shared completion view.
+              That creates delayed kickoffs, missing inputs, and avoidable rework across account and delivery teams.
+            </p>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <article className="rounded-2xl border border-zinc-200 bg-white p-4">
+                <h3 className="text-sm font-semibold text-zinc-900">Unclear ownership</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  When no one owns each onboarding stage, tasks stall and clients receive inconsistent instructions.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-zinc-200 bg-white p-4">
+                <h3 className="text-sm font-semibold text-zinc-900">Fragmented tools</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  Splitting onboarding across multiple tools increases handoff risk and hides blockers until late stages.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-zinc-200 bg-white p-4">
+                <h3 className="text-sm font-semibold text-zinc-900">Manual follow-up loops</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  Manual reminders consume account-manager capacity and still miss deadlines when volume grows.
+                </p>
+              </article>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Link
+                href="/client-onboarding-software"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                client onboarding software
+              </Link>
+              <Link
+                href="/dubsado-alternative"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                Dubsado alternative
+              </Link>
+              <Link
+                href="/honeybook-alternative"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                HoneyBook alternative
+              </Link>
+              <Link
+                href="/best-client-onboarding-software"
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+              >
+                best client onboarding software
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1398,17 +1364,20 @@ export default function MarketingPage() {
                   <span className="text-zinc-600">Client onboarding, enforced.</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-                  <a className="hover:text-zinc-900" href="#features">
-                    Features
-                  </a>
-                  <a className="hover:text-zinc-900" href="#pricing">
+                  <Link className="hover:text-zinc-900" href="/client-onboarding-software">
+                    Client onboarding software
+                  </Link>
+                  <Link className="hover:text-zinc-900" href="/client-onboarding-automation">
+                    Client onboarding automation
+                  </Link>
+                  <Link className="hover:text-zinc-900" href="/pricing">
                     Pricing
-                  </a>
-                  <a className="hover:text-zinc-900" href="#resources">
-                    Resources
-                  </a>
+                  </Link>
                   <Link className="hover:text-zinc-900" href="/contact">
                     Contact
+                  </Link>
+                  <Link className="hover:text-zinc-900" href="/blog">
+                    Blog
                   </Link>
                   <Link className="hover:text-zinc-900" href="/privacy">
                     Privacy
@@ -1421,12 +1390,6 @@ export default function MarketingPage() {
                   </Link>
                   <Link className="hover:text-zinc-900" href="/honeybook-alternative">
                     HoneyBook alternative
-                  </Link>
-                  <Link className="hover:text-zinc-900" href="/client-onboarding-software-for-agencies">
-                    Onboarding software for agencies
-                  </Link>
-                  <Link className="hover:text-zinc-900" href="/blog">
-                    Blog
                   </Link>
                   <Link className="hover:text-zinc-900" href="/login">
                     Sign in

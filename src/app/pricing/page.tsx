@@ -22,6 +22,7 @@ type Plan = {
   price: string;
   cadence: string;
   tagline: string;
+  bestFor: string;
   features: string[];
   cta: { label: string; href: string };
   highlighted?: boolean;
@@ -34,6 +35,7 @@ const plans: Plan[] = [
     price: "£0",
     cadence: "/month",
     tagline: "For testing your onboarding flow and first client rollouts.",
+    bestFor: "Best for solo operators validating one core onboarding workflow before scaling.",
     features: [
       "1 admin user",
       "1 onboarding template",
@@ -49,6 +51,7 @@ const plans: Plan[] = [
     price: "£29",
     cadence: "/month",
     tagline: "For solo operators and small teams running onboarding at pace.",
+    bestFor: "Best for teams that need reminder automation and stronger process consistency across active clients.",
     highlighted: true,
     badge: "Most popular",
     features: [
@@ -65,6 +68,7 @@ const plans: Plan[] = [
     price: "£89",
     cadence: "/month",
     tagline: "For teams onboarding clients at volume with stricter controls.",
+    bestFor: "Best for agencies and service operations managing higher onboarding volume with multi-user governance needs.",
     features: [
       "Up to 15 admin users",
       "Unlimited templates",
@@ -110,6 +114,7 @@ function PlanCard({ plan }: { plan: Plan }) {
         <span className="ml-1 text-base font-medium text-zinc-600">{plan.cadence}</span>
       </div>
       <p className="mt-2 text-sm leading-6 text-zinc-700">{plan.tagline}</p>
+      <p className="mt-2 text-sm leading-6 text-zinc-700">{plan.bestFor}</p>
 
       <ul className="mt-6 space-y-3 text-sm text-zinc-800">
         {plan.features.map((feature) => (
@@ -343,6 +348,56 @@ export default function PricingPage() {
                       Review how often projects start without missing files, approvals, or intake detail.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  What happens after you start
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  Most teams adopt ClientEnforce in phases so onboarding quality improves without disrupting
+                  current delivery commitments. Start with one template, validate outcomes, then scale across services.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Step 1: Launch one workflow</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Build a baseline onboarding template with required tasks, files, and approvals.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Step 2: Add automation rules</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Enable reminders and escalation logic for overdue onboarding steps.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Step 3: Scale and standardize</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Expand templates by service line and review readiness metrics monthly.
+                    </p>
+                  </article>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/client-onboarding-process"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Review client onboarding process
+                  </Link>
+                  <Link
+                    href="/client-onboarding-software"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Explore client onboarding software
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Contact sales for rollout guidance
+                  </Link>
                 </div>
               </div>
 

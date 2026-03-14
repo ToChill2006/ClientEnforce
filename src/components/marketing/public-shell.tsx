@@ -53,25 +53,32 @@ export function PublicHeader() {
                 Client onboarding software
               </Link>
               <Link
-                href="/features"
+                href="/client-onboarding-automation"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
-                Features
+                Client onboarding automation
               </Link>
               <Link
-                href="/pricing"
+                href="/client-onboarding-checklist"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
-                Pricing
+                Client onboarding checklist
               </Link>
               <Link
-                href="/about"
+                href="/client-onboarding-tools"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
-                About
+                Client onboarding tools
               </Link>
             </div>
           </details>
+
+          <Link href="/features" className={navItemClassName()}>
+            Features
+          </Link>
+          <Link href="/pricing" className={navItemClassName()}>
+            Pricing
+          </Link>
 
           <details className="group relative">
             <summary className={`${navItemClassName()} list-none cursor-pointer select-none`}>
@@ -97,54 +104,13 @@ export function PublicHeader() {
                 href="/blog"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
-                Client onboarding blog
+                Blog
               </Link>
               <Link
-                href="/client-onboarding-checklist"
+                href="/about"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
-                Client onboarding checklist
-              </Link>
-              <Link
-                href="/client-onboarding-automation"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Client onboarding automation
-              </Link>
-              <Link
-                href="/client-onboarding-tools"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Best client onboarding tools
-              </Link>
-            </div>
-          </details>
-
-          <details className="group relative">
-            <summary className={`${navItemClassName()} list-none cursor-pointer select-none`}>
-              <span className="inline-flex items-center gap-1.5">
-                Comparisons
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-4 w-4 text-zinc-500 transition group-open:rotate-180"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-            </summary>
-
-            <div className="invisible absolute left-0 top-full z-50 mt-2 w-80 rounded-2xl border border-zinc-200 bg-white p-2 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
-              <Link
-                href="/best-client-onboarding-software"
-                className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                Best client onboarding software
+                About
               </Link>
               <Link
                 href="/dubsado-alternative"
@@ -159,10 +125,10 @@ export function PublicHeader() {
                 HoneyBook alternative
               </Link>
               <Link
-                href="/client-onboarding-software-for-agencies"
+                href="/best-client-onboarding-software"
                 className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
-                Client onboarding software for agencies
+                Best client onboarding software
               </Link>
             </div>
           </details>
@@ -175,12 +141,72 @@ export function PublicHeader() {
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 lg:inline-flex"
+            className="hidden whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 md:inline-flex"
           >
-            Sign in
+            Login
           </Link>
-          <Link href="/" className={navItemClassName(true)}>
-            Start free
+          <details className="relative md:hidden">
+            <summary className="inline-flex list-none cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50">
+              Menu
+            </summary>
+            <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[90vw] rounded-2xl border border-zinc-200 bg-white p-3 shadow-lg">
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Product</div>
+              <div className="mt-2 grid gap-1">
+                <Link href="/client-onboarding-software" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Client onboarding software
+                </Link>
+                <Link href="/client-onboarding-automation" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Client onboarding automation
+                </Link>
+                <Link href="/client-onboarding-checklist" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Client onboarding checklist
+                </Link>
+                <Link href="/client-onboarding-tools" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Client onboarding tools
+                </Link>
+              </div>
+
+              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Navigate</div>
+              <div className="mt-2 grid gap-1">
+                <Link href="/features" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Features
+                </Link>
+                <Link href="/pricing" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Pricing
+                </Link>
+                <Link href="/contact" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Contact
+                </Link>
+              </div>
+
+              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Resources</div>
+              <div className="mt-2 grid gap-1">
+                <Link href="/blog" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Blog
+                </Link>
+                <Link href="/about" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  About
+                </Link>
+                <Link href="/dubsado-alternative" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Dubsado alternative
+                </Link>
+                <Link href="/honeybook-alternative" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  HoneyBook alternative
+                </Link>
+                <Link href="/best-client-onboarding-software" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Best client onboarding software
+                </Link>
+              </div>
+
+              <div className="mt-3 border-t border-zinc-200 pt-3">
+                <Link href="/login" className="block rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                  Login
+                </Link>
+              </div>
+            </div>
+          </details>
+          <Link href="/signup" className={navItemClassName(true)}>
+            Get started
           </Link>
         </div>
       </div>
@@ -188,42 +214,34 @@ export function PublicHeader() {
   );
 }
 
-const resourceLinks = [
+const productLinks = [
   {
     href: "/client-onboarding-software",
     label: "Client onboarding software",
   },
   {
-    href: "/client-onboarding-checklist",
-    label: "Client onboarding checklist",
+    href: "/features",
+    label: "Features",
+  },
+  {
+    href: "/pricing",
+    label: "Pricing",
   },
   {
     href: "/client-onboarding-automation",
     label: "Client onboarding automation",
   },
   {
+    href: "/client-onboarding-checklist",
+    label: "Client onboarding checklist",
+  },
+  {
     href: "/client-onboarding-tools",
-    label: "Best client onboarding tools",
-  },
-  {
-    href: "/blog",
-    label: "Client onboarding blog",
-  },
-  {
-    href: "/blog/client-onboarding-workflow",
-    label: "Client onboarding workflow guide",
-  },
-  {
-    href: "/blog/onboarding-documents-for-clients",
-    label: "Onboarding documents for clients",
+    label: "Client onboarding tools",
   },
 ];
 
 const comparisonLinks = [
-  {
-    href: "/best-client-onboarding-software",
-    label: "Best client onboarding software",
-  },
   {
     href: "/dubsado-alternative",
     label: "Dubsado alternative",
@@ -233,15 +251,15 @@ const comparisonLinks = [
     label: "HoneyBook alternative",
   },
   {
-    href: "/client-onboarding-software-for-agencies",
-    label: "Client onboarding software for agencies",
+    href: "/best-client-onboarding-software",
+    label: "Best client onboarding software",
   },
 ];
 
-const companyLinks = [
+const resourceLinks = [
   {
-    href: "/",
-    label: "ClientEnforce homepage",
+    href: "/blog",
+    label: "Blog",
   },
   {
     href: "/about",
@@ -251,6 +269,9 @@ const companyLinks = [
     href: "/contact",
     label: "Contact",
   },
+];
+
+const companyAndLegalLinks = [
   {
     href: "/privacy",
     label: "Privacy",
@@ -265,7 +286,7 @@ export function PublicFooter() {
   return (
     <footer className="border-t border-zinc-200 bg-white">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-4">
+        <div className="grid gap-8 lg:grid-cols-5">
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
             <div className="text-sm font-semibold text-zinc-900">Client onboarding, enforced.</div>
             <p className="mt-2 text-sm leading-6 text-zinc-700">
@@ -294,24 +315,24 @@ export function PublicFooter() {
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link
-                href="/"
+                href="/client-onboarding-software"
                 className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
               >
-                Go to homepage
+                Explore client onboarding software
               </Link>
               <Link
-                href="/blog"
+                href="/pricing"
                 className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
               >
-                Browse resources
+                View pricing
               </Link>
             </div>
           </div>
 
           <div>
-            <div className="text-sm font-semibold text-zinc-900">Guides</div>
+            <div className="text-sm font-semibold text-zinc-900">Product</div>
             <ul className="mt-3 space-y-2 text-sm text-zinc-700">
-              {resourceLinks.map((link) => (
+              {productLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
                     {link.label}
@@ -335,9 +356,9 @@ export function PublicFooter() {
           </div>
 
           <div>
-            <div className="text-sm font-semibold text-zinc-900">Company</div>
+            <div className="text-sm font-semibold text-zinc-900">Resources</div>
             <ul className="mt-3 space-y-2 text-sm text-zinc-700">
-              {companyLinks.map((link) => (
+              {resourceLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
                     {link.label}
@@ -346,6 +367,20 @@ export function PublicFooter() {
               ))}
             </ul>
           </div>
+
+          <div>
+            <div className="text-sm font-semibold text-zinc-900">Company & legal</div>
+            <ul className="mt-3 space-y-2 text-sm text-zinc-700">
+              {companyAndLegalLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
         </div>
 
         <div className="mt-8 border-t border-zinc-200 pt-4 text-xs text-zinc-600">

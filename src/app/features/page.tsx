@@ -19,27 +19,27 @@ export const metadata: Metadata = buildPageMetadata({
 const features = [
   {
     title: "Client portal that keeps onboarding moving",
-    desc: "Give clients a single link to upload files, complete steps, and sign. No chasing, no scattered email threads.",
+    desc: "Give clients one place to upload files, complete required steps, and sign approvals. A single portal reduces confusion and keeps onboarding progress visible for both clients and internal teams.",
   },
   {
     title: "Document uploads (clear, tracked, and organised)",
-    desc: "Request the right files once, track what’s missing, and keep everything attached to the client record.",
+    desc: "Request files with clear requirements and due dates, then track missing items without manual inbox follow-up. Every upload stays attached to the onboarding record for easier handoff and review.",
   },
   {
     title: "Signatures that feel effortless",
-    desc: "Capture signatures directly in the flow so clients can complete onboarding in one sitting.",
+    desc: "Capture signatures directly inside the onboarding workflow so legal and approval steps do not become separate bottlenecks. This helps clients complete onboarding in fewer sessions.",
   },
   {
     title: "Step-by-step onboarding workflows",
-    desc: "Turn your process into a checklist with required steps. Know exactly what’s done and what’s outstanding.",
+    desc: "Turn your process into required-step workflows with clear ownership and completion criteria. Teams can see exactly what is done, what is blocked, and what is required before kickoff.",
   },
   {
     title: "Automated reminders",
-    desc: "Nudge clients automatically when tasks are incomplete—without you manually following up every time.",
+    desc: "Automatically remind clients when deadlines are approaching or tasks are still incomplete. Automation removes repetitive coordination while keeping communication consistent.",
   },
   {
     title: "Audit-ready history",
-    desc: "See who did what and when. Keep a clean timeline for compliance and internal accountability.",
+    desc: "Track who submitted what and when with a clear onboarding timeline. This supports compliance needs, internal accountability, and post-onboarding process review.",
   },
 ];
 
@@ -323,6 +323,56 @@ export default function FeaturesPage() {
                     className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
                   >
                     Compare client onboarding tools
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-12 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  How each team uses these features
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  Strong onboarding outcomes come from role clarity. Account teams, operations, and delivery teams
+                  use the same workflow data for different decisions, which is why shared visibility matters.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Account managers</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Use templates, portal status, and reminders to keep clients progressing through onboarding steps.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Operations teams</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Standardize workflows across services, monitor bottlenecks, and maintain governance for required tasks.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Delivery teams</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Validate kickoff readiness with complete files, approvals, and context before project execution starts.
+                    </p>
+                  </article>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/client-onboarding-process"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Review client onboarding process
+                  </Link>
+                  <Link
+                    href="/client-onboarding-software-for-agencies"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Onboarding software for agencies
+                  </Link>
+                  <Link
+                    href="/best-client-onboarding-software"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Compare best client onboarding software
                   </Link>
                 </div>
               </div>

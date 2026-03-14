@@ -344,6 +344,55 @@ export default function ContactPage() {
               </section>
 
               <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-xl font-semibold text-zinc-900">What happens after you contact us</h2>
+                <p className="mt-3 text-sm leading-6 text-zinc-700">
+                  We review your request and route it to the right team based on your goals. Sales conversations
+                  usually focus on workflow fit, rollout path, and plan alignment, while support requests focus on
+                  immediate troubleshooting and next actions.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">1. Context review</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      We confirm your use case, onboarding bottlenecks, and request type.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">2. Practical guidance</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      You get recommended next steps based on your onboarding process and team model.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">3. Rollout direction</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      If needed, we point you to the right pages for pricing, features, and implementation planning.
+                    </p>
+                  </article>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/client-onboarding-tools"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Compare client onboarding tools
+                  </Link>
+                  <Link
+                    href="/best-client-onboarding-software"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Review best client onboarding software
+                  </Link>
+                  <Link
+                    href="/client-onboarding-software-for-agencies"
+                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  >
+                    Onboarding software for agencies
+                  </Link>
+                </div>
+              </section>
+
+              <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-xl font-semibold text-zinc-900">Contact FAQ</h2>
                 <p className="mt-3 text-sm leading-6 text-zinc-700">
                   The fastest path is usually to review product fit first, then reach out with specific

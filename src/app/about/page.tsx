@@ -162,6 +162,72 @@ export default function AboutPage() {
                 </p>
               </SectionCard>
 
+              <SectionCard title="Why structured onboarding matters to growth and retention">
+                <p>
+                  Onboarding quality directly affects project outcomes. When teams start delivery without complete
+                  context, timelines slip, scope confusion increases, and client confidence drops early in the relationship.
+                </p>
+                <p className="mt-3">
+                  Structured onboarding creates predictable starts: required information is collected once, approvals are
+                  visible, and handoffs happen with fewer blockers. This is one reason agencies and service businesses
+                  prioritize
+                  {" "}
+                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding software
+                  </Link>
+                  {" "}
+                  over fragmented tool stacks.
+                </p>
+                <p className="mt-3">
+                  For deeper implementation context, review
+                  {" "}
+                  <Link href="/client-onboarding-automation" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding automation
+                  </Link>
+                  {" "}
+                  and
+                  {" "}
+                  <Link href="/client-onboarding-tools" className="font-medium text-zinc-900 underline underline-offset-4">
+                    client onboarding tools
+                  </Link>
+                  {" "}
+                  to plan the right rollout model for your team.
+                </p>
+              </SectionCard>
+
+              <SectionCard title="What adoption looks like in the first 30 days">
+                <p>
+                  Most teams succeed by starting small: one onboarding template, one service line, and one shared
+                  completion standard. This keeps implementation practical while building confidence across account and operations teams.
+                </p>
+                <ul className="mt-3 list-disc pl-5">
+                  <li>Week 1: Define required onboarding steps and ownership.</li>
+                  <li>Week 2: Launch a template with client intake, files, and approvals in one flow.</li>
+                  <li>Week 3: Enable reminder automation and monitor overdue tasks.</li>
+                  <li>Week 4: Review cycle-time blockers and refine kickoff-readiness rules.</li>
+                </ul>
+                <p className="mt-3">
+                  If you are comparing options before rollout, start with our
+                  {" "}
+                  <Link href="/dubsado-alternative" className="font-medium text-zinc-900 underline underline-offset-4">
+                    Dubsado alternative
+                  </Link>
+                  {" "}
+                  and
+                  {" "}
+                  <Link href="/honeybook-alternative" className="font-medium text-zinc-900 underline underline-offset-4">
+                    HoneyBook alternative
+                  </Link>
+                  {" "}
+                  pages, then map plan fit on
+                  {" "}
+                  <Link href="/pricing" className="font-medium text-zinc-900 underline underline-offset-4">
+                    pricing
+                  </Link>
+                  .
+                </p>
+              </SectionCard>
+
               <SectionCard title="What’s next">
                 <p>
                   We’re focused on making ClientEnforce faster, clearer, and more automated—so onboarding

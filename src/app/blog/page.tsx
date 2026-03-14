@@ -24,8 +24,8 @@ export default function BlogPage() {
   return (
     <>
       <BlogHubTemplate
-        title="Client onboarding resources for high-converting service teams"
-        description="Explore practical guides on client onboarding process, checklist design, automation, workflow execution, and software selection."
+        title="Client onboarding resources for agencies and service teams"
+        description="Explore practical guides on client onboarding process design, automation, checklist execution, and software selection. Each article is written for teams improving kickoff readiness, reducing manual follow-up, and standardizing onboarding quality."
         posts={blogPostList}
       />
       <JsonLd
