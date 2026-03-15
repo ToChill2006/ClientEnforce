@@ -6,10 +6,9 @@ import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Privacy Policy | ClientEnforce",
-  description:
-    "Read the ClientEnforce privacy policy for details on data collection, document handling, cookies, retention, security, and your privacy rights.",
+  description: "ClientEnforce privacy policy - how we collect, store, and use your data. GDPR compliant.",
   path: "/privacy",
-  keywords: ["privacy policy", "client onboarding software privacy", "ClientEnforce privacy"],
+  keywords: ["privacy policy", "GDPR", "client onboarding software privacy"],
   type: "website",
 });
 
@@ -42,10 +41,9 @@ export default function PrivacyPage() {
                 Privacy Policy
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                This Privacy Policy explains how ClientEnforce collects, uses, stores, and protects
-                personal information when you use our client onboarding software.
+                This policy explains how ClientEnforce collects, uses, and protects personal data across our public website and product.
               </p>
-              <p className="mt-2 text-sm text-zinc-600">Last updated: March 9, 2026</p>
+              <p className="mt-2 text-sm text-zinc-600">Last updated: March 15, 2026</p>
             </div>
           </PageContainer>
         </section>
@@ -53,171 +51,71 @@ export default function PrivacyPage() {
         <section>
           <PageContainer>
             <div className="space-y-4 py-10 sm:py-12">
-              <PolicySection title="Introduction">
+              <PolicySection title="1. Who we are">
                 <p>
-                  ClientEnforce helps businesses run structured client onboarding workflows. This policy
-                  applies to our website, product pages, and platform experiences where we process
-                  onboarding-related information.
-                </p>
-                <p>
-                  By using ClientEnforce, you agree to the practices described in this Privacy Policy.
+                  ClientEnforce is a UK-based software company. Registered address: [CONFIRM WITH LEGAL]. Company number: [CONFIRM WITH LEGAL]. ICO registration number: [CONFIRM WITH LEGAL].
                 </p>
               </PolicySection>
 
-              <PolicySection title="Information we collect">
-                <p>We may collect the following categories of information:</p>
+              <PolicySection title="2. What data we collect">
                 <ul className="list-disc space-y-1 pl-5">
-                  <li>Account details such as name, email, and organization information.</li>
-                  <li>Billing and subscription information needed to provide paid plans.</li>
-                  <li>Usage and diagnostic data related to product performance and reliability.</li>
-                  <li>
-                    Customer and client onboarding data submitted through the platform, including
-                    documents, signatures, form responses, and workflow status details.
-                  </li>
+                  <li>Contact data from forms: name, email, and company details.</li>
+                  <li>Account and usage data needed to provide the service.</li>
+                  <li>Client onboarding records uploaded by customers (documents, forms, signatures, workflow history).</li>
+                  <li>Cookie and analytics data used to measure website usage.</li>
                 </ul>
               </PolicySection>
 
-              <PolicySection title="How we use information">
-                <p>We use information to operate and improve ClientEnforce, including to:</p>
+              <PolicySection title="3. How we use data">
                 <ul className="list-disc space-y-1 pl-5">
-                  <li>Provide and maintain the client onboarding service.</li>
-                  <li>Authenticate users, manage permissions, and secure accounts.</li>
-                  <li>Process subscriptions, invoices, and support requests.</li>
-                  <li>Improve product quality, performance, and user experience.</li>
-                  <li>Communicate product updates, operational notices, and service announcements.</li>
+                  <li>To provide and secure the ClientEnforce service.</li>
+                  <li>To deliver support, product updates, and operational notifications.</li>
+                  <li>To improve product reliability, usability, and performance.</li>
+                  <li>To process subscriptions and billing.</li>
                 </ul>
               </PolicySection>
 
-              <PolicySection title="Client files and uploaded content">
+              <PolicySection title="4. Legal basis for processing">
+                <p>Under UK GDPR, we rely on one or more of the following bases:</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>Contract: processing needed to deliver the service you requested.</li>
+                  <li>Legitimate interests: operating, securing, and improving the service.</li>
+                  <li>Consent: for optional marketing communications and some cookies.</li>
+                  <li>Legal obligation: where law or regulation requires processing.</li>
+                </ul>
+              </PolicySection>
+
+              <PolicySection title="5. Data retention">
                 <p>
-                  ClientEnforce is designed to store onboarding materials submitted by users and their
-                  clients. This can include uploaded documents, signatures, and onboarding-related
-                  information required to complete onboarding workflows.
-                </p>
-                <p>
-                  Customers are responsible for ensuring they have a lawful basis to collect and process
-                  information they upload to ClientEnforce.
+                  We keep data only as long as needed for service delivery, legal compliance, and dispute resolution. Exact retention schedules: [CONFIRM WITH LEGAL].
                 </p>
               </PolicySection>
 
-              <PolicySection title="Cookies and analytics">
+              <PolicySection title="6. Your rights">
+                <p>Depending on your location, you may request:</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>Access to your personal data.</li>
+                  <li>Correction of inaccurate data.</li>
+                  <li>Deletion (erasure), subject to legal limits.</li>
+                  <li>Portability of your data.</li>
+                  <li>Restriction or objection to processing.</li>
+                </ul>
+              </PolicySection>
+
+              <PolicySection title="7. Cookies">
                 <p>
-                  We may use cookies and similar technologies for authentication, session management,
-                  security, and analytics. These technologies help us understand usage patterns and
-                  improve service quality.
-                </p>
-                <p>
-                  You can manage cookie preferences through your browser settings, but some platform
-                  functionality may be affected.
+                  We use cookies for authentication, security, and analytics. You can manage cookies in your browser settings. Cookie categories and providers: [CONFIRM WITH LEGAL].
                 </p>
               </PolicySection>
 
-              <PolicySection title="Data sharing">
+              <PolicySection title="8. Contact for data requests">
                 <p>
-                  We do not sell personal information. We may share data with trusted service providers
-                  that support core operations such as infrastructure hosting, payment processing, email
-                  delivery, analytics, and customer support.
-                </p>
-                <p>
-                  We may also disclose information where required by law or to protect the rights,
-                  safety, and security of ClientEnforce, our users, or others.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="Data retention">
-                <p>
-                  We retain personal information for as long as necessary to provide the service,
-                  comply with legal obligations, resolve disputes, and enforce agreements.
-                </p>
-                <p>
-                  Retention periods may vary based on account status, contractual requirements, and the
-                  type of onboarding data involved.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="Security">
-                <p>
-                  We implement reasonable technical and organizational safeguards designed to protect
-                  information against unauthorized access, alteration, disclosure, or destruction.
-                </p>
-                <p>
-                  No method of transmission or storage is completely secure. Customers should also use
-                  strong account security practices, including password hygiene and access control.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="International transfers">
-                <p>
-                  Depending on where you access the service, information may be transferred to and
-                  processed in countries other than your own. Where required, we use appropriate
-                  safeguards for cross-border data transfers.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="Your rights">
-                <p>
-                  Depending on your jurisdiction, you may have rights related to access, correction,
-                  deletion, restriction, portability, or objection to processing of personal data.
-                </p>
-                <p>
-                  To request assistance with privacy rights, contact us at
-                  {" "}
-                  <a href="mailto:support@clientenforce.com" className="font-medium text-zinc-900 underline underline-offset-4">
-                    support@clientenforce.com
-                  </a>
-                  .
-                </p>
-              </PolicySection>
-
-              <PolicySection title="Customer responsibilities and data handling expectations">
-                <p>
-                  ClientEnforce is used by businesses that collect onboarding data from their own clients.
-                  Customers are responsible for defining lawful collection practices, configuring onboarding
-                  requirements appropriately, and limiting access to authorized internal users.
-                </p>
-                <p>
-                  When building onboarding workflows, customers should request only the information needed
-                  for service delivery and compliance. Teams should also review retention settings regularly
-                  and remove outdated data according to legal and contractual requirements.
-                </p>
-                <p>
-                  For implementation guidance, visit our
-                  {" "}
-                  <Link href="/client-onboarding-checklist" className="font-medium text-zinc-900 underline underline-offset-4">
-                    client onboarding checklist
-                  </Link>
-                  {" "}
-                  and
-                  {" "}
-                  <Link href="/blog/onboarding-documents-for-clients" className="font-medium text-zinc-900 underline underline-offset-4">
-                    onboarding documents guide
-                  </Link>
-                  {" "}
-                  to design workflows that are both efficient and privacy-aware.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="Contact information">
-                <p>
-                  For privacy questions, requests, or complaints, contact
-                  {" "}
-                  <a href="mailto:support@clientenforce.com" className="font-medium text-zinc-900 underline underline-offset-4">
-                    support@clientenforce.com
-                  </a>
-                  .
-                </p>
-                <p>
-                  If you need postal contact details for legal or compliance matters, request them by email
-                  and we will provide the appropriate point of contact.
-                </p>
-                <p>
-                  You can also visit our
+                  For privacy requests, contact: [CONFIRM WITH LEGAL - DPO EMAIL]. You can also reach us via the
                   {" "}
                   <Link href="/contact" className="font-medium text-zinc-900 underline underline-offset-4">
-                    Contact page
+                    contact page
                   </Link>
-                  {" "}
-                  for general inquiries.
+                  .
                 </p>
               </PolicySection>
             </div>

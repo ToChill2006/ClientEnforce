@@ -159,7 +159,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "Common onboarding problems for agencies and service businesses",
         paragraphs: [
-          "Most onboarding friction is operational. Teams usually know what they need from clients, but the process for collecting it is fragmented. As volume grows, those gaps turn into delayed kickoffs and avoidable rework.",
+          "Most onboarding friction is operational. Many teams know what they need from clients, but the process for collecting it is fragmented. As volume grows, those gaps turn into delayed kickoffs and avoidable rework.",
         ],
         bullets: [
           "Intake forms and document requests spread across multiple tools",
@@ -1332,7 +1332,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "Detailed onboarding capability comparison",
         paragraphs: [
-          "Use this focused table when your buying criteria centers on onboarding execution. These rows reflect the capabilities teams usually compare during a Dubsado alternative evaluation.",
+          "Use this focused table when your buying criteria centers on onboarding execution. These rows reflect the capabilities teams often compare during a Dubsado alternative evaluation.",
         ],
         table: {
           headers: ["Capability", "ClientEnforce", "Dubsado"],
@@ -1361,7 +1361,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "Why people switch from Dubsado",
         paragraphs: [
-          "Teams usually switch when onboarding execution quality becomes the main issue. Common triggers include delayed kickoffs, high manual reminder volume, and inconsistent onboarding outcomes across account managers.",
+          "Many teams switch when onboarding execution quality becomes the main issue. Common triggers include delayed kickoffs, high manual reminder volume, and inconsistent onboarding outcomes across account managers.",
           "When onboarding quality is tied closely to client retention and project margin, many agencies prefer a dedicated onboarding platform that enforces required steps and readiness controls.",
         ],
       },
@@ -1596,7 +1596,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "Why teams look for HoneyBook alternatives",
         paragraphs: [
-          "Teams usually evaluate alternatives when onboarding delays become expensive. Common triggers include missing kickoff inputs, inconsistent account-manager processes, and heavy manual follow-up workload.",
+          "Many teams evaluate alternatives when onboarding delays become expensive. Common triggers include missing kickoff inputs, inconsistent account-manager processes, and heavy manual follow-up workload.",
           "When onboarding quality directly affects project margins and delivery velocity, teams often prioritize software with stronger onboarding workflow governance.",
         ],
         bullets: [
@@ -3240,7 +3240,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "When teams look for a Bonsai alternative",
         paragraphs: [
-          "Teams usually compare alternatives when onboarding delays and manual follow-up start affecting delivery reliability. They need stronger process control before kickoff, not just general operations tooling.",
+          "Many teams compare alternatives when onboarding delays and manual follow-up start affecting delivery reliability. They need stronger process control before kickoff, not just general operations tooling.",
         ],
         bullets: [
           "High manual reminder workload for onboarding tasks",
@@ -6162,7 +6162,7 @@ export const blogPosts: Record<string, BlogPost> = {
       {
         heading: "Tooling models and tradeoffs",
         paragraphs: [
-          "Teams usually choose between a dedicated onboarding platform and a multi-tool stack connected by integrations.",
+          "Many teams choose between a dedicated onboarding platform and a multi-tool stack connected by integrations.",
         ],
         table: {
           headers: ["Model", "Advantage", "Risk"],

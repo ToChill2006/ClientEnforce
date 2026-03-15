@@ -6,9 +6,9 @@ import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketin
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client onboarding checklist template | ClientEnforce",
+  title: "Free Client Onboarding Checklist Template | Download | ClientEnforce",
   description:
-    "Free client onboarding checklist template for agencies, consultants, and accountants. Download the PDF and run cleaner onboarding.",
+    "Download the free client onboarding checklist template used by agencies and consultants. PDF format - covers intake, documents, signatures, and kickoff readiness.",
   path: "/downloads/client-onboarding-checklist",
   keywords: [
     "client onboarding checklist template",
@@ -30,16 +30,16 @@ export default function ClientOnboardingChecklistDownloadPage() {
             <div className="py-12 sm:py-16">
               <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Free download</p>
               <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
-                Free Client Onboarding Checklist Template
+                Free client onboarding checklist template
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                Download the checklist used by agencies and consultants to run structured, complete onboarding every time.
+                The checklist used by agencies, consultants, and accountants to run structured, complete onboarding - every time. Download it free.
               </p>
               <ul className="mt-5 grid gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-800 sm:grid-cols-2">
-                <li>Pre-onboarding readiness steps before portal send</li>
-                <li>Client intake requirements and ownership tracking</li>
-                <li>Document and signature collection checklist</li>
-                <li>Internal kickoff readiness checks before delivery starts</li>
+                <li>Pre-onboarding steps (6 internal checks before the client is involved)</li>
+                <li>Client intake requirements (7 items to collect from every new client)</li>
+                <li>Document and signature collection (5 required documents for most service businesses)</li>
+                <li>Kickoff readiness checks (4 steps to confirm before the project starts)</li>
               </ul>
             </div>
           </PageContainer>

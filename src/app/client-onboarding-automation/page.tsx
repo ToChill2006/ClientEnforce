@@ -5,9 +5,9 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client onboarding automation | ClientEnforce",
+  title: "Client Onboarding Automation | Automate Follow-Ups and Intake | ClientEnforce",
   description:
-    "Client onboarding automation that removes manual chasing, triggers reminders, and gives your team clear completion visibility.",
+    "Automate your client onboarding with structured workflows, automated reminders, and completion enforcement. Stop chasing clients manually - let the system do it.",
   path: "/client-onboarding-automation",
   keywords: [
     "client onboarding automation",
@@ -68,7 +68,7 @@ export default function ClientOnboardingAutomationPage() {
                 Client onboarding automation for teams that are done being the reminder system
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                Automation in client onboarding means your team stops being the reminder system. Instead of manually following up every time a task is overdue, the system does it for you, and you get a clear view of exactly where each client is stuck.
+                Automating client onboarding means your team stops being the reminder system. Instead of manually following up every time a client stalls on a task, the system nudges them automatically - and you get a clear view of exactly where each client is in the process.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link href="/signup" className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-zinc-800">
@@ -86,13 +86,13 @@ export default function ClientOnboardingAutomationPage() {
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">What to automate first</h2>
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">What to automate first in your onboarding process</h2>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   {[
-                    ["Portal send and welcome message", "Send the onboarding portal link immediately after contract signature so there is no delay between sale and intake."],
-                    ["Overdue task nudges", "Trigger reminders for incomplete steps so account managers do not chase manually."],
-                    ["Document receipt confirmation", "Confirm uploads automatically so clients know what is complete and what is still needed."],
-                    ["Kickoff readiness notification", "Alert delivery teams when required onboarding steps are complete and ready for kickoff."],
+                    ["1. The portal send and welcome message", "When a new client signs, automatically send them a portal link with a personalised welcome message explaining exactly what they need to do. No manual email needed."],
+                    ["2. Overdue task reminders", "When a client has not completed a required step by a set time, send them an automated nudge. Configure the timing - 24 hours overdue, 48 hours, 72 hours - without writing the email yourself each time."],
+                    ["3. Document receipt confirmation", "When a required document is submitted, automatically confirm receipt to the client. Removes the back-and-forth of \"did you get it?\""],
+                    ["4. Kickoff readiness notification", "When all required onboarding steps are complete, automatically notify your team that the client is kickoff-ready. No manual checking of completion status."],
                   ].map(([title, description]) => (
                     <article key={title} className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
                       <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
@@ -104,14 +104,15 @@ export default function ClientOnboardingAutomationPage() {
 
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">What not to automate</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Good client onboarding automation removes repetitive admin. It should not replace relationship moments that need context and judgment.
-                </p>
                 <ul className="mt-4 space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-800">
-                  <li className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />Expectation setting calls with the client team</li>
-                  <li className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />Bespoke scope questions that depend on service nuance</li>
-                  <li className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />Escalation conversations when onboarding stalls repeatedly</li>
+                  <li className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />Expectation-setting conversations at the start of a new relationship</li>
+                  <li className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />Bespoke scope questions that depend on the specific client&apos;s situation</li>
+                  <li className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />Escalation conversations when something is significantly delayed</li>
+                  <li className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />The kickoff call itself</li>
                 </ul>
+                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Automation handles the logistics. Humans handle the relationship.
+                </p>
               </section>
 
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">

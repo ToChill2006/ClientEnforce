@@ -5,9 +5,9 @@ import { JsonLd, PublicFooter, PublicHeader } from "@/components/marketing/publi
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client onboarding software | ClientEnforce",
+  title: "Client Onboarding Software | Stop Chasing Clients | ClientEnforce",
   description:
-    "Client onboarding software that enforces completion with workflows, document collection, e-signatures, and reminders so projects start clean.",
+    "ClientEnforce is client onboarding software that enforces completion - not just tracks it. Built for agencies, consultants, and accountants. Start free.",
   path: "/",
   keywords: [
     "client onboarding software",
@@ -254,7 +254,7 @@ export default function MarketingPage() {
               </p>
 
               <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-700 sm:text-base">
-                If you are evaluating <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">client onboarding software</Link>, this is built for teams that want cleaner kickoffs, fewer delays, and less admin.
+                Built for agencies, consultants, and accountants who are done managing onboarding over email.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
@@ -282,6 +282,14 @@ export default function MarketingPage() {
         <section className="border-b border-zinc-200 bg-zinc-50">
           <div className="mx-auto max-w-6xl px-4 py-5 text-center text-sm font-medium text-zinc-700 sm:px-6 lg:px-8">
             Trusted by agencies, consultants, and accountants to run cleaner onboarding - without the inbox chaos.
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-zinc-600 sm:text-sm">
+              {/* REPLACE WITH REAL CUSTOMER LOGOS AND QUOTES */}
+              <span className="rounded-full border border-zinc-200 bg-white px-3 py-1">
+                ★★★★★ "Game changer for our agency intake" - placeholder
+              </span>
+              <span className="rounded-full border border-zinc-200 bg-white px-3 py-1">placeholder logo</span>
+              <span className="rounded-full border border-zinc-200 bg-white px-3 py-1">placeholder logo</span>
+            </div>
           </div>
         </section>
 
@@ -365,7 +373,7 @@ export default function MarketingPage() {
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
             <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-10">
               <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-                Your next client deserves a better start.
+                Your next client deserves a better start
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-700 sm:text-base">
                 Set up your first onboarding template in under 20 minutes.
@@ -375,13 +383,13 @@ export default function MarketingPage() {
                   href="/signup"
                   className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
                 >
-                  Start free trial
+                  Start free trial - no credit card needed
                 </Link>
                 <Link
-                  href="/client-onboarding-software"
+                  href="#how-it-works"
                   className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50"
                 >
-                  Explore client onboarding software
+                  See how it works →
                 </Link>
               </div>
             </div>

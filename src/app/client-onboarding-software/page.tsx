@@ -5,9 +5,9 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client onboarding software | ClientEnforce",
+  title: "Client Onboarding Software | Structured, Enforced, Auditable | ClientEnforce",
   description:
-    "Client onboarding software for agencies and service teams. Enforce completion, automate reminders, and start delivery with complete intake.",
+    "Client onboarding software that enforces completion at every step. Document collection, e-signatures, automated reminders, and a full audit trail - built for agencies and service teams.",
   path: "/client-onboarding-software",
   keywords: [
     "client onboarding software",
@@ -20,13 +20,15 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 const comparisonRows = [
-  ["Document collection", "You cannot kick off confidently when files are scattered or missing.", "Yes"],
-  ["E-signatures", "Signed agreements and approvals must be captured before delivery starts.", "Yes"],
-  ["Automated reminders", "Manual follow-up drains account manager time and still misses deadlines.", "Yes"],
-  ["Progress visibility", "Ops needs one view of what is complete, blocked, or overdue.", "Yes"],
-  ["Audit trail", "Teams need evidence of what was submitted, when, and by whom.", "Yes"],
-  ["Client portal", "Clients should complete onboarding in one clear destination.", "Yes"],
-  ["Template library", "Repeatable templates keep onboarding quality consistent as volume grows.", "Yes"],
+  ["Document collection", "Clients submit required files in one place - no email attachments.", "✓"],
+  ["E-signatures", "Agreements are signed inside the onboarding flow.", "✓"],
+  ["Automated reminders", "System nudges clients when overdue - team stops chasing.", "✓"],
+  ["Progress visibility", "See all active onboardings at a glance.", "✓"],
+  ["Required step enforcement", "Clients cannot skip required steps.", "✓"],
+  ["Audit trail", "Timestamped record of every submission and action.", "✓"],
+  ["Client portal", "One secure link - no client login needed.", "✓"],
+  ["Template library", "Reusable templates per service line.", "✓"],
+  ["Compliance-ready export", "PDF evidence pack per client.", "✓"],
 ] as const;
 
 const faqSchema = {
@@ -35,18 +37,26 @@ const faqSchema = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "What is client onboarding software used for?",
+      name: "What does client onboarding software do?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Client onboarding software is used to move clients from signed agreement to kickoff-ready using a structured workflow. It manages forms, files, signatures, reminders, and progress in one place.",
+        text: "Client onboarding software manages the structured process of getting a new client from signed agreement to active project. It replaces manual email follow-up with automated workflows: document collection, e-signatures, required step enforcement, and a clear audit trail of everything submitted.",
       },
     },
     {
       "@type": "Question",
-      name: "How do I choose the best client onboarding tools for my team?",
+      name: "How is client onboarding software different from a CRM?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Choose tools that enforce required steps, collect documents and signatures, automate follow-ups, and give your team visibility across every onboarding. Prioritize completion outcomes over long feature lists.",
+        text: "A CRM manages the full client relationship lifecycle - leads, deals, contacts, and communications. Client onboarding software handles one specific phase: intake. It enforces completion of required steps before a project begins, which is a job most CRMs are not designed to do well.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Who needs client onboarding software?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Any service business that onboards clients repeatedly benefits from onboarding software - agencies, consultancies, accounting firms, legal practices, and operations-led teams. If your team spends time chasing clients for documents, signatures, or information before projects can start, onboarding software is built for that problem.",
       },
     },
     {
@@ -54,23 +64,15 @@ const faqSchema = {
       name: "How long does it take to implement client onboarding software?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Most teams can launch their first onboarding template in one day and refine it over the next few onboarding cycles. The fastest approach is to start with one service-line workflow and iterate from real usage.",
+        text: "With ClientEnforce, most teams have their first onboarding template live in under 20 minutes. There is no complex configuration required - build a template for each service line, define the required steps, and send the client portal link when a new client signs.",
       },
     },
     {
       "@type": "Question",
-      name: "Can client onboarding software work alongside project management tools?",
+      name: "What is the best client onboarding software for agencies?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Client onboarding software handles the pre-kickoff phase, while project management tools handle delivery. Together they reduce rework by making sure kickoff starts with complete intake.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Is ClientEnforce better for teams than all-in-one CRM tools?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "For teams focused on onboarding execution, ClientEnforce is often a better fit because it is purpose-built for completion enforcement, intake quality, and audit trails rather than broad CRM functionality.",
+        text: "For agencies that onboard clients at volume and need a consistent, repeatable process, ClientEnforce is purpose-built for that use case. It handles document collection, e-signatures, automated reminders, and provides a full audit trail - without the complexity of a full CRM setup.",
       },
     },
   ],
@@ -124,7 +126,7 @@ export default function ClientOnboardingSoftwarePage() {
         <section>
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+              <section id="why-software" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
                   What client onboarding software actually solves
                 </h2>

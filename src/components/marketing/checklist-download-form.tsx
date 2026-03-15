@@ -6,7 +6,7 @@ import Link from "next/link";
 type FormState = {
   firstName: string;
   email: string;
-  companyType: "Agency" | "Consultant" | "Accountant" | "Other";
+  companyType: "Agency" | "Consultancy" | "Accounting firm" | "Legal firm" | "Other";
 };
 
 const INITIAL_STATE: FormState = {
@@ -36,6 +36,7 @@ export function ChecklistDownloadForm() {
       ].join("\n"),
     );
 
+    // TODO: WIRE EMAIL CAPTURE
     setSubmitted(true);
     window.location.href = `mailto:info@clientenforce.com?subject=${subject}&body=${body}`;
   }
@@ -43,7 +44,7 @@ export function ChecklistDownloadForm() {
   if (submitted) {
     return (
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
-        <h3 className="text-lg font-semibold text-zinc-900">Thanks, your checklist request is in.</h3>
+        <h3 className="text-lg font-semibold text-zinc-900">Your checklist is on its way - check your inbox.</h3>
         <p className="mt-2 text-sm leading-6 text-zinc-700">
           If your email app did not open, send your request manually to info@clientenforce.com and we will share the PDF.
         </p>
@@ -52,13 +53,13 @@ export function ChecklistDownloadForm() {
             href="/blog/client-onboarding-checklist-template"
             className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
           >
-            Read the checklist template guide
+            Read the full onboarding checklist guide →
           </Link>
           <Link
-            href="/"
+            href="/client-onboarding-software"
             className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
           >
-            Go to ClientEnforce homepage
+            See how ClientEnforce automates this checklist →
           </Link>
         </div>
       </div>
@@ -110,8 +111,9 @@ export function ChecklistDownloadForm() {
           className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-zinc-400"
         >
           <option value="Agency">Agency</option>
-          <option value="Consultant">Consultant</option>
-          <option value="Accountant">Accountant</option>
+          <option value="Consultancy">Consultancy</option>
+          <option value="Accounting firm">Accounting firm</option>
+          <option value="Legal firm">Legal firm</option>
           <option value="Other">Other</option>
         </select>
       </div>

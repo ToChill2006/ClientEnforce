@@ -5,9 +5,9 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildBlogPostingSchema, buildBreadcrumbSchema, buildFaqPageSchema, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Why client onboarding fails | ClientEnforce",
+  title: "Why Client Onboarding Fails: 7 Root Causes | ClientEnforce",
   description:
-    "Why client onboarding fails and how to fix each root cause with practical workflow and automation steps for agencies and service teams.",
+    "Client onboarding fails for predictable reasons - and most of them have nothing to do with the client. Here are the 7 root causes and how to fix each one.",
   path: "/blog/why-client-onboarding-fails",
   keywords: [
     "why client onboarding fails",

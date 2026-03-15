@@ -6,9 +6,9 @@ import { buildPageMetadata, buildBreadcrumbSchema } from "@/lib/seo";
 import { JsonLd } from "@/components/marketing/public-shell";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client onboarding best practices blog | ClientEnforce",
+  title: "Client Onboarding Blog | Guides, Templates & Automation Tips | ClientEnforce",
   description:
-    "Practical client onboarding guides on checklists, automation, and workflow fixes for agencies and service teams.",
+    "Practical guides on client onboarding - what breaks, what to automate, and how to build a process that works without constant manual follow-up.",
   path: "/blog",
   keywords: [
     "client onboarding",
@@ -25,7 +25,7 @@ export default function BlogPage() {
     <>
       <BlogHubTemplate
         title="Client onboarding blog for teams that do this work every day"
-        description="If you onboard clients for a living, this blog is for you. We write about the practical side of client intake: what breaks, what to automate, and how to build a process that does not depend on someone chasing every task."
+        description="If you onboard clients for a living, this is for you. Practical guides on what breaks, what to automate, and how to build a process that doesn't depend on you chasing everyone personally."
         posts={blogPostList}
       />
       <JsonLd

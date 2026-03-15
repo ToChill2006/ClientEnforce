@@ -5,20 +5,20 @@ import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketin
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "About client onboarding software | ClientEnforce",
+  title: "About ClientEnforce | Why We Built It | Thomas Chillman",
   description:
-    "See the founder story behind ClientEnforce, the client onboarding software built to replace inbox chaos with structured onboarding workflows.",
+    "ClientEnforce was built after watching service businesses lose clients in the first week - not because of bad work, but because of chaotic onboarding. Here's the story.",
   path: "/about",
   keywords: [
     "client onboarding software",
+    "founder story",
     "client onboarding workflow",
-    "client onboarding best practices",
     "onboarding software for agencies",
   ],
   type: "website",
 });
 
-function StoryCard({
+function StorySection({
   title,
   children,
 }: {
@@ -44,24 +44,19 @@ export default function AboutPage() {
             <div className="py-12 sm:py-16">
               <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">About ClientEnforce</p>
               <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
-                We built client onboarding software because we were tired of chaotic project starts
+                Why we built ClientEnforce
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                Before ClientEnforce, we ran service projects the same way most teams do: onboarding tasks lived across email threads, shared docs, and half-finished checklists. We were doing the work, but projects still started late because onboarding never felt fully complete.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-                >
-                  Try ClientEnforce free
-                </Link>
-                <Link
-                  href="/client-onboarding-software"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                >
-                  Explore client onboarding software
-                </Link>
+
+              <div className="mt-4 max-w-3xl space-y-3 text-base leading-7 text-zinc-700">
+                <p>
+                  We ran a service business. Every deal felt clean at the start - proposal sent, contract signed, client excited. Then onboarding began, and that&apos;s where things fell apart.
+                </p>
+                <p>
+                  Information came in pieces. Access in one email. Assets in another. Approvals somewhere else. Files missing. There was no single intake, no clear owner, no place to see what was complete. So we chased. "Just following up." "Still waiting on access." "Friendly reminder." While we chased, kickoffs moved. Deadlines shifted. From the client&apos;s side, it looked like we were slow. In reality, we were blocked.
+                </p>
+                <p>
+                  Trust started dropping before the real work even began. In some cases, relationships never fully recovered. In some cases, clients didn&apos;t continue. That&apos;s when it became obvious: onboarding isn&apos;t admin. It&apos;s the first proof of how your business runs. If the start feels messy, everything else will too.
+                </p>
               </div>
             </div>
           </PageContainer>
@@ -70,86 +65,71 @@ export default function AboutPage() {
         <section>
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
-              <StoryCard title="The problem we lived through firsthand">
+              <StorySection title="What we tried first">
                 <p>
-                  We kept seeing the same pattern. A new client signed, everyone felt momentum, then onboarding slowed everything down. Someone forgot one document. A signature sat pending. A key answer lived in a buried thread. The kickoff date moved even though the team looked busy.
+                  We tried Dubsado. We tried HoneyBook. We tried ClickUp. We tried a shared Notion page. We tried a very elaborate spreadsheet. None of them solved the actual problem: nothing enforced completion. A client could receive a checklist and do nothing, and the only way to know was to manually check. The follow-up still landed on a person.
                 </p>
                 <p>
-                  The issue was not effort. The issue was process design. We were expecting people to complete a structured process in unstructured tools.
+                  We needed something that would take the chase off our team completely - where the system nudged clients when tasks were overdue, where we could see completion status across every active onboarding at a glance, and where the end result was a documented, auditable record of what was collected and when.
                 </p>
-              </StoryCard>
+                <p>That tool didn&apos;t exist. So we built it.</p>
+              </StorySection>
 
-              <StoryCard title="What we tried before building ClientEnforce">
+              <StorySection title="What ClientEnforce does">
                 <p>
-                  We tried better spreadsheets, cleaner email templates, and reminders in project management tools. We even wrote SOPs with perfect checklists. Nothing solved the core problem because none of those systems actually enforced completion.
+                  ClientEnforce is client onboarding software built for agencies, consultants, accountants, and operations-led service teams. It replaces the email back-and-forth of new client intake with a single structured workflow: required documents, e-signatures, information collection, and automated follow-ups - in one client portal your clients actually complete.
                 </p>
                 <p>
-                  If one onboarding item was missing, work still moved forward and the team paid for it later in rework, misalignment, or client frustration.
+                  It is not a CRM. It does not do invoicing, proposals, or project management. It does one thing: gets clients through intake properly, every time, with a full audit trail.
                 </p>
-              </StoryCard>
+              </StorySection>
 
-              <StoryCard title="Why we built ClientEnforce">
-                <p>
-                  We built ClientEnforce to do one job extremely well: enforce onboarding completion before delivery starts. It gives your team one portal for intake, documents, signatures, and approvals, plus automated reminders and a clear audit trail.
-                </p>
-                <p>
-                  This is not a broad CRM trying to do everything. It is focused <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">client onboarding software</Link> for teams that onboard clients repeatedly and need reliability.
-                </p>
-              </StoryCard>
-
-              <StoryCard title="What we believe">
-                <ol className="space-y-3 text-sm leading-7 text-zinc-800 sm:text-base">
-                  <li>
-                    <span className="font-semibold text-zinc-900">1. Onboarding is not admin.</span> It is the first real experience your client has of how your team works.
-                  </li>
-                  <li>
-                    <span className="font-semibold text-zinc-900">2. Chasing people over email is a process failure.</span> Good systems remove the need for manual chasing.
-                  </li>
-                  <li>
-                    <span className="font-semibold text-zinc-900">3. A clean start leads to a cleaner project.</span> Better intake quality means fewer delivery surprises.
-                  </li>
-                </ol>
-              </StoryCard>
-
-              <StoryCard title="Who this is built for">
-                <p>
-                  ClientEnforce is used by agencies, consultants, accountants, and ops-led service teams that need a repeatable onboarding workflow. If your team is evaluating <Link href="/client-onboarding-automation" className="font-medium text-zinc-900 underline underline-offset-4">client onboarding automation</Link> or a better <Link href="/client-onboarding-checklist" className="font-medium text-zinc-900 underline underline-offset-4">client onboarding checklist</Link>, start with the product and workflow pages below.
-                </p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <Link href="/features" className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 hover:bg-white">
-                    client onboarding features
-                  </Link>
-                  <Link href="/pricing" className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 hover:bg-white">
-                    client onboarding pricing
-                  </Link>
-                  <Link href="/dubsado-alternative" className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 hover:bg-white">
-                    Dubsado alternative
-                  </Link>
-                  <Link href="/honeybook-alternative" className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 hover:bg-white">
-                    HoneyBook alternative
-                  </Link>
+              <StorySection title="What we believe">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-base font-semibold text-zinc-900">Onboarding is not admin - it&apos;s your first impression.</h3>
+                    <p className="mt-1">
+                      The way you run intake is the first signal to a client of how you run everything. A messy start sets an expectation that the rest of the project will be too.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-zinc-900">Chasing people over email is a process failure, not a client problem.</h3>
+                    <p className="mt-1">
+                      When clients stall on intake, the instinct is to blame them. The real problem is that there&apos;s no system enforcing completion. Fix the system, remove the chase.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-zinc-900">A clean start leads to a cleaner project.</h3>
+                    <p className="mt-1">
+                      Every project that begins with complete information, signed agreements, and clear expectations runs better. Not by accident - by design.
+                    </p>
+                  </div>
                 </div>
-              </StoryCard>
+              </StorySection>
+
+              <StorySection title="Who is behind ClientEnforce">
+                <p>
+                  ClientEnforce was founded by Thomas Chillman. Before building ClientEnforce, Thomas ran a service business and experienced first-hand how broken client onboarding quietly destroys client relationships. ClientEnforce is the tool he wished existed.
+                </p>
+              </StorySection>
 
               <section className="rounded-2xl border border-zinc-200 bg-zinc-900 p-6 text-white shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight">
-                  Want to see how ClientEnforce works?
-                </h2>
+                <h2 className="text-2xl font-semibold tracking-tight">Want to see how it works?</h2>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-200 sm:text-base">
-                  Try it free - no credit card needed.
+                  Build your first onboarding template in under 20 minutes. No credit card needed.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href="/signup"
                     className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
                   >
-                    Try ClientEnforce free
+                    Start free trial
                   </Link>
                   <Link
-                    href="/contact"
+                    href="/features"
                     className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-700"
                   >
-                    See how it works
+                    See all features →
                   </Link>
                 </div>
               </section>

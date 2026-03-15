@@ -5,9 +5,9 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Onboarding software for agencies | ClientEnforce",
+  title: "Client Onboarding Software for Agencies | Built for Volume | ClientEnforce",
   description:
-    "Client onboarding software built for agencies. Run consistent onboarding across every client, automate follow-ups, and start projects with complete intake every time.",
+    "Client onboarding software built for digital agencies. Run consistent onboarding across every client, automate follow-ups, and start projects with complete intake - every time.",
   path: "/onboarding-for-agencies",
   keywords: [
     "onboarding software for agencies",
@@ -76,10 +76,10 @@ export default function OnboardingForAgenciesPage() {
             <div className="py-12 sm:py-16">
               <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Onboarding software for agencies</p>
               <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
-                Client onboarding software for agencies - built for teams that onboard at volume
+                Client onboarding software for agencies — built for teams that onboard at volume
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                Agency onboarding breaks when multiple clients start at the same time and account managers chase the same missing items over and over. One missing intake answer can delay kickoff for the whole project.
+                Most agency onboarding problems are not people problems. They&apos;re process problems. When you&apos;re running 5, 10, or 20 client onboardings simultaneously, the manual approach collapses - and the client experience suffers before the work even begins.
               </p>
               <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-700">
                 ClientEnforce gives agency teams one repeatable onboarding workflow so every client gets the same standard, and every account manager can see exactly what is complete.

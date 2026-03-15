@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Pricing | ClientEnforce – Client Onboarding Plans",
+  title: "ClientEnforce Pricing | Client Onboarding Software Plans",
   description:
-    "ClientEnforce pricing for client onboarding software. Compare Starter, Pro, and Business plans for templates, automation, audit trail, and team scale.",
+    "Simple, transparent pricing for client onboarding software. Start free, upgrade when you need more. No long contracts.",
   path: "/pricing",
   keywords: [
     "client onboarding software pricing",
@@ -31,7 +31,7 @@ type Plan = {
 
 const plans: Plan[] = [
   {
-    name: "Starter",
+    name: "Solo",
     price: "£0",
     cadence: "/month",
     tagline: "For testing your onboarding flow and first client rollouts.",
@@ -43,14 +43,14 @@ const plans: Plan[] = [
       "Document uploads + signatures",
       "Up to 5 active onboardings",
     ],
-    cta: { label: "Get started", href: "/signup" },
+    cta: { label: "Start free trial", href: "/signup" },
     badge: "Free",
   },
   {
-    name: "Pro",
+    name: "Team",
     price: "£29",
     cadence: "/month",
-    tagline: "For solo operators and small teams running onboarding at pace.",
+    tagline: "For small teams running onboarding at pace.",
     bestFor: "Best for teams that need reminder automation and stronger process consistency across active clients.",
     highlighted: true,
     badge: "Most popular",
@@ -61,10 +61,10 @@ const plans: Plan[] = [
       "Audit timeline + evidence export",
       "Up to 50 active onboardings",
     ],
-    cta: { label: "Start Pro", href: "/signup" },
+    cta: { label: "Start Team plan", href: "/signup" },
   },
   {
-    name: "Business",
+    name: "Scale",
     price: "£89",
     cadence: "/month",
     tagline: "For teams onboarding clients at volume with stricter controls.",
@@ -72,18 +72,53 @@ const plans: Plan[] = [
     features: [
       "Up to 15 admin users",
       "Unlimited templates",
-      "Everything in Pro",
+      "Everything in Team",
       "Advanced reporting level",
       "Up to 200 active onboardings",
     ],
-    cta: { label: "Upgrade to Business", href: "/signup" },
+    cta: { label: "Start Scale plan", href: "/signup" },
     badge: "Scale",
   },
 ];
 
-function Container({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-6xl px-6">{children}</div>;
-}
+const pricingFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Is there a free trial for ClientEnforce?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. You can start a free trial of ClientEnforce without a credit card. Build your first onboarding template and send a client portal link on the same day.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I change my plan later?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing period.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Do my clients need to pay or create an account?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. Your clients access their onboarding portal through a secure link - no login required, no account needed, no cost to them.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What happens to my data if I cancel?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "You can export all your onboarding data and audit trails before cancelling. Your data is yours.",
+      },
+    },
+  ],
+};
 
 function PlanCard({ plan }: { plan: Plan }) {
   return (
@@ -94,7 +129,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       ].join(" ")}
     >
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-zinc-900">{plan.name}</h3>
+        <h2 className="text-sm font-semibold text-zinc-900">{plan.name}</h2>
         {plan.badge ? (
           <span
             className={[
@@ -142,32 +177,25 @@ function PlanCard({ plan }: { plan: Plan }) {
 
 export default function PricingPage() {
   return (
-    <>
+    <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <PublicHeader />
-      <main className="min-h-screen bg-zinc-50">
+      <main>
         <section className="border-b border-zinc-200 bg-white">
-          <Container>
-            <div className="py-14 sm:py-16">
-              <p className="text-sm font-medium text-zinc-600">Pricing</p>
+          <PageContainer>
+            <div className="py-12 sm:py-16">
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Pricing</p>
               <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
-                Straightforward pricing for client onboarding
+                Simple pricing for client onboarding software
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                Choose the plan that matches your onboarding volume. Every tier is focused on one
-                goal: helping your team collect documents, signatures, and required client details
-                faster.
+                Start free, then upgrade as your onboarding volume grows. Every plan includes the core workflow tools you need to standardize intake and reduce kickoff delays.
               </p>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-700">
-                As your onboarding workflow matures, you can scale from a starter setup to deeper automation
-                and governance without rebuilding your core process.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/signup"
                   className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
                 >
-                  Start free
+                  Start free trial
                 </Link>
                 <Link
                   href="/features"
@@ -177,284 +205,78 @@ export default function PricingPage() {
                 </Link>
               </div>
             </div>
-          </Container>
+          </PageContainer>
         </section>
 
         <section>
-          <Container>
-            <div className="py-12">
+          <PageContainer>
+            <div className="space-y-6 py-10 sm:py-12">
               <div className="grid gap-5 lg:grid-cols-3">
                 {plans.map((plan) => (
                   <PlanCard key={plan.name} plan={plan} />
                 ))}
               </div>
 
-              <div className="mt-10 overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm">
-                <table className="w-full min-w-[680px] text-left text-sm text-zinc-700">
-                  <thead>
-                    <tr className="bg-zinc-50 text-zinc-900">
-                      <th className="px-4 py-3 font-semibold">Plan</th>
-                      <th className="px-4 py-3 font-semibold">Admin users</th>
-                      <th className="px-4 py-3 font-semibold">Templates</th>
-                      <th className="px-4 py-3 font-semibold">Active onboardings</th>
-                      <th className="px-4 py-3 font-semibold">Automation + audit</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border-t border-zinc-100 px-4 py-3 font-medium text-zinc-900">Starter</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">1</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">1</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Up to 5</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Not included</td>
-                    </tr>
-                    <tr>
-                      <td className="border-t border-zinc-100 px-4 py-3 font-medium text-zinc-900">Pro</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Up to 5</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Up to 10</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Up to 50</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Included</td>
-                    </tr>
-                    <tr>
-                      <td className="border-t border-zinc-100 px-4 py-3 font-medium text-zinc-900">Business</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Up to 15</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Unlimited</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Up to 200</td>
-                      <td className="border-t border-zinc-100 px-4 py-3">Advanced</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Which plan should you pick?</h2>
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Solo</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Best when you are validating one onboarding workflow and onboarding volume is still low.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Team</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Best for agencies and service teams that need automated reminders and repeatable onboarding execution.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Scale</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      Best when you manage higher onboarding volume and need stronger governance across multiple team members.
+                    </p>
+                  </article>
+                </div>
+              </section>
 
-              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-                <h2 className="text-xl font-semibold text-zinc-900">Need a custom rollout plan?</h2>
-                <p className="mt-3 text-sm leading-6 text-zinc-700">
-                  If your team has specialized onboarding requirements or higher-volume rollout plans,
-                  contact us and we can help you choose the best tier and implementation path.
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Link
-                    href="/contact"
-                    className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-                  >
-                    Contact sales
-                  </Link>
-                  <Link
-                    href="/"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Back to homepage
-                  </Link>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-                <h2 className="text-xl font-semibold text-zinc-900">
-                  Choosing the right onboarding automation platform tier
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-zinc-700">
-                  Most teams start with one service-line template, validate completion speed, then scale
-                  into automation and team access. That rollout keeps implementation focused and avoids
-                  adding process complexity too early.
-                </p>
-                <div className="mt-5 grid gap-4 md:grid-cols-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-zinc-900">Starter fit</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Best for testing client intake and onboarding software with a small number of active clients.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-zinc-900">Pro fit</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Ideal for teams that need to automate client onboarding and reduce manual follow-up effort.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-zinc-900">Business fit</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Built for higher onboarding volume, governance requirements, and multi-user operations.
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href="/blog/client-onboarding-workflow"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Read the client onboarding workflow guide
-                  </Link>
-                  <Link
-                    href="/blog/onboarding-documents-for-clients"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    See onboarding document requirements
-                  </Link>
-                  <Link
-                    href="/dubsado-alternative"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Compare ClientEnforce vs Dubsado
-                  </Link>
-                  <Link
-                    href="/honeybook-alternative"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Compare ClientEnforce vs HoneyBook
-                  </Link>
-                  <Link
-                    href="/client-onboarding-software-for-agencies"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Compare onboarding software for agencies
-                  </Link>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-                <h2 className="text-xl font-semibold text-zinc-900">
-                  How to estimate onboarding ROI before selecting a plan
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-zinc-700">
-                  Most teams justify onboarding software by comparing current manual effort against expected
-                  workflow improvements. Start with three baseline metrics: average onboarding cycle time,
-                  manual follow-up volume, and kickoff delays caused by missing requirements.
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-700">
-                  After rollout, track how quickly clients complete required steps and how often delivery teams
-                  begin with complete documentation. Even small reductions in delay can create meaningful gains
-                  in project profitability and team capacity.
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-700">
-                  If you are still deciding, compare your current onboarding workflow against the capabilities
-                  in each plan and prioritize the tier that removes your highest-cost bottlenecks first.
-                </p>
-                <div className="mt-5 grid gap-4 md:grid-cols-3">
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Cycle time</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Measure days from signed agreement to kickoff-ready onboarding completion.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Coordination effort</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Track manual reminders per onboarding before and after automation.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Readiness quality</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Review how often projects start without missing files, approvals, or intake detail.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-                <h2 className="text-xl font-semibold text-zinc-900">
-                  What happens after you start
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-zinc-700">
-                  Most teams adopt ClientEnforce in phases so onboarding quality improves without disrupting
-                  current delivery commitments. Start with one template, validate outcomes, then scale across services.
-                </p>
-                <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Pricing FAQ</h2>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Step 1: Launch one workflow</h3>
+                    <h3 className="text-sm font-semibold text-zinc-900">Is there a free trial for ClientEnforce?</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Build a baseline onboarding template with required tasks, files, and approvals.
+                      Yes. You can start a free trial without a credit card and send your first onboarding portal the same day.
                     </p>
                   </article>
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Step 2: Add automation rules</h3>
+                    <h3 className="text-sm font-semibold text-zinc-900">Can I change my plan later?</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Enable reminders and escalation logic for overdue onboarding steps.
+                      Yes. Upgrade or downgrade at any time. Changes apply from your next billing cycle.
                     </p>
                   </article>
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Step 3: Scale and standardize</h3>
+                    <h3 className="text-sm font-semibold text-zinc-900">Do my clients need to create an account?</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Expand templates by service line and review readiness metrics monthly.
+                      No. Clients use a secure portal link with no account setup required.
+                    </p>
+                  </article>
+                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">What happens if I cancel?</h3>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                      You can export your onboarding records and audit trails before cancellation.
                     </p>
                   </article>
                 </div>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href="/client-onboarding-process"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Review client onboarding process
-                  </Link>
-                  <Link
-                    href="/client-onboarding-software"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Explore client onboarding software
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    Contact sales for rollout guidance
-                  </Link>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-                <h2 className="text-xl font-semibold text-zinc-900">Pricing FAQ</h2>
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">
-                      Can I start on Starter and upgrade later?
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Yes. Most teams begin with one onboarding template, then upgrade as client volume and team size increase.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">
-                      Which plan is best for agencies?
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Agencies often start with Pro for automation and template scale, then move to Business as onboarding volume grows.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">
-                      Do all plans include the client portal?
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Yes. Every plan is built around one client portal experience for onboarding submissions and progress.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">
-                      Where can I compare platform capabilities?
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Review our
-                      {" "}
-                      <Link href="/features" className="font-medium text-zinc-900 underline underline-offset-4">
-                        feature breakdown
-                      </Link>
-                      {" "}
-                      and
-                      {" "}
-                      <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
-                        client onboarding software page
-                      </Link>
-                      {" "}
-                      before choosing a plan.
-                    </p>
-                  </article>
-                </div>
-              </div>
+              </section>
             </div>
-          </Container>
+          </PageContainer>
         </section>
       </main>
+
       <PublicFooter />
-    </>
+      <JsonLd data={pricingFaqSchema} />
+    </div>
   );
 }

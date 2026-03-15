@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/downloads/client-onboarding-checklist",
     "/blog/why-client-onboarding-fails",
     "/blog/client-onboarding-checklist-template",
+    "/blog/best-client-onboarding-software-2026",
   ] as const;
 
   const canonicalPaths = Array.from(new Set([...sitemapPublicPaths, ...additionalPublicPaths]));

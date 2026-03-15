@@ -5,9 +5,9 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Onboarding software for accountants | ClientEnforce",
+  title: "Client Onboarding Software for Accountants | Compliant & Auditable | ClientEnforce",
   description:
-    "Client onboarding software for accountants. Collect documents, capture signatures, and maintain a full audit trail in one structured workflow.",
+    "Client onboarding software for accountants and accounting firms. Collect documents, capture signatures, run AML checks, and maintain a full audit trail - all in one structured workflow.",
   path: "/onboarding-for-accountants",
   keywords: [
     "onboarding software for accountants",
@@ -76,7 +76,7 @@ export default function OnboardingForAccountantsPage() {
             <div className="py-12 sm:py-16">
               <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Onboarding software for accountants</p>
               <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
-                Client onboarding software for accountants - compliant, auditable, and structured
+                Client onboarding software for accountants — compliant, auditable, and structured
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
                 Accounting onboarding is compliance-heavy. AML and KYC checks, identity documents, engagement letters, and approvals must be collected correctly and kept audit-ready. Email is not built for that level of control.

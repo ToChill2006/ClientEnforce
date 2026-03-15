@@ -202,21 +202,6 @@ export function SeoLandingTemplate({
   page: SeoLandingPage;
   schema?: Record<string, unknown>[];
 }) {
-  const supportingLinks = [
-    { href: "/client-onboarding-software", label: "Client onboarding software overview" },
-    { href: "/client-onboarding-platform", label: "Client onboarding platform guide" },
-    { href: "/client-onboarding-automation", label: "Client onboarding automation strategies" },
-    { href: "/onboarding-workflow-software", label: "Onboarding workflow software guide" },
-    { href: "/client-onboarding-checklist", label: "Client onboarding checklist framework" },
-    { href: "/best-client-onboarding-software", label: "Best client onboarding software comparison" },
-    { href: "/features", label: "Client onboarding platform features" },
-    { href: "/pricing", label: "Client onboarding pricing plans" },
-    { href: "/dubsado-alternative", label: "Dubsado alternative comparison" },
-    { href: "/honeybook-alternative", label: "HoneyBook alternative comparison" },
-    { href: "/bonsai-alternative", label: "Bonsai alternative comparison" },
-    { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook comparison" },
-  ].filter((link) => link.href !== page.path);
-
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <PublicHeader />
@@ -245,194 +230,6 @@ export function SeoLandingTemplate({
         <section>
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  Why this page matters for onboarding teams
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Teams researching {page.eyebrow.toLowerCase()} usually need a faster, more reliable way
-                  to move clients from signed agreement to delivery readiness. The guidance below is built
-                  to help you reduce delays, improve completion rates, and keep onboarding workflows consistent.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Use this page alongside related product and comparison resources so you can evaluate fit,
-                  align stakeholders, and launch with a practical implementation plan.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {supportingLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  How to evaluate onboarding workflow fit before implementation
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Most teams are working hard. The problem is that onboarding requirements are scattered
-                  across inboxes, forms, and disconnected task lists. Evaluate software based on completion
-                  outcomes, not feature checkboxes.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Start by mapping your current onboarding sequence from signed agreement to kickoff. Then
-                  identify where clients stall, where internal teams lose visibility, and where handoffs
-                  create avoidable delays. This gives you a clear baseline for software selection.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Use these checkpoints to compare options fairly:
-                </p>
-                <ul className="mt-4 space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-800">
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>Can the platform enforce required steps for every new client?</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>Can clients submit documents, complete forms, and sign in one place?</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>Can your team automate follow-ups when steps are incomplete?</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>Can managers see completion status without manual status checks?</span>
-                  </li>
-                </ul>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <Link
-                    href="/client-onboarding-software"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Compare client onboarding software
-                  </Link>
-                  <Link
-                    href="/client-onboarding-tools"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Evaluate onboarding tools
-                  </Link>
-                  <Link
-                    href="/blog/client-onboarding-workflow"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Read workflow implementation guide
-                  </Link>
-                  <Link
-                    href="/pricing"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Review onboarding pricing plans
-                  </Link>
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  Practical 30-60-90 day onboarding rollout plan
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Rolling out onboarding software works best when you phase implementation around measurable
-                  milestones. Teams that launch everything at once often introduce unnecessary complexity.
-                  A phased plan keeps adoption practical and protects onboarding quality.
-                </p>
-                <ol className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Days 1-30: Standardize the workflow</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Define required onboarding tasks, owners, and completion rules. Launch with one template
-                      so every client gets the same core process.
-                    </p>
-                  </li>
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Days 31-60: Automate follow-ups</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Add reminder rules for late tasks and incomplete steps. Track cycle time to confirm
-                      automation is reducing manual coordination effort.
-                    </p>
-                  </li>
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Days 61-90: Scale and optimize</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Extend templates to additional services, improve handoff readiness criteria, and review
-                      metrics monthly to keep quality high as volume grows.
-                    </p>
-                  </li>
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Ongoing: Maintain governance</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Keep one source of truth for onboarding requirements and review exception patterns
-                      regularly to prevent workflow drift across teams.
-                    </p>
-                  </li>
-                </ol>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  Who this page is for and what to do next
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Use this page if your team needs a practical path from signed agreement to kickoff-ready onboarding.
-                  Define your required steps first, then choose tooling that actually enforces them.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Use the links below to compare implementation options, build your workflow baseline, and
-                  choose the right rollout plan for your service model.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <Link
-                    href="/client-onboarding-software"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding software
-                  </Link>
-                  <Link
-                    href="/client-onboarding-automation"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding automation
-                  </Link>
-                  <Link
-                    href="/client-onboarding-checklist"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding checklist
-                  </Link>
-                  <Link
-                    href="/client-onboarding-tools"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding tools
-                  </Link>
-                  <Link
-                    href="/client-onboarding-software-for-agencies"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    onboarding software for agencies
-                  </Link>
-                  <Link
-                    href="/dubsado-alternative"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Dubsado alternative
-                  </Link>
-                  <Link
-                    href="/honeybook-alternative"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white sm:col-span-2 lg:col-span-1"
-                  >
-                    HoneyBook alternative
-                  </Link>
-                </div>
-              </section>
-
               {page.sections.map((section) => (
                 <SectionContent key={section.heading} section={section} />
               ))}
@@ -479,16 +276,6 @@ export function BlogPostTemplate({
   post: BlogPost;
   schema?: Record<string, unknown>[];
 }) {
-  const guideLinks = [
-    { href: "/client-onboarding-software", label: "Client onboarding software" },
-    { href: "/client-onboarding-platform", label: "Client onboarding platform" },
-    { href: "/client-onboarding-automation", label: "Client onboarding automation" },
-    { href: "/onboarding-workflow-software", label: "Onboarding workflow software" },
-    { href: "/client-onboarding-checklist", label: "Client onboarding checklist" },
-    { href: "/features", label: "Client onboarding platform features" },
-    { href: "/pricing", label: "Client onboarding pricing plans" },
-  ];
-
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <PublicHeader />
@@ -550,100 +337,6 @@ export function BlogPostTemplate({
                 </ul>
               </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  How to use this client onboarding guide
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Use this guide to improve onboarding quality, timeline predictability, and completion rates.
-                  Start with the section that matches your biggest bottleneck, then apply the checklist and
-                  workflow fixes to your next onboarding cycle.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you are implementing changes immediately, pair this guide with the product resources
-                  below so you can move from planning to execution with fewer handoffs.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you need a complete
-                  {" "}
-                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
-                    client onboarding platform
-                  </Link>
-                  , use this guide to
-                  {" "}
-                  <Link href="/client-onboarding-software" className="font-medium text-zinc-900 underline underline-offset-4">
-                    automate client onboarding
-                  </Link>
-                  {" "}
-                  with repeatable workflow rules.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {guideLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  What you will learn in this guide
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Each section is designed to help you move from planning to execution with fewer onboarding
-                  delays. Focus first on process clarity, then on automation and tooling fit.
-                </p>
-                <ul className="mt-4 space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-800">
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>How to improve completion rates without adding process complexity.</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>How to use client onboarding workflow checkpoints to reduce kickoff delays.</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>How to decide where client onboarding automation adds the most value.</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>How to choose software and rollout steps that match your team size.</span>
-                  </li>
-                </ul>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <Link
-                    href="/client-onboarding-software"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding software
-                  </Link>
-                  <Link
-                    href="/client-onboarding-automation"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding automation
-                  </Link>
-                  <Link
-                    href="/client-onboarding-checklist"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding checklist
-                  </Link>
-                  <Link
-                    href="/client-onboarding-tools"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding tools
-                  </Link>
-                </div>
-              </section>
-
               {post.sections.map((section) => (
                 <SectionContent key={section.heading} section={section} />
               ))}
@@ -662,116 +355,6 @@ export function BlogPostTemplate({
                   </ul>
                 </section>
               ) : null}
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Next steps</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Explore the main product pages after this guide to compare plans and launch your workflow.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <Link
-                    href="/"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    ClientEnforce homepage
-                  </Link>
-                  <Link
-                    href="/client-onboarding-software"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Client onboarding software
-                  </Link>
-                  <Link
-                    href="/pricing"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Pricing
-                  </Link>
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  Compare onboarding software options
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you are comparing implementation options, review these side-by-side pages to assess
-                  workflow fit, feature depth, and rollout tradeoffs.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <Link
-                    href="/dubsado-alternative"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Dubsado alternative for client onboarding
-                  </Link>
-                  <Link
-                    href="/honeybook-alternative"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    HoneyBook alternative for client onboarding
-                  </Link>
-                  <Link
-                    href="/bonsai-alternative"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Bonsai alternative for client onboarding
-                  </Link>
-                  <Link
-                    href="/dubsado-vs-honeybook"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Dubsado vs HoneyBook comparison
-                  </Link>
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  Conclusion: turn this guide into implementation steps
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Effective onboarding changes come from consistent execution, not one-time documentation.
-                  Apply one improvement from this guide in your next onboarding cycle, then measure impact
-                  on completion speed and kickoff readiness.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you are comparing platforms or planning rollout, use the pages below to choose a clear
-                  client onboarding software implementation path.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <Link
-                    href="/client-onboarding-software"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding software
-                  </Link>
-                  <Link
-                    href="/client-onboarding-software-for-agencies"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    onboarding software for agencies
-                  </Link>
-                  <Link
-                    href="/pricing"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    client onboarding pricing
-                  </Link>
-                  <Link
-                    href="/dubsado-alternative"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    Dubsado alternative
-                  </Link>
-                  <Link
-                    href="/honeybook-alternative"
-                    className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white"
-                  >
-                    HoneyBook alternative
-                  </Link>
-                </div>
-              </section>
 
               <RelatedReading links={post.relatedLinks} title="Related posts" />
 
@@ -853,7 +436,9 @@ export function BlogHubTemplate({
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
                       Seven root causes that delay kickoff and exactly how to fix each one.
                     </p>
-                    <div className="mt-3 text-sm font-medium text-zinc-900">Read this guide</div>
+                    <div className="mt-3 text-sm font-medium text-zinc-900">
+                      Read the onboarding failure guide
+                    </div>
                   </Link>
                   <Link
                     href="/blog/client-onboarding-checklist-template"
@@ -863,17 +448,21 @@ export function BlogHubTemplate({
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
                       Use the full 2026 checklist to standardize onboarding across your team.
                     </p>
-                    <div className="mt-3 text-sm font-medium text-zinc-900">Read this guide</div>
+                    <div className="mt-3 text-sm font-medium text-zinc-900">
+                      Read the checklist template guide
+                    </div>
                   </Link>
                   <Link
-                    href="/blog/best-client-onboarding-software"
+                    href="/blog/best-client-onboarding-software-2026"
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
                   >
-                    <h3 className="text-base font-semibold text-zinc-900">Best client onboarding software</h3>
+                    <h3 className="text-base font-semibold text-zinc-900">Best client onboarding software (2026)</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
                       Compare buyer-fit criteria before choosing an onboarding platform.
                     </p>
-                    <div className="mt-3 text-sm font-medium text-zinc-900">Read this guide</div>
+                    <div className="mt-3 text-sm font-medium text-zinc-900">
+                      Read the software comparison guide
+                    </div>
                   </Link>
                 </div>
               </section>
@@ -952,7 +541,9 @@ export function BlogHubTemplate({
                     </div>
                     <h2 className="mt-3 text-lg font-semibold text-zinc-900">{post.h1}</h2>
                     <p className="mt-3 text-sm leading-6 text-zinc-700">{post.description}</p>
-                    <div className="mt-4 text-sm font-medium text-zinc-900">Read article</div>
+                    <div className="mt-4 text-sm font-medium text-zinc-900">
+                      Read: {post.h1}
+                    </div>
                   </Link>
                 ))}
               </div>
