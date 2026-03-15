@@ -212,8 +212,8 @@ const productLinks = [
 ] as const;
 
 const comparisonLinks = [
-  { href: "/dubsado-alternative", label: "Dubsado alternative" },
-  { href: "/honeybook-alternative", label: "HoneyBook alternative" },
+  { href: "/dubsado-alternative", label: "vs Dubsado" },
+  { href: "/honeybook-alternative", label: "vs HoneyBook" },
   { href: "/best-client-onboarding-software", label: "Best client onboarding software" },
 ] as const;
 
@@ -221,12 +221,12 @@ const resourceLinks = [
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  { href: "/onboarding-for-agencies", label: "Onboarding software for agencies" },
-  { href: "/onboarding-for-accountants", label: "Onboarding software for accountants" },
+  { href: "/onboarding-for-agencies", label: "For agencies" },
+  { href: "/onboarding-for-accountants", label: "For accountants" },
 ] as const;
 
 const companyAndLegalLinks = [
-  { href: "/privacy", label: "Privacy" },
+  { href: "/privacy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms" },
 ] as const;
 

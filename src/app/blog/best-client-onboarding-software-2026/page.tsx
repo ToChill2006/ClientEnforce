@@ -112,7 +112,7 @@ export default function BestClientOnboardingSoftware2026Page() {
                 <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
                   See our side-by-side
                   {" "}
-                  <Link href="/honeybook-alternative" className="font-medium text-zinc-900 underline underline-offset-4">HoneyBook alternative comparison</Link>
+                  <Link href="/honeybook-alternative" className="font-medium text-zinc-900 underline underline-offset-4">HoneyBook alternative</Link>
                   .
                 </p>
               </section>

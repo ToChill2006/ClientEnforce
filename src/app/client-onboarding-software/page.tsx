@@ -20,15 +20,15 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 const comparisonRows = [
-  ["Document collection", "Clients submit required files in one place - no email attachments.", "✓"],
-  ["E-signatures", "Agreements are signed inside the onboarding flow.", "✓"],
-  ["Automated reminders", "System nudges clients when overdue - team stops chasing.", "✓"],
+  ["Document collection", "Required files arrive in one place - not scattered across email", "✓"],
+  ["E-signatures", "Agreements signed inside the onboarding flow", "✓"],
+  ["Automated reminders", "System nudges clients when tasks are overdue - team stops chasing", "✓"],
   ["Progress visibility", "See all active onboardings at a glance.", "✓"],
   ["Required step enforcement", "Clients cannot skip required steps.", "✓"],
   ["Audit trail", "Timestamped record of every submission and action.", "✓"],
-  ["Client portal", "One secure link - no client login needed.", "✓"],
+  ["Client portal", "One secure link - no client login needed", "✓"],
   ["Template library", "Reusable templates per service line.", "✓"],
-  ["Compliance-ready export", "PDF evidence pack per client.", "✓"],
+  ["Compliance-ready export", "PDF evidence pack per client onboarding", "✓"],
 ] as const;
 
 const faqSchema = {
@@ -154,15 +154,15 @@ export default function ClientOnboardingSoftwarePage() {
 
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  What makes a good client onboarding platform?
+                  What to look for in client onboarding software
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Most buyers compare features, but the real question is simpler: does this system enforce completion well enough to protect kickoff quality? Use this table when comparing the best client onboarding tools.
+                  Not all onboarding tools enforce completion - most just track it. Here is what separates a dedicated onboarding platform from a generic checklist or CRM module.
                 </p>
                 <div className="mt-6 overflow-x-auto rounded-2xl border border-zinc-200">
                   <table className="w-full min-w-[720px] bg-white text-left text-sm text-zinc-700">
                     <thead>
-                      <tr className="bg-zinc-50 text-zinc-900">
+                      <tr className="bg-zinc-900 text-white">
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Feature</th>
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Why it matters</th>
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">ClientEnforce</th>

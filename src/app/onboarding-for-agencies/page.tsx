@@ -96,20 +96,13 @@ export default function OnboardingForAgenciesPage() {
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">What agencies need from onboarding software</h2>
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  {[
-                    ["Consistent process across all clients", "Every client should complete the same required steps before kickoff, not a custom process each time."],
-                    ["Visibility across multiple onboardings", "Leads and ops need one view of who is blocked, who is overdue, and what can start."],
-                    ["Automated follow-up", "Account managers should not spend hours manually chasing missing forms and documents."],
-                    ["Audit trail for disputes and reviews", "When questions come up, teams need a timestamped record of what was submitted and approved."],
-                  ].map(([title, text]) => (
-                    <article key={title} className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                      <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-zinc-700">{text}</p>
-                    </article>
-                  ))}
-                </div>
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Sound familiar?</h2>
+                <ul className="mt-4 space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm leading-7 text-zinc-700 sm:text-base">
+                  <li>• Your account manager is chasing four different clients for documents over email simultaneously.</li>
+                  <li>• One client is 80% through intake but missing a single file, and nobody knows unless someone manually checks.</li>
+                  <li>• A project kicked off last week but three required assets still have not arrived, and they are now your problem.</li>
+                  <li>• A new account manager joins and has no documented process to follow, so onboarding changes every time.</li>
+                </ul>
               </section>
 
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
@@ -132,6 +125,7 @@ export default function OnboardingForAgenciesPage() {
 
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <blockquote className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm leading-7 text-zinc-700">
+                  {/* REPLACE WITH REAL AGENCY CUSTOMER QUOTE */}
                   <p className="font-medium text-zinc-900">[ADD AGENCY CUSTOMER QUOTE HERE]</p>
                 </blockquote>
               </section>

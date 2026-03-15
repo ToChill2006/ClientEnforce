@@ -23,8 +23,8 @@ const toolRows = [
     "ClientEnforce",
     "Agencies, consultants, accountants who onboard at volume",
     "Purpose-built - entire product",
-    "Full timestamped trail",
-    "Paid plans from pricing",
+    "Full timestamped trail + PDF export",
+    "Free trial available",
   ],
   [
     "Dubsado",
@@ -94,16 +94,16 @@ export default function ClientOnboardingToolsPage() {
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">The best client onboarding tools compared (2026)</h2>
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">How the main client onboarding tools compare (2026)</h2>
                 <div className="mt-5 overflow-x-auto rounded-2xl border border-zinc-200">
                   <table className="w-full min-w-[940px] bg-white text-left text-sm text-zinc-700">
                     <thead>
                       <tr className="bg-zinc-50 text-zinc-900">
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Tool</th>
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Best for</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Onboarding depth</th>
+                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Onboarding focus</th>
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Audit trail</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Price range</th>
+                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Starts from</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -120,23 +120,27 @@ export default function ClientOnboardingToolsPage() {
                   </table>
                 </div>
                 <p className="mt-4 text-xs text-zinc-600">
-                  This comparison was last updated March 2026. Pricing and features change - verify current details on each provider&apos;s website.
+                  Pricing and features change - verify current details on each provider&apos;s website. Last updated March 2026.
                 </p>
               </section>
 
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Which tool is right for your team?</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you are an agency or service team onboarding multiple clients per month and your main pain is the chase - chasing documents, chasing signatures, chasing approvals - ClientEnforce is built specifically for that problem.
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Which tool is right for your situation?</h2>
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">Choose ClientEnforce if:</h3>
+                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                  You run an agency, consultancy, or accounting firm. You onboard three or more clients per month and need a consistent, repeatable process. Your main pain is chasing clients for documents and information. You need a compliance-ready audit trail.
                 </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you are a solo freelancer who needs invoicing, contracts, and CRM in one place, Dubsado or HoneyBook will serve you better.
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">Choose Dubsado or HoneyBook if:</h3>
+                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                  You are a solo freelancer or independent creative professional who needs invoicing, contracts, and CRM in one place alongside basic onboarding.
                 </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If your only problem is collecting documents and nothing else, Content Snare is a simpler and cheaper option.
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">Choose Content Snare if:</h3>
+                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                  Your only problem is document collection and nothing else - you do not need workflow enforcement, audit trails, or client portals.
                 </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you are just getting started and your volume is low enough to manage manually, a Google Form and a spreadsheet is fine. You&apos;ll outgrow it - but there&apos;s no need to pay for software until the pain is real.
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">Stick with manual if:</h3>
+                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
+                  You are just getting started and your client volume is low enough to manage personally. You will outgrow it, but there&apos;s no need to pay for software until the pain is real.
                 </p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                   <Link href="/client-onboarding-software" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">

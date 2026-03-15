@@ -264,7 +264,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         links: [
           {
             href: "/features",
-            label: "client onboarding platform features",
+            label: "ClientEnforce features",
             description: "Review the feature set behind templates, reminders, and tracking.",
           },
           {
@@ -1526,7 +1526,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       },
       {
         href: "/features",
-        label: "Client onboarding platform features",
+        label: "ClientEnforce features",
         description: "Review product capabilities for documents, signatures, reminders, and tracking.",
       },
       {
@@ -1661,7 +1661,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
           },
           {
             href: "/features",
-            label: "client onboarding platform features",
+            label: "ClientEnforce features",
             description: "Inspect feature depth for documents, signatures, and tracking.",
           },
         ],
@@ -1703,7 +1703,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       },
       {
         href: "/features",
-        label: "Client onboarding platform features",
+        label: "ClientEnforce features",
         description: "See the core capabilities teams use to improve onboarding completion.",
       },
       {
@@ -2006,7 +2006,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       },
       {
         href: "/features",
-        label: "Client onboarding platform features",
+        label: "ClientEnforce features",
         description: "See the capabilities agencies use to enforce onboarding consistency.",
       },
       {
@@ -2227,7 +2227,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
           },
           {
             href: "/features",
-            label: "client onboarding platform features",
+            label: "ClientEnforce features",
             description: "Inspect capabilities that support checklist enforcement and readiness tracking.",
           },
           {
@@ -2330,7 +2330,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       },
       {
         href: "/features",
-        label: "Client onboarding platform features",
+        label: "ClientEnforce features",
         description: "Inspect product capabilities for commercial evaluation.",
       },
       {

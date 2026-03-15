@@ -70,9 +70,8 @@ export default function AboutPage() {
                   We tried Dubsado. We tried HoneyBook. We tried ClickUp. We tried a shared Notion page. We tried a very elaborate spreadsheet. None of them solved the actual problem: nothing enforced completion. A client could receive a checklist and do nothing, and the only way to know was to manually check. The follow-up still landed on a person.
                 </p>
                 <p>
-                  We needed something that would take the chase off our team completely - where the system nudged clients when tasks were overdue, where we could see completion status across every active onboarding at a glance, and where the end result was a documented, auditable record of what was collected and when.
+                  We needed something that would take the chase off our team completely - where the system nudged clients when tasks were overdue, where we could see completion status across every active onboarding at a glance, and where the end result was a documented, auditable record of what was collected and when. That tool didn&apos;t exist. So we built it.
                 </p>
-                <p>That tool didn&apos;t exist. So we built it.</p>
               </StorySection>
 
               <StorySection title="What ClientEnforce does">
@@ -80,7 +79,7 @@ export default function AboutPage() {
                   ClientEnforce is client onboarding software built for agencies, consultants, accountants, and operations-led service teams. It replaces the email back-and-forth of new client intake with a single structured workflow: required documents, e-signatures, information collection, and automated follow-ups - in one client portal your clients actually complete.
                 </p>
                 <p>
-                  It is not a CRM. It does not do invoicing, proposals, or project management. It does one thing: gets clients through intake properly, every time, with a full audit trail.
+                  It is not a CRM. It does not handle invoicing, proposals, or project management. It does one thing: gets clients through intake properly, every time, with a full audit trail from first step to kickoff-ready.
                 </p>
               </StorySection>
 
@@ -109,7 +108,7 @@ export default function AboutPage() {
 
               <StorySection title="Who is behind ClientEnforce">
                 <p>
-                  ClientEnforce was founded by Thomas Chillman. Before building ClientEnforce, Thomas ran a service business and experienced first-hand how broken client onboarding quietly destroys client relationships. ClientEnforce is the tool he wished existed.
+                  ClientEnforce was founded by Thomas Chillman. Before building ClientEnforce, Thomas ran a service business and experienced first-hand how broken client onboarding quietly damages client relationships - not through bad work, but through bad starts. ClientEnforce is the tool he wished had existed.
                 </p>
               </StorySection>
 
