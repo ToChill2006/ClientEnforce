@@ -3,7 +3,9 @@ import { MetadataRoute } from "next";
 import { canonicalSiteOrigin } from "@/lib/app-url";
 
 const PRIVATE_PATHS = [
+  "/app/",
   "/api/",
+  "/admin/",
   "/auth/",
   "/c/",
   "/dashboard/",

@@ -4,7 +4,17 @@ import { absoluteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
-  return sitemapPublicPaths.map((path) => {
+  const additionalPublicPaths = [
+    "/onboarding-for-agencies",
+    "/onboarding-for-accountants",
+    "/downloads/client-onboarding-checklist",
+    "/blog/why-client-onboarding-fails",
+    "/blog/client-onboarding-checklist-template",
+  ] as const;
+
+  const canonicalPaths = Array.from(new Set([...sitemapPublicPaths, ...additionalPublicPaths]));
+
+  return canonicalPaths.map((path) => {
     const isHome = path === "/";
     const isMoneyPage = path === "/client-onboarding-software";
     const isBlogPost = path.startsWith("/blog/");

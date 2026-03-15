@@ -283,6 +283,14 @@ const productLinks = [
     href: "/onboarding-workflow-software",
     label: "Onboarding workflow software",
   },
+  {
+    href: "/onboarding-for-agencies",
+    label: "Onboarding software for agencies",
+  },
+  {
+    href: "/onboarding-for-accountants",
+    label: "Onboarding software for accountants",
+  },
 ];
 
 const comparisonLinks = [
