@@ -7,7 +7,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "About ClientEnforce | Why We Built It | Thomas Chillman",
   description:
-    "ClientEnforce was built after watching service businesses lose clients in the first week - not because of bad work, but because of chaotic onboarding. Here's the story.",
+    "ClientEnforce was built after watching service businesses lose clients in the first week - not because of bad work, but because of chaotic onboarding. Here is the story.",
   path: "/about",
   keywords: [
     "client onboarding software",
@@ -49,13 +49,13 @@ export default function AboutPage() {
 
               <div className="mt-4 max-w-3xl space-y-3 text-base leading-7 text-zinc-700">
                 <p>
-                  We ran a service business. Every deal felt clean at the start - proposal sent, contract signed, client excited. Then onboarding began, and that&apos;s where things fell apart.
+                  We ran a service business. Every deal felt clean at the start - proposal sent, contract signed, client excited. Then onboarding began, and that is where things fell apart.
                 </p>
                 <p>
-                  Information came in pieces. Access in one email. Assets in another. Approvals somewhere else. Files missing. There was no single intake, no clear owner, no place to see what was complete. So we chased. "Just following up." "Still waiting on access." "Friendly reminder." While we chased, kickoffs moved. Deadlines shifted. From the client&apos;s side, it looked like we were slow. In reality, we were blocked.
+                  Information came in pieces. Access in one email. Assets in another. Approvals somewhere else. Files missing. There was no single intake, no clear owner, no place to see what was complete. So we chased. Just following up. Still waiting on access. Friendly reminder. While we chased, kickoffs moved. Deadlines shifted. From the client&apos;s side, it looked like we were slow. In reality, we were blocked.
                 </p>
                 <p>
-                  Trust started dropping before the real work even began. In some cases, relationships never fully recovered. In some cases, clients didn&apos;t continue. That&apos;s when it became obvious: onboarding isn&apos;t admin. It&apos;s the first proof of how your business runs. If the start feels messy, everything else will too.
+                  Trust started dropping before the real work even began. In some cases, relationships never fully recovered. In some cases, clients did not continue. That is when it became obvious: onboarding is not admin. It is the first proof of how your business runs. If the start feels messy, everything else will too.
                 </p>
               </div>
             </div>
@@ -70,7 +70,7 @@ export default function AboutPage() {
                   We tried Dubsado. We tried HoneyBook. We tried ClickUp. We tried a shared Notion page. We tried a very elaborate spreadsheet. None of them solved the actual problem: nothing enforced completion. A client could receive a checklist and do nothing, and the only way to know was to manually check. The follow-up still landed on a person.
                 </p>
                 <p>
-                  We needed something that would take the chase off our team completely - where the system nudged clients when tasks were overdue, where we could see completion status across every active onboarding at a glance, and where the end result was a documented, auditable record of what was collected and when. That tool didn&apos;t exist. So we built it.
+                  We needed something that would take the chase off our team completely - where the system nudged clients when tasks were overdue, where we could see completion status across every active onboarding at a glance, and where the end result was a documented, auditable record of what was collected and when. That tool did not exist. So we built it.
                 </p>
               </StorySection>
 
@@ -86,15 +86,15 @@ export default function AboutPage() {
               <StorySection title="What we believe">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-base font-semibold text-zinc-900">Onboarding is not admin - it&apos;s your first impression.</h3>
+                    <h3 className="text-base font-semibold text-zinc-900">Onboarding is not admin - it is your first impression.</h3>
                     <p className="mt-1">
-                      The way you run intake is the first signal to a client of how you run everything. A messy start sets an expectation that the rest of the project will be too.
+                      The way you run intake is the first signal to a client of how you run everything. A messy start sets the expectation that the rest of the project will feel the same.
                     </p>
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-zinc-900">Chasing people over email is a process failure, not a client problem.</h3>
                     <p className="mt-1">
-                      When clients stall on intake, the instinct is to blame them. The real problem is that there&apos;s no system enforcing completion. Fix the system, remove the chase.
+                      When clients stall on intake, the instinct is to blame them. The real problem is that there is no system enforcing completion. Fix the system, remove the chase.
                     </p>
                   </div>
                   <div>
@@ -113,7 +113,7 @@ export default function AboutPage() {
               </StorySection>
 
               <section className="rounded-2xl border border-zinc-200 bg-zinc-900 p-6 text-white shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight">Want to see how it works?</h2>
+                <h2 className="text-2xl font-semibold tracking-tight">Your next client deserves a better start</h2>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-200 sm:text-base">
                   Build your first onboarding template in under 20 minutes. No credit card needed.
                 </p>

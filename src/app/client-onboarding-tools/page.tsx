@@ -21,31 +21,31 @@ export const metadata: Metadata = buildPageMetadata({
 const toolRows = [
   [
     "ClientEnforce",
-    "Agencies, consultants, accountants who onboard at volume",
+    "Agencies, consultants, accountants onboarding at volume",
     "Purpose-built - entire product",
     "Full timestamped trail + PDF export",
     "Free trial available",
   ],
   [
     "Dubsado",
-    "Solo freelancers and creatives who want all-in-one CRM",
-    "Module within CRM",
+    "Solo freelancers needing all-in-one CRM",
+    "Module within broader CRM",
     "Basic activity log",
-    "From $20/mo",
+    "From ~£20/mo",
   ],
   [
     "HoneyBook",
-    "Independent creative professionals managing full client lifecycle",
+    "Independent creative professionals",
     "Part of clientflow platform",
     "Activity log",
-    "From $19/mo",
+    "From ~£19/mo",
   ],
   [
     "Content Snare",
-    "Teams that primarily need document and information collection",
+    "Teams needing document collection only",
     "Document collection focused",
     "Basic",
-    "From $12/mo",
+    "From ~£12/mo",
   ],
   [
     "Manual (email + spreadsheet)",
@@ -101,9 +101,9 @@ export default function ClientOnboardingToolsPage() {
                       <tr className="bg-zinc-50 text-zinc-900">
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Tool</th>
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Best for</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Onboarding focus</th>
+                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Onboarding depth</th>
                         <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Audit trail</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Starts from</th>
+                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Pricing</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -125,23 +125,19 @@ export default function ClientOnboardingToolsPage() {
               </section>
 
               <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Which tool is right for your situation?</h2>
-                <h3 className="mt-5 text-base font-semibold text-zinc-900">Choose ClientEnforce if:</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  You run an agency, consultancy, or accounting firm. You onboard three or more clients per month and need a consistent, repeatable process. Your main pain is chasing clients for documents and information. You need a compliance-ready audit trail.
-                </p>
-                <h3 className="mt-5 text-base font-semibold text-zinc-900">Choose Dubsado or HoneyBook if:</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  You are a solo freelancer or independent creative professional who needs invoicing, contracts, and CRM in one place alongside basic onboarding.
-                </p>
-                <h3 className="mt-5 text-base font-semibold text-zinc-900">Choose Content Snare if:</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Your only problem is document collection and nothing else - you do not need workflow enforcement, audit trails, or client portals.
-                </p>
-                <h3 className="mt-5 text-base font-semibold text-zinc-900">Stick with manual if:</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  You are just getting started and your client volume is low enough to manage personally. You will outgrow it, but there&apos;s no need to pay for software until the pain is real.
-                </p>
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Which tool fits your situation?</h2>
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">
+                  Choose ClientEnforce if you run an agency, consultancy, or accounting firm, onboard three or more clients per month, and need a consistent enforceable process with an audit trail.
+                </h3>
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">
+                  Choose Dubsado or HoneyBook if you are a solo freelancer or independent creative who needs invoicing, contracts, and CRM in one place alongside basic onboarding.
+                </h3>
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">
+                  Choose Content Snare if your only problem is document collection and you do not need workflow enforcement, audit trails, or client portals.
+                </h3>
+                <h3 className="mt-5 text-base font-semibold text-zinc-900">
+                  Stick with manual if you are just getting started and client volume is low enough to manage personally. You will outgrow it - but there is no need to pay for software until the pain is real.
+                </h3>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                   <Link href="/client-onboarding-software" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
                     client onboarding software

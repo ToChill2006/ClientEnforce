@@ -25,7 +25,7 @@ export default function BlogPage() {
     <>
       <BlogHubTemplate
         title="Client onboarding blog for teams that do this work every day"
-        description="If you onboard clients for a living, this is for you. Practical guides on what breaks, what to automate, and how to build a process that doesn't depend on you chasing everyone personally."
+        description="If you onboard clients for a living, this is for you. Practical guides on what breaks, what to automate, and how to build a process that does not depend on you chasing everyone personally."
         posts={blogPostList}
       />
       <JsonLd

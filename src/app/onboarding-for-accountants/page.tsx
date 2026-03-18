@@ -5,7 +5,7 @@ import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketin
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Software for Accountants | Compliant & Auditable | ClientEnforce",
+  title: "Client Onboarding Software for Accountants | Compliant and Auditable | ClientEnforce",
   description:
     "Client onboarding software for accountants and accounting firms. Collect documents, capture signatures, run AML checks, and maintain a full audit trail - all in one structured workflow.",
   path: "/onboarding-for-accountants",
@@ -34,7 +34,7 @@ export default function OnboardingForAccountantsPage() {
                 Client onboarding software for accountants - compliant, auditable, and structured
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                For accounting firms, client onboarding is not just a process - it&apos;s a compliance obligation. Documents need to be collected correctly, stored securely, and traceable. An email thread is not an audit trail.
+                For accounting firms, client onboarding is not just a process - it is a compliance obligation. Documents need to be collected correctly, stored securely, and traceable. An email thread is not an audit trail.
               </p>
             </div>
           </PageContainer>
@@ -51,7 +51,7 @@ export default function OnboardingForAccountantsPage() {
                   When a new client joins an accounting firm, the intake process typically needs to cover anti-money laundering checks, Know Your Customer documentation, proof of identity and address, a signed engagement letter, and payment setup. Each of these needs to be completed, documented, and retrievable.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  When this happens over email - documents in inboxes, attachments forwarded between accounts, verbal confirmations with no record - you have a compliance exposure. A practice manager asking "do we have the ID for this client?" should be able to get an answer in seconds, not spend twenty minutes searching email threads.
+                  When this happens over email - documents in inboxes, attachments forwarded between accounts, verbal confirmations with no record - you have a compliance exposure. A practice manager asking whether you have the ID for a particular client should be able to get an answer in seconds, not spend twenty minutes searching email threads.
                 </p>
               </section>
 
@@ -67,7 +67,7 @@ export default function OnboardingForAccountantsPage() {
 
                 <h3 className="mt-5 text-base font-semibold text-zinc-900">Required step enforcement</h3>
                 <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  AML checks are not optional. Proof of identity is not optional. The system must enforce these steps - a client&apos;s onboarding is not complete until every required item is in.
+                  AML checks are not optional. Proof of identity is not optional. The system must enforce these steps - a client&apos;s onboarding is not complete until every required item is submitted.
                 </p>
 
                 <h3 className="mt-5 text-base font-semibold text-zinc-900">Document collection in one place</h3>
@@ -94,7 +94,7 @@ export default function OnboardingForAccountantsPage() {
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
                     <h3 className="text-sm font-semibold text-zinc-900">Step 1: Build a compliance-ready onboarding template</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Define all required steps: AML check, KYC documents, engagement letter signature, fee agreement, proof of identity. Mark each as required - clients cannot complete onboarding without them.
+                      Define all required steps: AML check, KYC documents, engagement letter signature, fee agreement, proof of identity. Mark each step as required - clients cannot complete onboarding without them.
                     </p>
                   </article>
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
@@ -106,7 +106,7 @@ export default function OnboardingForAccountantsPage() {
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
                     <h3 className="text-sm font-semibold text-zinc-900">Step 3: Track completion and export the record</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      See completion status for every active onboarding. When everything is in, export the full evidence pack as a PDF for the client file.
+                      See completion status for every active onboarding from one dashboard. When everything is in, export the full evidence pack as a PDF for the client file.
                     </p>
                   </article>
                 </div>
@@ -135,7 +135,7 @@ export default function OnboardingForAccountantsPage() {
                     </p>
                   </article>
                   <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Does the client need to create an account?</h3>
+                    <h3 className="text-sm font-semibold text-zinc-900">Does the client need to create an account to access the portal?</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-700">
                       No. Clients access their onboarding portal through a secure link. No account creation, no password, no friction.
                     </p>

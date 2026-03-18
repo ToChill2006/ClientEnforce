@@ -23,11 +23,11 @@ const comparisonRows = [
   ["Document collection", "Required files arrive in one place - not scattered across email", "✓"],
   ["E-signatures", "Agreements signed inside the onboarding flow", "✓"],
   ["Automated reminders", "System nudges clients when tasks are overdue - team stops chasing", "✓"],
-  ["Progress visibility", "See all active onboardings at a glance.", "✓"],
-  ["Required step enforcement", "Clients cannot skip required steps.", "✓"],
-  ["Audit trail", "Timestamped record of every submission and action.", "✓"],
+  ["Progress visibility", "See all active onboardings at a glance", "✓"],
+  ["Required step enforcement", "Clients cannot skip required steps", "✓"],
+  ["Audit trail", "Timestamped record of every submission and action", "✓"],
   ["Client portal", "One secure link - no client login needed", "✓"],
-  ["Template library", "Reusable templates per service line.", "✓"],
+  ["Template library", "Reusable templates per service line", "✓"],
   ["Compliance-ready export", "PDF evidence pack per client onboarding", "✓"],
 ] as const;
 
@@ -157,7 +157,7 @@ export default function ClientOnboardingSoftwarePage() {
                   What to look for in client onboarding software
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Not all onboarding tools enforce completion - most just track it. Here is what separates a dedicated onboarding platform from a generic checklist or CRM module.
+                  Not all onboarding tools enforce completion - most just track it. Here is what separates a dedicated onboarding platform from a generic checklist or a CRM module.
                 </p>
                 <div className="mt-6 overflow-x-auto rounded-2xl border border-zinc-200">
                   <table className="w-full min-w-[720px] bg-white text-left text-sm text-zinc-700">
@@ -173,7 +173,7 @@ export default function ClientOnboardingSoftwarePage() {
                         <tr key={row[0]}>
                           <td className="border-b border-zinc-100 px-4 py-3 font-medium text-zinc-900">{row[0]}</td>
                           <td className="border-b border-zinc-100 px-4 py-3">{row[1]}</td>
-                          <td className="border-b border-zinc-100 px-4 py-3">{row[2]}</td>
+                          <td className="border-b border-zinc-100 px-4 py-3 text-center font-semibold text-emerald-600">{row[2]}</td>
                         </tr>
                       ))}
                     </tbody>

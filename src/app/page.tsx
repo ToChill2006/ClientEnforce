@@ -373,7 +373,7 @@ export default function MarketingPage() {
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
             <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-10">
               <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-                Your next client deserves a better start
+                Your next client deserves a better start.
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-700 sm:text-base">
                 Set up your first onboarding template in under 20 minutes.
