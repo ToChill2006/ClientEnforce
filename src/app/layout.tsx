@@ -1,10 +1,25 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Instrument_Serif, DM_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { ToastProvider } from "@/components/ui/toast";
 import { JsonLd } from "@/components/marketing/public-shell";
 import { canonicalSiteOrigin } from "@/lib/app-url";
 import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/seo";
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 export const viewport = {
   width: "device-width",
@@ -51,24 +66,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-screen bg-zinc-50 text-zinc-950 antialiased overflow-x-hidden selection:bg-black selection:text-white">
+    <html
+      lang="en"
+      className={`h-full ${instrumentSerif.variable} ${dmSans.variable}`}
+    >
+      <body className="min-h-screen bg-zinc-50 text-zinc-950 antialiased overflow-x-hidden selection:bg-[#00C2A8] selection:text-[#0A0A0F]">
         <ToastProvider>
-          <style>{`
-            @keyframes pageFadeIn {
-              from {
-                opacity: 0;
-                transform: translateY(4px);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0);
-              }
-            }
-          `}</style>
-          <div className="min-h-screen w-full bg-gradient-to-b from-white via-zinc-50 to-zinc-100 [animation:pageFadeIn_.18s_ease-out]">
-            {children}
-          </div>
+          <div className="min-h-screen w-full">{children}</div>
           <JsonLd data={buildOrganizationSchema()} />
           <JsonLd data={buildWebsiteSchema()} />
           <Analytics />

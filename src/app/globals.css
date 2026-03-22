@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
-/* App-wide baseline */
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
+@theme {
+  --color-ce-accent:   #00C2A8;
+  --color-ce-bg:       #0A0A0F;
+  --color-ce-surface:  #111118;
+  --color-ce-primary:  #F0F0F0;
+  --color-ce-muted:    #9A9AAF;
+  --color-ce-danger:   #FF4D4D;
+
+  /* Fonts — defaults; overridden at :root once Next.js injects the vars */
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-sans:  "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:  "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Override with Next.js-injected Google Font CSS variables when present */
 :root {
-  color-scheme: light;
+  --font-serif: var(--font-instrument-serif, "Instrument Serif", Georgia, serif);
+  --font-sans:  var(--font-dm-sans, "DM Sans", ui-sans-serif, system-ui, sans-serif);
+  color-scheme: dark light;
 }
 
 html,
@@ -11,28 +28,84 @@ body {
 }
 
 body {
-  background: rgb(250 250 250); /* zinc-50 */
-  color: rgb(24 24 27); /* zinc-900 */
+  background: rgb(250 250 250);
+  color: rgb(24 24 27);
+  font-family: var(--font-sans);
 }
 
-/* Subtle typography defaults */
+/* ─── Scroll animations ──────────────────────────────────────────────────── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mesh-drift-a {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33%       { transform: translate(40px, -28px) scale(1.06); }
+  66%       { transform: translate(-24px, 36px) scale(0.94); }
+}
+
+@keyframes mesh-drift-b {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  40%       { transform: translate(-36px, 20px) scale(1.04); }
+  70%       { transform: translate(28px, -32px) scale(0.96); }
+}
+
+.fade-up-visible {
+  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Typography baseline ────────────────────────────────────────────────── */
 h1,
 h2,
-h3 {
-  letter-spacing: -0.01em;
+h3,
+h4 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
 }
 
-/* Scrollbars (subtle, optional) */
+/* ─── Interaction polish ─────────────────────────────────────────────────── */
+.card-polish {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+.card-polish:hover {
+  transform: translateY(-2px);
+}
+
+.button-polish {
+  transition:
+    transform 90ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.button-polish:active {
+  transform: scale(0.97);
+}
+.button-polish:disabled:active {
+  transform: none;
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(212 212 216) transparent; /* zinc-300 */
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: rgb(212 212 216);
+  background-color: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
@@ -41,55 +114,29 @@ h3 {
   background: transparent;
 }
 
-/* Focus ring baseline for non-button elements */
+/* ─── Focus ring ─────────────────────────────────────────────────────────── */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(161 161 170), 0 0 0 4px rgb(250 250 250);
+  box-shadow: 0 0 0 2px #00C2A8, 0 0 0 4px rgba(0, 194, 168, 0.2);
 }
 
-/* Table niceties */
+/* ─── Tables ─────────────────────────────────────────────────────────────── */
 table {
   border-collapse: separate;
   border-spacing: 0;
 }
 
-/* Shared interaction polish */
-.card-polish {
-  transition:
-    transform 150ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
-}
-
-.card-polish:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
-}
-
-.button-polish {
-  transition:
-    transform 90ms ease,
-    box-shadow 140ms ease,
-    background-color 140ms ease,
-    border-color 140ms ease;
-}
-
-.button-polish:active {
-  transform: scale(0.98);
-}
-
-.button-polish:disabled:active {
-  transform: none;
-}
-
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .card-polish,
   .button-polish {
     transition: none;
   }
-
   .card-polish:hover,
   .button-polish:active {
     transform: none;
+  }
+  .fade-up-visible {
+    animation: none;
   }
 }

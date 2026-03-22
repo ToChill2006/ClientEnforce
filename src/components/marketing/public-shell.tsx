@@ -3,14 +3,7 @@ import Link from "next/link";
 
 import type { Breadcrumb } from "@/lib/content/seo-content";
 import { jsonLdString } from "@/lib/seo";
-
-function navItemClassName(isPrimary = false) {
-  if (isPrimary) {
-    return "inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800";
-  }
-
-  return "inline-flex items-center whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900";
-}
+import { MobileMenu } from "@/components/marketing/mobile-menu";
 
 const solutionsByUseCase = [
   { href: "/client-onboarding-software", label: "Client onboarding software" },
@@ -22,7 +15,7 @@ const solutionsByUseCase = [
 const solutionsWhoFor = [
   { href: "/onboarding-for-agencies", label: "For agencies" },
   { href: "/onboarding-for-accountants", label: "For accountants" },
-  { href: "/client-onboarding-software", label: "For consultants" },
+  { href: "/onboarding-for-consultants", label: "For consultants" },
 ] as const;
 
 const solutionsCompare = [
@@ -33,72 +26,49 @@ const solutionsCompare = [
 
 export function PublicHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#0A0A0F]/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5">
             <Image src="/C.png" alt="ClientEnforce" fill className="object-contain p-1" priority />
           </span>
-          <span className="text-sm font-semibold tracking-tight text-zinc-900 sm:text-base">
+          <span className="text-sm font-semibold tracking-tight text-[#F0F0F0] sm:text-base">
             ClientEnforce
           </span>
         </Link>
 
+        {/* Desktop nav */}
         <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 md:flex lg:gap-2">
           <details className="group relative">
-            <summary className={`${navItemClassName()} list-none cursor-pointer select-none`}>
-              <span className="inline-flex items-center gap-1.5">
-                Solutions
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-4 w-4 text-zinc-500 transition group-open:rotate-180"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
+            <summary className="inline-flex list-none cursor-pointer select-none items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[#9A9AAF] transition hover:bg-white/5 hover:text-[#F0F0F0]">
+              Solutions
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 transition group-open:rotate-180" aria-hidden="true">
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+              </svg>
             </summary>
 
-            <div className="invisible absolute left-0 top-full z-50 mt-2 w-[420px] rounded-2xl border border-zinc-200 bg-white p-3 opacity-0 shadow-lg transition group-open:visible group-open:opacity-100">
-              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">By use case</div>
-              <div className="mt-2 grid gap-1">
+            <div className="invisible absolute left-0 top-full z-50 mt-2 w-[420px] rounded-2xl border border-white/[0.08] bg-[#111118] p-4 opacity-0 shadow-2xl transition group-open:visible group-open:opacity-100">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">By use case</p>
+              <div className="mt-2 grid gap-0.5">
                 {solutionsByUseCase.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-                  >
+                  <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-2 text-sm font-medium text-[#9A9AAF] transition hover:bg-white/5 hover:text-[#F0F0F0]">
                     {item.label}
                   </Link>
                 ))}
               </div>
-
-              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Who it&apos;s for</div>
-              <div className="mt-2 grid gap-1">
+              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Who it&apos;s for</p>
+              <div className="mt-2 grid gap-0.5">
                 {solutionsWhoFor.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-                  >
+                  <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-2 text-sm font-medium text-[#9A9AAF] transition hover:bg-white/5 hover:text-[#F0F0F0]">
                     {item.label}
                   </Link>
                 ))}
               </div>
-
-              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Compare</div>
-              <div className="mt-2 grid gap-1">
+              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Compare</p>
+              <div className="mt-2 grid gap-0.5">
                 {solutionsCompare.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 hover:text-zinc-900"
-                  >
+                  <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-2 text-sm font-medium text-[#9A9AAF] transition hover:bg-white/5 hover:text-[#F0F0F0]">
                     {item.label}
                   </Link>
                 ))}
@@ -106,115 +76,46 @@ export function PublicHeader() {
             </div>
           </details>
 
-          <Link href="/features" className={navItemClassName()}>
-            Features
-          </Link>
-          <Link href="/pricing" className={navItemClassName()}>
-            Pricing
-          </Link>
-          <Link href="/blog" className={navItemClassName()}>
-            Blog
-          </Link>
-          <Link href="/contact" className={navItemClassName()}>
-            Contact
-          </Link>
+          {[
+            { href: "/features", label: "Features" },
+            { href: "/pricing", label: "Pricing" },
+            { href: "/blog", label: "Blog" },
+            { href: "/contact", label: "Contact" },
+          ].map((item) => (
+            <Link key={item.href} href={item.href} className="inline-flex items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-[#9A9AAF] transition hover:bg-white/5 hover:text-[#F0F0F0]">
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
+        {/* Right CTAs */}
         <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="hidden whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 md:inline-flex"
-          >
+          <Link href="/login" className="hidden whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-[#9A9AAF] transition hover:text-[#F0F0F0] md:inline-flex">
             Login
           </Link>
-          <Link
-            href="/contact"
-            className="hidden items-center justify-center whitespace-nowrap rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50 md:inline-flex"
-          >
-            Book a demo
-          </Link>
-          <details className="relative md:hidden">
-            <summary className="inline-flex list-none cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50">
-              Menu
-            </summary>
-            <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[90vw] rounded-2xl border border-zinc-200 bg-white p-3 shadow-lg">
-              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">By use case</div>
-              <div className="mt-2 grid gap-1">
-                {solutionsByUseCase.map((item) => (
-                  <Link key={item.href} href={item.href} className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Who it&apos;s for</div>
-              <div className="mt-2 grid gap-1">
-                {solutionsWhoFor.map((item) => (
-                  <Link key={item.href} href={item.href} className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Compare</div>
-              <div className="mt-2 grid gap-1">
-                {solutionsCompare.map((item) => (
-                  <Link key={item.href} href={item.href} className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Navigate</div>
-              <div className="mt-2 grid gap-1">
-                <Link href="/features" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                  Features
-                </Link>
-                <Link href="/pricing" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                  Pricing
-                </Link>
-                <Link href="/blog" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                  Blog
-                </Link>
-                <Link href="/contact" className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                  Contact
-                </Link>
-              </div>
-
-              <div className="mt-3 border-t border-zinc-200 pt-3">
-                <Link href="/login" className="block rounded-lg px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                  Login
-                </Link>
-                <Link href="/contact" className="mt-1 block rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50">
-                  Book a demo
-                </Link>
-                <Link href="/signup" className="mt-2 block rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800">
-                  Get started
-                </Link>
-              </div>
-            </div>
-          </details>
-          <Link href="/signup" className={navItemClassName(true)}>
+          <Link href="/signup" className="hidden items-center justify-center whitespace-nowrap rounded-xl bg-[#00C2A8] px-4 py-2 text-sm font-semibold text-[#0A0A0F] shadow-[0_0_16px_rgba(0,194,168,0.25)] transition hover:bg-[#00d4b8] hover:shadow-[0_0_24px_rgba(0,194,168,0.4)] md:inline-flex">
             Get started
           </Link>
+          <MobileMenu />
         </div>
       </div>
     </header>
   );
 }
 
+/* ─── Footer ──────────────────────────────────────────────────────────────── */
 const productLinks = [
   { href: "/client-onboarding-software", label: "Client onboarding software" },
   { href: "/features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/client-onboarding-automation", label: "Client onboarding automation" },
-  { href: "/client-onboarding-checklist", label: "Client onboarding checklist" },
+  { href: "/client-onboarding-automation", label: "Onboarding automation" },
+  { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
 ] as const;
 
 const comparisonLinks = [
   { href: "/dubsado-alternative", label: "vs Dubsado" },
   { href: "/honeybook-alternative", label: "vs HoneyBook" },
-  { href: "/best-client-onboarding-software", label: "Best client onboarding software" },
+  { href: "/best-client-onboarding-software", label: "Best onboarding software" },
 ] as const;
 
 const resourceLinks = [
@@ -223,45 +124,59 @@ const resourceLinks = [
   { href: "/contact", label: "Contact" },
   { href: "/onboarding-for-agencies", label: "For agencies" },
   { href: "/onboarding-for-accountants", label: "For accountants" },
-] as const;
-
-const companyAndLegalLinks = [
-  { href: "/privacy", label: "Privacy Policy" },
-  { href: "/terms", label: "Terms" },
+  { href: "/onboarding-for-consultants", label: "For consultants" },
 ] as const;
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-5">
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
-            <div className="text-sm font-semibold text-zinc-900">Client onboarding, enforced.</div>
-            <p className="mt-2 text-sm leading-6 text-zinc-700">
-              Replace email chaos with a structured onboarding workflow for documents, signatures, reminders, and kickoff readiness.
+    <footer className="border-t border-white/[0.06] bg-[#0A0A0F]">
+      <div className="mx-auto max-w-[1200px] px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Col 1: Brand */}
+          <div>
+            <Link href="/" className="flex items-center gap-2.5">
+              <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                <Image src="/C.png" alt="ClientEnforce" fill className="object-contain p-1" />
+              </span>
+              <span className="text-sm font-semibold text-[#F0F0F0]">ClientEnforce</span>
+            </Link>
+            <p className="mt-3 text-sm leading-6 text-[#9A9AAF]">
+              Client onboarding that enforces completion — not just tracks it.
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                href="/client-onboarding-software"
-                className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
+            {/* Social icons */}
+            <div className="mt-4 flex gap-3">
+              <a
+                href="https://twitter.com/clientenforce"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Twitter / X"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#9A9AAF] transition hover:bg-white/10 hover:text-[#F0F0F0]"
               >
-                Explore client onboarding software
-              </Link>
-              <Link
-                href="/pricing"
-                className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+              <a
+                href="https://linkedin.com/company/clientenforce"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#9A9AAF] transition hover:bg-white/10 hover:text-[#F0F0F0]"
               >
-                View pricing
-              </Link>
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+              </a>
             </div>
           </div>
 
+          {/* Col 2: Product */}
           <div>
-            <div className="text-sm font-semibold text-zinc-900">Product</div>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-700">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Product</p>
+            <ul className="mt-4 space-y-3">
               {productLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
+                  <Link href={link.href} className="text-sm text-[#9A9AAF] transition hover:text-[#F0F0F0]">
                     {link.label}
                   </Link>
                 </li>
@@ -269,12 +184,13 @@ export function PublicFooter() {
             </ul>
           </div>
 
+          {/* Col 3: Comparisons */}
           <div>
-            <div className="text-sm font-semibold text-zinc-900">Comparisons</div>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-700">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Compare</p>
+            <ul className="mt-4 space-y-3">
               {comparisonLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
+                  <Link href={link.href} className="text-sm text-[#9A9AAF] transition hover:text-[#F0F0F0]">
                     {link.label}
                   </Link>
                 </li>
@@ -282,25 +198,13 @@ export function PublicFooter() {
             </ul>
           </div>
 
+          {/* Col 4: Resources */}
           <div>
-            <div className="text-sm font-semibold text-zinc-900">Resources</div>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-700">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Resources</p>
+            <ul className="mt-4 space-y-3">
               {resourceLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <div className="text-sm font-semibold text-zinc-900">Company & legal</div>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-700">
-              {companyAndLegalLinks.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
+                  <Link href={link.href} className="text-sm text-[#9A9AAF] transition hover:text-[#F0F0F0]">
                     {link.label}
                   </Link>
                 </li>
@@ -309,31 +213,37 @@ export function PublicFooter() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-zinc-200 pt-4 text-xs text-zinc-600">
-          © {new Date().getFullYear()} ClientEnforce
+        {/* Bottom bar */}
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.06] pt-6">
+          <p className="text-xs text-[#9A9AAF]">© {new Date().getFullYear()} ClientEnforce. All rights reserved.</p>
+          <div className="flex gap-5">
+            <Link href="/privacy" className="text-xs text-[#9A9AAF] transition hover:text-[#F0F0F0]">Privacy</Link>
+            <Link href="/terms" className="text-xs text-[#9A9AAF] transition hover:text-[#F0F0F0]">Terms</Link>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
+/* ─── Shared layout utilities ────────────────────────────────────────────── */
 export function PageContainer({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">{children}</div>;
+  return <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">{children}</div>;
 }
 
 export function Breadcrumbs({ items }: { items: Breadcrumb[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="text-xs text-zinc-600">
+    <nav aria-label="Breadcrumb" className="text-xs text-[#9A9AAF]">
       <ol className="flex flex-wrap items-center gap-1.5">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
             <li key={`${item.path}-${item.name}`} className="flex items-center gap-1.5">
-              {index > 0 ? <span className="text-zinc-400">/</span> : null}
+              {index > 0 ? <span className="text-[#9A9AAF]/50">/</span> : null}
               {isLast ? (
-                <span className="font-medium text-zinc-700">{item.name}</span>
+                <span className="text-[#F0F0F0]">{item.name}</span>
               ) : (
-                <Link href={item.path} className="hover:text-zinc-900 hover:underline hover:underline-offset-4">
+                <Link href={item.path} className="transition hover:text-[#F0F0F0]">
                   {item.name}
                 </Link>
               )}

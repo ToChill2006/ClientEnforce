@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FileText, Mail, BarChart3 } from "lucide-react";
 
 import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -36,43 +38,38 @@ const comparisonRows = [
 
 export default function DubsadoAlternativePage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-[#0A0A0F] text-[#F0F0F0] font-sans">
       <PublicHeader />
 
       <main>
-        <section className="border-b border-zinc-200 bg-white">
+        {/* ── Hero ──────────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
           <PageContainer>
-            <div className="py-12 sm:py-16">
-              <div className="text-xs text-zinc-600">
-                <Link href="/" className="hover:underline hover:underline-offset-4">Home</Link>
-                <span className="mx-1.5">&gt;</span>
+            <div className="py-20 sm:py-24">
+              <div className="text-xs text-[#9A9AAF]">
+                <Link href="/" className="transition hover:text-[#F0F0F0]">Home</Link>
+                <span className="mx-1.5 text-white/20">/</span>
                 <span>Alternatives</span>
-                <span className="mx-1.5">&gt;</span>
-                <span className="font-medium text-zinc-800">Dubsado Alternative</span>
+                <span className="mx-1.5 text-white/20">/</span>
+                <span className="text-[#F0F0F0]">Dubsado Alternative</span>
               </div>
 
-              <div className="mt-4 inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700">
+              <div className="mt-6 inline-flex items-center rounded-full border border-[#00C2A8]/20 bg-[#00C2A8]/8 px-3 py-1.5 text-xs font-medium text-[#00C2A8]">
                 Honest comparison
               </div>
 
-              <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+              <h1 className="mt-4 max-w-4xl font-serif text-5xl tracking-tight text-[#F0F0F0] sm:text-[64px]">
                 The Dubsado alternative built for agencies — not just freelancers
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+              <p className="mt-5 max-w-3xl text-lg leading-7 text-[#9A9AAF]">
                 Dubsado is a solid tool. But if you run an agency or a service team and your main pain is chaotic client onboarding, you need something more focused. ClientEnforce does one thing: gets clients through intake cleanly, every time.
               </p>
 
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-                >
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/signup" className="inline-flex items-center justify-center rounded-xl bg-[#00C2A8] px-6 py-3.5 text-sm font-semibold text-[#0A0A0F] shadow-[0_0_24px_rgba(0,194,168,0.3)] transition hover:bg-[#00d4b8]">
                   Start free trial
                 </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                >
+                <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-semibold text-[#F0F0F0] transition hover:bg-white/10">
                   See how it works
                 </Link>
               </div>
@@ -80,151 +77,208 @@ export default function DubsadoAlternativePage() {
           </PageContainer>
         </section>
 
-        <section>
+        {/* ── Context ───────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
           <PageContainer>
-            <div className="space-y-6 py-10 sm:py-12">
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Dubsado is great — for the right person</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Dubsado built its reputation with solo freelancers and creative professionals. Photographers, designers, consultants running one-person businesses. For them, it works well: proposals, contracts, invoicing, scheduling, and basic client management all in one place.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  The problem starts when teams try to use it for structured, repeatable onboarding at volume. Dubsado was not designed for an agency account manager running eight client onboardings simultaneously. It was not built with compliance audit trails in mind. And the setup complexity — which is manageable for one person who configures it once — becomes a bottleneck when your ops team needs to run a consistent process across every new client.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  That is the gap ClientEnforce fills.
-                </p>
-              </section>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">Dubsado is great — for the right person</h2>
+                <div className="mt-5 space-y-4 text-base leading-7 text-[#9A9AAF]">
+                  <p>Dubsado built its reputation with solo freelancers and creative professionals. Photographers, designers, consultants running one-person businesses. For them, it works well: proposals, contracts, invoicing, scheduling, and basic client management all in one place.</p>
+                  <p>The problem starts when teams try to use it for structured, repeatable onboarding at volume. Dubsado was not designed for an agency account manager running eight client onboardings simultaneously. It was not built with compliance audit trails in mind. And the setup complexity becomes a bottleneck when your ops team needs to run a consistent process across every new client.</p>
+                  <p className="text-[#F0F0F0] font-medium">That is the gap ClientEnforce fills.</p>
+                </div>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">CRM vs dedicated onboarding software — what actually changes</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Dubsado calls itself a business management platform. That is accurate. It does a lot of things reasonably well across the full client lifecycle.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  ClientEnforce does not try to manage your full client lifecycle. It handles the onboarding phase only — from the moment a client signs to the moment your team is ready to start. That narrow focus means every feature is designed around one outcome: getting clients through intake without your team manually chasing them.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">Here is what that difference looks like in practice.</p>
-
-                <div className="mt-6 overflow-x-auto rounded-2xl border border-zinc-200">
-                  <table className="w-full min-w-[860px] bg-white text-left text-sm text-zinc-700">
+        {/* ── Comparison table ──────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">CRM vs dedicated onboarding software</h2>
+                <p className="mt-3 text-base text-[#9A9AAF]">Here is what the difference looks like in practice.</p>
+              </FadeUp>
+              <FadeUp delay={100}>
+                <div className="mt-8 overflow-x-auto rounded-2xl border border-white/[0.08]">
+                  <table className="w-full min-w-[700px] text-sm">
                     <thead>
-                      <tr className="bg-zinc-50 text-zinc-900">
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold"></th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Dubsado</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">ClientEnforce</th>
+                      <tr className="bg-[#00C2A8]/10">
+                        <th className="px-5 py-4 text-left text-sm font-semibold text-[#F0F0F0]" />
+                        <th className="px-5 py-4 text-left text-sm font-semibold text-[#9A9AAF]">Dubsado</th>
+                        <th className="px-5 py-4 text-left text-sm font-semibold text-[#00C2A8]">ClientEnforce</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {comparisonRows.map((row) => (
-                        <tr key={row[0]}>
-                          <td className="border-b border-zinc-100 px-4 py-3 font-semibold text-zinc-900">{row[0]}</td>
-                          <td className="border-b border-zinc-100 px-4 py-3">{row[1]}</td>
-                          <td className="border-b border-zinc-100 px-4 py-3">{row[2]}</td>
+                      {comparisonRows.map((row, i) => (
+                        <tr key={row[0]} className={i % 2 === 0 ? "bg-[#111118]" : "bg-[#0A0A0F]"}>
+                          <td className="px-5 py-3.5 text-sm font-medium text-[#F0F0F0]">{row[0]}</td>
+                          <td className="px-5 py-3.5 text-sm text-[#9A9AAF]">{row[1]}</td>
+                          <td className="px-5 py-3.5 text-sm text-[#9A9AAF]">{row[2]}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </section>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Honestly — which one is right for you?</h2>
+        {/* ── Choose X if ───────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">Honestly — which one is right for you?</h2>
+              </FadeUp>
+              <div className="mt-8 grid gap-5 md:grid-cols-2">
+                <FadeUp>
+                  <div className="h-full rounded-2xl border-l-2 border-[#9A9AAF]/40 bg-[#0A0A0F] p-6 border border-white/[0.08]">
+                    <h3 className="font-serif text-xl text-[#F0F0F0]">Choose Dubsado if:</h3>
+                    <ul className="mt-4 space-y-3">
+                      {[
+                        "You are a solo freelancer or creative professional",
+                        "You need invoicing, payment processing, and proposals all in one place",
+                        "Your client volume is low and you manage most things yourself",
+                        "You want an all-in-one business management system",
+                        "You are in photography, event management, or a similar creative field",
+                      ].map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm text-[#9A9AAF]">
+                          <span className="mt-0.5 text-white/30">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </FadeUp>
+                <FadeUp delay={80}>
+                  <div className="h-full rounded-2xl border-l-2 border-[#00C2A8] bg-[#0A0A0F] p-6 border border-white/[0.08]">
+                    <h3 className="font-serif text-xl text-[#00C2A8]">Choose ClientEnforce if:</h3>
+                    <ul className="mt-4 space-y-3">
+                      {[
+                        "You run an agency or service team with multiple people involved in onboarding",
+                        "You onboard three or more clients per month and need a consistent, repeatable process",
+                        "Your main pain is chasing clients for documents and signatures — not managing invoices",
+                        "You need visibility across multiple onboardings simultaneously",
+                        "You work in a compliance-sensitive environment and need an auditable intake trail",
+                        "You have tried using Dubsado for onboarding and found the setup too complex",
+                      ].map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm text-[#9A9AAF]">
+                          <span className="mt-0.5 text-[#00C2A8]">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </FadeUp>
+              </div>
+            </div>
+          </PageContainer>
+        </section>
 
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">Choose Dubsado if:</h3>
-                <ul className="mt-3 space-y-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  <li>• You are a solo freelancer or creative professional</li>
-                  <li>• You need invoicing, payment processing, and proposals all in one place</li>
-                  <li>• Your client volume is low and you manage most things yourself</li>
-                  <li>• You want an all-in-one business management system</li>
-                  <li>• You are in photography, event management, or a similar creative field</li>
+        {/* ── How it works ──────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">How ClientEnforce handles onboarding — in three steps</h2>
+              </FadeUp>
+              <div className="relative mt-10">
+                <div className="absolute top-8 left-[calc(100%/6)] right-[calc(100%/6)] hidden h-px border-t border-dashed border-white/[0.10] lg:block" />
+                <div className="grid gap-6 lg:grid-cols-3">
+                  {[
+                    { step: "01", icon: <FileText className="h-5 w-5" />, title: "Build a template for each service line", body: "Map your onboarding steps once. Define which documents are required, what needs signing, what information you need, and in what order. Takes under 20 minutes." },
+                    { step: "02", icon: <Mail className="h-5 w-5" />, title: "Send the portal link when a client signs", body: "One link. The client sees exactly what they need to do, in order. No login required. No confusion about where to send things." },
+                    { step: "03", icon: <BarChart3 className="h-5 w-5" />, title: "Watch completion — your team stops chasing", body: "Clients get automated reminders when tasks are overdue. Your dashboard shows completion across every active onboarding. Kickoff happens when intake is actually done." },
+                  ].map((step, i) => (
+                    <FadeUp key={step.step} delay={i * 100}>
+                      <article className="card-polish rounded-2xl border border-white/[0.08] bg-[#111118] p-6">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00C2A8]/10 text-[#00C2A8]">{step.icon}</div>
+                          <span className="font-serif text-4xl text-white/10">{step.step}</span>
+                        </div>
+                        <h3 className="mt-4 text-base font-semibold text-[#F0F0F0]">{step.title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-[#9A9AAF]">{step.body}</p>
+                      </article>
+                    </FadeUp>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </PageContainer>
+        </section>
+
+        {/* ── Pain points ───────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">If you have outgrown Dubsado for onboarding, this probably sounds familiar</h2>
+                <ul className="mt-6 space-y-3">
+                  {[
+                    "You have customised Dubsado workflows extensively and they still do not enforce what clients actually need to do",
+                    "Your account managers are still sending follow-up emails manually because the automations are not quite right",
+                    "You cannot get a clear view of which clients are onboarding-complete and which are still missing information",
+                    "A client started a project before intake was finished and it caused problems",
+                    "You need a proper audit trail for compliance reasons and Dubsado's activity log is not sufficient",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3 text-sm leading-6 text-[#9A9AAF]">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#00C2A8]/60" />
+                      {item}
+                    </li>
+                  ))}
                 </ul>
-
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">Choose ClientEnforce if:</h3>
-                <ul className="mt-3 space-y-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  <li>• You run an agency or service team with multiple people involved in onboarding</li>
-                  <li>• You onboard three or more clients per month and need a consistent, repeatable process</li>
-                  <li>• Your main pain is chasing clients for documents, signatures, and approvals — not managing invoices</li>
-                  <li>• You need visibility across multiple onboardings simultaneously</li>
-                  <li>• You work in a compliance-sensitive environment and need an auditable intake trail</li>
-                  <li>• You have tried using Dubsado for onboarding and found the setup too complex for what you actually need</li>
-                </ul>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">How ClientEnforce handles onboarding — in three steps</h2>
-
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">1. Build a template for each service line</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Map your onboarding steps once. Define which documents are required, what needs signing, what information you need from the client, and in what order. Takes under 20 minutes.
+                <p className="mt-6 text-base text-[#9A9AAF]">
+                  ClientEnforce was built specifically for these situations — not as a Dubsado replacement, but as a purpose-built solution for the onboarding phase that Dubsado was never designed to own.
                 </p>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">2. Send the client portal link when a new client signs</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  One link. The client sees exactly what they need to do, in order. No login required. No confusion about where to send things.
-                </p>
-
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">3. Watch completion — your team stops chasing</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Clients get automated reminders when tasks are overdue. Your dashboard shows completion status across every active onboarding. Kickoff happens when intake is actually done.
-                </p>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">If you have outgrown Dubsado for onboarding, this probably sounds familiar</h2>
-                <ul className="mt-4 space-y-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  <li>• You have customised Dubsado workflows extensively and they still do not enforce what clients actually need to do</li>
-                  <li>• Your account managers are still sending follow-up emails manually because the automations are not quite right</li>
-                  <li>• You cannot get a clear view of which clients are onboarding-complete and which are still missing information</li>
-                  <li>• A client started a project before intake was finished and it caused problems</li>
-                  <li>• You need a proper audit trail for compliance or contract reasons and Dubsado's activity log is not sufficient</li>
-                </ul>
-                <p className="mt-4 text-sm leading-7 text-zinc-700 sm:text-base">
-                  ClientEnforce was built specifically for these situations. Not as a Dubsado replacement — as a purpose-built solution for the onboarding phase that Dubsado was never designed to own.
-                </p>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-zinc-900 p-6 text-white shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight">Ready to run onboarding properly?</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-200 sm:text-base">
+        {/* ── CTA band ──────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-20 text-center">
+              <FadeUp>
+                <h2 className="font-serif text-4xl text-[#F0F0F0] sm:text-[48px]">Ready to run onboarding properly?</h2>
+                <p className="mx-auto mt-4 max-w-2xl text-base text-[#9A9AAF]">
                   Your next client deserves a cleaner start. Build your first onboarding template in under 20 minutes — no Dubsado migration needed.
                 </p>
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <Link
-                    href="/signup"
-                    className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
-                  >
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <Link href="/signup" className="inline-flex items-center justify-center rounded-xl bg-[#00C2A8] px-8 py-4 text-sm font-semibold text-[#0A0A0F] shadow-[0_0_24px_rgba(0,194,168,0.3)] transition hover:bg-[#00d4b8]">
                     Start free trial — no credit card needed
                   </Link>
-                  <Link
-                    href="/features"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-700"
-                  >
+                  <Link href="/features" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-[#F0F0F0] transition hover:bg-white/10">
                     See full features →
                   </Link>
                 </div>
-              </section>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-xl font-semibold tracking-tight text-zinc-900">Related links</h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                  <Link href="/client-onboarding-software" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    client onboarding software
+        {/* ── Related links ─────────────────────────────────────────────── */}
+        <section className="bg-[#111118]">
+          <PageContainer>
+            <div className="py-12">
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-[#9A9AAF]">Related</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                {[
+                  { href: "/client-onboarding-software", label: "Client onboarding software" },
+                  { href: "/client-onboarding-automation", label: "Onboarding automation" },
+                  { href: "/onboarding-for-agencies", label: "For agencies" },
+                  { href: "/honeybook-alternative", label: "HoneyBook alternative" },
+                  { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
+                ].map((link) => (
+                  <Link key={link.href} href={link.href} className="card-polish rounded-xl border border-white/[0.08] bg-[#0A0A0F] px-4 py-3 text-sm text-[#9A9AAF] transition hover:border-white/20 hover:text-[#F0F0F0]">
+                    {link.label}
                   </Link>
-                  <Link href="/client-onboarding-automation" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    client onboarding automation
-                  </Link>
-                  <Link href="/onboarding-for-agencies" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    onboarding software for agencies
-                  </Link>
-                  <Link href="/honeybook-alternative" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    HoneyBook alternative
-                  </Link>
-                  <Link href="/client-onboarding-checklist" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    client onboarding checklist
-                  </Link>
-                </div>
-              </section>
+                ))}
+              </div>
             </div>
           </PageContainer>
         </section>

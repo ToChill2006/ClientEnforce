@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { FadeUp } from "@/components/marketing/fade-up";
+import { FaqAccordion } from "@/components/marketing/faq-accordion";
+import { PricingToggle } from "@/components/marketing/pricing-toggle";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -17,259 +20,213 @@ export const metadata: Metadata = buildPageMetadata({
   type: "website",
 });
 
-type Plan = {
-  name: string;
-  price: string;
-  cadence: string;
-  tagline: string;
-  bestFor: string;
-  features: string[];
-  cta: { label: string; href: string };
-  highlighted?: boolean;
-  badge?: string;
-};
+const pricingFaqItems = [
+  {
+    question: "Is there a free trial for ClientEnforce?",
+    answer: "Yes. You can start a free trial of ClientEnforce without a credit card. Build your first onboarding template and send a client portal link on the same day.",
+  },
+  {
+    question: "Can I change my plan later?",
+    answer: "Yes. You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing period.",
+  },
+  {
+    question: "Do my clients need to pay or create an account?",
+    answer: "No. Your clients access their onboarding portal through a secure link — no login required, no account needed, no cost to them.",
+  },
+  {
+    question: "What happens to my data if I cancel?",
+    answer: "You can export all your onboarding data and audit trails before cancelling. Your data is yours.",
+  },
+  {
+    question: "Do you offer annual billing?",
+    answer: "Yes. Annual billing is available and saves you the equivalent of 2 months compared to monthly. Toggle to annual above to see the annual pricing.",
+  },
+] as const;
 
-const plans: Plan[] = [
-  {
-    name: "Solo",
-    price: "£0",
-    cadence: "/month",
-    tagline: "For testing your onboarding flow and first client rollouts.",
-    bestFor: "Best for solo operators validating one core onboarding workflow before scaling.",
-    features: [
-      "1 admin user",
-      "1 onboarding template",
-      "Client portal link per onboarding",
-      "Document uploads + signatures",
-      "Up to 5 active onboardings",
-    ],
-    cta: { label: "Start free trial", href: "/signup" },
-    badge: "Free",
-  },
-  {
-    name: "Team",
-    price: "£29",
-    cadence: "/month",
-    tagline: "For small teams running onboarding at pace.",
-    bestFor: "Best for teams that need reminder automation and stronger process consistency across active clients.",
-    highlighted: true,
-    badge: "Most popular",
-    features: [
-      "Up to 5 admin users",
-      "Up to 10 templates",
-      "Automated reminders (email)",
-      "Audit timeline + evidence export",
-      "Up to 50 active onboardings",
-    ],
-    cta: { label: "Start Team plan", href: "/signup" },
-  },
-  {
-    name: "Scale",
-    price: "£89",
-    cadence: "/month",
-    tagline: "For teams onboarding clients at volume with stricter controls.",
-    bestFor: "Best for agencies and service operations managing higher onboarding volume with multi-user governance needs.",
-    features: [
-      "Up to 15 admin users",
-      "Unlimited templates",
-      "Everything in Team",
-      "Advanced reporting level",
-      "Up to 200 active onboardings",
-    ],
-    cta: { label: "Start Scale plan", href: "/signup" },
-    badge: "Scale",
-  },
-];
+const comparisonFeatures = [
+  { name: "Admin users", solo: "1", team: "Up to 5", scale: "Up to 15" },
+  { name: "Onboarding templates", solo: "1", team: "Up to 10", scale: "Unlimited" },
+  { name: "Active onboardings", solo: "5", team: "50", scale: "200" },
+  { name: "Client portal (no login)", solo: true, team: true, scale: true },
+  { name: "Document uploads", solo: true, team: true, scale: true },
+  { name: "E-signatures", solo: true, team: true, scale: true },
+  { name: "Automated reminders", solo: false, team: true, scale: true },
+  { name: "Audit trail", solo: false, team: true, scale: true },
+  { name: "Evidence export (PDF)", solo: false, team: true, scale: true },
+  { name: "Team roles (RBAC)", solo: false, team: true, scale: true },
+  { name: "Advanced reporting", solo: false, team: "Limited", scale: "Full" },
+  { name: "Priority support", solo: false, team: true, scale: true },
+] as const;
 
 const pricingFaqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "Is there a free trial for ClientEnforce?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes. You can start a free trial of ClientEnforce without a credit card. Build your first onboarding template and send a client portal link on the same day.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Can I change my plan later?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes. You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing period.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Do my clients need to pay or create an account?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "No. Your clients access their onboarding portal through a secure link - no login required, no account needed, no cost to them.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What happens to my data if I cancel?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "You can export all your onboarding data and audit trails before cancelling. Your data is yours.",
-      },
-    },
-  ],
+  mainEntity: pricingFaqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
 };
 
-function PlanCard({ plan }: { plan: Plan }) {
+function CheckIcon() {
   return (
-    <div
-      className={[
-        "rounded-3xl border bg-white p-6 shadow-sm sm:p-8",
-        plan.highlighted ? "border-zinc-900" : "border-zinc-200",
-      ].join(" ")}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-zinc-900">{plan.name}</h2>
-        {plan.badge ? (
-          <span
-            className={[
-              "rounded-full px-3 py-1 text-xs font-medium",
-              plan.highlighted
-                ? "bg-zinc-900 text-white"
-                : "border border-zinc-200 bg-zinc-50 text-zinc-700",
-            ].join(" ")}
-          >
-            {plan.badge}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900">
-        {plan.price}
-        <span className="ml-1 text-base font-medium text-zinc-600">{plan.cadence}</span>
-      </div>
-      <p className="mt-2 text-sm leading-6 text-zinc-700">{plan.tagline}</p>
-      <p className="mt-2 text-sm leading-6 text-zinc-700">{plan.bestFor}</p>
-
-      <ul className="mt-6 space-y-3 text-sm text-zinc-800">
-        {plan.features.map((feature) => (
-          <li key={feature} className="flex items-start gap-2.5">
-            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-zinc-900" />
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
-
-      <Link
-        href={plan.cta.href}
-        className={[
-          "mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-medium shadow-sm transition",
-          plan.highlighted
-            ? "bg-zinc-900 text-white hover:bg-zinc-800"
-            : "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50",
-        ].join(" ")}
-      >
-        {plan.cta.label}
-      </Link>
-    </div>
+    <svg className="mx-auto h-4 w-4 text-[#00C2A8]" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
+}
+
+function CrossIcon() {
+  return (
+    <svg className="mx-auto h-4 w-4 text-white/20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CellValue({ val }: { val: boolean | string }) {
+  if (val === true) return <CheckIcon />;
+  if (val === false) return <CrossIcon />;
+  return <span className="text-xs text-[#9A9AAF]">{val}</span>;
 }
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-[#0A0A0F] text-[#F0F0F0] font-sans">
       <PublicHeader />
       <main>
-        <section className="border-b border-zinc-200 bg-white">
+        {/* ── Hero ──────────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
           <PageContainer>
-            <div className="py-12 sm:py-16">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Pricing</p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
-                Simple pricing for client onboarding software
-              </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
-                Start free, then upgrade as your onboarding volume grows. Every plan includes the core workflow tools you need to standardize intake and reduce kickoff delays.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-                >
-                  Start free trial
-                </Link>
-                <Link
-                  href="/features"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                >
-                  Explore features
-                </Link>
+            <div className="py-20 sm:py-24">
+              <FadeUp>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#00C2A8]">Pricing</p>
+                <h1 className="mt-4 font-serif text-5xl tracking-tight text-[#F0F0F0] sm:text-[64px]">
+                  Simple pricing for client onboarding software
+                </h1>
+                <p className="mt-5 max-w-2xl text-lg leading-7 text-[#9A9AAF]">
+                  Start free, then upgrade as your onboarding volume grows. Every plan includes the core workflow tools you need.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link href="/signup" className="inline-flex items-center justify-center rounded-xl bg-[#00C2A8] px-6 py-3.5 text-sm font-semibold text-[#0A0A0F] shadow-[0_0_24px_rgba(0,194,168,0.3)] transition hover:bg-[#00d4b8]">
+                    Start free trial
+                  </Link>
+                  <Link href="/features" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-semibold text-[#F0F0F0] transition hover:bg-white/10">
+                    Explore features
+                  </Link>
+                </div>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
+
+        {/* ── Plans with toggle ─────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
+          <PageContainer>
+            <div className="py-16 sm:py-20">
+              <PricingToggle />
+            </div>
+          </PageContainer>
+        </section>
+
+        {/* ── Which plan ────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">Which plan should you pick?</h2>
+              </FadeUp>
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {[
+                  {
+                    name: "Solo",
+                    desc: "Best when you are validating one onboarding workflow and volume is still low.",
+                  },
+                  {
+                    name: "Team",
+                    desc: "Best for agencies and service teams that need automated reminders and repeatable execution.",
+                  },
+                  {
+                    name: "Scale",
+                    desc: "Best when you manage higher onboarding volume and need stronger governance across multiple team members.",
+                  },
+                ].map((p, i) => (
+                  <FadeUp key={p.name} delay={i * 80}>
+                    <div className="card-polish rounded-2xl border border-white/[0.08] bg-[#111118] p-6">
+                      <h3 className="font-serif text-xl text-[#F0F0F0]">{p.name}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[#9A9AAF]">{p.desc}</p>
+                    </div>
+                  </FadeUp>
+                ))}
               </div>
             </div>
           </PageContainer>
         </section>
 
-        <section>
+        {/* ── Comparison table ──────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
           <PageContainer>
-            <div className="space-y-6 py-10 sm:py-12">
-              <div className="grid gap-5 lg:grid-cols-3">
-                {plans.map((plan) => (
-                  <PlanCard key={plan.name} plan={plan} />
-                ))}
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">Full feature comparison</h2>
+              </FadeUp>
+              <div className="mt-8 overflow-x-auto rounded-2xl border border-white/[0.08]">
+                <table className="w-full min-w-[640px] text-sm">
+                  <thead>
+                    <tr className="bg-[#00C2A8]/10">
+                      <th className="px-5 py-4 text-left text-sm font-semibold text-[#F0F0F0]">Feature</th>
+                      <th className="px-5 py-4 text-center text-sm font-semibold text-[#9A9AAF]">Solo</th>
+                      <th className="px-5 py-4 text-center text-sm font-semibold text-[#00C2A8]">Team</th>
+                      <th className="px-5 py-4 text-center text-sm font-semibold text-[#9A9AAF]">Scale</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comparisonFeatures.map((row, i) => (
+                      <tr key={row.name} className={i % 2 === 0 ? "bg-[#0A0A0F]" : "bg-[#111118]"}>
+                        <td className="px-5 py-3.5 text-sm text-[#9A9AAF]">{row.name}</td>
+                        <td className="px-5 py-3.5 text-center">
+                          <CellValue val={row.solo} />
+                        </td>
+                        <td className="px-5 py-3.5 text-center">
+                          <CellValue val={row.team} />
+                        </td>
+                        <td className="px-5 py-3.5 text-center">
+                          <CellValue val={row.scale} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Which plan should you pick?</h2>
-                <div className="mt-4 grid gap-4 md:grid-cols-3">
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Solo</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Best when you are validating one onboarding workflow and onboarding volume is still low.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Team</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Best for agencies and service teams that need automated reminders and repeatable onboarding execution.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Scale</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Best when you manage higher onboarding volume and need stronger governance across multiple team members.
-                    </p>
-                  </article>
-                </div>
-              </section>
+        {/* ── FAQ ───────────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">Pricing FAQ</h2>
+              </FadeUp>
+              <div className="mt-8 max-w-2xl">
+                <FaqAccordion items={pricingFaqItems} />
+              </div>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Pricing FAQ</h2>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Is there a free trial for ClientEnforce?</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Yes. You can start a free trial without a credit card and send your first onboarding portal the same day.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Can I change my plan later?</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      Yes. Upgrade or downgrade at any time. Changes apply from your next billing cycle.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">Do my clients need to create an account?</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      No. Clients use a secure portal link with no account setup required.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">What happens if I cancel?</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
-                      You can export your onboarding records and audit trails before cancellation.
-                    </p>
-                  </article>
-                </div>
-              </section>
+        {/* ── CTA band ──────────────────────────────────────────────────── */}
+        <section className="bg-[#111118]">
+          <PageContainer>
+            <div className="py-20 text-center">
+              <FadeUp>
+                <h2 className="font-serif text-4xl text-[#F0F0F0] sm:text-[48px]">Your next client deserves a better start.</h2>
+                <p className="mx-auto mt-4 max-w-xl text-base text-[#9A9AAF]">Set up your first onboarding template in under 20 minutes.</p>
+                <Link href="/signup" className="mt-8 inline-flex items-center justify-center rounded-xl bg-[#00C2A8] px-8 py-4 text-sm font-semibold text-[#0A0A0F] shadow-[0_0_24px_rgba(0,194,168,0.3)] transition hover:bg-[#00d4b8] hover:shadow-[0_0_40px_rgba(0,194,168,0.45)]">
+                  Start free trial — no credit card needed
+                </Link>
+              </FadeUp>
             </div>
           </PageContainer>
         </section>

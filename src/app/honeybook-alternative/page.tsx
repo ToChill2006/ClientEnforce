@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FileText, Mail, BarChart3 } from "lucide-react";
 
 import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -36,43 +38,38 @@ const comparisonRows = [
 
 export default function HoneyBookAlternativePage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-[#0A0A0F] text-[#F0F0F0] font-sans">
       <PublicHeader />
 
       <main>
-        <section className="border-b border-zinc-200 bg-white">
+        {/* ── Hero ──────────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
           <PageContainer>
-            <div className="py-12 sm:py-16">
-              <div className="text-xs text-zinc-600">
-                <Link href="/" className="hover:underline hover:underline-offset-4">Home</Link>
-                <span className="mx-1.5">&gt;</span>
+            <div className="py-20 sm:py-24">
+              <div className="text-xs text-[#9A9AAF]">
+                <Link href="/" className="transition hover:text-[#F0F0F0]">Home</Link>
+                <span className="mx-1.5 text-white/20">/</span>
                 <span>Alternatives</span>
-                <span className="mx-1.5">&gt;</span>
-                <span className="font-medium text-zinc-800">HoneyBook Alternative</span>
+                <span className="mx-1.5 text-white/20">/</span>
+                <span className="text-[#F0F0F0]">HoneyBook Alternative</span>
               </div>
 
-              <div className="mt-4 inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700">
+              <div className="mt-6 inline-flex items-center rounded-full border border-[#00C2A8]/20 bg-[#00C2A8]/8 px-3 py-1.5 text-xs font-medium text-[#00C2A8]">
                 Honest comparison
               </div>
 
-              <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+              <h1 className="mt-4 max-w-4xl font-serif text-5xl tracking-tight text-[#F0F0F0] sm:text-[64px]">
                 The HoneyBook alternative for teams that have outgrown freelancer tools
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+              <p className="mt-5 max-w-3xl text-lg leading-7 text-[#9A9AAF]">
                 HoneyBook works beautifully for independent creatives managing their whole business in one place. But if you run a team, onboard multiple clients a month, and need structured intake with an audit trail — you need something built for that job specifically.
               </p>
 
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-                >
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/signup" className="inline-flex items-center justify-center rounded-xl bg-[#00C2A8] px-6 py-3.5 text-sm font-semibold text-[#0A0A0F] shadow-[0_0_24px_rgba(0,194,168,0.3)] transition hover:bg-[#00d4b8]">
                   Start free trial
                 </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
-                >
+                <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-semibold text-[#F0F0F0] transition hover:bg-white/10">
                   See how it works
                 </Link>
               </div>
@@ -80,175 +77,198 @@ export default function HoneyBookAlternativePage() {
           </PageContainer>
         </section>
 
-        <section>
+        {/* ── Context ───────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
           <PageContainer>
-            <div className="space-y-6 py-10 sm:py-12">
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">HoneyBook is excellent — for independent business owners</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  HoneyBook earned its loyal following by solving a real problem for solo creative professionals. Photographers, event planners, coaches, designers — people who need to manage enquiries, send proposals, collect contracts, take payments, and keep client comms organised, all without a dedicated ops person.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  For that user, HoneyBook is genuinely good. It has a clean interface, solid automation, and a growing AI feature set. It is one of the best tools in its category.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  The challenge comes when a team tries to use it as a structured onboarding system. HoneyBook's "clientflow" model is built around the solo operator managing one client relationship at a time. It was not designed for an operations manager tracking eight active onboardings simultaneously. It does not enforce required completion — a client can technically move forward without submitting everything. And there is no compliance-grade audit trail of what was submitted, when, and by whom.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  For agencies, consultancies, accounting firms, and ops-led service teams, those gaps matter.
-                </p>
-              </section>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">HoneyBook is excellent — for independent business owners</h2>
+                <div className="mt-5 space-y-4 text-base leading-7 text-[#9A9AAF]">
+                  <p>HoneyBook earned its loyal following by solving a real problem for solo creative professionals. Photographers, event planners, coaches, designers — people who need to manage enquiries, send proposals, collect contracts, take payments, and keep client comms organised, all without a dedicated ops person.</p>
+                  <p>For that user, HoneyBook is genuinely good. It has a clean interface, solid automation, and a growing AI feature set. It is one of the best tools in its category.</p>
+                  <p>The challenge comes when a team tries to use it as a structured onboarding system. HoneyBook's clientflow model is built around the solo operator managing one client relationship at a time. It was not designed for an operations manager tracking eight active onboardings simultaneously. It does not enforce required completion. And there is no compliance-grade audit trail of what was submitted, when, and by whom.</p>
+                  <p className="text-[#F0F0F0] font-medium">For agencies, consultancies, accounting firms, and ops-led service teams, those gaps matter.</p>
+                </div>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Clientflow tool vs dedicated onboarding software — a practical comparison</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  HoneyBook positions itself as a clientflow platform — managing the full arc of a client relationship from first enquiry to final invoice. It does this well for its target user.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  ClientEnforce makes no attempt to manage your full client lifecycle. It handles the onboarding phase — the structured, trackable, enforceable process that runs from a signed agreement to a kickoff-ready client. Every feature exists to serve that one outcome.
-                </p>
-
-                <div className="mt-6 overflow-x-auto rounded-2xl border border-zinc-200">
-                  <table className="w-full min-w-[860px] bg-white text-left text-sm text-zinc-700">
+        {/* ── Comparison table ──────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">Clientflow tool vs dedicated onboarding software</h2>
+                <p className="mt-3 text-base text-[#9A9AAF]">A practical comparison of where each tool is designed to operate.</p>
+              </FadeUp>
+              <FadeUp delay={100}>
+                <div className="mt-8 overflow-x-auto rounded-2xl border border-white/[0.08]">
+                  <table className="w-full min-w-[700px] text-sm">
                     <thead>
-                      <tr className="bg-zinc-50 text-zinc-900">
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold"></th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">HoneyBook</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">ClientEnforce</th>
+                      <tr className="bg-[#00C2A8]/10">
+                        <th className="px-5 py-4 text-left text-sm font-semibold text-[#F0F0F0]" />
+                        <th className="px-5 py-4 text-left text-sm font-semibold text-[#9A9AAF]">HoneyBook</th>
+                        <th className="px-5 py-4 text-left text-sm font-semibold text-[#00C2A8]">ClientEnforce</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {comparisonRows.map((row) => (
-                        <tr key={row[0]}>
-                          <td className="border-b border-zinc-100 px-4 py-3 font-semibold text-zinc-900">{row[0]}</td>
-                          <td className="border-b border-zinc-100 px-4 py-3">{row[1]}</td>
-                          <td className="border-b border-zinc-100 px-4 py-3">{row[2]}</td>
+                      {comparisonRows.map((row, i) => (
+                        <tr key={row[0]} className={i % 2 === 0 ? "bg-[#111118]" : "bg-[#0A0A0F]"}>
+                          <td className="px-5 py-3.5 text-sm font-medium text-[#F0F0F0]">{row[0]}</td>
+                          <td className="px-5 py-3.5 text-sm text-[#9A9AAF]">{row[1]}</td>
+                          <td className="px-5 py-3.5 text-sm text-[#9A9AAF]">{row[2]}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </section>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Which tool is actually right for your situation?</h2>
+        {/* ── Choose X if ───────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">Which tool is right for your situation?</h2>
+              </FadeUp>
+              <div className="mt-8 grid gap-5 md:grid-cols-2">
+                <FadeUp>
+                  <div className="h-full rounded-2xl border border-white/[0.08] border-l-2 border-l-[#9A9AAF]/40 bg-[#0A0A0F] p-6">
+                    <h3 className="font-serif text-xl text-[#F0F0F0]">Choose HoneyBook if:</h3>
+                    <ul className="mt-4 space-y-3">
+                      {[
+                        "You are an independent business owner or solo creative professional",
+                        "You need to manage leads, proposals, contracts, payments, and client comms in one place",
+                        "You are in photography, event planning, coaching, or a similar creative service",
+                        "Your client volume is low enough to manage individually",
+                        "You want AI-assisted lead capture and follow-up",
+                      ].map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm text-[#9A9AAF]">
+                          <span className="mt-0.5 text-white/30">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </FadeUp>
+                <FadeUp delay={80}>
+                  <div className="h-full rounded-2xl border border-white/[0.08] border-l-2 border-l-[#00C2A8] bg-[#0A0A0F] p-6">
+                    <h3 className="font-serif text-xl text-[#00C2A8]">Choose ClientEnforce if:</h3>
+                    <ul className="mt-4 space-y-3">
+                      {[
+                        "You run a team — agency, consultancy, accounting firm, or ops-led service business",
+                        "You onboard three or more clients per month and the process needs to be consistent every time",
+                        "Clients regularly start projects before intake is complete and it causes problems",
+                        "You need a real audit trail — not an activity log — for compliance or accountability",
+                        "Your account managers are still doing manual follow-up despite having software",
+                        "You want to separate your onboarding process from your CRM and manage it properly",
+                      ].map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm text-[#9A9AAF]">
+                          <span className="mt-0.5 text-[#00C2A8]">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </FadeUp>
+              </div>
+            </div>
+          </PageContainer>
+        </section>
 
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">Choose HoneyBook if:</h3>
-                <ul className="mt-3 space-y-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  <li>• You are an independent business owner or solo creative professional</li>
-                  <li>• You need to manage leads, proposals, contracts, payments, and client comms in one place</li>
-                  <li>• You are in photography, event planning, coaching, or a similar creative service</li>
-                  <li>• Your client volume is low enough to manage individually</li>
-                  <li>• You want AI-assisted lead capture and follow-up</li>
-                </ul>
+        {/* ── How it works ──────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">What structured onboarding looks like in ClientEnforce</h2>
+              </FadeUp>
+              <div className="relative mt-10">
+                <div className="absolute top-8 left-[calc(100%/6)] right-[calc(100%/6)] hidden h-px border-t border-dashed border-white/[0.10] lg:block" />
+                <div className="grid gap-6 lg:grid-cols-3">
+                  {[
+                    { step: "01", icon: <FileText className="h-5 w-5" />, title: "One template per service line", body: "Build a reusable onboarding template that defines exactly what every new client needs to complete — documents, signatures, information, approvals. Build it once, use it every time." },
+                    { step: "02", icon: <Mail className="h-5 w-5" />, title: "One portal link per client", body: "When a client signs, send them a single portal link. They see their onboarding steps clearly. No login required. No confusion. No 'where do I send this?'" },
+                    { step: "03", icon: <BarChart3 className="h-5 w-5" />, title: "Automated follow-up until it is done", body: "Clients receive automated reminders when tasks are overdue. Your dashboard shows completion status across every active onboarding at a glance." },
+                  ].map((step, i) => (
+                    <FadeUp key={step.step} delay={i * 100}>
+                      <article className="card-polish rounded-2xl border border-white/[0.08] bg-[#111118] p-6">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00C2A8]/10 text-[#00C2A8]">{step.icon}</div>
+                          <span className="font-serif text-4xl text-white/10">{step.step}</span>
+                        </div>
+                        <h3 className="mt-4 text-base font-semibold text-[#F0F0F0]">{step.title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-[#9A9AAF]">{step.body}</p>
+                      </article>
+                    </FadeUp>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </PageContainer>
+        </section>
 
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">Choose ClientEnforce if:</h3>
-                <ul className="mt-3 space-y-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  <li>• You run a team — agency, consultancy, accounting firm, or ops-led service business</li>
-                  <li>• You onboard three or more clients per month and the process needs to be consistent every time</li>
-                  <li>• Clients regularly start projects before intake is complete and it causes problems</li>
-                  <li>• You need a real audit trail — not an activity log — for compliance or accountability purposes</li>
-                  <li>• Your account managers or ops team are still doing manual follow-up despite having software</li>
-                  <li>• You want to separate your onboarding process from your CRM and manage it properly</li>
-                </ul>
-              </section>
+        {/* ── Compliance note ───────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#111118]">
+          <PageContainer>
+            <div className="py-16">
+              <FadeUp>
+                <h2 className="font-serif text-3xl text-[#F0F0F0] sm:text-[40px]">A note for accountants, legal firms, and compliance-sensitive businesses</h2>
+                <div className="mt-5 space-y-4 text-base leading-7 text-[#9A9AAF]">
+                  <p>If you work in a regulated environment — accountancy, legal, financial services, HR consultancy — client onboarding is not just an operational task. It is a compliance requirement.</p>
+                  <p>AML checks, KYC documentation, engagement letters, proof of identity — these need to be collected correctly, stored securely, and traceable if a regulator or internal audit asks for them. An email thread and an activity log are not sufficient for that purpose.</p>
+                  <p>ClientEnforce maintains a full timestamped audit trail of every step in the onboarding process. Every document received, every signature collected, every required step completed — with a date, time, and clear record of who submitted what. That record is exportable as a PDF evidence pack at any point.</p>
+                  <p className="text-[#F0F0F0] font-medium">This is not a feature HoneyBook was built to provide. For teams with compliance obligations, it is not optional.</p>
+                </div>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">What structured onboarding actually looks like in ClientEnforce</h2>
-
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">One template per service line</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Build a reusable onboarding template that defines exactly what every new client needs to complete — documents, signatures, information, approvals — before your team starts work. Build it once, use it every time.
-                </p>
-
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">One portal link per client</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  When a client signs, send them a single portal link. They see their onboarding steps clearly. No login required. No confusion. No "where do I send this?"
-                </p>
-
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">Automated follow-up until it is done</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Clients receive automated reminders when tasks are overdue. Your team's dashboard shows completion status across every active onboarding at a glance. Work starts when intake is actually finished — not assumed to be.
-                </p>
-
-                <h3 className="mt-6 text-lg font-semibold text-zinc-900">A full audit trail at the end</h3>
-                <p className="mt-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  Every document submitted, every step completed, every signature collected — timestamped and exportable. When a question comes up six months later about what was agreed at the start of a project, you have the evidence.
-                </p>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">If HoneyBook is not solving your onboarding problem, this will sound familiar</h2>
-                <ul className="mt-4 space-y-2 text-sm leading-7 text-zinc-700 sm:text-base">
-                  <li>• Clients complete some of their onboarding steps but not all, and projects start with gaps</li>
-                  <li>• Your team is still sending manual follow-up emails because the automations are not quite enforcing completion</li>
-                  <li>• You cannot easily see which of your ten active clients are intake-complete and which are still missing something</li>
-                  <li>• You work in a compliance-sensitive environment — accountancy, legal, financial services — and you need a proper record of what was collected and when</li>
-                  <li>• Your onboarding relies on one person's knowledge of the process rather than a documented, enforced system</li>
-                  <li>• New team members struggle to run onboarding consistently because the process is not codified anywhere</li>
-                </ul>
-                <p className="mt-4 text-sm leading-7 text-zinc-700 sm:text-base">
-                  These are not problems HoneyBook was designed to solve. They are exactly the problems ClientEnforce was built for.
-                </p>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">A note for accountants, legal firms, and compliance-sensitive businesses</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  If you work in a regulated environment — accountancy, legal, financial services, HR consultancy — client onboarding is not just an operational task. It is a compliance requirement.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  AML checks, KYC documentation, engagement letters, proof of identity — these need to be collected correctly, stored securely, and traceable if a regulator or internal audit asks for them. An email thread and an activity log are not sufficient for that purpose.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  ClientEnforce maintains a full timestamped audit trail of every step in the onboarding process. Every document received, every signature collected, every required step completed — with a date, time, and clear record of who submitted what. That record is exportable as a PDF evidence pack at any point.
-                </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
-                  This is not a feature HoneyBook was built to provide. For teams with compliance obligations, it is not optional.
-                </p>
-              </section>
-
-              <section className="rounded-3xl border border-zinc-200 bg-zinc-900 p-6 text-white shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight">Built for the teams HoneyBook was not designed for</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-200 sm:text-base">
+        {/* ── CTA band ──────────────────────────────────────────────────── */}
+        <section className="border-b border-white/[0.06] bg-[#0A0A0F]">
+          <PageContainer>
+            <div className="py-20 text-center">
+              <FadeUp>
+                <h2 className="font-serif text-4xl text-[#F0F0F0] sm:text-[48px]">Built for the teams HoneyBook was not designed for</h2>
+                <p className="mx-auto mt-4 max-w-2xl text-base text-[#9A9AAF]">
                   If you have outgrown freelancer tools and need client onboarding that enforces completion, scales across a team, and leaves a proper audit trail — try ClientEnforce.
                 </p>
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <Link
-                    href="/signup"
-                    className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
-                  >
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <Link href="/signup" className="inline-flex items-center justify-center rounded-xl bg-[#00C2A8] px-8 py-4 text-sm font-semibold text-[#0A0A0F] shadow-[0_0_24px_rgba(0,194,168,0.3)] transition hover:bg-[#00d4b8]">
                     Start free trial — no credit card needed
                   </Link>
-                  <Link
-                    href="/features"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-700"
-                  >
+                  <Link href="/features" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-[#F0F0F0] transition hover:bg-white/10">
                     See full features →
                   </Link>
                 </div>
-              </section>
+              </FadeUp>
+            </div>
+          </PageContainer>
+        </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-xl font-semibold tracking-tight text-zinc-900">Related links</h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                  <Link href="/client-onboarding-software" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    client onboarding software
+        {/* ── Related links ─────────────────────────────────────────────── */}
+        <section className="bg-[#111118]">
+          <PageContainer>
+            <div className="py-12">
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-[#9A9AAF]">Related</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                {[
+                  { href: "/client-onboarding-software", label: "Client onboarding software" },
+                  { href: "/client-onboarding-automation", label: "Onboarding automation" },
+                  { href: "/onboarding-for-accountants", label: "For accountants" },
+                  { href: "/dubsado-alternative", label: "Dubsado alternative" },
+                  { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
+                ].map((link) => (
+                  <Link key={link.href} href={link.href} className="card-polish rounded-xl border border-white/[0.08] bg-[#0A0A0F] px-4 py-3 text-sm text-[#9A9AAF] transition hover:border-white/20 hover:text-[#F0F0F0]">
+                    {link.label}
                   </Link>
-                  <Link href="/client-onboarding-automation" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    client onboarding automation
-                  </Link>
-                  <Link href="/onboarding-for-accountants" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    onboarding software for accountants
-                  </Link>
-                  <Link href="/dubsado-alternative" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    Dubsado alternative
-                  </Link>
-                  <Link href="/client-onboarding-checklist" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 transition hover:bg-white">
-                    client onboarding checklist
-                  </Link>
-                </div>
-              </section>
+                ))}
+              </div>
             </div>
           </PageContainer>
         </section>
