@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { X, Menu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const solutionsByUseCase = [
   { href: "/client-onboarding-software", label: "Client onboarding software" },
@@ -19,94 +21,124 @@ const solutionsWhoFor = [
 const solutionsCompare = [
   { href: "/dubsado-alternative", label: "vs Dubsado" },
   { href: "/honeybook-alternative", label: "vs HoneyBook" },
+  { href: "/client-onboarding-software#why-software", label: "vs manual process" },
+] as const;
+
+const sections = [
+  { heading: "By use case", links: solutionsByUseCase },
+  { heading: "Who it\u2019s for", links: solutionsWhoFor },
+  { heading: "Compare", links: solutionsCompare },
+  {
+    heading: "Navigate",
+    links: [
+      { href: "/features", label: "Features" },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/blog", label: "Blog" },
+      { href: "/contact", label: "Contact" },
+    ] as const,
+  },
 ] as const;
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
-  return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-2 text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] md:hidden"
-        aria-label="Open menu"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
+  const drawer = (
+    <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[999] flex flex-col bg-white">
-          <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-3.5">
-            <span className="text-sm font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+        <motion.div
+          key="mobile-drawer"
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -16 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-0 z-[9999] flex flex-col bg-white"
+        >
+          {/* Header row */}
+          <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border)] px-5 py-3.5">
+            <span
+              className="text-sm font-bold text-[var(--color-text-primary)]"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
               ClientEnforce
             </span>
             <button
               onClick={() => setOpen(false)}
-              className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] p-2 text-[var(--color-text-secondary)]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)]"
               aria-label="Close menu"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-5">
-            {[
-              { heading: "By use case", links: solutionsByUseCase },
-              { heading: "Who it\u2019s for", links: solutionsWhoFor },
-              { heading: "Compare", links: solutionsCompare },
-              {
-                heading: "Navigate",
-                links: [
-                  { href: "/features", label: "Features" },
-                  { href: "/pricing", label: "Pricing" },
-                  { href: "/blog", label: "Blog" },
-                  { href: "/contact", label: "Contact" },
-                ] as const,
-              },
-            ].map((section) => (
-              <div key={section.heading}>
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
-                  {section.heading}
-                </p>
-                <div className="space-y-0.5">
-                  {section.links.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="block rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+          {/* Nav links */}
+          <nav className="flex-1 overflow-y-auto px-4 py-5">
+            <div className="space-y-6">
+              {sections.map((section) => (
+                <div key={section.heading}>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+                    {section.heading}
+                  </p>
+                  <div className="space-y-0.5">
+                    {section.links.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="flex min-h-[48px] items-center rounded-[var(--radius-md)] px-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </nav>
 
-          <div className="border-t border-[var(--color-border)] px-4 py-4 space-y-2">
+          {/* CTA buttons */}
+          <div className="shrink-0 space-y-2 border-t border-[var(--color-border)] px-4 py-4">
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="block rounded-full border border-[var(--color-border)] px-4 py-3 text-center text-sm font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)]"
+              className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-[var(--color-border)] px-4 text-sm font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)]"
             >
               Login
             </Link>
             <Link
               href="/signup"
               onClick={() => setOpen(false)}
-              className="block rounded-full bg-[var(--color-accent)] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
+              className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
             >
               Start free trial
             </Link>
           </div>
-        </div>
+        </motion.div>
       )}
+    </AnimatePresence>
+  );
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] md:hidden"
+        aria-label="Open menu"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+      {mounted && createPortal(drawer, document.body)}
     </>
   );
 }

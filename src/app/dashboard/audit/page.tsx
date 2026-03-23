@@ -73,7 +73,7 @@ export default function AuditPage() {
   React.useEffect(() => { load(); }, []);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 px-4 sm:px-6">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Audit</h1>
@@ -87,7 +87,62 @@ export default function AuditPage() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+      {/* Mobile card list — visible below sm */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {err ? (
+          <div className="p-4">
+            <RejectionBanner
+              kind={/plan|upgrade/i.test(err) ? "plan" : /permission|access/i.test(err) ? "permission" : "error"}
+              message={err}
+            />
+          </div>
+        ) : null}
+
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+              <Skeleton className="h-4 w-3/4 mb-2" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))
+        ) : err ? (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+            <div className="text-sm text-[var(--color-text-muted)]">Audit events are unavailable for this workspace.</div>
+          </div>
+        ) : events.length === 0 ? (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+            <div className="text-sm font-medium text-[var(--color-text-primary)]">No activity yet</div>
+            <div className="mt-1 text-sm text-[var(--color-text-muted)]">Once you create onboardings, upload files, send links, etc. it'll show up here.</div>
+          </div>
+        ) : (
+          events.map((e) => (
+            <div key={e.id} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-sm font-medium text-[var(--color-text-primary)]">{labelAction(e.action)}</div>
+                <div className="shrink-0 text-xs tabular-nums text-[var(--color-text-muted)]">{formatWhen(e.created_at)}</div>
+              </div>
+              <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                <span>{e.actor || e.actor_email || "—"}</span>
+                {e.actor_role ? <span className="ml-2 text-xs text-[var(--color-text-muted)]">{e.actor_role}</span> : null}
+              </div>
+              {(e.entity_type || e.entity_id) ? (
+                <div className="mt-1 text-xs text-[var(--color-text-muted)]">
+                  {e.entity_type || ""}
+                  {e.entity_id ? <span className="ml-1 font-mono">{e.entity_id}</span> : null}
+                </div>
+              ) : null}
+              {e.meta ? (
+                <pre className="mt-2 whitespace-pre-wrap break-words rounded-[var(--radius-sm)] bg-[var(--color-bg-subtle)] p-2 text-xs text-[var(--color-text-muted)]">
+                  {JSON.stringify(e.meta, null, 2)}
+                </pre>
+              ) : null}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table — hidden below sm */}
+      <div className="hidden sm:block overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
         {err ? (
           <div className="p-4">
             <RejectionBanner

@@ -362,7 +362,7 @@ export default function TeamPage() {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
         <div>
           <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Team</h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
@@ -371,11 +371,11 @@ export default function TeamPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={loadAll}>
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={loadAll}>
             Refresh
           </Button>
           <Link
-            className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
+            className="w-full sm:w-auto rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
             href="/dashboard/settings"
           >
             Settings
@@ -424,7 +424,40 @@ export default function TeamPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile card list — visible below sm */}
+          <div className="sm:hidden flex flex-col divide-y divide-[var(--color-border)]">
+            {loading ? (
+              <div className="py-3 text-sm text-[var(--color-text-secondary)]">Loading…</div>
+            ) : filteredMembers.length === 0 ? (
+              <div className="py-3 text-sm text-[var(--color-text-secondary)]">No members found.</div>
+            ) : (
+              filteredMembers.map((m) => {
+                const initials = (m.full_name ?? m.email ?? "?")
+                  .split(" ")
+                  .map((w) => w[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase();
+                return (
+                  <div key={m.user_id} className="flex items-center gap-3 py-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-subtle)] text-sm font-semibold text-[var(--color-text-primary)]">
+                      {initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm text-[var(--color-text-primary)]">{m.full_name ?? "—"}</span>
+                        <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">{m.role}</span>
+                      </div>
+                      <div className="mt-0.5 text-xs text-[var(--color-text-secondary)] truncate">{m.email ?? "—"}</div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop table — hidden below sm */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead className="border-b border-[var(--color-border)] text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>
@@ -554,7 +587,70 @@ export default function TeamPage() {
             </div>
           </div>
 
-          <div className="mt-3 overflow-x-auto">
+          {/* Mobile task cards — visible below sm */}
+          <div className="mt-3 sm:hidden flex flex-col gap-3">
+            {loading ? (
+              <div className="text-sm text-[var(--color-text-secondary)]">Loading…</div>
+            ) : filteredTasks.length === 0 ? (
+              <div className="text-sm text-[var(--color-text-secondary)]">No tasks yet.</div>
+            ) : (
+              filteredTasks.map((t) => {
+                const assignee = membersById.get(t.assigned_to);
+                const assigneeLabel = assignee ? (assignee.full_name ?? assignee.email ?? "User") : t.assigned_to;
+                const canUpdate = canUpdateTask(t);
+                const isDeleting = busyDeleteId === t.id;
+                const statusBusy = busyStatusById[t.id];
+                const rowBusy = Boolean(statusBusy) || isDeleting;
+                return (
+                  <div key={t.id} className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="font-medium text-sm text-[var(--color-text-primary)]">{t.title}</div>
+                      <span className={pill(t.status)}>{t.status.replace("_", " ")}</span>
+                    </div>
+                    {t.description ? <div className="text-xs text-[var(--color-text-secondary)]">{t.description}</div> : null}
+                    <div className="text-xs text-[var(--color-text-secondary)]">Assignee: {assigneeLabel}</div>
+                    <div className="text-xs text-[var(--color-text-secondary)]">Due: {fmtDate(t.due_at)}</div>
+                    <div className="text-xs text-[var(--color-text-secondary)]">Updated: {fmtDate(t.updated_at)}</div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <button
+                        className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                        onClick={() => setTaskStatus(t.id, "open")}
+                        disabled={rowBusy || !canUpdate || t.status === "open"}
+                      >
+                        {statusBusy === "open" ? "Saving..." : "Open"}
+                      </button>
+                      <button
+                        className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                        onClick={() => setTaskStatus(t.id, "in_progress")}
+                        disabled={rowBusy || !canUpdate || t.status === "in_progress"}
+                      >
+                        {statusBusy === "in_progress" ? "Saving..." : "In progress"}
+                      </button>
+                      <button
+                        className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                        onClick={() => setTaskStatus(t.id, "done")}
+                        disabled={rowBusy || !canUpdate || t.status === "done"}
+                      >
+                        {statusBusy === "done" ? "Saving..." : "Done"}
+                      </button>
+                      {canDelete ? (
+                        <button
+                          className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                          onClick={() => deleteTask(t.id)}
+                          disabled={rowBusy}
+                        >
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop table — hidden below sm */}
+          <div className="mt-3 overflow-x-auto hidden sm:block">
             <table className="w-full min-w-[900px] text-sm">
               <thead className="border-b border-[var(--color-border)] text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>

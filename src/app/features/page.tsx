@@ -323,17 +323,17 @@ export default function FeaturesPage() {
         <section className="border-b border-[var(--color-border)] bg-white py-24">
           <PageContainer>
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Features</p>
-            <h1 className="mt-4 max-w-4xl text-5xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[56px]" style={{ fontFamily: "var(--font-display)" }}>
+            <h1 className="mt-4 max-w-4xl text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl lg:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
               Client onboarding features built for execution
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-7 text-[var(--color-text-secondary)]">
               Every feature in ClientEnforce supports one goal: getting clients from signed agreement to kickoff-ready without inbox chaos.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
                 Start free trial
               </Link>
-              <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]">
+              <Link href="/pricing" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
                 View pricing
               </Link>
             </div>
@@ -348,7 +348,7 @@ export default function FeaturesPage() {
                 Feature highlights
               </h2>
             </FadeUp>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((feature, i) => (
                 <FadeUp key={feature.name} delay={i * 50}>
                   <div className="card-lift rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-sm)]">

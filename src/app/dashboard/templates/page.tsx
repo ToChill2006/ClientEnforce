@@ -387,7 +387,7 @@ export default function TemplatesPage() {
             <Button
               onClick={create}
               disabled={creating}
-              className="rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+              className="w-full sm:w-auto rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
             >
               {creating ? "Creating..." : "Create"}
             </Button>
@@ -438,7 +438,7 @@ export default function TemplatesPage() {
             <CardTitle style={{ fontFamily: "var(--font-display)" }}>Edit template</CardTitle>
             <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Name</label>
               <Input
@@ -533,7 +533,7 @@ export default function TemplatesPage() {
               <Button
                 onClick={saveSelected}
                 disabled={saving || deleting}
-                className="rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+                className="w-full sm:w-auto rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
               >
                 {saving ? "Saving..." : "Save"}
               </Button>
@@ -541,7 +541,7 @@ export default function TemplatesPage() {
                 variant="secondary"
                 onClick={deleteSelected}
                 disabled={saving || deleting}
-                className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
+                className="w-full sm:w-auto rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
               >
                 {deleting ? "Deleting..." : "Delete"}
               </Button>

@@ -225,27 +225,29 @@ export function ClientPortal({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{onboardingTitle}</CardTitle>
-          <CardDescription>
-            Required completed: {progress.required_completed}/{progress.required_total} —{" "}
-            <span className="font-semibold text-[var(--color-text-primary)]">{progress.percent}%</span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Progress value={progress.percent} />
-          {isLocked ? (
-            <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
-              This onboarding is locked. No further changes can be made.
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+    <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 sm:py-12">
+      <div className="sticky top-0 z-10 bg-[var(--color-bg-subtle)] py-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>{onboardingTitle}</CardTitle>
+            <CardDescription>
+              Required completed: {progress.required_completed}/{progress.required_total} —{" "}
+              <span className="font-semibold text-[var(--color-text-primary)]">{progress.percent}%</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Progress value={progress.percent} />
+            {isLocked ? (
+              <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
+                This onboarding is locked. No further changes can be made.
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
 
       {reqs.map((r) => (
-        <Card key={r.id}>
+        <Card key={r.id} className="w-full rounded-[var(--radius-md)]">
           <CardHeader>
             <CardTitle className="text-base">
               {r.label} {r.is_required ? <span className="text-red-600">*</span> : null}
@@ -290,7 +292,12 @@ export function ClientPortal({
       ))}
 
       <div className="flex justify-end">
-        <Button type="button" onClick={submit} disabled={isLocked || submitting || anyBusy}>
+        <Button
+          type="button"
+          onClick={submit}
+          disabled={isLocked || submitting || anyBusy}
+          className="w-full min-h-[48px]"
+        >
           {submitting ? "Submitting..." : anyBusy ? "Saving..." : "Submit onboarding"}
         </Button>
       </div>
@@ -385,6 +392,8 @@ function TextRequirement({
         onChange={(e) => setValue(e.target.value)}
         onBlur={() => void doSave(value)}
         disabled={disabled}
+        className="w-full text-base"
+        style={{ fontSize: "16px" }}
       />
     </div>
   );
@@ -409,15 +418,19 @@ function FileRequirement({
         </div>
         <div className="text-xs text-[var(--color-text-muted)]">{disabled ? "Locked" : busy ? "Uploading…" : ""}</div>
       </div>
-      <input
-        type="file"
-        disabled={disabled || busy}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onUpload(f);
-          e.currentTarget.value = "";
-        }}
-      />
+      <label className="flex w-full cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] min-h-[48px] px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition">
+        <span>{busy ? "Uploading…" : "Choose file"}</span>
+        <input
+          type="file"
+          className="sr-only"
+          disabled={disabled || busy}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onUpload(f);
+            e.currentTarget.value = "";
+          }}
+        />
+      </label>
     </div>
   );
 }
@@ -451,7 +464,7 @@ function SignatureRequirement({
       const canvas = sig.getCanvas();
       const dpr = window.devicePixelRatio || 1;
       const cssWidth = Math.max(1, el.clientWidth);
-      const cssHeight = 180;
+      const cssHeight = 200;
 
       // Preserve current drawing if any (resize clears canvas)
       const hadInk = !sig.isEmpty();
@@ -487,7 +500,7 @@ function SignatureRequirement({
         <div className="text-xs text-[var(--color-text-muted)]">{disabled ? "Locked" : busy ? "Saving…" : ""}</div>
       </div>
 
-      <div ref={containerRef} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-2">
+      <div ref={containerRef} className="w-full min-h-[200px] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-2">
         <SignatureCanvas
           penColor="black"
           // Stroke tuning (feels smoother + more "ink-like")
@@ -496,7 +509,7 @@ function SignatureRequirement({
           velocityFilterWeight={0.7}
           throttle={16}
           minDistance={0}
-          canvasProps={{ height: 180, className: "w-full block" }}
+          canvasProps={{ height: 200, className: "w-full block" }}
           onEnd={() => {
             if (disabled) return;
             setDirty(true);
@@ -508,7 +521,7 @@ function SignatureRequirement({
         />
       </div>
 
-      <div className="flex gap-2 justify-end">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Button
           type="button"
           variant="secondary"
@@ -517,6 +530,7 @@ function SignatureRequirement({
             setDirty(false);
           }}
           disabled={disabled || busy}
+          className="w-full min-h-[48px]"
         >
           Clear
         </Button>
@@ -528,6 +542,7 @@ function SignatureRequirement({
             setDirty(false);
           }}
           disabled={disabled || busy || !dirty}
+          className="w-full min-h-[48px]"
         >
           Save signature
         </Button>

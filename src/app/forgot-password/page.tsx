@@ -38,8 +38,8 @@ export default async function ForgotPasswordPage({
 
   return (
     <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
-      <div className="mx-auto flex max-w-md flex-col px-6 py-16">
-        <Link href="/" className="mb-8 flex w-fit items-center gap-2.5">
+      <div className="mx-auto flex max-w-md flex-col px-4 py-8 sm:px-6 sm:py-16">
+        <Link href="/" className="mb-8 mx-auto flex w-fit items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
@@ -48,7 +48,7 @@ export default async function ForgotPasswordPage({
           </span>
         </Link>
 
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+        <div className="bg-transparent sm:bg-white sm:rounded-[var(--radius-lg)] sm:border sm:border-[var(--color-border)] sm:shadow-[var(--shadow-sm)] p-0 sm:p-6">
           <h1 className="mb-4 text-lg font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
             Forgot password
           </h1>
@@ -80,12 +80,14 @@ export default async function ForgotPasswordPage({
                   autoComplete="email"
                   required
                   defaultValue={email}
+                  className="text-base"
+                  style={{ fontSize: "16px" }}
                 />
               </div>
 
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
+                className="inline-flex w-full min-h-[48px] items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
               >
                 Send reset link
               </button>
@@ -93,7 +95,7 @@ export default async function ForgotPasswordPage({
 
             <Link
               href="/login"
-              className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
+              className="inline-flex w-full min-h-[48px] items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
             >
               Back to log in
             </Link>

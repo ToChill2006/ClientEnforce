@@ -23,9 +23,10 @@ type NavItemProps = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  onClose?: () => void;
 };
 
-function NavItem({ href, label, icon: Icon }: NavItemProps) {
+function NavItem({ href, label, icon: Icon, onClose }: NavItemProps) {
   const pathname = usePathname() || "/dashboard";
   const active = isActive(pathname, href);
 
@@ -33,8 +34,9 @@ function NavItem({ href, label, icon: Icon }: NavItemProps) {
     <Link
       href={href}
       prefetch
+      onClick={onClose}
       className={
-        "group flex w-full items-center gap-2.5 rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium transition-colors " +
+        "group flex min-h-[40px] w-full items-center gap-2.5 rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium transition-colors " +
         (active
           ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)]"
           : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]")
@@ -60,32 +62,32 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SidebarNav() {
+export default function SidebarNav({ onClose }: { onClose?: () => void }) {
   return (
     <nav className="flex-1 overflow-y-auto px-3 py-4">
       <SectionLabel>Main</SectionLabel>
       <div className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} />
-        <NavItem href="/dashboard/onboardings" label="Onboardings" icon={ClipboardList} />
-        <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} />
-        <NavItem href="/dashboard/clients" label="Clients" icon={User} />
+        <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} onClose={onClose} />
+        <NavItem href="/dashboard/onboardings" label="Onboardings" icon={ClipboardList} onClose={onClose} />
+        <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} onClose={onClose} />
+        <NavItem href="/dashboard/clients" label="Clients" icon={User} onClose={onClose} />
       </div>
 
       <SectionLabel>Workflow</SectionLabel>
       <div className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard/followups" label="Follow-ups" icon={Bell} />
-        <NavItem href="/dashboard/storage" label="Files & Signatures" icon={FolderOpen} />
+        <NavItem href="/dashboard/followups" label="Follow-ups" icon={Bell} onClose={onClose} />
+        <NavItem href="/dashboard/storage" label="Files & Signatures" icon={FolderOpen} onClose={onClose} />
       </div>
 
       <SectionLabel>Team</SectionLabel>
       <div className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard/team" label="Team members" icon={Users} />
-        <NavItem href="/dashboard/settings" label="Settings" icon={Settings} />
+        <NavItem href="/dashboard/team" label="Team members" icon={Users} onClose={onClose} />
+        <NavItem href="/dashboard/settings" label="Settings" icon={Settings} onClose={onClose} />
       </div>
 
       <SectionLabel>More</SectionLabel>
       <div className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard/audit" label="Activity & Timeline" icon={Clock} />
+        <NavItem href="/dashboard/audit" label="Activity & Timeline" icon={Clock} onClose={onClose} />
       </div>
     </nav>
   );

@@ -100,15 +100,15 @@ export function PricingToggle() {
       </div>
 
       {/* Plan cards */}
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {plans.map((plan) => (
           <div
             key={plan.name}
             className={[
               "relative flex flex-col rounded-[var(--radius-xl)] border p-8 transition",
               plan.highlighted
-                ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)] shadow-[var(--shadow-lg)]"
-                : "border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]",
+                ? "order-first border-[var(--color-accent)] bg-[var(--color-accent-subtle)] shadow-[var(--shadow-lg)] lg:order-none"
+                : "order-last border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] lg:order-none",
             ].join(" ")}
           >
             {plan.badge && (
@@ -160,7 +160,7 @@ export function PricingToggle() {
             <Link
               href={plan.cta.href}
               className={[
-                "mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition active:scale-[0.98]",
+                "mt-8 inline-flex min-h-[48px] w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition active:scale-[0.98]",
                 plan.highlighted
                   ? "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-[var(--shadow-sm)]"
                   : "border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]",

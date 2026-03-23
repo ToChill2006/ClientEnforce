@@ -27,7 +27,7 @@ const solutionsCompare = [
 export function PublicHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-6 py-3.5 lg:px-8">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 py-3.5 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
           <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
@@ -142,8 +142,8 @@ const resourceLinks = [
 export function PublicFooter() {
   return (
     <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
-      <div className="mx-auto max-w-[1200px] px-6 py-14 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 py-14 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link href="/" className="flex items-center gap-2.5">
               <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
@@ -227,7 +227,7 @@ export function PublicFooter() {
 /* ─── Shared layout utilities ────────────────────────────────────────────── */
 export function PageContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-6 lg:px-8">{children}</div>
+    <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">{children}</div>
   );
 }
 
@@ -293,9 +293,9 @@ export function CtaBand({
           transformOrigin: "top left",
         }}
       />
-      <div className="relative mx-auto max-w-[1200px] px-6 text-center lg:px-8">
+      <div className="relative mx-auto max-w-[1200px] px-4 sm:px-6 text-center lg:px-8">
         <h2
-          className="text-4xl font-bold tracking-tight text-white sm:text-[44px]"
+          className="text-3xl font-bold tracking-tight text-white sm:text-4xl sm:text-[44px]"
           style={{ fontFamily: "var(--font-display)" }}
         >
           {heading}
@@ -303,17 +303,17 @@ export function CtaBand({
         {subtext && (
           <p className="mx-auto mt-4 max-w-2xl text-lg text-blue-100">{subtext}</p>
         )}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href={primaryHref}
-            className="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-accent)] shadow-[var(--shadow-md)] transition hover:bg-blue-50 active:scale-[0.98]"
+            className="inline-flex w-full items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-accent)] shadow-[var(--shadow-md)] transition hover:bg-blue-50 active:scale-[0.98] sm:w-auto"
           >
             {primaryLabel}
           </Link>
           {secondaryLabel && secondaryHref && (
             <Link
               href={secondaryHref}
-              className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/20"
+              className="inline-flex w-full items-center justify-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/20 sm:w-auto"
             >
               {secondaryLabel}
             </Link>

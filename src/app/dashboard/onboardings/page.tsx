@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 
@@ -148,8 +149,8 @@ function Modal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full max-w-lg rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
-        <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
+      <div className="relative w-full max-w-lg rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)] max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4 shrink-0">
           <div className="text-sm font-semibold text-[var(--color-text-primary)]">{title}</div>
           <button
             type="button"
@@ -160,7 +161,7 @@ function Modal({
             ✕
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className="px-5 py-4 overflow-y-auto">{children}</div>
       </div>
     </div>
   );
@@ -719,7 +720,114 @@ export default function OnboardingsPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+      {/* Mobile card list — visible below sm breakpoint */}
+      <div className="sm:hidden divide-y divide-[var(--color-border)] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] overflow-hidden">
+        {loadError ? (
+          <div className="px-4 py-8">
+            <div className="text-sm font-medium text-[var(--color-text-primary)]">Could not load onboardings</div>
+            <div className="mt-1 text-sm text-[var(--color-text-muted)]">{loadError}</div>
+            <div className="mt-3">
+              <SmallButton variant="secondary" onClick={() => load()}>Retry</SmallButton>
+            </div>
+          </div>
+        ) : loading ? (
+          <div className="space-y-0 divide-y divide-[var(--color-border)]">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="px-4 py-4 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-48" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : list.length === 0 ? (
+          <div className="px-4 py-10">
+            <div className="text-sm font-medium text-[var(--color-text-primary)]">No onboardings found</div>
+            <div className="mt-1 text-sm text-[var(--color-text-muted)]">
+              Create a new onboarding to start collecting requirements, uploads, and signatures.
+            </div>
+            <div className="mt-4">
+              <SmallButton variant="primary" onClick={() => setCreateOpen(true)}>Create onboarding</SmallButton>
+            </div>
+          </div>
+        ) : (
+          list.map((r) => {
+            const pct = progress[r.id] ?? 0;
+            const busy = !!rowBusy[r.id];
+            const action = rowAction[r.id] ?? null;
+            const sKey = statusKeyForFilter(r.status);
+            return (
+              <div key={r.id} className="px-4 py-4 space-y-2">
+                {/* Top row: client name + status badge */}
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">
+                      {r.client_name || "—"}
+                    </div>
+                    {r.client_email ? (
+                      <div className="truncate text-xs text-[var(--color-text-muted)]">{r.client_email}</div>
+                    ) : null}
+                  </div>
+                  <span
+                    className={cx(
+                      "inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                      statusPillClasses(r.status)
+                    )}
+                  >
+                    {statusLabel(r.status)}
+                  </span>
+                </div>
+
+                {/* Onboarding title */}
+                <div className="truncate text-sm text-[var(--color-text-secondary)]">
+                  {r.title || "—"}
+                </div>
+
+                {/* Progress bar */}
+                <ProgressBar value={pct} />
+
+                {/* Actions */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <Link
+                    href={`/dashboard/onboardings/${r.id}`}
+                    prefetch
+                    className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
+                  >
+                    View
+                  </Link>
+                  <SmallButton variant="secondary" onClick={() => copyLink(r)} disabled={busy} title="Copy link">
+                    {busy && action === "copy" ? "Copying..." : "Copy link"}
+                  </SmallButton>
+                  {sKey !== "submitted" && sKey !== "locked" ? (
+                    <SmallButton variant="secondary" onClick={() => sendEmail(r)} disabled={busy} title="Send email">
+                      {busy && action === "send" ? "Sending..." : "Send"}
+                    </SmallButton>
+                  ) : null}
+                  {sKey === "submitted" ? (
+                    <SmallButton variant="secondary" onClick={() => lock(r)} disabled={busy} title="Lock submission">
+                      {busy && action === "lock" ? "Locking..." : "Lock"}
+                    </SmallButton>
+                  ) : null}
+                  {sKey !== "archived" ? (
+                    <SmallButton variant="ghost" onClick={() => archive(r)} disabled={busy} title="Archive onboarding">
+                      {busy && action === "archive" ? "Archiving..." : "Archive"}
+                    </SmallButton>
+                  ) : null}
+                  <SmallButton variant="danger" onClick={() => deleteOnboarding(r)} disabled={busy} title="Delete onboarding">
+                    {busy && action === "delete" ? "Deleting..." : "Delete"}
+                  </SmallButton>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop table — hidden on mobile */}
+      <div className="hidden sm:block overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1100px] w-full border-collapse">
             <thead className="bg-[var(--color-bg-subtle)]">
@@ -896,6 +1004,18 @@ export default function OnboardingsPage() {
             </div>
           </div>
         ) : null}
+      </div>{/* end hidden sm:block desktop table wrapper */}
+
+      {/* Floating action button — mobile only */}
+      <div className="fixed bottom-4 right-4 z-20 sm:hidden">
+        <button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-accent)] text-white shadow-lg transition hover:bg-[var(--color-accent-hover)]"
+          aria-label="New onboarding"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
       </div>
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New onboarding">
@@ -1024,13 +1144,6 @@ export default function OnboardingsPage() {
         </form>
       </Modal>
 
-      <style jsx global>{`
-        @media (max-width: 720px) {
-          table {
-            min-width: 720px !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

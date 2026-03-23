@@ -260,7 +260,7 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-xl font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Clients</h1>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">Manage client records used across onboardings.</p>
@@ -269,14 +269,14 @@ export default function ClientsPage() {
           <button
             type="button"
             onClick={() => load()}
-            className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
+            className="w-full sm:w-auto rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
           >
             Refresh
           </button>
           <button
             type="button"
             onClick={openCreate}
-            className="rounded-full bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
+            className="w-full sm:w-auto rounded-full bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
             disabled={creatingClient}
           >
             {creatingClient ? "Creating..." : "New client"}
@@ -318,7 +318,8 @@ export default function ClientsPage() {
             </div>
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]">
+          <div className="mt-4 overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
+            <div className="min-w-[480px]">
             <div className="grid grid-cols-12 gap-2 bg-[var(--color-bg-subtle)] px-3 py-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
               <div className="col-span-4">Name</div>
               <div className="col-span-4">Email</div>
@@ -403,6 +404,7 @@ export default function ClientsPage() {
                 })}
               </ul>
             )}
+            </div>
           </div>
 
         </CardContent>
@@ -411,7 +413,7 @@ export default function ClientsPage() {
       {/* Modal */}
       {modalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
-          <div className="w-full max-w-lg rounded-[var(--radius-lg)] bg-white shadow-[var(--shadow-lg)]">
+          <div className="w-full max-w-lg rounded-[var(--radius-lg)] bg-white shadow-[var(--shadow-lg)] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
               <div>
                 <div className="text-base font-semibold text-[var(--color-text-primary)]">{editing ? "Edit client" : "New client"}</div>

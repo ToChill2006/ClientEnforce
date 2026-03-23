@@ -213,7 +213,7 @@ export default function StoragePage() {
   }, [items, query]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 px-4 sm:px-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Files & signatures</h1>
@@ -243,7 +243,7 @@ export default function StoragePage() {
 
           <button
             onClick={load}
-            className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+            className="w-full rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60 sm:w-auto"
             disabled={loading}
           >
             {loading ? "Refreshing..." : "Refresh"}
@@ -251,14 +251,87 @@ export default function StoragePage() {
         </div>
       </div>
 
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] overflow-hidden">
-        {err ? (
-          <div className="p-4">
-            <div className="text-sm font-medium text-[var(--color-text-primary)]">Could not load</div>
-            <div className="mt-1 text-sm text-[var(--color-text-muted)]">{err}</div>
-          </div>
-        ) : null}
+      {err ? (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+          <div className="text-sm font-medium text-[var(--color-text-primary)]">Could not load</div>
+          <div className="mt-1 text-sm text-[var(--color-text-muted)]">{err}</div>
+        </div>
+      ) : null}
 
+      {/* Mobile card list — visible below sm */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+              <Skeleton className="h-4 w-3/4 mb-2" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))
+        ) : filteredItems.length === 0 ? (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+            {items.length === 0 ? (
+              <>
+                <div className="text-sm font-medium text-[var(--color-text-primary)]">No files yet</div>
+                <div className="mt-1 text-sm text-[var(--color-text-muted)]">Uploads and signatures will appear here automatically.</div>
+              </>
+            ) : (
+              <>
+                <div className="text-sm font-medium text-[var(--color-text-primary)]">No matches</div>
+                <div className="mt-1 text-sm text-[var(--color-text-muted)]">Try a different search term.</div>
+              </>
+            )}
+          </div>
+        ) : (
+          filteredItems.map((it, idx) => {
+            const path = (it.path ?? it.file_path ?? it.signature_path) || null;
+            const typeRaw = (it.type ?? "").toLowerCase();
+            const isSignature = typeRaw === "signature" || (!!it.signature_path && !it.file_path);
+            const kind = isSignature ? "Signature" : "File";
+            const name = inferName(it, path);
+            const created = formatCreated(it);
+            const rowKey = `${it.id || ""}|${path ?? ""}|${it.onboarding_id ?? ""}|${pickCreatedAt(it) ?? ""}|${idx}`;
+            const previewBusy = !!path && previewingPath === path;
+            const downloadBusy = !!path && downloadingPath === path;
+
+            return (
+              <div key={rowKey} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{name}</div>
+                    <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{created}</div>
+                  </div>
+                  <span className="shrink-0 inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
+                    {kind}
+                  </span>
+                </div>
+                {path ? (
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                      onClick={() => openPreview(path, name)}
+                      disabled={previewBusy || downloadBusy}
+                    >
+                      {previewBusy ? "Previewing..." : "Preview"}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                      onClick={() => downloadFile(path, name)}
+                      disabled={previewBusy || downloadBusy}
+                    >
+                      {downloadBusy ? "Downloading..." : "Download"}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop table — hidden below sm */}
+      <div className="hidden sm:block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-[1000px] w-full">
             <thead className="bg-[var(--color-bg-subtle)]">
@@ -384,7 +457,7 @@ export default function StoragePage() {
 
       {previewOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-4xl rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
               <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{previewName}</div>
               <button

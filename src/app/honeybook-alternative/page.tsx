@@ -46,17 +46,17 @@ export default function HoneyBookAlternativePage() {
             <div className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
               Honest comparison
             </div>
-            <h1 className="mt-4 max-w-4xl text-5xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[56px]" style={{ fontFamily: "var(--font-display)" }}>
+            <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
               The HoneyBook alternative for teams that have outgrown freelancer tools
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
               HoneyBook works beautifully for independent creatives. But if you run a team, onboard multiple clients a month, and need structured intake with an audit trail — you need something built for that job specifically.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
                 Start free trial
               </Link>
-              <Link href="/contact" className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]">
+              <Link href="/contact" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
                 See how it works
               </Link>
             </div>
@@ -85,11 +85,11 @@ export default function HoneyBookAlternativePage() {
               <p className="mt-3 text-base text-[var(--color-text-secondary)]">A practical comparison of where each tool is designed to operate.</p>
             </FadeUp>
             <FadeUp delay={80}>
-              <div className="mt-8 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)]">
-                <table className="w-full min-w-[700px] text-sm">
+              <div className="mt-8 overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)]">
+                <table className="w-full min-w-[540px] text-sm">
                   <thead>
                     <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
-                      <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]" />
+                      <th className="sticky left-0 bg-[var(--color-bg-subtle)] z-10 px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]" />
                       <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">HoneyBook</th>
                       <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">ClientEnforce</th>
                     </tr>
@@ -97,7 +97,7 @@ export default function HoneyBookAlternativePage() {
                   <tbody className="divide-y divide-[var(--color-border)]">
                     {comparisonRows.map((row, i) => (
                       <tr key={row[0]} className={i % 2 === 0 ? "bg-white" : "bg-[var(--color-bg-subtle)]"}>
-                        <td className="px-5 py-3.5 text-sm font-semibold text-[var(--color-text-primary)]">{row[0]}</td>
+                        <td className={`sticky left-0 z-10 px-5 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] ${i % 2 === 0 ? "bg-white" : "bg-[var(--color-bg-subtle)]"}`}>{row[0]}</td>
                         <td className="px-5 py-3.5 text-sm text-[var(--color-text-secondary)]">{row[1]}</td>
                         <td className="px-5 py-3.5 text-sm text-[var(--color-text-secondary)]">{row[2]}</td>
                       </tr>
@@ -105,6 +105,7 @@ export default function HoneyBookAlternativePage() {
                   </tbody>
                 </table>
               </div>
+              <p className="mt-2 text-center text-xs text-[var(--color-text-muted)] sm:hidden">← Scroll to see all columns →</p>
             </FadeUp>
           </PageContainer>
         </section>

@@ -128,10 +128,10 @@ function ProgressBar({ value }: { value: number }) {
   const v = Math.max(0, Math.min(100, Math.round(value)));
   return (
     <div className="flex items-center gap-3">
-      <div className="h-2 w-48 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
         <div className="h-full bg-[var(--color-accent)]" style={{ width: `${v}%` }} />
       </div>
-      <div className="w-10 text-right text-sm tabular-nums text-[var(--color-text-secondary)]">{v}%</div>
+      <div className="w-10 shrink-0 text-right text-sm tabular-nums text-[var(--color-text-secondary)]">{v}%</div>
     </div>
   );
 }
@@ -514,7 +514,7 @@ export default function OnboardingDetailAdminPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 px-4 sm:px-6">
         <Skeleton className="h-6 w-56" />
         <Skeleton className="h-4 w-72" />
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
@@ -526,7 +526,7 @@ export default function OnboardingDetailAdminPage() {
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 px-4 sm:px-6">
         <RejectionBanner
           kind={/plan|upgrade/i.test(error) ? "plan" : /permission|access|forbidden/i.test(error) ? "permission" : "error"}
           message={error}
@@ -542,7 +542,7 @@ export default function OnboardingDetailAdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6">
       {banner ? (
         banner.kind === "error" ? (
           <RejectionBanner
@@ -568,7 +568,7 @@ export default function OnboardingDetailAdminPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{ob?.title || "Onboarding"}</h1>
             <StatusPill status={ob?.status} />
           </div>
@@ -584,47 +584,50 @@ export default function OnboardingDetailAdminPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => router.back()}
-            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-          >
-            Back
-          </button>
-
-          {ob?.client_link ? (
+        {/* Action buttons: horizontal scroll on mobile so they stay on one line without wrapping awkwardly */}
+        <div className="overflow-x-auto flex-shrink-0">
+          <div className="flex gap-2 flex-nowrap pb-1 sm:flex-wrap sm:pb-0">
             <button
-              onClick={async () => {
-                try {
-                  await copyToClipboard(ob.client_link!);
-                  setBanner({ kind: "success", msg: "Client link copied." });
-                } catch {
-                  setBanner({ kind: "error", msg: "Could not copy client link." });
-                }
-              }}
-              className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+              onClick={() => router.back()}
+              className="whitespace-nowrap rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
             >
-              Copy client link
+              Back
             </button>
-          ) : null}
 
-          <button
-            onClick={downloadPdf}
-            disabled={downloadingPdf}
-            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
-          >
-            {downloadingPdf ? "Preparing PDF…" : "Download PDF"}
-          </button>
+            {ob?.client_link ? (
+              <button
+                onClick={async () => {
+                  try {
+                    await copyToClipboard(ob.client_link!);
+                    setBanner({ kind: "success", msg: "Client link copied." });
+                  } catch {
+                    setBanner({ kind: "error", msg: "Could not copy client link." });
+                  }
+                }}
+                className="whitespace-nowrap rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+              >
+                Copy client link
+              </button>
+            ) : null}
 
-          {ob?.status === "submitted" ? (
             <button
-              onClick={lock}
-              disabled={locking}
-              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white shadow-[var(--shadow-sm)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
+              onClick={downloadPdf}
+              disabled={downloadingPdf}
+              className="whitespace-nowrap rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
             >
-              {locking ? "Locking…" : "Lock submission"}
+              {downloadingPdf ? "Preparing PDF…" : "Download PDF"}
             </button>
-          ) : null}
+
+            {ob?.status === "submitted" ? (
+              <button
+                onClick={lock}
+                disabled={locking}
+                className="whitespace-nowrap rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white shadow-[var(--shadow-sm)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
+              >
+                {locking ? "Locking…" : "Lock submission"}
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -688,7 +691,137 @@ export default function OnboardingDetailAdminPage() {
           <div className="mt-0.5 text-sm text-[var(--color-text-muted)]">Admin view of what the client submitted.</div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile card list — visible below sm */}
+        <div className="flex flex-col divide-y divide-[var(--color-border)] sm:hidden">
+          {reqs.length === 0 ? (
+            <div className="px-4 py-10">
+              <div className="text-sm font-medium text-[var(--color-text-primary)]">No requirements loaded</div>
+              <div className="mt-1 text-sm text-[var(--color-text-muted)]">This onboarding has no requirements snapshot, or the API select does not match your schema.</div>
+            </div>
+          ) : (
+            reqs.map((r) => {
+              const preview = valuePreview(r);
+              const completed = !!r.completed_at || !!r.completed || valuePreview(r).type !== "empty";
+
+              return (
+                <div key={r.id} className="min-h-[48px] w-full p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {r.label || "Untitled field"}
+                        {(r.is_required ?? r.required) ? <span className="ml-2 text-xs text-[var(--color-text-muted)]">Required</span> : null}
+                      </div>
+                      {r.prompt ? <div className="mt-1 text-sm text-[var(--color-text-muted)]">{r.prompt}</div> : null}
+                    </div>
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                      <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
+                        {reqKindLabel(r.kind ?? r.type)}
+                      </span>
+                      <span
+                        className={cx(
+                          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
+                          completed ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]" : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
+                        )}
+                      >
+                        {completed ? "Completed" : "Pending"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    {preview.type === "empty" ? (
+                      <div className="text-sm text-[var(--color-text-muted)]">—</div>
+                    ) : preview.type === "text" ? (
+                      <div className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>
+                    ) : preview.type === "json" ? (
+                      <pre className="overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>
+                    ) : preview.type === "file" ? (
+                      <div className="space-y-2">
+                        <div className="truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
+                          {fileNameFromPath(String(preview.v))}
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              try {
+                                const name = fileNameFromPath(String(preview.v));
+                                const url = previewRef(String(preview.v), "clientenforce-uploads");
+                                setPreviewAsset({ url, name });
+                              } catch (e: any) {
+                                setBanner({ kind: "error", msg: e?.message || "Could not preview file." });
+                              }
+                            }}
+                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                          >
+                            Preview
+                          </button>
+                          <button
+                            onClick={() => {
+                              try {
+                                downloadRef(
+                                  String(preview.v),
+                                  "clientenforce-uploads",
+                                  fileNameFromPath(String(preview.v)),
+                                );
+                                setBanner({ kind: "success", msg: "Download started." });
+                              } catch (e: any) {
+                                setBanner({ kind: "error", msg: e?.message || "Could not download file." });
+                              }
+                            }}
+                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
+                          {fileNameFromPath(String(preview.v))}
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              try {
+                                const name = fileNameFromPath(String(preview.v));
+                                const url = previewRef(String(preview.v), "clientenforce-signatures");
+                                setPreviewAsset({ url, name });
+                              } catch (e: any) {
+                                setBanner({ kind: "error", msg: e?.message || "Could not preview signature." });
+                              }
+                            }}
+                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                          >
+                            Preview
+                          </button>
+                          <button
+                            onClick={() => {
+                              try {
+                                downloadRef(
+                                  String(preview.v),
+                                  "clientenforce-signatures",
+                                  fileNameFromPath(String(preview.v)),
+                                );
+                                setBanner({ kind: "success", msg: "Download started." });
+                              } catch (e: any) {
+                                setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
+                              }
+                            }}
+                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop table — hidden below sm */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="min-w-[980px] w-full border-collapse">
             <thead>
               <tr className="border-b border-[var(--color-border)]">
@@ -837,7 +970,7 @@ export default function OnboardingDetailAdminPage() {
 
       {previewAsset ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
+          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-3">
               <div className="min-w-0 truncate text-sm font-medium text-[var(--color-text-primary)]" title={previewAsset.name}>
                 {previewAsset.name}

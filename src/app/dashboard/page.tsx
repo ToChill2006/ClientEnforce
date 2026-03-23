@@ -125,9 +125,9 @@ function MetricCard({
   href?: string;
 }) {
   const inner = (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-sm)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 sm:p-5 shadow-[var(--shadow-sm)]">
       <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">{label}</div>
-      <div className="mt-2 text-3xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{value}</div>
+      <div className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{value}</div>
       {hint ? <div className="mt-1 text-xs text-[var(--color-text-muted)]">{hint}</div> : null}
     </div>
   );
@@ -353,7 +353,7 @@ export default function DashboardPage() {
       ) : null}
 
       {/* Metrics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Clients"
           value={<AnimatedNumber value={clients} loading={loading} />}
@@ -438,75 +438,120 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <div className="min-w-[560px]">
-                <div className="grid grid-cols-12 gap-3 border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
-                  <div className="col-span-4">Client</div>
-                  <div className="col-span-4">Title</div>
-                  <div className="col-span-2">Status</div>
-                  <div className="col-span-2 text-right">Updated</div>
+            {/* Table — hidden on mobile, visible from sm+ */}
+            <div className="hidden sm:block">
+              <div className="overflow-x-auto">
+                <div className="min-w-[560px]">
+                  <div className="grid grid-cols-12 gap-3 border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+                    <div className="col-span-4">Client</div>
+                    <div className="col-span-4">Title</div>
+                    <div className="col-span-2">Status</div>
+                    <div className="col-span-2 text-right">Updated</div>
+                  </div>
+
+                  {loading ? (
+                    <div className="divide-y divide-[var(--color-border)]">
+                      <SkeletonRow />
+                      <SkeletonRow />
+                      <SkeletonRow />
+                    </div>
+                  ) : recent.length === 0 ? (
+                    <div className="px-5 py-10">
+                      <div className="text-sm font-semibold text-[var(--color-text-primary)]">No onboardings yet</div>
+                      <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                        Create your first onboarding to start tracking progress and follow-ups.
+                      </div>
+                      <div className="mt-4">
+                        <ActionLink href="/dashboard/onboardings" variant="primary">
+                          New onboarding
+                        </ActionLink>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-[var(--color-border)]">
+                      {recent.slice(0, 6).map((o) => (
+                        <Link
+                          key={o.id}
+                          href={`/dashboard/onboardings/${o.id}`}
+                          className="block transition hover:bg-[var(--color-bg-subtle)]"
+                        >
+                          <div className="grid grid-cols-12 items-center gap-3 px-5 py-3">
+                            <div className="col-span-4 min-w-0">
+                              <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">
+                                {o.client_name || "—"}
+                              </div>
+                              <div className="truncate text-xs text-[var(--color-text-muted)]">{o.client_email || "—"}</div>
+                            </div>
+
+                            <div className="col-span-4 min-w-0">
+                              <div className="truncate text-sm text-[var(--color-text-secondary)]">
+                                {o.title ?? (o as any).name ?? (o as any).onboarding_title ?? "—"}
+                              </div>
+                            </div>
+
+                            <div className="col-span-2">
+                              <span
+                                className={cx(
+                                  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
+                                  statusPillClasses(o.status)
+                                )}
+                              >
+                                {statusLabel(o.status)}
+                              </span>
+                            </div>
+
+                            <div className="col-span-2 text-right text-xs tabular-nums text-[var(--color-text-muted)]">
+                              {formatDate(o.updated_at)}
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
-
-                {loading ? (
-                  <div className="divide-y divide-[var(--color-border)]">
-                    <SkeletonRow />
-                    <SkeletonRow />
-                    <SkeletonRow />
-                  </div>
-                ) : recent.length === 0 ? (
-                  <div className="px-5 py-10">
-                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">No onboardings yet</div>
-                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                      Create your first onboarding to start tracking progress and follow-ups.
-                    </div>
-                    <div className="mt-4">
-                      <ActionLink href="/dashboard/onboardings" variant="primary">
-                        New onboarding
-                      </ActionLink>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-[var(--color-border)]">
-                    {recent.slice(0, 6).map((o) => (
-                      <Link
-                        key={o.id}
-                        href={`/dashboard/onboardings/${o.id}`}
-                        className="block transition hover:bg-[var(--color-bg-subtle)]"
-                      >
-                        <div className="grid grid-cols-12 items-center gap-3 px-5 py-3">
-                          <div className="col-span-4 min-w-0">
-                            <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">
-                              {o.client_name || "—"}
-                            </div>
-                            <div className="truncate text-xs text-[var(--color-text-muted)]">{o.client_email || "—"}</div>
-                          </div>
-
-                          <div className="col-span-4 min-w-0">
-                            <div className="truncate text-sm text-[var(--color-text-secondary)]">
-                              {o.title ?? (o as any).name ?? (o as any).onboarding_title ?? "—"}
-                            </div>
-                          </div>
-
-                          <div className="col-span-2">
-                            <span
-                              className={cx(
-                                "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
-                                statusPillClasses(o.status)
-                              )}
-                            >
-                              {statusLabel(o.status)}
-                            </span>
-                          </div>
-
-                          <div className="col-span-2 text-right text-xs tabular-nums text-[var(--color-text-muted)]">
-                            {formatDate(o.updated_at)}
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
               </div>
+            </div>
+
+            {/* Mobile card list — visible below sm, hidden from sm+ */}
+            <div className="sm:hidden">
+              {loading ? (
+                <div className="divide-y divide-[var(--color-border)]">
+                  <SkeletonRow />
+                  <SkeletonRow />
+                  <SkeletonRow />
+                </div>
+              ) : recent.length === 0 ? (
+                <div className="px-4 py-10">
+                  <div className="text-sm font-semibold text-[var(--color-text-primary)]">No onboardings yet</div>
+                  <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                    Create your first onboarding to start tracking progress and follow-ups.
+                  </div>
+                  <div className="mt-4">
+                    <ActionLink href="/dashboard/onboardings" variant="primary">
+                      New onboarding
+                    </ActionLink>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {recent.slice(0, 6).map((o) => (
+                    <Link key={o.id} href={`/dashboard/onboardings/${o.id}`} className="block border-b border-[var(--color-border)] px-4 py-3 transition hover:bg-[var(--color-bg-subtle)] last:border-b-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{o.client_name || "—"}</div>
+                          <div className="truncate text-xs text-[var(--color-text-muted)]">{o.client_email || "—"}</div>
+                        </div>
+                        <span className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusPillClasses(o.status)}`}>
+                          {statusLabel(o.status)}
+                        </span>
+                      </div>
+                      <div className="mt-1 truncate text-xs text-[var(--color-text-secondary)]">
+                        {o.title ?? (o as any).name ?? (o as any).onboarding_title ?? "—"}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             {!loading && recent.length > 0 ? (

@@ -354,7 +354,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
         <div>
           <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Settings</h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
@@ -363,7 +363,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={logout} disabled={loggingOut}>
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={logout} disabled={loggingOut}>
             {loggingOut ? "Logging out…" : "Log out"}
           </Button>
         </div>
@@ -425,7 +425,7 @@ export default function SettingsPage() {
           <CardTitle>Organization</CardTitle>
           <CardDescription>Plan, seat usage, and subscription status.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
+        <CardContent className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4">
             <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Tier</div>
             <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">{org?.tier ?? "—"}</div>
@@ -443,7 +443,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="md:col-span-3 flex flex-wrap gap-2">
+          <div className="col-span-1 sm:col-span-2 md:col-span-3 flex flex-wrap gap-2">
             {canManageBilling ? <Button onClick={openBillingPortal}>Manage billing</Button> : null}
             <Button variant="secondary" onClick={load} disabled={loading}>
               {loading ? "Refreshing…" : "Refresh"}
@@ -669,8 +669,8 @@ export default function SettingsPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <div className="md:col-span-2 space-y-1">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+            <div className="sm:col-span-1 space-y-1">
               <Label htmlFor="inviteEmail">Email</Label>
               <Input
                 id="inviteEmail"

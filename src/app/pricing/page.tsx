@@ -67,17 +67,17 @@ export default function PricingPage() {
           <PageContainer>
             <FadeUp>
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Pricing</p>
-              <h1 className="mt-3 text-5xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[56px]" style={{ fontFamily: "var(--font-display)" }}>
+              <h1 className="mt-3 text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl lg:text-[56px]" style={{ fontFamily: "var(--font-display)" }}>
                 Simple pricing for client onboarding software
               </h1>
               <p className="mt-5 max-w-xl text-lg text-[var(--color-text-secondary)]">
                 Start free, then upgrade as your onboarding volume grows. Every plan includes the core workflow tools you need.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
                   Start free trial
                 </Link>
-                <Link href="/features" className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]">
+                <Link href="/features" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
                   Explore features
                 </Link>
               </div>
@@ -98,7 +98,7 @@ export default function PricingPage() {
             <FadeUp>
               <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Which plan should you pick?</h2>
             </FadeUp>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
               {[
                 { name: "Solo", desc: "Best when you are validating one onboarding workflow and volume is still low." },
                 { name: "Team", desc: "Best for agencies and service teams that need automated reminders and repeatable execution." },
@@ -122,8 +122,9 @@ export default function PricingPage() {
               <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Full feature comparison</h2>
             </FadeUp>
             <FadeUp delay={80}>
-              <div className="mt-8 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
-                <table className="w-full min-w-[640px] text-sm">
+              <div className="mt-8 overflow-x-auto">
+              <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+                <table className="w-full min-w-[560px] text-sm">
                   <thead>
                     <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
                       <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Feature</th>
@@ -143,6 +144,7 @@ export default function PricingPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
               </div>
             </FadeUp>
           </PageContainer>

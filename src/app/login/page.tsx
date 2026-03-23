@@ -44,8 +44,8 @@ export default async function LoginPage({
   return (
     <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
       <LoginToasts verified={verified} reset={reset} />
-      <div className="mx-auto flex max-w-md flex-col px-6 py-16">
-        <Link href="/" className="mb-8 flex w-fit items-center gap-2.5">
+      <div className="mx-auto flex max-w-md flex-col px-4 py-8 sm:px-6 sm:py-16">
+        <Link href="/" className="mb-8 mx-auto flex w-fit items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
@@ -70,7 +70,7 @@ export default async function LoginPage({
           </p>
         </div>
 
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+        <div className="bg-transparent sm:bg-white sm:rounded-[var(--radius-lg)] sm:border sm:border-[var(--color-border)] sm:shadow-[var(--shadow-sm)] p-0 sm:p-6">
           <div className="flex flex-col gap-4">
             {created ? (
               <div className="rounded-[var(--radius-md)] border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
@@ -94,7 +94,7 @@ export default async function LoginPage({
               <input type="hidden" name="next" value={next} />
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" autoComplete="email" required />
+                <Input id="email" name="email" type="email" autoComplete="email" required className="text-base" style={{ fontSize: "16px" }} />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -110,12 +110,14 @@ export default async function LoginPage({
                   type="password"
                   autoComplete="current-password"
                   required
+                  className="text-base"
+                  style={{ fontSize: "16px" }}
                 />
               </div>
 
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
+                className="inline-flex w-full min-h-[48px] items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
               >
                 Log in
               </button>
@@ -129,7 +131,7 @@ export default async function LoginPage({
 
             <Link
               href={`/signup?next=${encodeURIComponent(next)}`}
-              className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
+              className="inline-flex w-full min-h-[48px] items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
             >
               Create an account
             </Link>

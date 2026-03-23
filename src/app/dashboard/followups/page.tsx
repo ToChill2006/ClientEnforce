@@ -267,7 +267,7 @@ export default function FollowupsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 px-4 sm:px-6">
       <div>
         <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Follow-ups</h1>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Configure timing and monitor scheduled reminder emails.</p>
@@ -370,13 +370,13 @@ export default function FollowupsPage() {
           ) : null}
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={saveTiming} disabled={saving || !canEditSettings}>
+            <Button className="w-full sm:w-auto" onClick={saveTiming} disabled={saving || !canEditSettings}>
               {saving ? "Saving..." : canEditSettings ? "Save timing" : "Admins can change timing"}
             </Button>
-            <Button variant="secondary" onClick={loadAll}>
+            <Button className="w-full sm:w-auto" variant="secondary" onClick={loadAll}>
               Refresh
             </Button>
-            <Button variant="secondary" onClick={runCronNow} disabled={!canRunCron || runningCron}>
+            <Button className="w-full sm:w-auto" variant="secondary" onClick={runCronNow} disabled={!canRunCron || runningCron}>
               {runningCron ? "Running..." : canRunCron ? "Run cron now" : "Admins can run cron"}
             </Button>
           </div>
@@ -403,12 +403,52 @@ export default function FollowupsPage() {
         <CardContent className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div className="w-full md:max-w-sm">
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by email, subject, status..." />
+              <Input className="w-full" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by email, subject, status..." />
             </div>
             <div className="text-xs text-[var(--color-text-muted)]">{loading ? "Loading..." : `${filtered.length} job(s)`}</div>
           </div>
 
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
+          {/* Mobile card list — visible below sm */}
+          <div className="flex flex-col gap-3 sm:hidden">
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))
+            ) : filtered.length === 0 ? (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 text-sm text-[var(--color-text-secondary)]">
+                No follow-up jobs found.
+              </div>
+            ) : (
+              filtered.map((j) => (
+                <div key={j.id} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{j.to_email}</div>
+                      <div className="mt-0.5 truncate text-sm text-[var(--color-text-secondary)]">{j.subject}</div>
+                    </div>
+                    <span className={statusPill(j.status)}>{j.status}</span>
+                  </div>
+                  <div className="mt-2 text-xs text-[var(--color-text-muted)]">Due: {fmt(j.due_at)}</div>
+                  {j.status !== "sent" && j.status !== "cancelled" ? (
+                    <button
+                      type="button"
+                      onClick={() => markDone(j)}
+                      className="mt-3 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                      disabled={markingJobId === j.id}
+                    >
+                      {markingJobId === j.id ? "Marking..." : "Mark done"}
+                    </button>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop table — hidden below sm */}
+          <div className="hidden sm:block overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
             <table className="w-full min-w-[900px] text-sm">
               <thead className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>

@@ -166,13 +166,13 @@ export default function MarketingPage() {
             className="pointer-events-none absolute -top-32 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full opacity-50"
             style={{ background: "radial-gradient(ellipse, var(--color-accent-subtle) 0%, transparent 70%)" }}
           />
-          <div className="relative mx-auto grid max-w-[1200px] gap-12 px-6 py-24 sm:py-32 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
+          <div className="relative mx-auto grid max-w-[1200px] gap-12 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
                 For agencies · consultants · accountants
               </div>
               <h1
-                className="mt-6 text-[56px] font-bold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-[64px]"
+                className="mt-6 text-4xl font-bold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-5xl lg:text-[64px]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 Client onboarding that enforces completion — not just tracks it
@@ -180,11 +180,11 @@ export default function MarketingPage() {
               <p className="mt-5 text-lg leading-7 text-[var(--color-text-secondary)]">
                 Most teams lose hours every week chasing clients for documents, signatures, and approvals. ClientEnforce replaces that chaos with one structured workflow your clients actually complete.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
                   Start free trial
                 </Link>
-                <Link href="#how-it-works" className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]">
+                <Link href="#how-it-works" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
                   See how it works
                 </Link>
               </div>
@@ -200,7 +200,7 @@ export default function MarketingPage() {
 
         {/* ── Social proof bar ────────────────────────────────────────────── */}
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
-          <div className="mx-auto max-w-[1200px] px-6 py-5 lg:px-8">
+          <div className="mx-auto max-w-[1200px] px-4 py-5 sm:px-6 lg:px-8">
             <p className="text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
               Trusted by teams in marketing, accounting, and consulting
             </p>
@@ -216,7 +216,7 @@ export default function MarketingPage() {
 
         {/* ── Pain points ─────────────────────────────────────────────────── */}
         <section className="border-b border-[var(--color-border)] bg-white py-24">
-          <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
                 Sound familiar?
@@ -225,7 +225,7 @@ export default function MarketingPage() {
                 Every service team recognises at least one of these.
               </p>
             </FadeUp>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {painPoints.map((point, i) => (
                 <FadeUp key={point.title} delay={i * 80}>
                   <article className="card-lift h-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
@@ -243,7 +243,7 @@ export default function MarketingPage() {
 
         {/* ── How it works ────────────────────────────────────────────────── */}
         <section id="how-it-works" className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-24">
-          <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
                 How ClientEnforce works
@@ -256,7 +256,7 @@ export default function MarketingPage() {
             <div className="relative mt-14">
               {/* Dashed connector */}
               <div className="absolute top-11 left-[calc(100%/6)] right-[calc(100%/6)] hidden h-px border-t border-dashed border-[var(--color-border-strong)] lg:block" />
-              <div className="grid gap-6 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {[
                   { step: "01", title: "Build one template per service line", body: "Define required documents, signatures, and questions. Takes under 20 minutes. Reuse it for every client.", icon: <FileText className="h-5 w-5" /> },
                   { step: "02", title: "Send one portal link when a client signs", body: "Clients see exactly what they need to do. No login required. No confusion about where to send things.", icon: <Mail className="h-5 w-5" /> },
@@ -287,13 +287,13 @@ export default function MarketingPage() {
 
         {/* ── Feature highlights ───────────────────────────────────────────── */}
         <section className="border-b border-[var(--color-border)] bg-white py-24">
-          <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
                 Everything you need to onboard clients properly
               </h2>
             </FadeUp>
-            <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {features.map((f, i) => (
                 <FadeUp key={f.name} delay={i * 50}>
                   <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
@@ -311,13 +311,13 @@ export default function MarketingPage() {
 
         {/* ── Built for ────────────────────────────────────────────────────── */}
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-24">
-          <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
                 Built for teams who onboard clients repeatedly
               </h2>
             </FadeUp>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {whoItsFor.map((seg, i) => (
                 <FadeUp key={seg.title} delay={i * 80}>
                   <Link href={seg.href} className="group card-lift block h-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
@@ -350,7 +350,7 @@ export default function MarketingPage() {
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
         <section className="bg-[var(--color-bg-subtle)] py-24">
-          <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
                 Frequently asked questions

@@ -39,8 +39,8 @@ export default async function SignupPage({
 
   return (
     <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
-      <div className="mx-auto flex w-full max-w-md flex-col px-6 py-16">
-        <Link href="/" className="mb-8 flex w-fit items-center gap-2.5">
+      <div className="mx-auto flex w-full max-w-md flex-col px-4 py-8 sm:px-6 sm:py-16">
+        <Link href="/" className="mb-8 mx-auto flex w-fit items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
             <Image
               src="/C.png"
@@ -72,7 +72,7 @@ export default async function SignupPage({
           </p>
         </div>
 
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+        <div className="bg-transparent sm:bg-white sm:rounded-[var(--radius-lg)] sm:border sm:border-[var(--color-border)] sm:shadow-[var(--shadow-sm)] p-0 sm:p-6">
           <div className="flex flex-col gap-4">
             {error ? (
               <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 p-3 text-sm text-red-800">
@@ -84,7 +84,7 @@ export default async function SignupPage({
               {next ? <input type="hidden" name="next" value={next} /> : null}
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="fullName">Full name</Label>
-                <Input id="fullName" name="fullName" placeholder="Jane Doe" required autoComplete="name" />
+                <Input id="fullName" name="fullName" placeholder="Jane Doe" required autoComplete="name" className="text-base" style={{ fontSize: "16px" }} />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -96,6 +96,8 @@ export default async function SignupPage({
                   required
                   autoComplete="email"
                   placeholder="you@company.com"
+                  className="text-base"
+                  style={{ fontSize: "16px" }}
                 />
               </div>
 
@@ -109,12 +111,14 @@ export default async function SignupPage({
                   minLength={8}
                   autoComplete="new-password"
                   placeholder="Create a strong password"
+                  className="text-base"
+                  style={{ fontSize: "16px" }}
                 />
               </div>
 
               <button
                 type="submit"
-                className="mt-1 inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
+                className="mt-1 inline-flex w-full min-h-[48px] items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
               >
                 Create account
               </button>
@@ -127,7 +131,7 @@ export default async function SignupPage({
 
               <Link
                 href={next ? `/login?next=${encodeURIComponent(next)}` : "/login?next=%2Fdashboard"}
-                className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
+                className="inline-flex w-full min-h-[48px] items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
               >
                 Log in instead
               </Link>
