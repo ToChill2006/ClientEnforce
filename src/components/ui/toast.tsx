@@ -18,11 +18,11 @@ const ToastContext = React.createContext<ToastContextValue | null>(null);
 function tone(variant: ToastItem["variant"]) {
   switch (variant) {
     case "success":
-      return "border-emerald-200 bg-white text-zinc-900";
+      return "border-emerald-200 bg-white text-[var(--color-text-primary)]";
     case "error":
-      return "border-red-200 bg-white text-zinc-900";
+      return "border-red-200 bg-white text-[var(--color-text-primary)]";
     default:
-      return "border-zinc-200 bg-white text-zinc-900";
+      return "border-[var(--color-border)] bg-white text-[var(--color-text-primary)]";
   }
 }
 
@@ -46,12 +46,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={[
-              "rounded-xl border p-3 shadow-sm",
+              "rounded-[var(--radius-md)] border p-3 shadow-[var(--shadow-sm)]",
               tone(t.variant),
             ].join(" ")}
           >
             {t.title ? <div className="text-sm font-semibold">{t.title}</div> : null}
-            {t.description ? <div className="mt-1 text-xs text-zinc-600">{t.description}</div> : null}
+            {t.description ? <div className="mt-1 text-xs text-[var(--color-text-muted)]">{t.description}</div> : null}
           </div>
         ))}
       </div>

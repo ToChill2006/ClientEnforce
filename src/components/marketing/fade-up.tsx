@@ -15,7 +15,6 @@ export function FadeUp({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -24,9 +23,8 @@ export function FadeUp({
           observer.unobserve(el);
         }
       },
-      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.1, rootMargin: "0px 0px -32px 0px" }
     );
-
     observer.observe(el);
     return () => observer.disconnect();
   }, [delay]);

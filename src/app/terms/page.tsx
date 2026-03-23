@@ -21,31 +21,31 @@ function TermsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-      <h2 className="text-xl font-semibold tracking-tight text-zinc-900">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-7 text-zinc-700 sm:text-base">{children}</div>
+    <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+      <h2 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{title}</h2>
+      <div className="mt-3 space-y-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">{children}</div>
     </section>
   );
 }
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-white text-[var(--color-text-primary)]">
       <PublicHeader />
 
       <main>
-        <section className="border-b border-zinc-200 bg-white">
+        <section className="border-b border-[var(--color-border)] bg-white">
           <PageContainer>
             <div className="py-12 sm:py-16">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Legal</p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Legal</p>
+              <h1 className="mt-3 text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 Terms & Conditions
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+              <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 These Terms & Conditions govern your access to and use of ClientEnforce, a B2B SaaS
                 platform for client onboarding workflows, document collection, signatures, and progress tracking.
               </p>
-              <p className="mt-2 text-sm text-zinc-600">Last updated: March 9, 2026</p>
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">Last updated: March 9, 2026</p>
             </div>
           </PageContainer>
         </section>
@@ -165,13 +165,13 @@ export default function TermsPage() {
                 <p>
                   For implementation context, review our
                   {" "}
-                  <Link href="/features" className="font-medium text-zinc-900 underline underline-offset-4">
+                  <Link href="/features" className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
                     platform features
                   </Link>
                   {" "}
                   and
                   {" "}
-                  <Link href="/client-onboarding-automation" className="font-medium text-zinc-900 underline underline-offset-4">
+                  <Link href="/client-onboarding-automation" className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
                     client onboarding automation guide
                   </Link>
                   {" "}
@@ -183,7 +183,7 @@ export default function TermsPage() {
                 <p>
                   If you have questions about these terms, contact
                   {" "}
-                  <a href="mailto:support@clientenforce.com" className="font-medium text-zinc-900 underline underline-offset-4">
+                  <a href="mailto:support@clientenforce.com" className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
                     support@clientenforce.com
                   </a>
                   .
@@ -195,7 +195,7 @@ export default function TermsPage() {
                 <p>
                   For general inquiries, visit our
                   {" "}
-                  <Link href="/contact" className="font-medium text-zinc-900 underline underline-offset-4">
+                  <Link href="/contact" className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
                     Contact page
                   </Link>
                   .

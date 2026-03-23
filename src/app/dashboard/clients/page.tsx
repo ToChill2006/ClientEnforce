@@ -4,7 +4,7 @@ import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-zinc-200/70 ${className}`} />;
+  return <div className={`animate-pulse rounded-[var(--radius-sm)] bg-[var(--color-bg-muted)]/70 ${className}`} />;
 }
 
 type Client = {
@@ -206,7 +206,7 @@ export default function ClientsPage() {
   }
 
   async function onDelete(c: Client) {
-    const ok = window.confirm(`Delete client “${displayName(c)}” (${c.email})? This can't be undone.`);
+    const ok = window.confirm(`Delete client "${displayName(c)}" (${c.email})? This can't be undone.`);
     if (!ok) return;
     setStatus(null);
     setError(null);
@@ -262,21 +262,21 @@ export default function ClientsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Clients</h1>
-          <p className="mt-1 text-sm text-zinc-500">Manage client records used across onboardings.</p>
+          <h1 className="text-xl font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Clients</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">Manage client records used across onboardings.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => load()}
-            className="button-polish rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+            className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
           >
             Refresh
           </button>
           <button
             type="button"
             onClick={openCreate}
-            className="button-polish rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+            className="rounded-full bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
             disabled={creatingClient}
           >
             {creatingClient ? "Creating..." : "New client"}
@@ -286,13 +286,13 @@ export default function ClientsPage() {
 
       {(error || status) && (
         <div
-          className={`rounded-lg border p-3 text-sm ${error ? "border-red-200 bg-red-50 text-red-900" : "border-zinc-200 bg-white text-zinc-700"}`}
+          className={`rounded-[var(--radius-md)] border p-3 text-sm ${error ? "border-red-200 bg-red-50 text-red-900" : "border-[var(--color-border)] bg-white text-[var(--color-text-secondary)]"}`}
         >
           {error ?? status}
         </div>
       )}
 
-      <Card className="card-polish">
+      <Card>
         <CardHeader>
           <CardTitle>Directory</CardTitle>
           <CardDescription>
@@ -310,16 +310,16 @@ export default function ClientsPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by name or email…"
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400"
+                className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]"
               />
             </div>
-            <div className="text-sm text-zinc-500">
+            <div className="text-sm text-[var(--color-text-muted)]">
               {loading ? "Loading…" : `${filtered.length} of ${clients.length} clients`}
             </div>
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200">
-            <div className="grid grid-cols-12 gap-2 bg-zinc-50 px-3 py-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
+          <div className="mt-4 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]">
+            <div className="grid grid-cols-12 gap-2 bg-[var(--color-bg-subtle)] px-3 py-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
               <div className="col-span-4">Name</div>
               <div className="col-span-4">Email</div>
               <div className="col-span-2 hidden md:block">Updated</div>
@@ -334,18 +334,18 @@ export default function ClientsPage() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="px-3 py-8 text-center">
-                <div className="text-sm font-medium text-zinc-900">No clients found</div>
-                <div className="mt-1 text-sm text-zinc-500">Try a different search or create a new client.</div>
+                <div className="text-sm font-medium text-[var(--color-text-primary)]">No clients found</div>
+                <div className="mt-1 text-sm text-[var(--color-text-muted)]">Try a different search or create a new client.</div>
                 <button
                   type="button"
                   onClick={openCreate}
-                  className="button-polish mt-4 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                  className="mt-4 rounded-full bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)]"
                 >
                   New client
                 </button>
               </div>
             ) : (
-              <ul className="divide-y divide-zinc-200">
+              <ul className="divide-y divide-[var(--color-border)]">
                 {filtered.map((c) => {
                   const nm = displayName(c);
                   const missingName = nm === "Unnamed";
@@ -357,20 +357,20 @@ export default function ClientsPage() {
                     <li key={c.id} className="grid grid-cols-12 items-center gap-2 px-3 py-3">
                       <div className="col-span-4">
                         <div className="flex items-center gap-2">
-                          <div className="text-sm font-medium text-zinc-900">{nm}</div>
+                          <div className="text-sm font-medium text-[var(--color-text-primary)]">{nm}</div>
                           {missingName ? (
                             <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
                               Missing name
                             </span>
                           ) : null}
                         </div>
-                        <div className="mt-0.5 text-xs text-zinc-500 md:hidden">Updated: {formatDate(c.updated_at)}</div>
+                        <div className="mt-0.5 text-xs text-[var(--color-text-muted)] md:hidden">Updated: {formatDate(c.updated_at)}</div>
                       </div>
 
                       <div className="col-span-4">
                         <button
                           type="button"
-                          className="text-left text-sm text-zinc-900 hover:underline"
+                          className="text-left text-sm text-[var(--color-text-primary)] hover:underline"
                           onClick={() => copy(c.email)}
                           title="Copy email"
                         >
@@ -378,13 +378,13 @@ export default function ClientsPage() {
                         </button>
                       </div>
 
-                      <div className="col-span-2 hidden text-sm text-zinc-600 md:block">{formatDate(c.updated_at)}</div>
+                      <div className="col-span-2 hidden text-sm text-[var(--color-text-secondary)] md:block">{formatDate(c.updated_at)}</div>
 
                       <div className="col-span-4 md:col-span-2 flex justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => openEdit(c)}
-                          className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-60"
+                          className="rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                           disabled={rowBusy}
                         >
                           {rowSaving ? "Saving..." : "Edit"}
@@ -392,7 +392,7 @@ export default function ClientsPage() {
                         <button
                           type="button"
                           onClick={() => onDelete(c)}
-                          className="button-polish rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+                          className="rounded-full border border-red-200 bg-white px-2.5 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
                           disabled={rowBusy}
                         >
                           {rowDeleting ? "Deleting..." : "Delete"}
@@ -411,18 +411,18 @@ export default function ClientsPage() {
       {/* Modal */}
       {modalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
-          <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
+          <div className="w-full max-w-lg rounded-[var(--radius-lg)] bg-white shadow-[var(--shadow-lg)]">
+            <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
               <div>
-                <div className="text-base font-semibold text-zinc-900">{editing ? "Edit client" : "New client"}</div>
-                <div className="mt-0.5 text-sm text-zinc-500">
+                <div className="text-base font-semibold text-[var(--color-text-primary)]">{editing ? "Edit client" : "New client"}</div>
+                <div className="mt-0.5 text-sm text-[var(--color-text-muted)]">
                   Names are required. These records are used when creating and sending onboardings.
                 </div>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-md px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100"
+                className="rounded-[var(--radius-sm)] px-2 py-1 text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)]"
                 aria-label="Close"
               >
                 ✕
@@ -431,11 +431,11 @@ export default function ClientsPage() {
 
             <form onSubmit={onSubmit} className="space-y-4 px-5 py-4">
               {formErr ? (
-                <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-900">{formErr}</div>
+                <div className="rounded-[var(--radius-sm)] border border-red-200 bg-red-50 p-3 text-sm text-red-900">{formErr}</div>
               ) : null}
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-zinc-900" htmlFor="clientName">
+                <label className="text-sm font-medium text-[var(--color-text-primary)]" htmlFor="clientName">
                   Client full name <span className="text-red-600">*</span>
                 </label>
                 <input
@@ -443,14 +443,14 @@ export default function ClientsPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Jane Doe"
-                  className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900"
+                  className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)]"
                   required
                   autoFocus
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-zinc-900" htmlFor="clientEmail">
+                <label className="text-sm font-medium text-[var(--color-text-primary)]" htmlFor="clientEmail">
                   Client email <span className="text-red-600">*</span>
                 </label>
                 <input
@@ -458,25 +458,25 @@ export default function ClientsPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="client@company.com"
-                  className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900"
+                  className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)]"
                   required
                   inputMode="email"
                 />
-                <div className="text-xs text-zinc-500">Clicking an email in the list copies it to clipboard.</div>
+                <div className="text-xs text-[var(--color-text-muted)]">Clicking an email in the list copies it to clipboard.</div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="button-polish rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                  className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
                   disabled={saving}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="button-polish rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+                  className="rounded-full bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
                   disabled={saving}
                 >
                   {saving ? (editing ? "Saving..." : "Creating...") : editing ? "Save" : "Create"}

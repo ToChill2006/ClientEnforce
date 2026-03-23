@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { CtaBand, JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -91,30 +91,33 @@ const softwareSchema = {
 
 export default function ClientOnboardingSoftwarePage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-white text-[var(--color-text-primary)]">
       <PublicHeader />
 
       <main>
-        <section className="border-b border-zinc-200 bg-white">
+        <section className="border-b border-[var(--color-border)] bg-white">
           <PageContainer>
             <div className="py-12 sm:py-16">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Client onboarding software</p>
-              <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">Client onboarding software</p>
+              <h1
+                className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
                 Client onboarding software for teams that want projects to start clean
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+              <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 If your team keeps chasing documents, signatures, and intake answers over email, you do not have an effort problem. You have a workflow problem. Client onboarding software gives you one structured process from signed agreement to kickoff-ready so your team can stop guessing and start delivery with complete information.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)]"
                 >
                   Start onboarding clients properly
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                  className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
                 >
                   See how it works
                 </Link>
@@ -126,54 +129,60 @@ export default function ClientOnboardingSoftwarePage() {
         <section>
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
-              <section id="why-software" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              <section id="why-software" className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <h2
+                  className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
                   What client onboarding software actually solves
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
                   Client onboarding software gives your team a single place to enforce intake requirements. Instead of asking account managers to remember who is missing what, the system handles required steps, reminders, and completion visibility automatically.
                 </p>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
                   That means fewer delayed kickoffs, fewer scope surprises, and a stronger client experience from day one.
                 </p>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <Link href="/client-onboarding-automation" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 hover:bg-white">
+                  <Link href="/client-onboarding-automation" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">
                     client onboarding automation
                   </Link>
-                  <Link href="/client-onboarding-checklist" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 hover:bg-white">
+                  <Link href="/client-onboarding-checklist" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">
                     client onboarding checklist
                   </Link>
-                  <Link href="/onboarding-for-agencies" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 hover:bg-white">
+                  <Link href="/onboarding-for-agencies" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">
                     onboarding software for agencies
                   </Link>
-                  <Link href="/dubsado-alternative" className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-900 hover:bg-white">
+                  <Link href="/dubsado-alternative" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">
                     Dubsado alternative
                   </Link>
                 </div>
               </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <h2
+                  className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
                   What to look for in client onboarding software
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-700 sm:text-base">
+                <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
                   Not all onboarding tools enforce completion - most just track it. Here is what separates a dedicated onboarding platform from a generic checklist or a CRM module.
                 </p>
-                <div className="mt-6 overflow-x-auto rounded-2xl border border-zinc-200">
-                  <table className="w-full min-w-[720px] bg-white text-left text-sm text-zinc-700">
+                <div className="mt-6 overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)]">
+                  <table className="w-full min-w-[720px] bg-white text-left text-sm text-[var(--color-text-secondary)]">
                     <thead>
-                      <tr className="bg-zinc-900 text-white">
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Feature</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">Why it matters</th>
-                        <th className="border-b border-zinc-200 px-4 py-3 font-semibold">ClientEnforce</th>
+                      <tr className="bg-[var(--color-accent)] text-white">
+                        <th className="border-b border-[var(--color-border)] px-4 py-3 font-semibold">Feature</th>
+                        <th className="border-b border-[var(--color-border)] px-4 py-3 font-semibold">Why it matters</th>
+                        <th className="border-b border-[var(--color-border)] px-4 py-3 font-semibold">ClientEnforce</th>
                       </tr>
                     </thead>
                     <tbody>
                       {comparisonRows.map((row) => (
                         <tr key={row[0]}>
-                          <td className="border-b border-zinc-100 px-4 py-3 font-medium text-zinc-900">{row[0]}</td>
-                          <td className="border-b border-zinc-100 px-4 py-3">{row[1]}</td>
-                          <td className="border-b border-zinc-100 px-4 py-3 text-center font-semibold text-emerald-600">{row[2]}</td>
+                          <td className="border-b border-[var(--color-border)] px-4 py-3 font-medium text-[var(--color-text-primary)]">{row[0]}</td>
+                          <td className="border-b border-[var(--color-border)] px-4 py-3">{row[1]}</td>
+                          <td className="border-b border-[var(--color-border)] px-4 py-3 text-center font-semibold text-emerald-600">{row[2]}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -181,40 +190,48 @@ export default function ClientOnboardingSoftwarePage() {
                 </div>
               </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <h2
+                  className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
                   How to roll out client onboarding software in your team
                 </h2>
                 <ol className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">1. Map your current intake steps</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  <li className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">1. Map your current intake steps</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
                       List every required item from contract to kickoff. Include forms, files, signatures, and approvals.
                     </p>
                   </li>
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">2. Build one baseline template</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  <li className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">2. Build one baseline template</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
                       Start with one service line first. Keep required steps explicit so completion is objective, not subjective.
                     </p>
                   </li>
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">3. Automate follow-up rules</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  <li className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">3. Automate follow-up rules</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
                       Trigger reminders for overdue tasks so your team stops manually chasing every missing item.
                     </p>
                   </li>
-                  <li className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">4. Review and tighten every month</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  <li className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">4. Review and tighten every month</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
                       Track where clients stall, then simplify unclear steps and tighten ownership where handoffs break.
                     </p>
                   </li>
                 </ol>
               </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">FAQ</h2>
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <h2
+                  className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  FAQ
+                </h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   {[
                     ["What is client onboarding software?", "It is software that enforces onboarding completion before project kickoff by managing forms, documents, signatures, reminders, and progress in one workflow."],
@@ -223,24 +240,29 @@ export default function ClientOnboardingSoftwarePage() {
                     ["How quickly can we launch?", "Most teams can launch their first template in under a day and improve it during the first month."],
                     ["What should we read next?", "Review client onboarding automation, the client onboarding checklist guide, and the Dubsado alternative page before rollout."],
                   ].map(([question, answer]) => (
-                    <article key={question} className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                      <h3 className="text-sm font-semibold text-zinc-900">{question}</h3>
-                      <p className="mt-2 text-sm leading-6 text-zinc-700">{answer}</p>
+                    <article key={question} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                      <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{question}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{answer}</p>
                     </article>
                   ))}
                 </div>
               </section>
 
-              <section className="rounded-3xl border border-zinc-200 bg-zinc-900 p-6 text-white shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight">Ready to enforce onboarding completion?</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-200 sm:text-base">
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-accent)] p-6 text-white shadow-[var(--shadow-sm)] sm:p-8">
+                <h2
+                  className="text-2xl font-semibold tracking-tight"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Ready to enforce onboarding completion?
+                </h2>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-white/80 sm:text-base">
                   Build your first onboarding template and start projects with complete intake.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/signup" className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-100">
+                  <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-bg-subtle)]">
                     Try ClientEnforce free
                   </Link>
-                  <Link href="/pricing" className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700">
+                  <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-medium text-white hover:bg-white/20">
                     View pricing for onboarding teams
                   </Link>
                 </div>

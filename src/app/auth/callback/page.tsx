@@ -94,13 +94,13 @@ export default function AuthCallbackPage() {
   }, [router, searchParams]);
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-900">
-      <div className="mx-auto flex max-w-md flex-col px-6 py-14">
-        <Link href="/" className="mb-6 flex w-fit items-center gap-3 rounded-md">
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
+    <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
+      <div className="mx-auto flex max-w-md flex-col px-6 py-16">
+        <Link href="/" className="mb-8 flex w-fit items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
-          <div className="text-sm font-semibold">ClientEnforce</div>
+          <span className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>ClientEnforce</span>
         </Link>
 
         <Card>
@@ -120,7 +120,7 @@ export default function AuthCallbackPage() {
               {status}
             </div>
 
-            <p className="text-sm leading-6 text-zinc-600">
+            <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
               {errorText
                 ? "We will take you back to log in in a moment."
                 : "Please wait while we verify your link and complete sign-in."}

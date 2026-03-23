@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { signupAction } from "./action";
 import { buildNoindexMetadata } from "@/lib/seo";
 
@@ -40,11 +38,10 @@ export default async function SignupPage({
   })();
 
   return (
-    <main className="min-h-[calc(100vh-0px)] bg-gradient-to-b from-white to-zinc-50">
-      <div className="mx-auto flex w-full max-w-md flex-col items-center px-6 py-16">
-        {/* Brand */}
-        <Link href="/" className="mb-6 flex w-full items-center gap-3 rounded-md">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white overflow-hidden">
+    <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
+      <div className="mx-auto flex w-full max-w-md flex-col px-6 py-16">
+        <Link href="/" className="mb-8 flex w-fit items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
             <Image
               src="/C.png"
               alt="ClientEnforce"
@@ -54,48 +51,43 @@ export default async function SignupPage({
               priority
             />
           </div>
-          <div className="leading-tight">
-            <div className="text-sm font-semibold">ClientEnforce</div>
-          </div>
+          <span className="text-sm font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+            ClientEnforce
+          </span>
         </Link>
 
-        <section className="mb-6 w-full">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Create your ClientEnforce account</h1>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Start using client onboarding software built to collect files, capture signatures, and automate
-            onboarding follow-ups in one secure workflow.
-          </p>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+            Create your ClientEnforce account
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
             Already have access?{" "}
             <Link
               href={next ? `/login?next=${encodeURIComponent(next)}` : "/login?next=%2Fdashboard"}
-              className="font-medium text-zinc-900 underline underline-offset-4"
+              className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
             >
-              Log in to your ClientEnforce workspace
+              Log in to your workspace
             </Link>
             .
           </p>
-        </section>
+        </div>
 
-        <Card className="w-full shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="mb-2">Create account</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+          <div className="flex flex-col gap-4">
             {error ? (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 p-3 text-sm text-red-800">
                 {error}
               </div>
             ) : null}
 
             <form action={signupAction} className="flex flex-col gap-4">
               {next ? <input type="hidden" name="next" value={next} /> : null}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 <Label htmlFor="fullName">Full name</Label>
                 <Input id="fullName" name="fullName" placeholder="Jane Doe" required autoComplete="name" />
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -107,10 +99,8 @@ export default async function SignupPage({
                 />
               </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   name="password"
@@ -122,25 +112,35 @@ export default async function SignupPage({
                 />
               </div>
 
-              <Button type="submit" className="mt-1">
+              <button
+                type="submit"
+                className="mt-1 inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
+              >
                 Create account
-              </Button>
+              </button>
 
               <div className="flex items-center gap-2 py-1">
-                <div className="h-px flex-1 bg-zinc-200" />
-                <span className="text-xs text-zinc-500">or</span>
-                <div className="h-px flex-1 bg-zinc-200" />
+                <div className="h-px flex-1 bg-[var(--color-border)]" />
+                <span className="text-xs text-[var(--color-text-muted)]">or</span>
+                <div className="h-px flex-1 bg-[var(--color-border)]" />
               </div>
 
               <Link
                 href={next ? `/login?next=${encodeURIComponent(next)}` : "/login?next=%2Fdashboard"}
-                className="inline-flex h-10 w-full items-center justify-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
               >
                 Log in instead
               </Link>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        <p className="mt-5 text-center text-xs text-[var(--color-text-muted)]">
+          By creating an account you agree to our{" "}
+          <Link href="/terms" className="underline hover:text-[var(--color-text-primary)]">Terms</Link>
+          {" "}and{" "}
+          <Link href="/privacy" className="underline hover:text-[var(--color-text-primary)]">Privacy Policy</Link>.
+        </p>
       </div>
     </main>
   );

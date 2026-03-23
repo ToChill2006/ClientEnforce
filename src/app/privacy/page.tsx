@@ -20,30 +20,30 @@ function PolicySection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-      <h2 className="text-xl font-semibold tracking-tight text-zinc-900">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-7 text-zinc-700 sm:text-base">{children}</div>
+    <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+      <h2 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{title}</h2>
+      <div className="mt-3 space-y-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">{children}</div>
     </section>
   );
 }
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-white text-[var(--color-text-primary)]">
       <PublicHeader />
 
       <main>
-        <section className="border-b border-zinc-200 bg-white">
+        <section className="border-b border-[var(--color-border)] bg-white">
           <PageContainer>
             <div className="py-12 sm:py-16">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Legal</p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Legal</p>
+              <h1 className="mt-3 text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 Privacy Policy
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+              <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 This policy explains how ClientEnforce collects, uses, and protects personal data across our public website and product.
               </p>
-              <p className="mt-2 text-sm text-zinc-600">Last updated: March 15, 2026</p>
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">Last updated: March 15, 2026</p>
             </div>
           </PageContainer>
         </section>
@@ -112,7 +112,7 @@ export default function PrivacyPage() {
                 <p>
                   For privacy requests, contact: [CONFIRM WITH LEGAL - DPO EMAIL]. You can also reach us via the
                   {" "}
-                  <Link href="/contact" className="font-medium text-zinc-900 underline underline-offset-4">
+                  <Link href="/contact" className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
                     contact page
                   </Link>
                   .

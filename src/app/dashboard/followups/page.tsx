@@ -38,10 +38,10 @@ function fmt(s?: string | null) {
 function statusPill(status: string) {
   const base = "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium";
   const s = (status || "").toLowerCase();
-  if (s === "sent") return `${base} border-zinc-200 bg-zinc-100 text-zinc-900`;
-  if (s === "failed") return `${base} border-zinc-200 bg-white text-zinc-700`;
-  if (s === "cancelled") return `${base} border-zinc-200 bg-white text-zinc-500`;
-  return `${base} border-zinc-200 bg-zinc-50 text-zinc-800`;
+  if (s === "sent") return `${base} border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]`;
+  if (s === "failed") return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-secondary)]`;
+  if (s === "cancelled") return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-muted)]`;
+  return `${base} border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]`;
 }
 
 export default function FollowupsPage() {
@@ -269,8 +269,8 @@ export default function FollowupsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-lg font-semibold text-zinc-900">Follow-ups</h1>
-        <p className="mt-1 text-sm text-zinc-600">Configure timing and monitor scheduled reminder emails.</p>
+        <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Follow-ups</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Configure timing and monitor scheduled reminder emails.</p>
       </div>
 
       {alert ? (
@@ -306,7 +306,7 @@ export default function FollowupsPage() {
         )
       ) : null}
 
-      <Card className="card-polish">
+      <Card>
         <CardHeader>
           <CardTitle>Timing</CardTitle>
           <CardDescription>
@@ -318,19 +318,19 @@ export default function FollowupsPage() {
         <CardContent className="flex flex-col gap-4">
           <div className="grid gap-3 md:grid-cols-4">
             <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Delay (days)</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Delay (days)</div>
               <Input value={delayDays} disabled={!canEditSettings} onChange={(e) => setDelayDays(e.target.value)} />
             </div>
 
             <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Max follow-ups</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Max follow-ups</div>
               <Input value={maxCount} disabled={!canEditSettings} onChange={(e) => setMaxCount(e.target.value)} />
             </div>
 
             <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Send hour</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Send hour</div>
               <select
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
                 value={sendHour}
                 disabled={!canEditSettings}
                 onChange={(e) => setSendHour(e.target.value)}
@@ -347,9 +347,9 @@ export default function FollowupsPage() {
             </div>
 
             <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Timezone</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Timezone</div>
               <select
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
                 value={tz}
                 disabled={!canEditSettings}
                 onChange={(e) => setTz(e.target.value)}
@@ -364,8 +364,8 @@ export default function FollowupsPage() {
           </div>
 
           {sendPreview ? (
-            <div className="text-xs text-zinc-500">
-              Preview: sends at about <span className="font-medium text-zinc-700">{sendPreview}</span> in <span className="font-medium text-zinc-700">{tz}</span>
+            <div className="text-xs text-[var(--color-text-muted)]">
+              Preview: sends at about <span className="font-medium text-[var(--color-text-secondary)]">{sendPreview}</span> in <span className="font-medium text-[var(--color-text-secondary)]">{tz}</span>
             </div>
           ) : null}
 
@@ -382,10 +382,10 @@ export default function FollowupsPage() {
           </div>
 
           {settings ? (
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-primary)]">
               Current: {settings.followup_max_count} follow-ups, every {settings.followup_delay_days} day(s), send hour {settings.followup_send_hour} ({settings.followup_timezone})
               {!canEditSettings || !canRunCron ? (
-                <div className="mt-2 text-xs text-zinc-500">
+                <div className="mt-2 text-xs text-[var(--color-text-muted)]">
                   {!canEditSettings ? "Only admins and owners can change follow-up timing. " : ""}
                   {!canRunCron ? "Only admins and owners can run follow-ups manually." : ""}
                 </div>
@@ -395,7 +395,7 @@ export default function FollowupsPage() {
         </CardContent>
       </Card>
 
-      <Card className="card-polish">
+      <Card>
         <CardHeader>
           <CardTitle>Upcoming jobs</CardTitle>
           <CardDescription>Queued reminder emails and their due times.</CardDescription>
@@ -405,12 +405,12 @@ export default function FollowupsPage() {
             <div className="w-full md:max-w-sm">
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by email, subject, status..." />
             </div>
-            <div className="text-xs text-zinc-500">{loading ? "Loading..." : `${filtered.length} job(s)`}</div>
+            <div className="text-xs text-[var(--color-text-muted)]">{loading ? "Loading..." : `${filtered.length} job(s)`}</div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
             <table className="w-full min-w-[900px] text-sm">
-              <thead className="border-b border-zinc-200 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <thead className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>
                   <th className="px-4 py-2 text-left">To</th>
                   <th className="px-4 py-2 text-left">Subject</th>
@@ -420,7 +420,7 @@ export default function FollowupsPage() {
                   <th className="px-4 py-2 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
+              <tbody className="divide-y divide-[var(--color-border)]">
                 {loading ? (
                   Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i}>
@@ -438,35 +438,35 @@ export default function FollowupsPage() {
                   ))
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td className="px-4 py-3 text-zinc-600" colSpan={6}>
+                    <td className="px-4 py-3 text-[var(--color-text-secondary)]" colSpan={6}>
                       No follow-up jobs found.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((j) => (
-                    <tr key={j.id} className="transition-colors duration-150 hover:bg-zinc-50">
+                    <tr key={j.id} className="transition-colors duration-150 hover:bg-[var(--color-bg-subtle)]">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-zinc-900">{j.to_email}</div>
-                        <div className="font-mono text-xs text-zinc-500">{j.onboarding_id}</div>
+                        <div className="font-medium text-[var(--color-text-primary)]">{j.to_email}</div>
+                        <div className="font-mono text-xs text-[var(--color-text-muted)]">{j.onboarding_id}</div>
                       </td>
-                      <td className="px-4 py-3 text-zinc-800">{j.subject}</td>
-                      <td className="px-4 py-3 text-zinc-700">{fmt(j.due_at)}</td>
+                      <td className="px-4 py-3 text-[var(--color-text-primary)]">{j.subject}</td>
+                      <td className="px-4 py-3 text-[var(--color-text-secondary)]">{fmt(j.due_at)}</td>
                       <td className="px-4 py-3">
                         <span className={statusPill(j.status)}>{j.status}</span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-zinc-600">{j.last_error ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs text-[var(--color-text-secondary)]">{j.last_error ?? "—"}</td>
                       <td className="px-4 py-3 text-right">
                         {j.status !== "sent" && j.status !== "cancelled" ? (
                           <button
                             type="button"
                             onClick={() => markDone(j)}
-                            className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-60"
+                            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                             disabled={markingJobId === j.id}
                           >
                             {markingJobId === j.id ? "Marking..." : "Mark done"}
                           </button>
                         ) : (
-                          <span className="text-xs text-zinc-400">—</span>
+                          <span className="text-xs text-[var(--color-text-muted)]">—</span>
                         )}
                       </td>
                     </tr>

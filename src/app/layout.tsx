@@ -1,23 +1,21 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Instrument_Serif, DM_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { ToastProvider } from "@/components/ui/toast";
 import { JsonLd } from "@/components/marketing/public-shell";
 import { canonicalSiteOrigin } from "@/lib/app-url";
 import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/seo";
 
-const instrumentSerif = Instrument_Serif({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-  variable: "--font-instrument-serif",
+  variable: "--font-plus-jakarta-sans",
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -68,9 +66,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full ${instrumentSerif.variable} ${dmSans.variable}`}
+      className={`h-full ${plusJakartaSans.variable} ${inter.variable}`}
     >
-      <body className="min-h-screen bg-zinc-50 text-zinc-950 antialiased overflow-x-hidden selection:bg-[#00C2A8] selection:text-[#0A0A0F]">
+      <body className="min-h-screen bg-white text-[#0F1117] antialiased overflow-x-hidden selection:bg-[#EBF2FF] selection:text-[#0D3D99]">
         <ToastProvider>
           <div className="min-h-screen w-full">{children}</div>
           <JsonLd data={buildOrganizationSchema()} />

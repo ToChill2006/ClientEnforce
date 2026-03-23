@@ -66,13 +66,13 @@ function statusLabel(raw?: string | null) {
 
 function statusPillClasses(raw?: string | null) {
   const s = (raw || "").toLowerCase();
-  // neutral + subtle accents (no bright colors)
-  if (s === "submitted") return "bg-zinc-900 text-white border-zinc-900";
-  if (s === "locked") return "bg-zinc-900 text-white border-zinc-900";
-  if (s === "in_progress" || s === "in progress") return "bg-white text-zinc-900 border-zinc-300";
-  if (s === "sent") return "bg-zinc-50 text-zinc-900 border-zinc-200";
-  if (s === "draft") return "bg-white text-zinc-700 border-zinc-200";
-  return "bg-white text-zinc-700 border-zinc-200";
+  if (s === "submitted" || s === "locked")
+    return "bg-[var(--color-success-subtle)] text-[var(--color-success)] border-[var(--color-success-subtle)]";
+  if (s === "in_progress" || s === "in progress")
+    return "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[var(--color-accent-subtle)]";
+  if (s === "sent")
+    return "bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] border-[var(--color-border)]";
+  return "bg-white text-[var(--color-text-muted)] border-[var(--color-border)]";
 }
 
 function normalizeOnboardingStatus(metrics: MetricsResponse | null) {
@@ -125,23 +125,18 @@ function MetricCard({
   href?: string;
 }) {
   const inner = (
-    <div className="card-polish rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[12px] font-medium uppercase tracking-wider text-zinc-500">{label}</div>
-          <div className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">{value}</div>
-          {hint ? <div className="mt-1 text-sm text-zinc-500">{hint}</div> : null}
-        </div>
-        <div className="mt-0.5 h-9 w-9 rounded-lg border border-zinc-200 bg-zinc-50" aria-hidden="true" />
-      </div>
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-sm)]">
+      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">{label}</div>
+      <div className="mt-2 text-3xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{value}</div>
+      {hint ? <div className="mt-1 text-xs text-[var(--color-text-muted)]">{hint}</div> : null}
     </div>
   );
 
   if (!href) return inner;
 
   return (
-    <Link href={href} className="block focus:outline-none focus:ring-2 focus:ring-zinc-200 rounded-xl">
-      <div className="transition hover:border-zinc-300">{inner}</div>
+    <Link href={href} className="card-lift block rounded-[var(--radius-lg)] focus:outline-none">
+      {inner}
     </Link>
   );
 }
@@ -159,10 +154,10 @@ function ActionLink({
     <Link
       href={href}
       className={cx(
-        "button-polish inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-zinc-200",
+        "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition active:scale-[0.98]",
         variant === "primary"
-          ? "bg-zinc-900 text-white hover:bg-zinc-800"
-          : "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"
+          ? "bg-[var(--color-accent)] text-white shadow-[var(--shadow-sm)] hover:bg-[var(--color-accent-hover)]"
+          : "border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
       )}
     >
       {children}
@@ -206,10 +201,10 @@ function AnimatedNumber({ value, loading }: { value: number; loading: boolean })
 function SkeletonRow() {
   return (
     <div className="grid grid-cols-12 gap-3 px-4 py-3">
-      <div className="col-span-4 h-4 rounded bg-zinc-100" />
-      <div className="col-span-3 h-4 rounded bg-zinc-100" />
-      <div className="col-span-2 h-4 rounded bg-zinc-100" />
-      <div className="col-span-3 h-4 rounded bg-zinc-100" />
+      <div className="col-span-4 h-4 rounded-full bg-[var(--color-bg-muted)]" />
+      <div className="col-span-3 h-4 rounded-full bg-[var(--color-bg-muted)]" />
+      <div className="col-span-2 h-4 rounded-full bg-[var(--color-bg-muted)]" />
+      <div className="col-span-3 h-4 rounded-full bg-[var(--color-bg-muted)]" />
     </div>
   );
 }
@@ -324,33 +319,32 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-zinc-500">A compact overview of your workspace.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">A compact overview of your workspace.</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <ActionLink href="/dashboard/onboardings" variant="primary">
             View onboardings
           </ActionLink>
-          <ActionLink href="/dashboard/onboardings" variant="secondary">
-            New onboarding
-          </ActionLink>
           <ActionLink href="/dashboard/settings" variant="secondary">
-            Billing &amp; settings
+            Settings
           </ActionLink>
         </div>
       </div>
 
       {/* Error banner */}
       {error ? (
-        <div className="rounded-xl border border-zinc-200 bg-white p-4">
-          <div className="text-sm font-medium text-zinc-900">Could not load dashboard</div>
-          <div className="mt-1 text-sm text-zinc-500">{error}</div>
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+          <div className="text-sm font-semibold text-[var(--color-text-primary)]">Could not load dashboard</div>
+          <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{error}</div>
           <div className="mt-3">
             <button
               type="button"
               onClick={() => location.reload()}
-              className="button-polish inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200"
+              className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
             >
               Retry
             </button>
@@ -359,7 +353,7 @@ export default function DashboardPage() {
       ) : null}
 
       {/* Metrics */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Clients"
           value={<AnimatedNumber value={clients} loading={loading} />}
@@ -382,83 +376,25 @@ export default function DashboardPage() {
         />
       </div>
 
-      <section className="card-polish rounded-xl border border-zinc-200 bg-white shadow-sm">
-        <div className="border-b border-zinc-200 px-4 py-3">
-          <div className="text-sm font-semibold text-zinc-900">Rate your dashboard experience</div>
-          <div className="mt-0.5 text-sm text-zinc-500">
-            Share quick feedback so we can improve ClientEnforce.
-          </div>
-        </div>
-
-        <form onSubmit={submitFeedback} className="space-y-3 px-4 py-4">
-          <div className="flex flex-wrap gap-2">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFeedbackRating(value)}
-                aria-pressed={feedbackRating === value}
-                className={cx(
-                  "button-polish inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-zinc-200",
-                  feedbackRating === value
-                    ? "border-zinc-900 bg-zinc-900 text-white"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
-                )}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-
-          <div className="text-xs text-zinc-500">1 = Needs work, 5 = Excellent</div>
-
-          <div>
-            <label htmlFor="dashboard-feedback" className="text-sm font-medium text-zinc-800">
-              Feedback (optional)
-            </label>
-            <textarea
-              id="dashboard-feedback"
-              value={feedbackText}
-              onChange={(e) => setFeedbackText(e.target.value)}
-              maxLength={2000}
-              placeholder="What would make your dashboard experience better?"
-              className="mt-1 min-h-24 w-full resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200"
-            />
-            <div className="mt-1 text-right text-xs text-zinc-500">{feedbackText.length}/2000</div>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={feedbackSubmitting || feedbackRating === null}
-              className="button-polish inline-flex items-center justify-center rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:opacity-50"
-            >
-              {feedbackSubmitting ? "Sending..." : "Send feedback"}
-            </button>
-          </div>
-        </form>
-      </section>
-
       {/* Two-column: Status + Recent */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        {/* Status */}
-        <section className="lg:col-span-5">
-          <div className="card-polish rounded-xl border border-zinc-200 bg-white shadow-sm">
-            <div className="border-b border-zinc-200 px-4 py-3">
-              <div className="text-sm font-semibold text-zinc-900">Onboarding status</div>
-              <div className="mt-0.5 text-sm text-zinc-500">Distribution across lifecycle.</div>
+        {/* Status breakdown */}
+        <section className="lg:col-span-4">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+            <div className="border-b border-[var(--color-border)] px-5 py-4">
+              <div className="text-sm font-semibold text-[var(--color-text-primary)]">Onboarding status</div>
+              <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">Distribution across lifecycle.</div>
             </div>
 
-            <div className="px-4 py-3">
+            <div className="px-5 py-4">
               {loading ? (
-                <div className="space-y-2">
-                  <div className="h-4 w-2/3 rounded bg-zinc-100" />
-                  <div className="h-4 w-1/2 rounded bg-zinc-100" />
-                  <div className="h-4 w-3/5 rounded bg-zinc-100" />
-                  <div className="h-4 w-1/3 rounded bg-zinc-100" />
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-4 rounded-full bg-[var(--color-bg-muted)]" style={{ width: `${50 + i * 10}%` }} />
+                  ))}
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { key: "draft", label: "Draft" },
                     { key: "sent", label: "Sent" },
@@ -466,8 +402,8 @@ export default function DashboardPage() {
                     { key: "submitted", label: "Submitted" },
                   ].map((row) => (
                     <div key={row.key} className="flex items-center justify-between gap-3">
-                      <div className="text-sm text-zinc-700">{row.label}</div>
-                      <div className="text-sm font-semibold tabular-nums text-zinc-900">
+                      <div className="text-sm text-[var(--color-text-secondary)]">{row.label}</div>
+                      <div className="text-sm font-semibold tabular-nums text-[var(--color-text-primary)]">
                         {(status as any)[row.key] ?? 0}
                       </div>
                     </div>
@@ -475,7 +411,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              <div className="mt-4">
+              <div className="mt-5">
                 <ActionLink href="/dashboard/onboardings" variant="secondary">
                   Open onboardings
                 </ActionLink>
@@ -485,27 +421,26 @@ export default function DashboardPage() {
         </section>
 
         {/* Recent onboardings */}
-        <section className="lg:col-span-7">
-          <div className="card-polish rounded-xl border border-zinc-200 bg-white shadow-sm">
-            <div className="border-b border-zinc-200 px-4 py-3">
+        <section className="lg:col-span-8">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+            <div className="border-b border-[var(--color-border)] px-5 py-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-zinc-900">Recent onboardings</div>
-                  <div className="mt-0.5 text-sm text-zinc-500">Latest activity across your workspace.</div>
+                  <div className="text-sm font-semibold text-[var(--color-text-primary)]">Recent onboardings</div>
+                  <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">Latest activity across your workspace.</div>
                 </div>
                 <Link
                   href="/dashboard/onboardings"
-                  className="text-sm font-medium text-zinc-900 hover:underline"
+                  className="text-sm font-semibold text-[var(--color-accent)] transition hover:text-[var(--color-accent-hover)]"
                 >
                   View all
                 </Link>
               </div>
             </div>
 
-            {/* Table */}
             <div className="overflow-x-auto">
-              <div className="min-w-[640px]">
-                <div className="grid grid-cols-12 gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-2 text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+              <div className="min-w-[560px]">
+                <div className="grid grid-cols-12 gap-3 border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
                   <div className="col-span-4">Client</div>
                   <div className="col-span-4">Title</div>
                   <div className="col-span-2">Status</div>
@@ -513,15 +448,15 @@ export default function DashboardPage() {
                 </div>
 
                 {loading ? (
-                  <div className="divide-y divide-zinc-100">
+                  <div className="divide-y divide-[var(--color-border)]">
                     <SkeletonRow />
                     <SkeletonRow />
                     <SkeletonRow />
                   </div>
                 ) : recent.length === 0 ? (
-                  <div className="px-4 py-10">
-                    <div className="text-sm font-medium text-zinc-900">No onboardings yet</div>
-                    <div className="mt-1 text-sm text-zinc-500">
+                  <div className="px-5 py-10">
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">No onboardings yet</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
                       Create your first onboarding to start tracking progress and follow-ups.
                     </div>
                     <div className="mt-4">
@@ -531,29 +466,31 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="divide-y divide-zinc-100">
+                  <div className="divide-y divide-[var(--color-border)]">
                     {recent.slice(0, 6).map((o) => (
                       <Link
                         key={o.id}
                         href={`/dashboard/onboardings/${o.id}`}
-                        className="block hover:bg-zinc-50"
+                        className="block transition hover:bg-[var(--color-bg-subtle)]"
                       >
-                        <div className="grid grid-cols-12 items-center gap-3 px-4 py-3">
+                        <div className="grid grid-cols-12 items-center gap-3 px-5 py-3">
                           <div className="col-span-4 min-w-0">
-                            <div className="truncate text-sm font-medium text-zinc-900">
+                            <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">
                               {o.client_name || "—"}
                             </div>
-                            <div className="truncate text-sm text-zinc-500">{o.client_email || "—"}</div>
+                            <div className="truncate text-xs text-[var(--color-text-muted)]">{o.client_email || "—"}</div>
                           </div>
 
                           <div className="col-span-4 min-w-0">
-                            <div className="truncate text-sm text-zinc-900">{o.title ?? (o as any).name ?? (o as any).onboarding_title ?? "—"}</div>
+                            <div className="truncate text-sm text-[var(--color-text-secondary)]">
+                              {o.title ?? (o as any).name ?? (o as any).onboarding_title ?? "—"}
+                            </div>
                           </div>
 
                           <div className="col-span-2">
                             <span
                               className={cx(
-                                "inline-flex items-center rounded-full border px-2 py-0.5 text-[12px] font-medium",
+                                "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
                                 statusPillClasses(o.status)
                               )}
                             >
@@ -561,7 +498,7 @@ export default function DashboardPage() {
                             </span>
                           </div>
 
-                          <div className="col-span-2 text-right text-sm tabular-nums text-zinc-500">
+                          <div className="col-span-2 text-right text-xs tabular-nums text-[var(--color-text-muted)]">
                             {formatDate(o.updated_at)}
                           </div>
                         </div>
@@ -573,9 +510,9 @@ export default function DashboardPage() {
             </div>
 
             {!loading && recent.length > 0 ? (
-              <div className="border-t border-zinc-200 px-4 py-3">
+              <div className="border-t border-[var(--color-border)] px-5 py-3">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-zinc-500">Showing latest {Math.min(6, recent.length)} items</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">Showing latest {Math.min(6, recent.length)} items</div>
                   <ActionLink href="/dashboard/onboardings" variant="secondary">
                     View all
                   </ActionLink>
@@ -585,6 +522,64 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
+
+      {/* Feedback */}
+      <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+        <div className="border-b border-[var(--color-border)] px-5 py-4">
+          <div className="text-sm font-semibold text-[var(--color-text-primary)]">Rate your dashboard experience</div>
+          <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+            Share quick feedback so we can improve ClientEnforce.
+          </div>
+        </div>
+
+        <form onSubmit={submitFeedback} className="space-y-4 px-5 py-4">
+          <div className="flex flex-wrap gap-2">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFeedbackRating(value)}
+                aria-pressed={feedbackRating === value}
+                className={cx(
+                  "inline-flex h-9 min-w-[36px] items-center justify-center rounded-full border px-3 text-sm font-semibold transition active:scale-[0.98] focus:outline-none",
+                  feedbackRating === value
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
+                    : "border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
+                )}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-xs text-[var(--color-text-muted)]">1 = Needs work, 5 = Excellent</div>
+
+          <div>
+            <label htmlFor="dashboard-feedback" className="text-sm font-medium text-[var(--color-text-primary)]">
+              Feedback (optional)
+            </label>
+            <textarea
+              id="dashboard-feedback"
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              maxLength={2000}
+              placeholder="What would make your dashboard experience better?"
+              className="mt-1.5 min-h-24 w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
+            />
+            <div className="mt-1 text-right text-xs text-[var(--color-text-muted)]">{feedbackText.length}/2000</div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={feedbackSubmitting || feedbackRating === null}
+              className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] disabled:opacity-50"
+            >
+              {feedbackSubmitting ? "Sending..." : "Send feedback"}
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

@@ -69,11 +69,11 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white">
-      <div className="border-b border-zinc-200 px-4 py-3 text-sm font-semibold">Onboardings</div>
-      <div className="divide-y divide-zinc-200">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
+      <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold">Onboardings</div>
+      <div className="divide-y divide-[var(--color-border)]">
         {/* Desktop/table headers */}
-        <div className="hidden grid-cols-12 gap-3 px-4 py-2 text-xs font-medium text-zinc-500 md:grid">
+        <div className="hidden grid-cols-12 gap-3 px-4 py-2 text-xs font-medium text-[var(--color-text-muted)] md:grid">
           <div className="col-span-3">Title</div>
           <div className="col-span-3">Client</div>
           <div className="col-span-2">Template</div>
@@ -83,7 +83,7 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
         </div>
 
         {rows.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-zinc-600">No onboardings yet.</div>
+          <div className="px-4 py-6 text-sm text-[var(--color-text-secondary)]">No onboardings yet.</div>
         ) : (
           rows.map((r) => {
             const p = progress[r.id]?.percent ?? 0;
@@ -95,34 +95,34 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
               <div key={r.id} className="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-12 md:items-center">
                 {/* Title */}
                 <div className="md:col-span-3">
-                  <div className="text-sm font-semibold text-zinc-900 truncate max-w-[220px]">{r.title}</div>
-                  <div className="mt-0.5 text-xs text-zinc-500 md:hidden">Client: {clientLabel}</div>
+                  <div className="text-sm font-semibold text-[var(--color-text-primary)] truncate max-w-[220px]">{r.title}</div>
+                  <div className="mt-0.5 text-xs text-[var(--color-text-muted)] md:hidden">Client: {clientLabel}</div>
                 </div>
 
                 {/* Client */}
                 <div className="md:col-span-3">
-                  <div className="text-sm text-zinc-900">{clientLabel}</div>
-                  <div className="mt-1 text-xs text-zinc-500 md:hidden">Template: {templateLabel}</div>
+                  <div className="text-sm text-[var(--color-text-primary)]">{clientLabel}</div>
+                  <div className="mt-1 text-xs text-[var(--color-text-muted)] md:hidden">Template: {templateLabel}</div>
                 </div>
 
                 {/* Template */}
                 <div className="md:col-span-2">
-                  <div className="text-sm text-zinc-900">{templateLabel}</div>
+                  <div className="text-sm text-[var(--color-text-primary)]">{templateLabel}</div>
                 </div>
 
                 {/* Status */}
                 <div className="md:col-span-1">
-                  <div className="text-sm text-zinc-900">{r.status}</div>
+                  <div className="text-sm text-[var(--color-text-primary)]">{r.status}</div>
                 </div>
 
                 {/* Progress */}
                 <div className="md:col-span-2">
-                  <div className="mb-1 flex items-center justify-between text-xs text-zinc-600">
+                  <div className="mb-1 flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
                     <span className="md:hidden">Progress</span>
-                    <span className="font-medium text-zinc-900">{p}%</span>
+                    <span className="font-medium text-[var(--color-text-primary)]">{p}%</span>
                   </div>
                   <Progress value={p} />
-                  <div className="mt-2 break-all text-xs text-zinc-600 md:hidden">
+                  <div className="mt-2 break-all text-xs text-[var(--color-text-secondary)] md:hidden">
                     Client link:{" "}
                     <a className="underline" href={link} target="_blank" rel="noreferrer">
                       {link}

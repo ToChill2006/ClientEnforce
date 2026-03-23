@@ -3,7 +3,7 @@ import * as React from "react";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 
 function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-zinc-200/70 ${className}`} />;
+  return <div className={`animate-pulse rounded-[var(--radius-sm)] bg-[var(--color-bg-muted)]/70 ${className}`} />;
 }
 
 type AuditEvent = {
@@ -76,18 +76,18 @@ export default function AuditPage() {
     <div className="space-y-5">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">Audit</h1>
-          <p className="mt-1 text-sm text-zinc-500">All actions performed across your workspace.</p>
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Audit</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">All actions performed across your workspace.</p>
         </div>
         <button
           onClick={load}
-          className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+          className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
         >
           Refresh
         </button>
       </div>
 
-      <div className="card-polish overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
         {err ? (
           <div className="p-4">
             <RejectionBanner
@@ -99,17 +99,17 @@ export default function AuditPage() {
 
         <div className="overflow-x-auto">
           <table className="min-w-[1000px] w-full">
-            <thead className="bg-zinc-50">
-              <tr className="border-b border-zinc-200">
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">When</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Action</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Actor</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Entity</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Details</th>
+            <thead className="bg-[var(--color-bg-subtle)]">
+              <tr className="border-b border-[var(--color-border)]">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">When</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Action</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Actor</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Entity</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Details</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[var(--color-border)]">
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i}>
@@ -121,31 +121,31 @@ export default function AuditPage() {
               ) : err ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-10">
-                    <div className="text-sm text-zinc-500">Audit events are unavailable for this workspace.</div>
+                    <div className="text-sm text-[var(--color-text-muted)]">Audit events are unavailable for this workspace.</div>
                   </td>
                 </tr>
               ) : events.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-10">
-                    <div className="text-sm font-medium text-zinc-900">No activity yet</div>
-                    <div className="mt-1 text-sm text-zinc-500">Once you create onboardings, upload files, send links, etc. it’ll show up here.</div>
+                    <div className="text-sm font-medium text-[var(--color-text-primary)]">No activity yet</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-muted)]">Once you create onboardings, upload files, send links, etc. it'll show up here.</div>
                   </td>
                 </tr>
               ) : (
                 events.map((e) => (
-                  <tr key={e.id} className="hover:bg-zinc-50">
-                    <td className="px-4 py-3 text-sm text-zinc-700 tabular-nums">{formatWhen(e.created_at)}</td>
-                    <td className="px-4 py-3 text-sm text-zinc-900 font-medium">{labelAction(e.action)}</td>
-                    <td className="px-4 py-3 text-sm text-zinc-700">
+                  <tr key={e.id} className="hover:bg-[var(--color-bg-subtle)]">
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] tabular-nums">{formatWhen(e.created_at)}</td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-medium">{labelAction(e.action)}</td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
                       <div className="truncate">{e.actor || e.actor_email || "—"}</div>
-                      <div className="text-xs text-zinc-500">{e.actor_role || e.actor_email || ""}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">{e.actor_role || e.actor_email || ""}</div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-zinc-700">
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
                       <div className="truncate">{e.entity_type || "—"}</div>
-                      <div className="text-xs text-zinc-500 truncate">{e.entity_id || ""}</div>
+                      <div className="text-xs text-[var(--color-text-muted)] truncate">{e.entity_id || ""}</div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-zinc-700">
-                      <pre className="whitespace-pre-wrap break-words text-xs text-zinc-500">
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+                      <pre className="whitespace-pre-wrap break-words text-xs text-[var(--color-text-muted)]">
                         {e.meta ? JSON.stringify(e.meta, null, 2) : ""}
                       </pre>
                     </td>

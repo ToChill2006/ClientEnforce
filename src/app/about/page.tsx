@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { CtaBand, PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -26,28 +26,36 @@ function StorySection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-7 text-zinc-700 sm:text-base">{children}</div>
+    <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+      <h2
+        className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {title}
+      </h2>
+      <div className="mt-3 space-y-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">{children}</div>
     </section>
   );
 }
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-white text-[var(--color-text-primary)]">
       <PublicHeader />
 
       <main>
-        <section className="border-b border-zinc-200 bg-white">
+        <section className="border-b border-[var(--color-border)] bg-white">
           <PageContainer>
             <div className="py-12 sm:py-16">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">About ClientEnforce</p>
-              <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">About ClientEnforce</p>
+              <h1
+                className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
                 Why we built ClientEnforce
               </h1>
 
-              <div className="mt-4 max-w-3xl space-y-3 text-base leading-7 text-zinc-700">
+              <div className="mt-4 max-w-3xl space-y-3 text-base leading-7 text-[var(--color-text-secondary)]">
                 <p>
                   We ran a service business. Every deal felt clean at the start - proposal sent, contract signed, client excited. Then onboarding began, and that is where things fell apart.
                 </p>
@@ -86,19 +94,19 @@ export default function AboutPage() {
               <StorySection title="What we believe">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-base font-semibold text-zinc-900">Onboarding is not admin - it is your first impression.</h3>
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Onboarding is not admin - it is your first impression.</h3>
                     <p className="mt-1">
                       The way you run intake is the first signal to a client of how you run everything. A messy start sets the expectation that the rest of the project will feel the same.
                     </p>
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-zinc-900">Chasing people over email is a process failure, not a client problem.</h3>
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Chasing people over email is a process failure, not a client problem.</h3>
                     <p className="mt-1">
                       When clients stall on intake, the instinct is to blame them. The real problem is that there is no system enforcing completion. Fix the system, remove the chase.
                     </p>
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-zinc-900">A clean start leads to a cleaner project.</h3>
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">A clean start leads to a cleaner project.</h3>
                     <p className="mt-1">
                       Every project that begins with complete information, signed agreements, and clear expectations runs better. Not by accident - by design.
                     </p>
@@ -112,21 +120,26 @@ export default function AboutPage() {
                 </p>
               </StorySection>
 
-              <section className="rounded-2xl border border-zinc-200 bg-zinc-900 p-6 text-white shadow-sm sm:p-8">
-                <h2 className="text-2xl font-semibold tracking-tight">Your next client deserves a better start</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-200 sm:text-base">
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-accent)] p-6 text-white shadow-[var(--shadow-sm)] sm:p-8">
+                <h2
+                  className="text-2xl font-semibold tracking-tight"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Your next client deserves a better start
+                </h2>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-white/80 sm:text-base">
                   Build your first onboarding template in under 20 minutes. No credit card needed.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href="/signup"
-                    className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
+                    className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-bg-subtle)]"
                   >
                     Start free trial
                   </Link>
                   <Link
                     href="/features"
-                    className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-700"
+                    className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/20"
                   >
                     See all features →
                   </Link>

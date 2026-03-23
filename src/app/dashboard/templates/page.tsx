@@ -373,9 +373,9 @@ export default function TemplatesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="card-polish">
+      <Card>
         <CardHeader>
-          <CardTitle>Templates</CardTitle>
+          <CardTitle style={{ fontFamily: "var(--font-display)" }}>Templates</CardTitle>
           <CardDescription>Define requirements that will be snapshotted into each onboarding.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -384,19 +384,23 @@ export default function TemplatesPage() {
               <label className="text-sm font-medium">New template name</label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Standard onboarding" />
             </div>
-            <Button onClick={create} disabled={creating} className="button-polish">
+            <Button
+              onClick={create}
+              disabled={creating}
+              className="rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+            >
               {creating ? "Creating..." : "Create"}
             </Button>
           </div>
 
-          <div className="rounded-xl border border-zinc-200">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)]">
             {upgradeMessage ? (
               <RejectionBanner kind="plan" message={upgradeMessage} className="rounded-none border-x-0 border-t-0" />
             ) : null}
-            <div className="border-b border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600">
+            <div className="border-b border-[var(--color-border)] px-4 py-2 text-xs font-semibold text-[var(--color-text-secondary)]">
               {loading ? "Loading..." : `${items.length} templates`}
             </div>
-            <div className="divide-y divide-zinc-200">
+            <div className="divide-y divide-[var(--color-border)]">
               {loading ? (
                 <div className="space-y-2 p-3">
                   <Skeleton className="h-10 w-full" />
@@ -408,17 +412,19 @@ export default function TemplatesPage() {
                   {items.map((t) => (
                     <button
                       key={t.id}
-                      className="button-polish flex w-full items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 disabled:opacity-60"
+                      className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                       onClick={() => openTemplate(t.id)}
                       disabled={openingId === t.id}
                     >
-                      <div className="text-sm font-medium text-zinc-900">{t.name}</div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-sm font-medium text-[var(--color-text-primary)]">{t.name}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">
                         {openingId === t.id ? "Opening..." : new Date(t.updated_at).toLocaleString()}
                       </div>
                     </button>
                   ))}
-                  {!items.length ? <div className="px-4 py-4 text-sm text-zinc-600">No templates yet.</div> : null}
+                  {!items.length ? (
+                    <div className="px-4 py-4 text-sm text-[var(--color-text-secondary)]">No templates yet.</div>
+                  ) : null}
                 </>
               )}
             </div>
@@ -427,9 +433,9 @@ export default function TemplatesPage() {
       </Card>
 
       {selected ? (
-        <Card className="card-polish">
+        <Card>
           <CardHeader>
-            <CardTitle>Edit template</CardTitle>
+            <CardTitle style={{ fontFamily: "var(--font-display)" }}>Edit template</CardTitle>
             <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -441,7 +447,7 @@ export default function TemplatesPage() {
               />
             </div>
 
-            <div className="rounded-xl border border-zinc-200 p-3">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] p-3">
               <div className="text-sm font-semibold">Requirements</div>
               <div className="mt-3 flex flex-col gap-3">
                 {(selected.definition?.requirements ?? [])
@@ -451,7 +457,7 @@ export default function TemplatesPage() {
                     <div key={idx} className="grid grid-cols-1 gap-2 md:grid-cols-12 md:items-center">
                       <div className="md:col-span-3">
                         <select
-                          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+                          className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
                           value={r.type}
                           onChange={(e) => {
                             const type = e.target.value as any;
@@ -488,13 +494,13 @@ export default function TemplatesPage() {
                             setSelected({ ...selected, definition: { requirements: reqs } });
                           }}
                         />
-                        <span className="text-sm text-zinc-700">Required</span>
+                        <span className="text-sm text-[var(--color-text-secondary)]">Required</span>
                       </div>
 
                       <div className="md:col-span-1">
                         <Button
                           variant="secondary"
-                          className="button-polish"
+                          className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
                           onClick={() => {
                             const reqs = selected.definition.requirements.filter((_, i) => i !== idx).map((x, i) => ({
                               ...x,
@@ -511,7 +517,7 @@ export default function TemplatesPage() {
 
                 <Button
                   variant="secondary"
-                  className="button-polish"
+                  className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
                   onClick={() => {
                     const reqs = (selected.definition?.requirements ?? []).slice();
                     reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
@@ -524,10 +530,19 @@ export default function TemplatesPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={saveSelected} disabled={saving || deleting} className="button-polish">
+              <Button
+                onClick={saveSelected}
+                disabled={saving || deleting}
+                className="rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+              >
                 {saving ? "Saving..." : "Save"}
               </Button>
-              <Button variant="secondary" onClick={deleteSelected} disabled={saving || deleting} className="button-polish">
+              <Button
+                variant="secondary"
+                onClick={deleteSelected}
+                disabled={saving || deleting}
+                className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
+              >
                 {deleting ? "Deleting..." : "Delete"}
               </Button>
             </div>

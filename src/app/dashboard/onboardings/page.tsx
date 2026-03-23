@@ -16,7 +16,7 @@ type OnboardingRow = {
 
   template_title?: string | null;
 
-  // optional — if your API already returns a link/token, we’ll use it
+  // optional — if your API already returns a link/token, we'll use it
   client_link?: string | null;
   client_token?: string | null;
   token?: string | null;
@@ -70,22 +70,22 @@ function statusKeyForFilter(raw?: string | null) {
 function statusPillClasses(raw?: string | null) {
   const s = (raw || "").toLowerCase();
   // subtle, enterprise
-  if (s === "submitted") return "border-zinc-900 bg-zinc-900 text-white";
-  if (s === "locked") return "border-zinc-900 bg-zinc-900 text-white";
-  if (s === "archived") return "border-zinc-200 bg-zinc-100 text-zinc-700";
-  if (s === "in_progress" || s === "in progress") return "border-zinc-300 bg-white text-zinc-900";
-  if (s === "sent") return "border-zinc-200 bg-zinc-50 text-zinc-900";
-  return "border-zinc-200 bg-white text-zinc-700";
+  if (s === "submitted") return "border-[var(--color-success-subtle)] bg-[var(--color-success-subtle)] text-[var(--color-success)]";
+  if (s === "locked") return "border-[var(--color-success-subtle)] bg-[var(--color-success-subtle)] text-[var(--color-success)]";
+  if (s === "archived") return "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-muted)]";
+  if (s === "in_progress" || s === "in progress") return "border-[var(--color-accent-subtle)] bg-[var(--color-accent-subtle)] text-[var(--color-accent)]";
+  if (s === "sent") return "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]";
+  return "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]";
 }
 
 function ProgressBar({ value }: { value: number }) {
   const v = Math.max(0, Math.min(100, Math.round(value)));
   return (
     <div className="flex items-center gap-2">
-      <div className="h-2 w-28 overflow-hidden rounded-full bg-zinc-100">
-        <div className="h-full bg-zinc-900" style={{ width: `${v}%` }} />
+      <div className="h-2 w-28 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
+        <div className="h-full bg-[var(--color-accent)]" style={{ width: `${v}%` }} />
       </div>
-      <div className="w-10 text-right text-xs tabular-nums text-zinc-600">{v}%</div>
+      <div className="w-10 text-right text-xs tabular-nums text-[var(--color-text-secondary)]">{v}%</div>
     </div>
   );
 }
@@ -112,11 +112,11 @@ function SmallButton({
       onClick={onClick}
       disabled={disabled}
       className={cx(
-        "button-polish inline-flex items-center justify-center rounded-lg px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:opacity-50",
-        variant === "primary" && "bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm",
-        variant === "secondary" && "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 shadow-sm",
-        variant === "ghost" && "text-zinc-700 hover:bg-zinc-100",
-        variant === "danger" && "border border-red-200 bg-white text-red-700 hover:bg-red-50 shadow-sm"
+        "inline-flex items-center justify-center rounded-[var(--radius-md)] px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)] disabled:cursor-not-allowed disabled:opacity-50",
+        variant === "primary" && "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-[var(--shadow-sm)]",
+        variant === "secondary" && "border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] shadow-[var(--shadow-sm)]",
+        variant === "ghost" && "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]",
+        variant === "danger" && "border border-red-200 bg-white text-red-700 hover:bg-red-50 shadow-[var(--shadow-sm)]"
       )}
     >
       {children}
@@ -147,14 +147,14 @@ function Modal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-full max-w-lg rounded-2xl border border-zinc-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
-          <div className="text-sm font-semibold text-zinc-900">{title}</div>
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative w-full max-w-lg rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
+          <div className="text-sm font-semibold text-[var(--color-text-primary)]">{title}</div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+            className="rounded-[var(--radius-md)] p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
             aria-label="Close"
           >
             ✕
@@ -630,8 +630,8 @@ export default function OnboardingsPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">Onboardings</h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Onboardings</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             Create, track, and send client onboarding links. Progress updates automatically.
           </p>
         </div>
@@ -648,7 +648,7 @@ export default function OnboardingsPage() {
 
       {banner ? (
         banner.kind === "success" ? (
-          <div className="card-polish rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          <div className="rounded-[var(--radius-lg)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
             <div className="flex items-start justify-between gap-3">
               <div>{banner.msg}</div>
               <button
@@ -671,34 +671,34 @@ export default function OnboardingsPage() {
             }
             message={banner.msg}
             onDismiss={() => setBanner(null)}
-            className="card-polish rounded-xl"
+            className="rounded-[var(--radius-lg)]"
           />
         )
       ) : null}
 
-      <div className="card-polish rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-3 shadow-[var(--shadow-sm)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
                 Search
               </label>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by title, client name/email, template…"
-                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-200"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
               />
             </div>
 
             <div className="w-full sm:w-56">
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
                 Status
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-200"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
               >
                 <option value="all">All</option>
                 <option value="draft">Draft</option>
@@ -711,49 +711,49 @@ export default function OnboardingsPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3 lg:justify-end">
-            <div className="text-sm text-zinc-500">
+            <div className="text-sm text-[var(--color-text-muted)]">
               {loading ? "Loading…" : `${list.length} onboarding${list.length === 1 ? "" : "s"}`}
-              {progressLoading ? <span className="ml-2 text-xs text-zinc-400">Updating progress…</span> : null}
+              {progressLoading ? <span className="ml-2 text-xs text-[var(--color-text-muted)]">Updating progress…</span> : null}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="card-polish overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1100px] w-full border-collapse">
-            <thead className="bg-zinc-50">
-              <tr className="border-b border-zinc-200">
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+            <thead className="bg-[var(--color-bg-subtle)]">
+              <tr className="border-b border-[var(--color-border)]">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Title
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Client
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Template
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Progress
                 </th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Updated
                 </th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Actions
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[var(--color-border)]">
               {loadError ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-8">
-                    <div className="text-sm font-medium text-zinc-900">Could not load onboardings</div>
-                    <div className="mt-1 text-sm text-zinc-500">{loadError}</div>
+                    <div className="text-sm font-medium text-[var(--color-text-primary)]">Could not load onboardings</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-muted)]">{loadError}</div>
                     <div className="mt-3">
                       <SmallButton variant="secondary" onClick={() => load()}>
                         Retry
@@ -781,8 +781,8 @@ export default function OnboardingsPage() {
               ) : list.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-10">
-                    <div className="text-sm font-medium text-zinc-900">No onboardings found</div>
-                    <div className="mt-1 text-sm text-zinc-500">
+                    <div className="text-sm font-medium text-[var(--color-text-primary)]">No onboardings found</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-muted)]">
                       Create a new onboarding to start collecting requirements, uploads, and signatures.
                     </div>
                     <div className="mt-4">
@@ -800,24 +800,24 @@ export default function OnboardingsPage() {
                   const sKey = statusKeyForFilter(r.status);
 
                   return (
-                    <tr key={r.id} className="transition-colors duration-150 hover:bg-zinc-50">
+                    <tr key={r.id} className="transition-colors duration-150 hover:bg-[var(--color-bg-subtle)]">
                       <td className="px-4 py-3 align-middle">
                         <div className="min-w-0">
-                          <div className="truncate text-sm text-zinc-700 max-w-[260px]">{r.title || "—"}</div>
+                          <div className="truncate text-sm text-[var(--color-text-secondary)] max-w-[260px]">{r.title || "—"}</div>
                         </div>
                       </td>
 
                       <td className="px-4 py-3 align-middle">
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-medium text-zinc-900">
+                          <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">
                             {r.client_name || "—"}
                           </div>
-                          <div className="truncate text-sm text-zinc-500">{r.client_email || "—"}</div>
+                          <div className="truncate text-sm text-[var(--color-text-muted)]">{r.client_email || "—"}</div>
                         </div>
                       </td>
 
                       <td className="px-4 py-3 align-middle">
-                        <div className="truncate text-sm text-zinc-700">{r.template_title || "Default"}</div>
+                        <div className="truncate text-sm text-[var(--color-text-secondary)]">{r.template_title || "Default"}</div>
                       </td>
 
                       <td className="px-4 py-3 align-middle">
@@ -835,7 +835,7 @@ export default function OnboardingsPage() {
                         <ProgressBar value={pct} />
                       </td>
 
-                      <td className="px-4 py-3 align-middle text-right text-sm tabular-nums text-zinc-500">
+                      <td className="px-4 py-3 align-middle text-right text-sm tabular-nums text-[var(--color-text-muted)]">
                         {toLocaleDate(r.updated_at || r.created_at)}
                       </td>
 
@@ -844,7 +844,7 @@ export default function OnboardingsPage() {
                           <Link
                             href={`/dashboard/onboardings/${r.id}`}
                             prefetch
-                            className="button-polish inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200"
+                            className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
                           >
                             View
                           </Link>
@@ -885,7 +885,7 @@ export default function OnboardingsPage() {
         </div>
 
         {!loading && !loadError ? (
-          <div className="flex items-center justify-end border-t border-zinc-200 px-4 py-3 text-sm text-zinc-500">
+          <div className="flex items-center justify-end border-t border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
             <div className="flex items-center gap-2">
               <SmallButton variant="secondary" onClick={() => load()} disabled={loading}>
                 Refresh list
@@ -902,11 +902,11 @@ export default function OnboardingsPage() {
         <form onSubmit={handleCreate} className="space-y-4">
           {/* Template */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-900">Template</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">Template</label>
             <select
               value={selectedTemplateId}
               onChange={(e) => setSelectedTemplateId(e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-200"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
             >
               {templates.length === 0 ? (
                 <option value="" disabled>
@@ -935,14 +935,14 @@ export default function OnboardingsPage() {
                 if (!on) setSelectedClientId("");
               }}
             />
-            <label htmlFor="useExistingClient" className="text-sm text-zinc-900">
+            <label htmlFor="useExistingClient" className="text-sm text-[var(--color-text-primary)]">
               Use existing client
             </label>
           </div>
 
           {useExistingClient ? (
             <div>
-              <label className="mb-1 block text-sm font-medium text-zinc-900">Client</label>
+              <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">Client</label>
               <select
                 value={selectedClientId}
                 onChange={(e) => {
@@ -956,7 +956,7 @@ export default function OnboardingsPage() {
                     setClientName(nm);
                   }
                 }}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-200"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
               >
                 <option value="">Select a client</option>
                 {clients.map((c) => {
@@ -973,42 +973,42 @@ export default function OnboardingsPage() {
           ) : null}
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-900">Title</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">Title</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. ACME — March onboarding"
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-200"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-900">Client email</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">Client email</label>
             <input
               value={clientEmail}
               onChange={(e) => setClientEmail(e.target.value)}
               placeholder="client@company.com"
               inputMode="email"
               required={!useExistingClient}
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-200"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
               disabled={useExistingClient}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-900">Client full name</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">Client full name</label>
             <input
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               placeholder="Jane Doe"
               required={!useExistingClient}
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-200"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
               disabled={useExistingClient}
             />
           </div>
 
           {createErr ? (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900">
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
               {createErr}
             </div>
           ) : null}

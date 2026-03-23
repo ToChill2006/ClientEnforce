@@ -25,11 +25,7 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
@@ -37,113 +33,74 @@ export function MobileMenu() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2.5 text-[#F0F0F0] transition hover:bg-white/10 md:hidden"
+        className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-2 text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] md:hidden"
         aria-label="Open menu"
       >
         <Menu className="h-5 w-5" />
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[999] flex flex-col bg-[#0A0A0F]">
-          {/* Top bar */}
-          <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-4">
-            <Link href="/" onClick={() => setOpen(false)} className="text-sm font-semibold text-[#F0F0F0]">
+        <div className="fixed inset-0 z-[999] flex flex-col bg-white">
+          <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-3.5">
+            <span className="text-sm font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
               ClientEnforce
-            </Link>
+            </span>
             <button
               onClick={() => setOpen(false)}
-              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2.5 text-[#F0F0F0]"
+              className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] p-2 text-[var(--color-text-secondary)]"
               aria-label="Close menu"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Nav links */}
-          <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">By use case</p>
-              <div className="space-y-1">
-                {solutionsByUseCase.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-xl px-3 py-2.5 text-sm font-medium text-[#F0F0F0] transition hover:bg-white/5"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Who it&apos;s for</p>
-              <div className="space-y-1">
-                {solutionsWhoFor.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-xl px-3 py-2.5 text-sm font-medium text-[#F0F0F0] transition hover:bg-white/5"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Compare</p>
-              <div className="space-y-1">
-                {solutionsCompare.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-xl px-3 py-2.5 text-sm font-medium text-[#F0F0F0] transition hover:bg-white/5"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#9A9AAF]">Navigate</p>
-              <div className="space-y-1">
-                {[
+          <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-5">
+            {[
+              { heading: "By use case", links: solutionsByUseCase },
+              { heading: "Who it\u2019s for", links: solutionsWhoFor },
+              { heading: "Compare", links: solutionsCompare },
+              {
+                heading: "Navigate",
+                links: [
                   { href: "/features", label: "Features" },
                   { href: "/pricing", label: "Pricing" },
                   { href: "/blog", label: "Blog" },
                   { href: "/contact", label: "Contact" },
-                ].map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-xl px-3 py-2.5 text-sm font-medium text-[#F0F0F0] transition hover:bg-white/5"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                ] as const,
+              },
+            ].map((section) => (
+              <div key={section.heading}>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+                  {section.heading}
+                </p>
+                <div className="space-y-0.5">
+                  {section.links.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
           </nav>
 
-          {/* Bottom CTAs */}
-          <div className="border-t border-white/[0.08] px-4 py-5 space-y-2">
+          <div className="border-t border-[var(--color-border)] px-4 py-4 space-y-2">
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="block rounded-xl border border-white/10 px-4 py-3 text-center text-sm font-medium text-[#F0F0F0] transition hover:bg-white/5"
+              className="block rounded-full border border-[var(--color-border)] px-4 py-3 text-center text-sm font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)]"
             >
               Login
             </Link>
             <Link
               href="/signup"
               onClick={() => setOpen(false)}
-              className="block rounded-xl bg-[#00C2A8] px-4 py-3 text-center text-sm font-semibold text-[#0A0A0F] transition hover:bg-[#00d4b8]"
+              className="block rounded-full bg-[var(--color-accent)] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
             >
               Start free trial
             </Link>

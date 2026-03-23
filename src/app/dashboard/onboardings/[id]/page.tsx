@@ -108,14 +108,14 @@ function StatusPill({ status }: { status?: string | null }) {
   const s = (status || "draft").toLowerCase();
   const styles =
     s === "submitted"
-      ? "bg-zinc-900 text-white border-zinc-900"
+      ? "bg-[var(--color-success-subtle)] text-[var(--color-success)] border-[var(--color-success-subtle)]"
       : s === "locked"
-      ? "bg-white text-zinc-700 border-zinc-300"
+      ? "bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] border-[var(--color-border)]"
       : s === "in_progress" || s === "in progress"
-      ? "bg-white text-zinc-900 border-zinc-300"
+      ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[var(--color-accent-subtle)]"
       : s === "sent"
-      ? "bg-zinc-50 text-zinc-900 border-zinc-200"
-      : "bg-white text-zinc-700 border-zinc-200";
+      ? "bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] border-[var(--color-border)]"
+      : "bg-white text-[var(--color-text-muted)] border-[var(--color-border)]";
 
   return (
     <span className={cx("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", styles)}>
@@ -128,10 +128,10 @@ function ProgressBar({ value }: { value: number }) {
   const v = Math.max(0, Math.min(100, Math.round(value)));
   return (
     <div className="flex items-center gap-3">
-      <div className="h-2 w-48 overflow-hidden rounded-full bg-zinc-100">
-        <div className="h-full bg-zinc-900" style={{ width: `${v}%` }} />
+      <div className="h-2 w-48 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
+        <div className="h-full bg-[var(--color-accent)]" style={{ width: `${v}%` }} />
       </div>
-      <div className="w-10 text-right text-sm tabular-nums text-zinc-600">{v}%</div>
+      <div className="w-10 text-right text-sm tabular-nums text-[var(--color-text-secondary)]">{v}%</div>
     </div>
   );
 }
@@ -517,7 +517,7 @@ export default function OnboardingDetailAdminPage() {
       <div className="space-y-4">
         <Skeleton className="h-6 w-56" />
         <Skeleton className="h-4 w-72" />
-        <div className="card-polish rounded-xl border border-zinc-200 bg-white p-4">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
           <Skeleton className="h-16 w-full" />
         </div>
       </div>
@@ -533,7 +533,7 @@ export default function OnboardingDetailAdminPage() {
         />
         <button
           onClick={() => router.back()}
-          className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
         >
           Go back
         </button>
@@ -551,13 +551,13 @@ export default function OnboardingDetailAdminPage() {
             onDismiss={() => setBanner(null)}
           />
         ) : (
-          <div className="card-polish rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          <div className="rounded-[var(--radius-lg)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
             <div className="flex items-start justify-between gap-3">
               <div>{banner.msg}</div>
               <button
                 type="button"
                 onClick={() => setBanner(null)}
-                className="button-polish rounded-md px-2 py-1 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900"
+                className="rounded-md px-2 py-1 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900"
               >
                 ✕
               </button>
@@ -569,15 +569,15 @@ export default function OnboardingDetailAdminPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">{ob?.title || "Onboarding"}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{ob?.title || "Onboarding"}</h1>
             <StatusPill status={ob?.status} />
           </div>
-          <div className="mt-2 text-sm text-zinc-500">
-            <span className="font-medium text-zinc-700">Client:</span> {ob?.client_name || "—"}
+          <div className="mt-2 text-sm text-[var(--color-text-muted)]">
+            <span className="font-medium text-[var(--color-text-secondary)]">Client:</span> {ob?.client_name || "—"}
             <span className="mx-2">•</span>
             <span>{ob?.client_email || "—"}</span>
           </div>
-          <div className="mt-1 text-sm text-zinc-500">
+          <div className="mt-1 text-sm text-[var(--color-text-muted)]">
             Updated {formatDate(ob?.updated_at)}
             <span className="mx-2">•</span>
             Created {formatDate(ob?.created_at)}
@@ -587,7 +587,7 @@ export default function OnboardingDetailAdminPage() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => router.back()}
-            className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
           >
             Back
           </button>
@@ -602,7 +602,7 @@ export default function OnboardingDetailAdminPage() {
                   setBanner({ kind: "error", msg: "Could not copy client link." });
                 }
               }}
-              className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+              className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
             >
               Copy client link
             </button>
@@ -611,7 +611,7 @@ export default function OnboardingDetailAdminPage() {
           <button
             onClick={downloadPdf}
             disabled={downloadingPdf}
-            className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
           >
             {downloadingPdf ? "Preparing PDF…" : "Download PDF"}
           </button>
@@ -620,7 +620,7 @@ export default function OnboardingDetailAdminPage() {
             <button
               onClick={lock}
               disabled={locking}
-              className="button-polish rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 disabled:opacity-50"
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white shadow-[var(--shadow-sm)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
             >
               {locking ? "Locking…" : "Lock submission"}
             </button>
@@ -630,13 +630,13 @@ export default function OnboardingDetailAdminPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <div className="lg:col-span-7">
-          <div className="card-polish rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-sm)]">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-sm font-semibold text-zinc-900">Progress</div>
-                <div className="mt-1 text-sm text-zinc-500">Completion across required items.</div>
+                <div className="text-sm font-semibold text-[var(--color-text-primary)]">Progress</div>
+                <div className="mt-1 text-sm text-[var(--color-text-muted)]">Completion across required items.</div>
               </div>
-              <div className="text-sm text-zinc-500">
+              <div className="text-sm text-[var(--color-text-muted)]">
                 {answered}/{reqs.length} answered{required ? <span className="ml-2">• {required} required</span> : null}
               </div>
             </div>
@@ -647,15 +647,15 @@ export default function OnboardingDetailAdminPage() {
         </div>
 
         <div className="lg:col-span-5">
-          <div className="card-polish rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold text-zinc-900">Details</div>
-            <div className="mt-3 space-y-2 text-sm text-zinc-600">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-sm)]">
+            <div className="text-sm font-semibold text-[var(--color-text-primary)]">Details</div>
+            <div className="mt-3 space-y-2 text-sm text-[var(--color-text-secondary)]">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-zinc-500">Template</span>
-                <span className="font-medium text-zinc-900">{ob?.template_name || "Default"}</span>
+                <span className="text-[var(--color-text-muted)]">Template</span>
+                <span className="font-medium text-[var(--color-text-primary)]">{ob?.template_name || "Default"}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="text-zinc-500">Onboarding ID</span>
+                <span className="text-[var(--color-text-muted)]">Onboarding ID</span>
                 <button
                   onClick={async () => {
                     try {
@@ -665,7 +665,7 @@ export default function OnboardingDetailAdminPage() {
                       setBanner({ kind: "error", msg: "Could not copy ID." });
                     }
                   }}
-                  className="truncate font-medium text-zinc-900 hover:underline"
+                  className="truncate font-medium text-[var(--color-text-primary)] hover:underline"
                   title={ob?.id || ""}
                 >
                   {ob?.id}
@@ -673,8 +673,8 @@ export default function OnboardingDetailAdminPage() {
               </div>
               {ob?.token ? (
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-zinc-500">Client token</span>
-                  <span className="font-medium text-zinc-900">{ob.token}</span>
+                  <span className="text-[var(--color-text-muted)]">Client token</span>
+                  <span className="font-medium text-[var(--color-text-primary)]">{ob.token}</span>
                 </div>
               ) : null}
             </div>
@@ -682,28 +682,28 @@ export default function OnboardingDetailAdminPage() {
         </div>
       </div>
 
-      <div className="card-polish overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-        <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
-          <div className="text-sm font-semibold text-zinc-900">Responses</div>
-          <div className="mt-0.5 text-sm text-zinc-500">Admin view of what the client submitted.</div>
+      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+        <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-3">
+          <div className="text-sm font-semibold text-[var(--color-text-primary)]">Responses</div>
+          <div className="mt-0.5 text-sm text-[var(--color-text-muted)]">Admin view of what the client submitted.</div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-[980px] w-full border-collapse">
             <thead>
-              <tr className="border-b border-zinc-200">
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Field</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Type</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Response</th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Status</th>
+              <tr className="border-b border-[var(--color-border)]">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Field</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Type</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Response</th>
+                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[var(--color-border)]">
               {reqs.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-4 py-10">
-                    <div className="text-sm font-medium text-zinc-900">No requirements loaded</div>
-                    <div className="mt-1 text-sm text-zinc-500">This onboarding has no requirements snapshot, or the API select does not match your schema.</div>
+                    <div className="text-sm font-medium text-[var(--color-text-primary)]">No requirements loaded</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-muted)]">This onboarding has no requirements snapshot, or the API select does not match your schema.</div>
                   </td>
                 </tr>
               ) : (
@@ -712,31 +712,31 @@ export default function OnboardingDetailAdminPage() {
                   const completed = !!r.completed_at || !!r.completed || valuePreview(r).type !== "empty";
 
                   return (
-                    <tr key={r.id} className="hover:bg-zinc-50">
+                    <tr key={r.id} className="hover:bg-[var(--color-bg-subtle)]">
                       <td className="px-4 py-3 align-top">
-                        <div className="text-sm font-medium text-zinc-900">
+                        <div className="text-sm font-medium text-[var(--color-text-primary)]">
                           {r.label || "Untitled field"}
-                          {(r.is_required ?? r.required) ? <span className="ml-2 text-xs text-zinc-500">Required</span> : null}
+                          {(r.is_required ?? r.required) ? <span className="ml-2 text-xs text-[var(--color-text-muted)]">Required</span> : null}
                         </div>
-                        {r.prompt ? <div className="mt-1 max-w-[520px] text-sm text-zinc-500">{r.prompt}</div> : null}
+                        {r.prompt ? <div className="mt-1 max-w-[520px] text-sm text-[var(--color-text-muted)]">{r.prompt}</div> : null}
                       </td>
 
                       <td className="px-4 py-3 align-top">
-                        <span className="inline-flex rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs font-medium text-zinc-700">
+                        <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
                           {reqKindLabel(r.kind ?? r.type)}
                         </span>
                       </td>
 
                       <td className="px-4 py-3 align-top">
                         {preview.type === "empty" ? (
-                          <div className="text-sm text-zinc-500">—</div>
+                          <div className="text-sm text-[var(--color-text-muted)]">—</div>
                         ) : preview.type === "text" ? (
-                          <div className="whitespace-pre-wrap text-sm text-zinc-900">{String(preview.v)}</div>
+                          <div className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>
                         ) : preview.type === "json" ? (
-                          <pre className="max-w-[680px] overflow-auto rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-800">{JSON.stringify(preview.v, null, 2)}</pre>
+                          <pre className="max-w-[680px] overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>
                         ) : preview.type === "file" ? (
                           <div className="flex w-full items-center gap-3">
-                            <span className="min-w-0 flex-1 truncate text-sm text-zinc-900" title={fileNameFromPath(String(preview.v))}>
+                            <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
                               {fileNameFromPath(String(preview.v))}
                             </span>
                             <div className="ml-auto flex items-center gap-2">
@@ -750,7 +750,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not preview file." });
                                   }
                                 }}
-                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                               >
                                 Preview
                               </button>
@@ -767,7 +767,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not download file." });
                                   }
                                 }}
-                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                               >
                                 Download
                               </button>
@@ -775,7 +775,7 @@ export default function OnboardingDetailAdminPage() {
                           </div>
                         ) : (
                           <div className="flex w-full items-center gap-3">
-                            <span className="min-w-0 flex-1 truncate text-sm text-zinc-900" title={fileNameFromPath(String(preview.v))}>
+                            <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
                               {fileNameFromPath(String(preview.v))}
                             </span>
                             <div className="ml-auto flex items-center gap-2">
@@ -789,7 +789,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not preview signature." });
                                   }
                                 }}
-                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                               >
                                 Preview
                               </button>
@@ -806,7 +806,7 @@ export default function OnboardingDetailAdminPage() {
                                     setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
                                   }
                                 }}
-                                className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                               >
                                 Download
                               </button>
@@ -819,12 +819,12 @@ export default function OnboardingDetailAdminPage() {
                         <span
                           className={cx(
                             "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                            completed ? "border-zinc-200 bg-zinc-50 text-zinc-900" : "border-zinc-200 bg-white text-zinc-500"
+                            completed ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]" : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
                           )}
                         >
                           {completed ? "Completed" : "Pending"}
                         </span>
-                        <div className="mt-1 text-xs text-zinc-500">{completed ? formatDate(r.completed_at || r.updated_at) : ""}</div>
+                        <div className="mt-1 text-xs text-[var(--color-text-muted)]">{completed ? formatDate(r.completed_at || r.updated_at) : ""}</div>
                       </td>
                     </tr>
                   );
@@ -836,10 +836,10 @@ export default function OnboardingDetailAdminPage() {
       </div>
 
       {previewAsset ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl">
-            <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
-              <div className="min-w-0 truncate text-sm font-medium text-zinc-900" title={previewAsset.name}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
+            <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-3">
+              <div className="min-w-0 truncate text-sm font-medium text-[var(--color-text-primary)]" title={previewAsset.name}>
                 {previewAsset.name}
               </div>
               <div className="flex items-center gap-2">
@@ -847,14 +847,14 @@ export default function OnboardingDetailAdminPage() {
                   href={previewAsset.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                 >
                   Open new tab
                 </a>
                 <button
                   type="button"
                   onClick={() => setPreviewAsset(null)}
-                  className="button-polish rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                 >
                   Close
                 </button>

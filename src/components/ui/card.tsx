@@ -5,7 +5,7 @@ import * as React from "react";
 export function Card({ className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={["card-polish rounded-xl border border-zinc-200 bg-white shadow-sm", className].join(" ")}
+      className={["rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]", className].join(" ")}
       {...props}
     />
   );
@@ -16,11 +16,11 @@ export function CardHeader({ className = "", ...props }: React.HTMLAttributes<HT
 }
 
 export function CardTitle({ className = "", ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={["text-sm font-semibold text-zinc-900", className].join(" ")} {...props} />;
+  return <h2 className={["text-sm font-semibold text-[var(--color-text-primary)]", className].join(" ")} {...props} />;
 }
 
 export function CardDescription({ className = "", ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={["mt-1 text-xs text-zinc-500", className].join(" ")} {...props} />;
+  return <p className={["mt-1 text-xs text-[var(--color-text-muted)]", className].join(" ")} {...props} />;
 }
 
 export function CardContent({ className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {

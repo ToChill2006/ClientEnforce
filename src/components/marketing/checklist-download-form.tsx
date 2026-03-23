@@ -43,21 +43,21 @@ export function ChecklistDownloadForm() {
 
   if (submitted) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
-        <h3 className="text-lg font-semibold text-zinc-900">Your checklist is on its way - check your inbox.</h3>
-        <p className="mt-2 text-sm leading-6 text-zinc-700">
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
+        <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Your checklist is on its way - check your inbox.</h3>
+        <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
           If your email app did not open, send your request manually to info@clientenforce.com and we will share the PDF.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/blog/client-onboarding-checklist-template"
-            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
           >
             Read the full onboarding checklist guide →
           </Link>
           <Link
             href="/client-onboarding-software"
-            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
           >
             See how ClientEnforce automates this checklist →
           </Link>
@@ -69,7 +69,7 @@ export function ChecklistDownloadForm() {
   return (
     <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
       <div>
-        <label htmlFor="firstName" className="text-sm font-medium text-zinc-800">
+        <label htmlFor="firstName" className="text-sm font-medium text-[var(--color-text-primary)]">
           First name
         </label>
         <input
@@ -78,13 +78,13 @@ export function ChecklistDownloadForm() {
           required
           value={form.firstName}
           onChange={(event) => updateField("firstName", event.target.value)}
-          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-zinc-400"
+          className="mt-1 w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none transition focus:border-[var(--color-accent)]"
           placeholder="Alex"
         />
       </div>
 
       <div>
-        <label htmlFor="email" className="text-sm font-medium text-zinc-800">
+        <label htmlFor="email" className="text-sm font-medium text-[var(--color-text-primary)]">
           Email
         </label>
         <input
@@ -94,13 +94,13 @@ export function ChecklistDownloadForm() {
           required
           value={form.email}
           onChange={(event) => updateField("email", event.target.value)}
-          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-zinc-400"
+          className="mt-1 w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none transition focus:border-[var(--color-accent)]"
           placeholder="alex@company.com"
         />
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor="companyType" className="text-sm font-medium text-zinc-800">
+        <label htmlFor="companyType" className="text-sm font-medium text-[var(--color-text-primary)]">
           Company type
         </label>
         <select
@@ -108,7 +108,7 @@ export function ChecklistDownloadForm() {
           name="companyType"
           value={form.companyType}
           onChange={(event) => updateField("companyType", event.target.value as FormState["companyType"])}
-          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-zinc-400"
+          className="mt-1 w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none transition focus:border-[var(--color-accent)]"
         >
           <option value="Agency">Agency</option>
           <option value="Consultancy">Consultancy</option>
@@ -121,7 +121,7 @@ export function ChecklistDownloadForm() {
       <div className="sm:col-span-2">
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
+          className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)]"
         >
           Send me the checklist
         </button>

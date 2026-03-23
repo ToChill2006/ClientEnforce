@@ -7,10 +7,10 @@ function StatusPill({ status, locked }: { status?: string | null; locked: boolea
   const label = locked ? "Locked" : s === "submitted" ? "Submitted" : "In progress";
 
   const cls = locked
-    ? "border-zinc-200 bg-zinc-50 text-zinc-900"
+    ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]"
     : s === "submitted"
-      ? "border-zinc-900 bg-zinc-900 text-white"
-      : "border-zinc-200 bg-white text-zinc-700";
+      ? "border-[var(--color-success-subtle)] bg-[var(--color-success-subtle)] text-[var(--color-success)]"
+      : "border-[var(--color-accent-subtle)] bg-[var(--color-accent-subtle)] text-[var(--color-accent)]";
 
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${cls}`}>
@@ -21,14 +21,14 @@ function StatusPill({ status, locked }: { status?: string | null; locked: boolea
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-[var(--color-bg-subtle)]">
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">{children}</div>
     </div>
   );
 }
 
 function Panel({ children }: { children: React.ReactNode }) {
-  return <div className="card-polish rounded-2xl border border-zinc-200 bg-white shadow-sm">{children}</div>;
+  return <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">{children}</div>;
 }
 
 function Hint({ title, message }: { title: string; message: string }) {
@@ -37,11 +37,11 @@ function Hint({ title, message }: { title: string; message: string }) {
       <div className="mx-auto max-w-xl">
         <Panel>
           <div className="p-8">
-            <div className="text-lg font-semibold tracking-tight text-zinc-900">{title}</div>
-            <div className="mt-2 text-sm leading-6 text-zinc-600">{message}</div>
+            <div className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">{title}</div>
+            <div className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{message}</div>
           </div>
         </Panel>
-        <div className="mt-6 text-center text-xs text-zinc-500">
+        <div className="mt-6 text-center text-xs text-[var(--color-text-muted)]">
           If you believe this is a mistake, contact the sender for a new link.
         </div>
       </div>
@@ -240,7 +240,7 @@ export default async function ClientTokenPage({
         ? trySelect("template_requirements", { col: "templateId", val: templateKey })
         : Promise.resolve({ data: null, error: null }),
 
-    // onboarding_requirements by template (some schemas don’t store onboarding FK)
+    // onboarding_requirements by template (some schemas don't store onboarding FK)
     () =>
       templateKey
         ? trySelect("onboarding_requirements", { col: "template_id", val: templateKey })
@@ -370,18 +370,21 @@ export default async function ClientTokenPage({
         <div className="mb-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Client portal</div>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Client portal</div>
+              <h1
+                className="mt-2 text-2xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-3xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
                 {onboarding.title || "Onboarding"}
               </h1>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <StatusPill status={onboarding.status} locked={locked} />
-                <div className="text-sm text-zinc-600">Progress updates live below.</div>
+                <div className="text-sm text-[var(--color-text-secondary)]">Progress updates live below.</div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="card-polish hidden sm:block rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-600 shadow-sm">
+              <div className="hidden sm:block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-3 py-2 text-xs text-[var(--color-text-secondary)] shadow-[var(--shadow-sm)]">
                 Secure link • Do not share
               </div>
             </div>
@@ -389,29 +392,29 @@ export default async function ClientTokenPage({
 
           <div className="mt-8">
             {normalizedReqsWithIds.length === 0 && (
-              <div className="card-polish rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-                <div className="font-medium text-zinc-900">No questions have been added yet.</div>
-                <div className="mt-1 text-zinc-600">Ask the sender to configure onboarding requirements.</div>
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-secondary)] shadow-[var(--shadow-sm)]">
+                <div className="font-medium text-[var(--color-text-primary)]">No questions have been added yet.</div>
+                <div className="mt-1 text-[var(--color-text-secondary)]">Ask the sender to configure onboarding requirements.</div>
 
                 {templatePreview.length > 0 && (
-                  <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Template preview</div>
-                    <div className="mt-2 text-xs text-zinc-600">
-                      These questions exist in the template, but they haven’t been added to this onboarding yet.
+                  <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-3">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">Template preview</div>
+                    <div className="mt-2 text-xs text-[var(--color-text-secondary)]">
+                      These questions exist in the template, but they haven't been added to this onboarding yet.
                     </div>
                     <ul className="mt-3 space-y-2">
                       {templatePreview.slice(0, 12).map((r: any, i: number) => (
                         <li key={i} className="flex items-start justify-between gap-4 rounded-md bg-white px-3 py-2">
                           <div>
-                            <div className="text-sm font-medium text-zinc-900">{r.label || "Untitled question"}</div>
-                            <div className="mt-0.5 text-xs text-zinc-600">Type: {String(r.type || "text")}</div>
+                            <div className="text-sm font-medium text-[var(--color-text-primary)]">{r.label || "Untitled question"}</div>
+                            <div className="mt-0.5 text-xs text-[var(--color-text-secondary)]">Type: {String(r.type || "text")}</div>
                           </div>
-                          <div className="text-xs text-zinc-600">{r.is_required ? "Required" : "Optional"}</div>
+                          <div className="text-xs text-[var(--color-text-secondary)]">{r.is_required ? "Required" : "Optional"}</div>
                         </li>
                       ))}
                     </ul>
                     {templatePreview.length > 12 && (
-                      <div className="mt-2 text-xs text-zinc-500">…and {templatePreview.length - 12} more</div>
+                      <div className="mt-2 text-xs text-[var(--color-text-muted)]">…and {templatePreview.length - 12} more</div>
                     )}
                   </div>
                 )}
@@ -427,7 +430,7 @@ export default async function ClientTokenPage({
             />
           </div>
 
-          <div className="mt-10 border-t border-zinc-200 pt-8 text-xs text-zinc-500">
+          <div className="mt-10 border-t border-[var(--color-border)] pt-8 text-xs text-[var(--color-text-muted)]">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>Powered by ClientEnforce</div>
               <div className="tabular-nums">Token: {token.slice(0, 8)}…</div>

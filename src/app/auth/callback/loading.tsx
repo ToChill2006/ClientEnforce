@@ -1,9 +1,9 @@
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-900">
+    <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
       <div className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6">
-        <div className="card-polish w-full rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="text-sm text-zinc-600">Loading authentication…</div>
+        <div className="w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+          <div className="text-sm text-[var(--color-text-muted)]">Loading authentication…</div>
         </div>
       </div>
     </main>

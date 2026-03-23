@@ -1,142 +1,135 @@
 @import "tailwindcss";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
-@theme {
-  --color-ce-accent:   #00C2A8;
-  --color-ce-bg:       #0A0A0F;
-  --color-ce-surface:  #111118;
-  --color-ce-primary:  #F0F0F0;
-  --color-ce-muted:    #9A9AAF;
-  --color-ce-danger:   #FF4D4D;
-
-  /* Fonts — defaults; overridden at :root once Next.js injects the vars */
-  --font-serif: "Instrument Serif", Georgia, serif;
-  --font-sans:  "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono:  "JetBrains Mono", ui-monospace, monospace;
-}
-
-/* Override with Next.js-injected Google Font CSS variables when present */
 :root {
-  --font-serif: var(--font-instrument-serif, "Instrument Serif", Georgia, serif);
-  --font-sans:  var(--font-dm-sans, "DM Sans", ui-sans-serif, system-ui, sans-serif);
-  color-scheme: dark light;
+  /* Base */
+  --color-bg:             #FFFFFF;
+  --color-bg-subtle:      #F8F9FB;
+  --color-bg-muted:       #F1F3F7;
+  --color-border:         #E4E7EE;
+  --color-border-strong:  #C9CDD8;
+
+  /* Text */
+  --color-text-primary:   #0F1117;
+  --color-text-secondary: #4A5066;
+  --color-text-muted:     #8B91A6;
+  --color-text-inverse:   #FFFFFF;
+
+  /* Brand */
+  --color-accent:         #1B6EF3;
+  --color-accent-hover:   #1559D4;
+  --color-accent-subtle:  #EBF2FF;
+  --color-accent-dark:    #0D3D99;
+
+  /* Status */
+  --color-success:        #16A34A;
+  --color-success-subtle: #F0FDF4;
+  --color-warning:        #D97706;
+  --color-warning-subtle: #FFFBEB;
+  --color-danger:         #DC2626;
+  --color-danger-subtle:  #FEF2F2;
+  --color-info:           #0891B2;
+  --color-info-subtle:    #ECFEFF;
+
+  /* Progress / completion */
+  --color-complete:       #16A34A;
+  --color-in-progress:    #1B6EF3;
+  --color-pending:        #D97706;
+  --color-blocked:        #DC2626;
+
+  /* Elevation shadows */
+  --shadow-xs:  0 1px 2px rgba(15,17,23,0.06);
+  --shadow-sm:  0 1px 3px rgba(15,17,23,0.08), 0 1px 2px rgba(15,17,23,0.04);
+  --shadow-md:  0 4px 6px rgba(15,17,23,0.06), 0 2px 4px rgba(15,17,23,0.04);
+  --shadow-lg:  0 10px 24px rgba(15,17,23,0.08), 0 4px 8px rgba(15,17,23,0.04);
+  --shadow-xl:  0 20px 48px rgba(15,17,23,0.10), 0 8px 16px rgba(15,17,23,0.06);
+
+  /* Border radius */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* Fonts */
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
 }
 
-html,
-body {
-  height: 100%;
+/* Bridge Next.js font CSS vars → design-token vars */
+:root {
+  --font-display: var(--font-plus-jakarta-sans, "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif);
+  --font-sans:    var(--font-inter, "Inter", ui-sans-serif, system-ui, sans-serif);
+  color-scheme: light;
 }
 
+html, body { height: 100%; }
+
 body {
-  background: rgb(250 250 250);
-  color: rgb(24 24 27);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
   font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
 }
 
 /* ─── Scroll animations ──────────────────────────────────────────────────── */
 @keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes mesh-drift-a {
-  0%, 100% { transform: translate(0px, 0px) scale(1); }
-  33%       { transform: translate(40px, -28px) scale(1.06); }
-  66%       { transform: translate(-24px, 36px) scale(0.94); }
-}
-
-@keyframes mesh-drift-b {
-  0%, 100% { transform: translate(0px, 0px) scale(1); }
-  40%       { transform: translate(-36px, 20px) scale(1.04); }
-  70%       { transform: translate(28px, -32px) scale(0.96); }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .fade-up-visible {
-  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ─── Typography baseline ────────────────────────────────────────────────── */
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-serif);
-  letter-spacing: -0.02em;
+/* ─── Interactive utilities ──────────────────────────────────────────────── */
+.card-lift {
+  transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
 }
-
-/* ─── Interaction polish ─────────────────────────────────────────────────── */
-.card-polish {
-  transition:
-    transform 200ms ease,
-    box-shadow 200ms ease,
-    border-color 200ms ease;
-}
-.card-polish:hover {
+.card-lift:hover {
   transform: translateY(-2px);
-}
-
-.button-polish {
-  transition:
-    transform 90ms ease,
-    box-shadow 150ms ease,
-    background-color 150ms ease,
-    border-color 150ms ease;
-}
-.button-polish:active {
-  transform: scale(0.97);
-}
-.button-polish:disabled:active {
-  transform: none;
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
 }
 
 /* ─── Scrollbars ─────────────────────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  scrollbar-color: var(--color-border-strong) transparent;
 }
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+*::-webkit-scrollbar { width: 6px; height: 6px; }
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
 }
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
+*::-webkit-scrollbar-track { background: transparent; }
 
 /* ─── Focus ring ─────────────────────────────────────────────────────────── */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px #00C2A8, 0 0 0 4px rgba(0, 194, 168, 0.2);
+  box-shadow: 0 0 0 2px var(--color-accent), 0 0 0 4px rgba(27,110,243,0.18);
 }
 
 /* ─── Tables ─────────────────────────────────────────────────────────────── */
-table {
-  border-collapse: separate;
-  border-spacing: 0;
-}
+table { border-collapse: separate; border-spacing: 0; }
 
 /* ─── Reduced motion ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .card-polish,
-  .button-polish {
-    transition: none;
-  }
-  .card-polish:hover,
-  .button-polish:active {
-    transform: none;
-  }
-  .fade-up-visible {
-    animation: none;
-  }
+  .card-lift:hover { transform: none; }
+  .fade-up-visible { animation: none; }
 }

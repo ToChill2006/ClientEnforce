@@ -45,7 +45,7 @@ function fmtDate(s?: string | null) {
 }
 
 function pill() {
-  return "inline-flex items-center rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs font-medium text-zinc-700";
+  return "inline-flex items-center rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]";
 }
 
 function inviteEmailOf(i: Invite) {
@@ -356,8 +356,8 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex items-start justify-between gap-6">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">Settings</h1>
-          <p className="mt-1 text-sm text-zinc-600">
+          <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Settings</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             Organization settings, billing, and team invites.
           </p>
         </div>
@@ -384,7 +384,7 @@ export default function SettingsPage() {
       ) : null}
 
       {pageSuccess ? (
-        <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div className="rounded-[var(--radius-sm)] border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="font-medium">Success</div>
@@ -402,14 +402,14 @@ export default function SettingsPage() {
       ) : null}
 
       {syncingBilling ? (
-        <div className="rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-800">
+        <div className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-primary)]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="font-medium">Updating subscription…</div>
-              <div className="mt-0.5 text-zinc-600">We’re syncing your Stripe subscription. This can take a few seconds.</div>
+              <div className="mt-0.5 text-[var(--color-text-secondary)]">We're syncing your Stripe subscription. This can take a few seconds.</div>
             </div>
             <button
-              className="text-zinc-500 hover:text-zinc-800"
+              className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
               onClick={() => setSyncingBilling(false)}
               aria-label="Dismiss"
             >
@@ -426,19 +426,19 @@ export default function SettingsPage() {
           <CardDescription>Plan, seat usage, and subscription status.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Tier</div>
-            <div className="mt-1 text-sm font-medium text-zinc-900">{org?.tier ?? "—"}</div>
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Tier</div>
+            <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">{org?.tier ?? "—"}</div>
           </div>
 
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Seats</div>
-            <div className="mt-1 text-sm font-medium text-zinc-900">{seatsText}</div>
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Seats</div>
+            <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">{seatsText}</div>
           </div>
 
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Subscription</div>
-            <div className="mt-1 text-sm font-medium text-zinc-900">
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Subscription</div>
+            <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">
               {org?.stripe_subscription_status ?? "—"}
             </div>
           </div>
@@ -460,43 +460,43 @@ export default function SettingsPage() {
           <CardDescription>Unlock more seats, automation, and advanced controls.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-3xl border border-zinc-200 bg-white p-6 md:p-8">
+          <div className="rounded-3xl border border-[var(--color-border)] bg-white p-6 md:p-8">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <h3 className="text-xl font-semibold text-zinc-900">Plans</h3>
-                <p className="mt-1 text-sm text-zinc-600">
+                <h3 className="text-xl font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Plans</h3>
+                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                   Choose the plan that fits your onboarding volume. Upgrade any time.
                 </p>
               </div>
-              <div className="text-xs text-zinc-500">
+              <div className="text-xs text-[var(--color-text-muted)]">
                 {currentTier === "free"
-                  ? "You’re currently on Free."
+                  ? "You're currently on Free."
                   : currentTier === "pro"
-                    ? "You’re currently on Pro."
-                    : "You’re currently on Business."}
+                    ? "You're currently on Pro."
+                    : "You're currently on Business."}
                 {!canManageBilling ? " Billing changes are restricted for your role." : ""}
               </div>
             </div>
 
             <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
               {/* Starter */}
-              <div className="flex flex-col rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+              <div className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-sm font-semibold text-zinc-900">Free</div>
-                    <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">£0</div>
-                    <div className="mt-1 text-sm text-zinc-600">For solo use and early onboarding workflows.</div>
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">Free</div>
+                    <div className="mt-1 text-3xl font-semibold tracking-tight text-[var(--color-text-primary)]">£0</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">For solo use and early onboarding workflows.</div>
                   </div>
                   {currentTier === "free" ? (
                     <span className={pill()}>Current</span>
                   ) : (
-                    <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
+                    <span className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
                       Free
                     </span>
                   )}
                 </div>
 
-                <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-[var(--color-text-secondary)]">
                   <li>• 1 admin user</li>
                   <li>• Up to 5 active onboardings</li>
                   <li>• 1 onboarding template</li>
@@ -510,14 +510,14 @@ export default function SettingsPage() {
                 <div className="mt-6 grid gap-2">
                   <button
                     type="button"
-                    className="inline-flex h-10 w-full items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 disabled:opacity-60"
+                    className="inline-flex h-10 w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                     disabled={currentTier === "free"}
                     onClick={() => startDowngrade("free", "monthly")}
                   >
                     {currentTier === "free" ? "Current plan" : "Downgrade to Free"}
                   </button>
                   {currentTier !== "free" ? (
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-[var(--color-text-muted)]">
                       Your current paid plan will remain active until the end of the billing period, then downgrade to Free.
                     </div>
                   ) : null}
@@ -525,22 +525,22 @@ export default function SettingsPage() {
               </div>
 
               {/* Pro */}
-              <div className="flex flex-col rounded-2xl border border-zinc-900 bg-white p-5 shadow-sm">
+              <div className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-white p-5 shadow-[var(--shadow-sm)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-sm font-semibold text-zinc-900">Pro</div>
-                    <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
-                      £29<span className="text-base font-semibold text-zinc-500">/mo</span>
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">Pro</div>
+                    <div className="mt-1 text-3xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+                      £29<span className="text-base font-semibold text-[var(--color-text-muted)]">/mo</span>
                     </div>
-                    <div className="mt-1 text-sm text-zinc-600">
-                      £278.40 yearly <span className="text-zinc-500">(20% off)</span>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                      £278.40 yearly <span className="text-[var(--color-text-muted)]">(20% off)</span>
                     </div>
-                    <div className="mt-1 text-sm text-zinc-600">For solo operators + small teams who want automation.</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">For solo operators + small teams who want automation.</div>
                   </div>
-                  <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white">Most popular</span>
+                  <span className="rounded-full bg-[var(--color-accent)] px-3 py-1 text-xs font-medium text-white">Most popular</span>
                 </div>
 
-                <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-[var(--color-text-secondary)]">
                   <li>• Everything in Free</li>
                   <li>• Up to 5 admin/team users</li>
                   <li>• Up to 10 templates</li>
@@ -570,7 +570,7 @@ export default function SettingsPage() {
                       >
                         Downgrade to Pro yearly
                       </Button>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-[var(--color-text-muted)]">
                         Your Business plan will stay active until the end of the billing period, then downgrade to Pro.
                       </div>
                     </>
@@ -597,28 +597,28 @@ export default function SettingsPage() {
               </div>
 
               {/* Business */}
-              <div className="flex flex-col rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+              <div className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-sm font-semibold text-zinc-900">Business</div>
-                    <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
-                      £89<span className="text-base font-semibold text-zinc-500">/mo</span>
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">Business</div>
+                    <div className="mt-1 text-3xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+                      £89<span className="text-base font-semibold text-[var(--color-text-muted)]">/mo</span>
                     </div>
-                    <div className="mt-1 text-sm text-zinc-600">
-                      £854.40 yearly <span className="text-zinc-500">(20% off)</span>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                      £854.40 yearly <span className="text-[var(--color-text-muted)]">(20% off)</span>
                     </div>
-                    <div className="mt-1 text-sm text-zinc-600">For teams onboarding clients at scale.</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">For teams onboarding clients at scale.</div>
                   </div>
                   {currentTier === "business" ? (
                     <span className={pill()}>Current</span>
                   ) : (
-                    <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
+                    <span className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
                       Scale
                     </span>
                   )}
                 </div>
 
-                <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-700">
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-[var(--color-text-secondary)]">
                   <li>• Everything in Pro</li>
                   <li>• Up to 15 users by default</li>
                   <li>• Up to 200 active onboardings</li>
@@ -685,7 +685,7 @@ export default function SettingsPage() {
               <Label htmlFor="inviteRole">Role</Label>
               <select
                 id="inviteRole"
-                className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
                 value={inviteRole}
                 disabled={!canInviteMembers}
                 onChange={(e) => setInviteRole(e.target.value as any)}
@@ -704,9 +704,9 @@ export default function SettingsPage() {
             ) : null}
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
             <table className="w-full min-w-[840px] text-sm">
-              <thead className="border-b border-zinc-200 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <thead className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>
                   <th className="px-4 py-2 text-left">Email</th>
                   <th className="px-4 py-2 text-left">Role</th>
@@ -716,35 +716,35 @@ export default function SettingsPage() {
                   <th className="px-4 py-2 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
+              <tbody className="divide-y divide-[var(--color-border)]">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-3 text-zinc-600">
+                    <td colSpan={6} className="px-4 py-3 text-[var(--color-text-secondary)]">
                       Loading…
                     </td>
                   </tr>
                 ) : invites.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-3 text-zinc-600">
+                    <td colSpan={6} className="px-4 py-3 text-[var(--color-text-secondary)]">
                       No pending invites.
                     </td>
                   </tr>
                 ) : (
                   invites.map((i) => (
-                    <tr key={i.id} className="hover:bg-zinc-50">
+                    <tr key={i.id} className="hover:bg-[var(--color-bg-subtle)]">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-zinc-900">{inviteEmailOf(i) || "—"}</div>
+                        <div className="font-medium text-[var(--color-text-primary)]">{inviteEmailOf(i) || "—"}</div>
                       </td>
                       <td className="px-4 py-3">
                         <span className={pill()}>{i.role}</span>
                       </td>
-                      <td className="px-4 py-3 text-zinc-700">{fmtDate(i.created_at)}</td>
-                      <td className="px-4 py-3 text-zinc-700">{fmtDate(i.expires_at)}</td>
-                      <td className="px-4 py-3 text-zinc-700">{i.accepted_at ? "Accepted" : "Pending"}</td>
+                      <td className="px-4 py-3 text-[var(--color-text-secondary)]">{fmtDate(i.created_at)}</td>
+                      <td className="px-4 py-3 text-[var(--color-text-secondary)]">{fmtDate(i.expires_at)}</td>
+                      <td className="px-4 py-3 text-[var(--color-text-secondary)]">{i.accepted_at ? "Accepted" : "Pending"}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           <button
-                            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                            className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
                             onClick={() => copyInviteLink(i.token)}
                           >
                             Copy link
@@ -758,7 +758,7 @@ export default function SettingsPage() {
             </table>
           </div>
 
-          <div className="text-xs text-zinc-500">
+          <div className="text-xs text-[var(--color-text-muted)]">
             Invite links are for adding teammates to your workspace.
           </div>
         </CardContent>

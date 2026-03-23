@@ -216,8 +216,8 @@ export default function StoragePage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">Files & signatures</h1>
-          <p className="mt-1 text-sm text-zinc-500">A library of uploaded files and saved signatures.</p>
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Files & signatures</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">A library of uploaded files and saved signatures.</p>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
@@ -226,13 +226,13 @@ export default function StoragePage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search files, signatures, onboarding…"
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
             />
             {query ? (
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1 text-xs text-zinc-500 hover:text-zinc-700"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
                 aria-label="Clear search"
                 title="Clear"
               >
@@ -243,7 +243,7 @@ export default function StoragePage() {
 
           <button
             onClick={load}
-            className="button-polish rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-60"
+            className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
             disabled={loading}
           >
             {loading ? "Refreshing..." : "Refresh"}
@@ -251,26 +251,26 @@ export default function StoragePage() {
         </div>
       </div>
 
-      <div className="card-polish rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] overflow-hidden">
         {err ? (
           <div className="p-4">
-            <div className="text-sm font-medium text-zinc-900">Could not load</div>
-            <div className="mt-1 text-sm text-zinc-500">{err}</div>
+            <div className="text-sm font-medium text-[var(--color-text-primary)]">Could not load</div>
+            <div className="mt-1 text-sm text-[var(--color-text-muted)]">{err}</div>
           </div>
         ) : null}
 
         <div className="overflow-x-auto">
           <table className="min-w-[1000px] w-full">
-            <thead className="bg-zinc-50">
-              <tr className="border-b border-zinc-200">
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Type</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Name</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Onboarding</th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Created</th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-zinc-500">Actions</th>
+            <thead className="bg-[var(--color-bg-subtle)]">
+              <tr className="border-b border-[var(--color-border)]">
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Type</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Name</th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Onboarding</th>
+                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Created</th>
+                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[var(--color-border)]">
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i}>
@@ -290,13 +290,13 @@ export default function StoragePage() {
                   <td colSpan={5} className="px-4 py-10">
                     {items.length === 0 ? (
                       <>
-                        <div className="text-sm font-medium text-zinc-900">No files yet</div>
-                        <div className="mt-1 text-sm text-zinc-500">Uploads and signatures will appear here automatically.</div>
+                        <div className="text-sm font-medium text-[var(--color-text-primary)]">No files yet</div>
+                        <div className="mt-1 text-sm text-[var(--color-text-muted)]">Uploads and signatures will appear here automatically.</div>
                       </>
                     ) : (
                       <>
-                        <div className="text-sm font-medium text-zinc-900">No matches</div>
-                        <div className="mt-1 text-sm text-zinc-500">Try a different search term.</div>
+                        <div className="text-sm font-medium text-[var(--color-text-primary)]">No matches</div>
+                        <div className="mt-1 text-sm text-[var(--color-text-muted)]">Try a different search term.</div>
                       </>
                     )}
                   </td>
@@ -320,17 +320,17 @@ export default function StoragePage() {
                   const downloadBusy = !!path && downloadingPath === path;
 
                   return (
-                    <tr key={rowKey} className="transition-colors duration-150 hover:bg-zinc-50">
-                      <td className="px-4 py-3 text-sm text-zinc-700">{kind}</td>
-                      <td className="px-4 py-3 text-sm text-zinc-900">
+                    <tr key={rowKey} className="transition-colors duration-150 hover:bg-[var(--color-bg-subtle)]">
+                      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{kind}</td>
+                      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)]">
                         <div className="flex flex-col">
                           <span className="font-medium">{name}</span>
                           {onboardingTitle ? (
-                            <span className="mt-0.5 text-[11px] text-zinc-500">{onboardingTitle}</span>
+                            <span className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{onboardingTitle}</span>
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-700">
+                      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
                         {it.onboarding_id ? (
                           <div className="flex flex-col">
                             <a
@@ -340,7 +340,7 @@ export default function StoragePage() {
                             >
                               {onboardingTitle ? onboardingTitle : "View onboarding"}
                             </a>
-                            <span className="mt-0.5 text-[11px] text-zinc-400 tabular-nums">
+                            <span className="mt-0.5 text-[11px] text-[var(--color-text-muted)] tabular-nums">
                               {it.onboarding_id}
                             </span>
                           </div>
@@ -348,13 +348,13 @@ export default function StoragePage() {
                           "—"
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right text-sm text-zinc-500 tabular-nums">{created}</td>
+                      <td className="px-4 py-3 text-right text-sm text-[var(--color-text-muted)] tabular-nums">{created}</td>
                       <td className="px-4 py-3 text-right">
                         {path ? (
                           <div className="inline-flex items-center gap-2">
                             <button
                               type="button"
-                              className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-60"
+                              className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                               onClick={() => openPreview(path, name)}
                               disabled={previewBusy || downloadBusy}
                             >
@@ -362,7 +362,7 @@ export default function StoragePage() {
                             </button>
                             <button
                               type="button"
-                              className="button-polish rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 disabled:opacity-60"
+                              className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                               onClick={() => downloadFile(path, name)}
                               disabled={previewBusy || downloadBusy}
                             >
@@ -370,7 +370,7 @@ export default function StoragePage() {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-zinc-400">—</span>
+                          <span className="text-xs text-[var(--color-text-muted)]">—</span>
                         )}
                       </td>
                     </tr>
@@ -384,12 +384,12 @@ export default function StoragePage() {
 
       {previewOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-4xl rounded-xl border border-zinc-200 bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
-              <div className="truncate text-sm font-medium text-zinc-900">{previewName}</div>
+          <div className="w-full max-w-4xl rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
+            <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
+              <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{previewName}</div>
               <button
                 type="button"
-                className="button-polish rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-900 hover:bg-zinc-50"
+                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2 py-1 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
                 onClick={closePreview}
               >
                 Close
@@ -399,12 +399,12 @@ export default function StoragePage() {
               {previewLoading ? (
                 <Skeleton className="h-80 w-full" />
               ) : previewError ? (
-                <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
                   {previewError}
                 </div>
               ) : previewUrl ? (
                 previewIsImage ? (
-                  <div className="relative min-h-[320px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                  <div className="relative min-h-[320px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
                     {!previewImageReady ? <Skeleton className="absolute inset-0 h-full w-full" /> : null}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -415,10 +415,10 @@ export default function StoragePage() {
                     />
                   </div>
                 ) : (
-                  <iframe src={previewUrl} title={previewName} className="h-[70vh] w-full rounded-lg border border-zinc-200" />
+                  <iframe src={previewUrl} title={previewName} className="h-[70vh] w-full rounded-[var(--radius-md)] border border-[var(--color-border)]" />
                 )
               ) : (
-                <div className="text-sm text-zinc-600">No preview available.</div>
+                <div className="text-sm text-[var(--color-text-secondary)]">No preview available.</div>
               )}
             </div>
           </div>

@@ -198,7 +198,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <Card className="border-zinc-200">
+    <Card className="border-[var(--color-border)]">
       <CardHeader>
         <CardTitle>Create onboarding</CardTitle>
         <CardDescription>Create a new onboarding by selecting a template and client.</CardDescription>
@@ -217,7 +217,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               id="template"
               value={templateId}
               onChange={(e) => setTemplateId(e.target.value)}
-              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm outline-none focus:border-zinc-300"
+              className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none focus:border-[var(--color-accent)]"
               disabled={templatesLoading}
             >
               {templatesLoading ? <option value="">Loading templates…</option> : null}
@@ -238,10 +238,10 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               type="button"
               onClick={() => setClientMode("existing")}
               className={
-                "rounded-md border px-3 py-1.5 text-sm " +
+                "rounded-full border px-3 py-1.5 text-sm " +
                 (clientMode === "existing"
-                  ? "border-zinc-300 bg-white text-zinc-900"
-                  : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100")
+                  ? "border-[var(--color-border-strong)] bg-white text-[var(--color-text-primary)]"
+                  : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]")
               }
             >
               Existing client
@@ -250,10 +250,10 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               type="button"
               onClick={() => setClientMode("new")}
               className={
-                "rounded-md border px-3 py-1.5 text-sm " +
+                "rounded-full border px-3 py-1.5 text-sm " +
                 (clientMode === "new"
-                  ? "border-zinc-300 bg-white text-zinc-900"
-                  : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100")
+                  ? "border-[var(--color-border-strong)] bg-white text-[var(--color-text-primary)]"
+                  : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]")
               }
             >
               New client
@@ -269,7 +269,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
                 id="client"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm outline-none focus:border-zinc-300"
+                className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none focus:border-[var(--color-accent)]"
                 disabled={clientsLoading}
               >
                 {clientsLoading ? <option value="">Loading clients…</option> : null}
@@ -284,7 +284,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
                   );
                 })}
               </select>
-              <div className="text-xs text-zinc-500">Uses the selected client’s saved details.</div>
+              <div className="text-xs text-[var(--color-text-muted)]">Uses the selected client's saved details.</div>
             </div>
 
             <div className="flex flex-col gap-2">

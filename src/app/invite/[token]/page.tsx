@@ -59,7 +59,7 @@ export default function InvitePage() {
         cache: "no-store",
       });
 
-      // If not signed in, show CTA (don’t auto-bounce back to /login in a loop)
+      // If not signed in, show CTA (don't auto-bounce back to /login in a loop)
       if (res.status === 401) {
         setLoading(false);
         setMsg("Please sign in (or create an account) to accept this invite.");
@@ -113,10 +113,10 @@ export default function InvitePage() {
   }, [token, sb, acceptInvite]);
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-900">
+    <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
       <div className="mx-auto flex max-w-md flex-col px-6 py-14">
-        <Link href="/" className="mb-6 flex w-fit items-center gap-3 rounded-md">
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        <Link href="/" className="mb-6 flex w-fit items-center gap-3 rounded-[var(--radius-md)]">
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
           <div className="text-sm font-semibold">ClientEnforce</div>
@@ -128,14 +128,14 @@ export default function InvitePage() {
           </CardHeader>
 
           <CardContent className="flex flex-col gap-4">
-            <p className="text-sm leading-6 text-zinc-600">
+            <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
               {checking
                 ? "Checking your invite…"
                 : "Sign in (or create an account) to accept this invite to your team."}
             </p>
 
             {loading ? (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+              <div className="rounded-[var(--radius-md)] border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
                 Accepting invite…
               </div>
             ) : null}
@@ -143,7 +143,7 @@ export default function InvitePage() {
             {msg ? (
               <div
                 className={
-                  "rounded-lg border p-3 text-sm " +
+                  "rounded-[var(--radius-md)] border p-3 text-sm " +
                   (messageTone === "success"
                     ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                     : messageTone === "info"

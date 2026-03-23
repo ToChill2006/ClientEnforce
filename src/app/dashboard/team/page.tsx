@@ -43,13 +43,13 @@ function pill(status: Task["status"]) {
   const base = "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium";
   switch (status) {
     case "open":
-      return `${base} border-zinc-200 bg-white text-zinc-700`;
+      return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-secondary)]`;
     case "in_progress":
-      return `${base} border-zinc-200 bg-zinc-50 text-zinc-800`;
+      return `${base} border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]`;
     case "done":
-      return `${base} border-zinc-200 bg-zinc-100 text-zinc-900`;
+      return `${base} border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]`;
     case "archived":
-      return `${base} border-zinc-200 bg-white text-zinc-500`;
+      return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-muted)]`;
   }
 }
 
@@ -364,8 +364,8 @@ export default function TeamPage() {
     <div className="mx-auto max-w-7xl">
       <div className="flex items-start justify-between gap-6">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">Team</h1>
-          <p className="mt-1 text-sm text-zinc-600">
+          <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Team</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             Assign internal tasks to teammates and track progress.
           </p>
         </div>
@@ -375,7 +375,7 @@ export default function TeamPage() {
             Refresh
           </Button>
           <Link
-            className="button-polish rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+            className="rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
             href="/dashboard/settings"
           >
             Settings
@@ -394,11 +394,11 @@ export default function TeamPage() {
       ) : null}
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="card-polish flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4">
+        <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex-1">
-              <div className="text-sm font-medium text-zinc-900">Directory</div>
-              <div className="mt-1 text-xs text-zinc-600">Search members and tasks.</div>
+              <div className="text-sm font-medium text-[var(--color-text-primary)]">Directory</div>
+              <div className="mt-1 text-xs text-[var(--color-text-secondary)]">Search members and tasks.</div>
             </div>
 
             <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
@@ -408,7 +408,7 @@ export default function TeamPage() {
                 placeholder="Search members or tasks…"
               />
               <select
-                className="h-10 rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                className="h-10 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
                 value={statusFilter}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -426,35 +426,35 @@ export default function TeamPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500">
+              <thead className="border-b border-[var(--color-border)] text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>
                   <th className="py-2 text-left font-medium">Member</th>
                   <th className="py-2 text-left font-medium">Role</th>
                   <th className="py-2 text-left font-medium">User ID</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
+              <tbody className="divide-y divide-[var(--color-border)]">
                 {loading ? (
                   <tr>
-                    <td colSpan={3} className="py-3 text-zinc-600">
+                    <td colSpan={3} className="py-3 text-[var(--color-text-secondary)]">
                       Loading…
                     </td>
                   </tr>
                 ) : filteredMembers.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="py-3 text-zinc-600">
+                    <td colSpan={3} className="py-3 text-[var(--color-text-secondary)]">
                       No members found.
                     </td>
                   </tr>
                 ) : (
                   filteredMembers.map((m) => (
-                    <tr key={m.user_id} className="hover:bg-zinc-50">
+                    <tr key={m.user_id} className="hover:bg-[var(--color-bg-subtle)]">
                       <td className="py-2">
-                        <div className="font-medium text-zinc-900">{m.full_name ?? "—"}</div>
-                        <div className="text-xs text-zinc-600">{m.email ? m.email : "—"}</div>
+                        <div className="font-medium text-[var(--color-text-primary)]">{m.full_name ?? "—"}</div>
+                        <div className="text-xs text-[var(--color-text-secondary)]">{m.email ? m.email : "—"}</div>
                       </td>
-                      <td className="py-2 text-zinc-700">{m.role}</td>
-                      <td className="py-2 font-mono text-xs text-zinc-600">{m.user_id}</td>
+                      <td className="py-2 text-[var(--color-text-secondary)]">{m.role}</td>
+                      <td className="py-2 font-mono text-xs text-[var(--color-text-secondary)]">{m.user_id}</td>
                     </tr>
                   ))
                 )}
@@ -463,10 +463,10 @@ export default function TeamPage() {
           </div>
         </div>
 
-        <div className="card-polish rounded-xl border border-zinc-200 bg-white p-4">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
           <div className="flex flex-col gap-1">
-            <div className="text-sm font-medium text-zinc-900">Assign a task</div>
-            <div className="text-xs text-zinc-600">
+            <div className="text-sm font-medium text-[var(--color-text-primary)]">Assign a task</div>
+            <div className="text-xs text-[var(--color-text-secondary)]">
               Owner/admin can assign tasks. Assignees can update status to open, in progress, or done.
             </div>
           </div>
@@ -474,9 +474,9 @@ export default function TeamPage() {
           {canAssign ? (
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">Assign to</label>
+                <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Assign to</label>
                 <select
-                  className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                  className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
                   value={assignedTo}
                   onChange={(e) => setAssignedTo(e.target.value)}
                 >
@@ -495,9 +495,9 @@ export default function TeamPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">Due (optional)</label>
+                <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Due (optional)</label>
                 <input
-                  className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                  className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
                   type="datetime-local"
                   value={dueAt}
                   onChange={(e) => setDueAt(e.target.value)}
@@ -505,7 +505,7 @@ export default function TeamPage() {
               </div>
 
               <div className="space-y-1 md:col-span-2">
-                <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">Title</label>
+                <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Title</label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -514,9 +514,9 @@ export default function TeamPage() {
               </div>
 
               <div className="space-y-1 md:col-span-2">
-                <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">Description (optional)</label>
+                <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Description (optional)</label>
                 <textarea
-                  className="min-h-[88px] w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900"
+                  className="min-h-[88px] w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)]"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Add helpful context…"
@@ -530,20 +530,20 @@ export default function TeamPage() {
               </div>
             </div>
           ) : (
-            <div className="mt-4 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+            <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
               You can update task status for tasks assigned to you.
             </div>
           )}
         </div>
 
-        <div className="card-polish rounded-xl border border-zinc-200 bg-white p-4">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="text-sm font-medium text-zinc-900">Tasks</div>
+              <div className="text-sm font-medium text-[var(--color-text-primary)]">Tasks</div>
             </div>
             <div className="flex items-center gap-2">
               <select
-                className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                className="h-9 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
                 value={scope}
                 onChange={(e) => setScope(e.target.value === "mine" ? "mine" : "all")}
                 disabled={role === "member"}
@@ -556,7 +556,7 @@ export default function TeamPage() {
 
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
-              <thead className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500">
+              <thead className="border-b border-[var(--color-border)] text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>
                   <th className="py-2 text-left font-medium">Title</th>
                   <th className="py-2 text-left font-medium">Assignee</th>
@@ -566,16 +566,16 @@ export default function TeamPage() {
                   <th className="py-2 text-right font-medium">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
+              <tbody className="divide-y divide-[var(--color-border)]">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-3 text-zinc-600">
+                    <td colSpan={6} className="py-3 text-[var(--color-text-secondary)]">
                       Loading…
                     </td>
                   </tr>
                 ) : filteredTasks.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-3 text-zinc-600">
+                    <td colSpan={6} className="py-3 text-[var(--color-text-secondary)]">
                       No tasks yet.
                     </td>
                   </tr>
@@ -589,35 +589,35 @@ export default function TeamPage() {
                     const rowBusy = Boolean(statusBusy) || isDeleting;
 
                     return (
-                      <tr key={t.id} className="hover:bg-zinc-50">
+                      <tr key={t.id} className="hover:bg-[var(--color-bg-subtle)]">
                         <td className="py-2">
-                          <div className="font-medium text-zinc-900">{t.title}</div>
-                          {t.description ? <div className="mt-0.5 text-xs text-zinc-600">{t.description}</div> : null}
+                          <div className="font-medium text-[var(--color-text-primary)]">{t.title}</div>
+                          {t.description ? <div className="mt-0.5 text-xs text-[var(--color-text-secondary)]">{t.description}</div> : null}
                         </td>
-                        <td className="py-2 text-zinc-700">{assigneeLabel}</td>
+                        <td className="py-2 text-[var(--color-text-secondary)]">{assigneeLabel}</td>
                         <td className="py-2">
                           <span className={pill(t.status)}>{t.status.replace("_", " ")}</span>
                         </td>
-                        <td className="py-2 text-zinc-700">{fmtDate(t.due_at)}</td>
-                        <td className="py-2 text-zinc-700">{fmtDate(t.updated_at)}</td>
+                        <td className="py-2 text-[var(--color-text-secondary)]">{fmtDate(t.due_at)}</td>
+                        <td className="py-2 text-[var(--color-text-secondary)]">{fmtDate(t.updated_at)}</td>
                         <td className="py-2">
                           <div className="flex justify-end gap-2">
                             <button
-                              className="button-polish rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+                              className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                               onClick={() => setTaskStatus(t.id, "open")}
                               disabled={rowBusy || !canUpdate || t.status === "open"}
                             >
                               {statusBusy === "open" ? "Saving..." : "Open"}
                             </button>
                             <button
-                              className="button-polish rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+                              className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                               onClick={() => setTaskStatus(t.id, "in_progress")}
                               disabled={rowBusy || !canUpdate || t.status === "in_progress"}
                             >
                               {statusBusy === "in_progress" ? "Saving..." : "In progress"}
                             </button>
                             <button
-                              className="button-polish rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+                              className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                               onClick={() => setTaskStatus(t.id, "done")}
                               disabled={rowBusy || !canUpdate || t.status === "done"}
                             >
@@ -625,7 +625,7 @@ export default function TeamPage() {
                             </button>
                             {canDelete ? (
                               <button
-                                className="button-polish rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+                                className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                                 onClick={() => deleteTask(t.id)}
                                 disabled={rowBusy}
                               >

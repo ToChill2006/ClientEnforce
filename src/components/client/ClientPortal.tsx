@@ -231,13 +231,13 @@ export function ClientPortal({
           <CardTitle>{onboardingTitle}</CardTitle>
           <CardDescription>
             Required completed: {progress.required_completed}/{progress.required_total} —{" "}
-            <span className="font-semibold text-zinc-900">{progress.percent}%</span>
+            <span className="font-semibold text-[var(--color-text-primary)]">{progress.percent}%</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Progress value={progress.percent} />
           {isLocked ? (
-            <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+            <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
               This onboarding is locked. No further changes can be made.
             </div>
           ) : null}
@@ -368,7 +368,7 @@ function TextRequirement({
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <Label>Answer</Label>
-        <div className="text-xs text-zinc-500">
+        <div className="text-xs text-[var(--color-text-muted)]">
           {disabled
             ? "Locked"
             : status === "saving" || busy
@@ -404,10 +404,10 @@ function FileRequirement({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm text-zinc-700">
+        <div className="text-sm text-[var(--color-text-secondary)]">
           {filePath ? `Uploaded: ${prettyStoredName(filePath)}` : "Upload a file"}
         </div>
-        <div className="text-xs text-zinc-500">{disabled ? "Locked" : busy ? "Uploading…" : ""}</div>
+        <div className="text-xs text-[var(--color-text-muted)]">{disabled ? "Locked" : busy ? "Uploading…" : ""}</div>
       </div>
       <input
         type="file"
@@ -439,7 +439,7 @@ function SignatureRequirement({
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [dirty, setDirty] = React.useState(false);
 
-  // Fix “offset / poor tracking” by matching canvas backing-store to its CSS size (DPR aware)
+  // Fix "offset / poor tracking" by matching canvas backing-store to its CSS size (DPR aware)
   React.useEffect(() => {
     if (disabled) return;
 
@@ -481,16 +481,16 @@ function SignatureRequirement({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm text-zinc-700">
+        <div className="text-sm text-[var(--color-text-secondary)]">
           {signaturePath ? `Saved: ${prettyStoredName(signaturePath)}` : "Sign below"}
         </div>
-        <div className="text-xs text-zinc-500">{disabled ? "Locked" : busy ? "Saving…" : ""}</div>
+        <div className="text-xs text-[var(--color-text-muted)]">{disabled ? "Locked" : busy ? "Saving…" : ""}</div>
       </div>
 
-      <div ref={containerRef} className="rounded-xl border border-zinc-200 bg-white p-2">
+      <div ref={containerRef} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-2">
         <SignatureCanvas
           penColor="black"
-          // Stroke tuning (feels smoother + more “ink-like”)
+          // Stroke tuning (feels smoother + more "ink-like")
           minWidth={1.6}
           maxWidth={3.2}
           velocityFilterWeight={0.7}
