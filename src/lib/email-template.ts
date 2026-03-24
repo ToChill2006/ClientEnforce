@@ -18,6 +18,21 @@ export type ClientEnforceEmailOptions = {
   footerNote?: string;
 };
 
+// Colours — kept as constants so the whole template stays in sync
+const C = {
+  accent: "#1B6EF3",
+  accentHover: "#1558c0",
+  white: "#ffffff",
+  bgPage: "#f3f4f6",
+  bgCard: "#ffffff",
+  bgFooter: "#f9fafb",
+  border: "#e5e7eb",
+  textPrimary: "#111827",
+  textSecondary: "#374151",
+  textMuted: "#6b7280",
+  textFooter: "#9ca3af",
+} as const;
+
 function escapeHtml(value: string) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -32,30 +47,27 @@ function paragraphHtml(value: string) {
 }
 
 function renderCta(cta: EmailCta, variant: "primary" | "secondary") {
-  const bg = variant === "primary" ? "#18181b" : "#ffffff";
-  const fg = variant === "primary" ? "#ffffff" : "#18181b";
-  const border = variant === "primary" ? "1px solid #18181b" : "1px solid #d4d4d8";
+  const bg = variant === "primary" ? C.accent : C.white;
+  const fg = variant === "primary" ? C.white : C.textPrimary;
+  const border = variant === "primary" ? `1px solid ${C.accent}` : `1px solid ${C.border}`;
 
-  return `
-    <a
-      href="${escapeHtml(cta.href)}"
-      style="
-        display:inline-block;
-        padding:12px 20px;
-        border-radius:8px;
-        background:${bg};
-        color:${fg};
-        border:${border};
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:14px;
-        font-weight:700;
-        letter-spacing:0.01em;
-        text-decoration:none;
-      "
-    >
-      ${escapeHtml(cta.label)}
-    </a>
-  `;
+  return `<a
+    href="${escapeHtml(cta.href)}"
+    style="
+      display:inline-block;
+      padding:13px 24px;
+      border-radius:100px;
+      background:${bg};
+      color:${fg};
+      border:${border};
+      font-family:Arial,Helvetica,sans-serif;
+      font-size:14px;
+      font-weight:700;
+      letter-spacing:0.01em;
+      text-decoration:none;
+      mso-padding-alt:0;
+    "
+  >${escapeHtml(cta.label)}</a>`;
 }
 
 function asPlainText(options: ClientEnforceEmailOptions) {
@@ -88,122 +100,165 @@ function asPlainText(options: ClientEnforceEmailOptions) {
 }
 
 export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
-  const logoUrl = `${appOrigin().replace(/\/$/, "")}/C.png`;
+  const origin = appOrigin().replace(/\/$/, "");
+  const logoUrl = `${origin}/C.png`;
   const preheader = options.preheader || options.subtitle || options.title;
   const paragraphs = (options.paragraphs ?? []).map((p) => p.trim()).filter(Boolean);
   const bullets = (options.bullets ?? []).map((b) => b.trim()).filter(Boolean);
 
-  const html = `
-<!doctype html>
-<html lang="en">
+  const html = `<!doctype html>
+<html lang="en" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml">
   <head>
-    <meta charSet="utf-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="color-scheme" content="light" />
     <meta name="supported-color-schemes" content="light" />
     <title>${escapeHtml(options.title)}</title>
+    <!--[if mso]>
+    <noscript>
+      <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+    </noscript>
+    <![endif]-->
   </head>
-  <body style="margin:0;padding:0;background:#fafafa;">
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
-      ${escapeHtml(preheader)}
+  <body style="margin:0;padding:0;background:${C.bgPage};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+
+    <!-- Preheader (hidden) -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;font-size:1px;line-height:1px;color:${C.bgPage};">
+      ${escapeHtml(preheader)}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
     </div>
 
-    <table role="presentation" width="100%" cellPadding="0" cellSpacing="0" border="0" style="background:#fafafa;">
+    <!-- Outer wrapper -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.bgPage};">
       <tr>
-        <td align="center" style="padding:24px 10px;">
-          <table role="presentation" width="620" cellPadding="0" cellSpacing="0" border="0" style="width:100%;max-width:620px;border-collapse:separate;border-spacing:0;">
+        <td align="center" style="padding:32px 12px;">
+
+          <!-- Card -->
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+            style="width:100%;max-width:600px;border-collapse:separate;border-spacing:0;border:1px solid ${C.border};border-radius:16px;overflow:hidden;">
+
+            <!-- ── Header ── -->
             <tr>
-              <td style="padding:14px 20px;border:1px solid #18181b;border-bottom:none;border-radius:14px 14px 0 0;background:#18181b;">
-                <table role="presentation" width="100%" cellPadding="0" cellSpacing="0" border="0">
+              <td style="padding:16px 24px;background:${C.bgCard};border-bottom:1px solid ${C.border};">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="vertical-align:middle;">
-                      <img src="${escapeHtml(logoUrl)}" width="24" height="24" alt="ClientEnforce" style="display:inline-block;vertical-align:middle;border:0;outline:none;text-decoration:none;border-radius:6px;" />
-                      <span style="display:inline-block;margin-left:10px;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;letter-spacing:0.02em;color:#ffffff;">CLIENTENFORCE</span>
+                      <img
+                        src="${escapeHtml(logoUrl)}"
+                        width="28"
+                        height="28"
+                        alt="ClientEnforce"
+                        style="display:inline-block;vertical-align:middle;border:0;outline:none;text-decoration:none;border-radius:6px;border:1px solid ${C.border};"
+                      />
+                      <span style="display:inline-block;margin-left:10px;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;letter-spacing:0.01em;color:${C.textPrimary};">ClientEnforce</span>
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
 
+            <!-- ── Hero ── -->
             <tr>
-              <td style="padding:28px 26px;background:#f4f4f5;border-left:1px solid #e4e4e7;border-right:1px solid #e4e4e7;">
+              <td style="padding:32px 32px 24px 32px;background:${C.bgCard};">
                 ${
                   options.eyebrow
-                    ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;font-weight:700;letter-spacing:0.08em;color:#52525b;text-transform:uppercase;">${escapeHtml(options.eyebrow)}</div>`
+                    ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;font-weight:700;letter-spacing:0.08em;color:${C.accent};text-transform:uppercase;margin-bottom:10px;">${escapeHtml(options.eyebrow)}</div>`
                     : ""
                 }
-                <h1 style="margin:8px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:34px;line-height:1.12;font-weight:800;color:#18181b;">
+                <h1 style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.2;font-weight:800;color:${C.textPrimary};">
                   ${escapeHtml(options.title)}
                 </h1>
                 ${
                   options.subtitle
-                    ? `<p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.45;color:#3f3f46;">${paragraphHtml(options.subtitle)}</p>`
+                    ? `<p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:${C.textSecondary};">${paragraphHtml(options.subtitle)}</p>`
                     : ""
                 }
                 ${
                   options.primaryCta
-                    ? `<div style="margin-top:22px;">${renderCta(options.primaryCta, "primary")}</div>`
+                    ? `<div style="margin-top:24px;">${renderCta(options.primaryCta, "primary")}</div>`
                     : ""
                 }
               </td>
             </tr>
 
+            <!-- ── Divider ── -->
+            ${
+              (options.intro || paragraphs.length > 0 || bullets.length > 0 || options.secondaryCta)
+                ? `<tr>
+                    <td style="padding:0 32px;">
+                      <div style="height:1px;background:${C.border};font-size:0;line-height:0;">&nbsp;</div>
+                    </td>
+                  </tr>`
+                : ""
+            }
+
+            <!-- ── Body ── -->
+            ${
+              (options.intro || paragraphs.length > 0 || bullets.length > 0 || options.secondaryCta)
+                ? `<tr>
+                    <td style="padding:24px 32px 32px 32px;background:${C.bgCard};">
+                      ${
+                        options.intro
+                          ? `<p style="margin:0 0 16px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:${C.textSecondary};">${paragraphHtml(options.intro)}</p>`
+                          : ""
+                      }
+                      ${paragraphs
+                        .map(
+                          (p) =>
+                            `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:${C.textSecondary};">${paragraphHtml(p)}</p>`
+                        )
+                        .join("")}
+                      ${
+                        bullets.length > 0
+                          ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 18px 0;">
+                              ${bullets
+                                .map(
+                                  (b) => `<tr>
+                                    <td style="width:16px;vertical-align:top;padding:5px 10px 5px 0;">
+                                      <div style="width:6px;height:6px;border-radius:50%;background:${C.accent};margin-top:5px;"></div>
+                                    </td>
+                                    <td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:${C.textSecondary};padding:4px 0;">
+                                      ${paragraphHtml(b)}
+                                    </td>
+                                  </tr>`
+                                )
+                                .join("")}
+                            </table>`
+                          : ""
+                      }
+                      ${
+                        options.secondaryCta
+                          ? `<div style="margin-top:12px;">${renderCta(options.secondaryCta, "secondary")}</div>`
+                          : ""
+                      }
+                    </td>
+                  </tr>`
+                : ""
+            }
+
+            <!-- ── Footer ── -->
             <tr>
-              <td style="padding:26px;border:1px solid #d4d4d8;border-top:none;border-radius:0 0 14px 14px;background:#ffffff;">
-                ${
-                  options.intro
-                    ? `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#27272a;">${paragraphHtml(options.intro)}</p>`
-                    : ""
-                }
-
-                ${paragraphs
-                  .map(
-                    (p) => `
-                      <p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#3f3f46;">
-                        ${paragraphHtml(p)}
-                      </p>
-                    `
-                  )
-                  .join("")}
-
-                ${
-                  bullets.length > 0
-                    ? `
-                      <ul style="margin:2px 0 16px 22px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#3f3f46;">
-                        ${bullets.map((b) => `<li style="margin:0 0 8px 0;">${paragraphHtml(b)}</li>`).join("")}
-                      </ul>
-                    `
-                    : ""
-                }
-
-                ${
-                  options.secondaryCta
-                    ? `<div style="margin-top:8px;margin-bottom:8px;">${renderCta(options.secondaryCta, "secondary")}</div>`
-                    : ""
-                }
-              </td>
-            </tr>
-
-            <tr>
-              <td style="padding:14px 4px 0 4px;">
-                <p style="margin:0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#71717a;">
-                  ${escapeHtml(options.footerNote || "Sent by ClientEnforce")}
+              <td style="padding:16px 24px;background:${C.bgFooter};border-top:1px solid ${C.border};border-radius:0 0 16px 16px;">
+                <p style="margin:0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:${C.textFooter};">
+                  ${escapeHtml(options.footerNote || "You received this email from ClientEnforce.")}
                 </p>
-                <p style="margin:6px 0 0 0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#71717a;">
-                  <a href="${escapeHtml(appOrigin())}" style="color:#18181b;text-decoration:underline;">clientenforce.com</a>
-                  &nbsp;|&nbsp;
-                  <a href="mailto:support@clientenforce.com" style="color:#18181b;text-decoration:underline;">support@clientenforce.com</a>
+                <p style="margin:6px 0 0 0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:${C.textFooter};">
+                  <a href="${escapeHtml(origin)}" style="color:${C.accent};text-decoration:none;">clientenforce.com</a>
+                  &nbsp;&middot;&nbsp;
+                  <a href="mailto:support@clientenforce.com" style="color:${C.accent};text-decoration:none;">support@clientenforce.com</a>
                 </p>
               </td>
             </tr>
+
           </table>
+          <!-- /Card -->
+
         </td>
       </tr>
     </table>
+
   </body>
-</html>
-  `.trim();
+</html>`.trim();
 
   return {
     html,
