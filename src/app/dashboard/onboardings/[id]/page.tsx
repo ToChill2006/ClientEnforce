@@ -280,8 +280,58 @@ export default function OnboardingDetailAdminPage() {
   const [progress, setProgress] = React.useState(0);
   const [locking, setLocking] = React.useState(false);
   const [downloadingPdf, setDownloadingPdf] = React.useState(false);
-  const [previewAsset, setPreviewAsset] = React.useState<{ url: string; name: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [previewName, setPreviewName] = React.useState("");
+  const [previewApiUrl, setPreviewApiUrl] = React.useState<string | null>(null);
+  const [previewBlobUrl, setPreviewBlobUrl] = React.useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = React.useState(false);
+  const [previewError, setPreviewError] = React.useState<string | null>(null);
+  const [previewIsImage, setPreviewIsImage] = React.useState(false);
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
+
+  // Revoke blob URL when preview closes or component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (previewBlobUrl) URL.revokeObjectURL(previewBlobUrl);
+    };
+  }, [previewBlobUrl]);
+
+  function closePreview() {
+    setPreviewOpen(false);
+    setPreviewLoading(false);
+    setPreviewError(null);
+    setPreviewIsImage(false);
+    if (previewBlobUrl) {
+      URL.revokeObjectURL(previewBlobUrl);
+      setPreviewBlobUrl(null);
+    }
+  }
+
+  async function openPreview(ref: string, defaultBucket: string, name: string) {
+    const apiUrl = previewRef(ref, defaultBucket);
+    setPreviewApiUrl(apiUrl);
+    setPreviewName(name);
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewIsImage(false);
+    if (previewBlobUrl) {
+      URL.revokeObjectURL(previewBlobUrl);
+      setPreviewBlobUrl(null);
+    }
+    try {
+      const res = await fetch(apiUrl);
+      if (!res.ok) throw new Error(`Preview failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setPreviewIsImage(blob.type.startsWith("image/"));
+      setPreviewBlobUrl(url);
+    } catch (e: any) {
+      setPreviewError(e?.message || "Could not load preview.");
+    } finally {
+      setPreviewLoading(false);
+    }
+  }
 
   async function loadDetail() {
     try {
@@ -741,15 +791,7 @@ export default function OnboardingDetailAdminPage() {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => {
-                              try {
-                                const name = fileNameFromPath(String(preview.v));
-                                const url = previewRef(String(preview.v), "clientenforce-uploads");
-                                setPreviewAsset({ url, name });
-                              } catch (e: any) {
-                                setBanner({ kind: "error", msg: e?.message || "Could not preview file." });
-                              }
-                            }}
+                            onClick={() => openPreview(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)))}
                             className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                           >
                             Preview
@@ -780,15 +822,7 @@ export default function OnboardingDetailAdminPage() {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => {
-                              try {
-                                const name = fileNameFromPath(String(preview.v));
-                                const url = previewRef(String(preview.v), "clientenforce-signatures");
-                                setPreviewAsset({ url, name });
-                              } catch (e: any) {
-                                setBanner({ kind: "error", msg: e?.message || "Could not preview signature." });
-                              }
-                            }}
+                            onClick={() => openPreview(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)))}
                             className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                           >
                             Preview
@@ -874,15 +908,7 @@ export default function OnboardingDetailAdminPage() {
                             </span>
                             <div className="ml-auto flex items-center gap-2">
                               <button
-                                onClick={() => {
-                                  try {
-                                    const name = fileNameFromPath(String(preview.v));
-                                    const url = previewRef(String(preview.v), "clientenforce-uploads");
-                                    setPreviewAsset({ url, name });
-                                  } catch (e: any) {
-                                    setBanner({ kind: "error", msg: e?.message || "Could not preview file." });
-                                  }
-                                }}
+                                onClick={() => openPreview(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)))}
                                 className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                               >
                                 Preview
@@ -913,15 +939,7 @@ export default function OnboardingDetailAdminPage() {
                             </span>
                             <div className="ml-auto flex items-center gap-2">
                               <button
-                                onClick={() => {
-                                  try {
-                                    const name = fileNameFromPath(String(preview.v));
-                                    const url = previewRef(String(preview.v), "clientenforce-signatures");
-                                    setPreviewAsset({ url, name });
-                                  } catch (e: any) {
-                                    setBanner({ kind: "error", msg: e?.message || "Could not preview signature." });
-                                  }
-                                }}
+                                onClick={() => openPreview(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)))}
                                 className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                               >
                                 Preview
@@ -968,36 +986,58 @@ export default function OnboardingDetailAdminPage() {
         </div>
       </div>
 
-      {previewAsset ? (
+      {previewOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
-            <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-3">
-              <div className="min-w-0 truncate text-sm font-medium text-[var(--color-text-primary)]" title={previewAsset.name}>
-                {previewAsset.name}
+          <div className="flex w-full max-w-5xl flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]" style={{ maxHeight: "90vh" }}>
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-3">
+              <div className="min-w-0 truncate text-sm font-medium text-[var(--color-text-primary)]" title={previewName}>
+                {previewName}
               </div>
               <div className="flex items-center gap-2">
-                <a
-                  href={previewAsset.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                >
-                  Open new tab
-                </a>
+                {previewApiUrl && (
+                  <a
+                    href={previewApiUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                  >
+                    Open new tab
+                  </a>
+                )}
                 <button
                   type="button"
-                  onClick={() => setPreviewAsset(null)}
+                  onClick={closePreview}
                   className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
                 >
                   Close
                 </button>
               </div>
             </div>
-            <iframe
-              src={previewAsset.url}
-              title={previewAsset.name}
-              className="h-[78vh] w-full bg-white"
-            />
+            <div className="min-h-0 flex-1 overflow-auto p-4">
+              {previewLoading ? (
+                <div className="flex h-64 items-center justify-center text-sm text-[var(--color-text-muted)]">
+                  Loading preview…
+                </div>
+              ) : previewError ? (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm text-[var(--color-text-secondary)]">
+                  {previewError}
+                </div>
+              ) : previewBlobUrl ? (
+                previewIsImage ? (
+                  <img
+                    src={previewBlobUrl}
+                    alt={previewName}
+                    className="max-h-[70vh] w-full object-contain"
+                  />
+                ) : (
+                  <iframe
+                    src={previewBlobUrl}
+                    title={previewName}
+                    className="h-[70vh] w-full rounded-[var(--radius-md)] border border-[var(--color-border)]"
+                  />
+                )
+              ) : null}
+            </div>
           </div>
         </div>
       ) : null}
