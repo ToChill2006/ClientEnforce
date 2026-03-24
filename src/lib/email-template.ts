@@ -245,7 +245,7 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
                 <p style="margin:6px 0 0 0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:${C.textFooter};">
                   <a href="${escapeHtml(origin)}" style="color:${C.accent};text-decoration:none;">clientenforce.com</a>
                   &nbsp;&middot;&nbsp;
-                  <a href="mailto:support@clientenforce.com" style="color:${C.accent};text-decoration:none;">support@clientenforce.com</a>
+                  <a href="mailto:info@clientenforce.com" style="color:${C.accent};text-decoration:none;">info@clientenforce.com</a>
                 </p>
               </td>
             </tr>
