@@ -88,12 +88,19 @@ export async function POST(req: Request) {
   }
 
   if (!process.env.RESEND_API_KEY) {
+    console.error("[followups/run] RESEND_API_KEY is not set — cannot send emails");
     return json(500, { error: "RESEND_API_KEY is not set" });
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
   const from = `${fromName} <${fromEmail}>`;
+
+  if (fromEmail === "onboarding@resend.dev") {
+    console.warn("[followups/run] RESEND_FROM_EMAIL is not set — using Resend test domain. Emails will only deliver to the Resend account owner. Set RESEND_FROM_EMAIL to a verified domain address in production.");
+  } else {
+    console.log(`[followups/run] Sending from: ${from}`);
+  }
 
   const admin = supabaseAdmin();
 
@@ -207,7 +214,12 @@ export async function POST(req: Request) {
         text: emailTemplate.text,
       });
 
-      if (emailErr) throw new Error(emailErr.message);
+      if (emailErr) {
+        const statusCode = (emailErr as any).statusCode ?? "unknown";
+        const errMsg = `Resend error ${statusCode}: ${emailErr.message} (name: ${(emailErr as any).name ?? "unknown"})`;
+        console.error(`[followups/run] Failed to send job ${job.id} to ${job.to_email} — ${errMsg}`);
+        throw new Error(errMsg);
+      }
 
       const upd = await safeUpdateFollowupJob(admin, job.id, {
         status: "sent",
@@ -241,9 +253,12 @@ export async function POST(req: Request) {
 
       sent += 1;
     } catch (e: any) {
+      const errMsg = String(e?.message ?? "Unknown error");
+      console.error(`[followups/run] Job ${job.id} failed: ${errMsg}`);
+
       await safeUpdateFollowupJob(admin, job.id, {
         status: "failed",
-        last_error: String(e?.message ?? "Unknown error"),
+        last_error: errMsg,
         updated_at: new Date().toISOString(),
       });
 
@@ -253,7 +268,7 @@ export async function POST(req: Request) {
         action: "followup.failed",
         entity_type: "followup_job",
         entity_id: job.id,
-        metadata: { to: job.to_email, error: String(e?.message ?? "Unknown error") },
+        metadata: { to: job.to_email, from, error: errMsg },
       });
 
       failed += 1;
