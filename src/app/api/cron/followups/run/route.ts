@@ -169,18 +169,23 @@ export async function POST(req: Request) {
           .maybeSingle();
 
         if (lockErr2 || !lockedRow2?.id) {
+          console.error(`[followups/run] Job ${job.id} — DB lock failed (retry without updated_at): ${lockErr2?.message ?? "row not returned"} (code: ${(lockErr2 as any)?.code ?? "unknown"})`);
           skipped += 1;
           continue;
         }
       } else {
+        console.error(`[followups/run] Job ${job.id} — DB lock failed: ${(lockErr as any)?.message ?? "unknown"} (code: ${(lockErr as any)?.code ?? "unknown"}, hint: ${(lockErr as any)?.hint ?? "none"})`);
         failed += 1;
         continue;
       }
     } else if (!lockedRow?.id) {
       // Someone else processed it
+      console.warn(`[followups/run] Job ${job.id} — lock returned no row (already processed by another runner), skipping`);
       skipped += 1;
       continue;
     }
+
+    console.log(`[followups/run] Processing job ${job.id} → ${job.to_email}, subject: "${job.subject}", due: ${job.due_at}`);
 
     try {
       const paragraphs = String(job.body || "")
@@ -206,6 +211,7 @@ export async function POST(req: Request) {
         footerNote: "This is an automated reminder from ClientEnforce.",
       });
 
+      console.log(`[followups/run] Calling Resend for job ${job.id}: from="${from}" to="${job.to_email}" subject="${job.subject}"`);
       const { error: emailErr } = await resend.emails.send({
         from,
         to: [job.to_email],
