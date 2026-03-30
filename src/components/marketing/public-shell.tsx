@@ -214,9 +214,12 @@ export function PublicFooter() {
           <p className="text-xs text-[var(--color-text-muted)]">
             © {new Date().getFullYear()} ClientEnforce. All rights reserved.
           </p>
-          <div className="flex gap-5">
+          <div className="flex flex-wrap items-center gap-5">
             <Link href="/privacy" className="text-xs text-[var(--color-text-muted)] transition hover:text-[var(--color-text-primary)]">Privacy</Link>
             <Link href="/terms" className="text-xs text-[var(--color-text-muted)] transition hover:text-[var(--color-text-primary)]">Terms</Link>
+            <a href="https://saasbrowser.com/en/saas/1437807/clientenforce" target="_blank" rel="noopener">
+              <img src="https://static-files.saasbrowser.com/saas-browser-badge-16.svg" alt="ClientEnforce - Compare B2B SaaS" width="120" />
+            </a>
           </div>
         </div>
       </div>
