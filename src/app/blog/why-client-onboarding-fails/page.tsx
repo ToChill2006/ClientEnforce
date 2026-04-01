@@ -63,7 +63,7 @@ export default function WhyClientOnboardingFailsPostPage() {
                 Why Client Onboarding Fails: 7 Root Causes (and How to Fix Each One)
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
-                A client signs on Friday. Your team is excited. Kickoff is booked for Tuesday. By Monday night, the intake form is half complete, two required files are still missing, legal has not signed, and your account manager is writing a third follow-up email instead of preparing strategy. Tuesday arrives, the kickoff still happens, and everyone pretends the missing details are "minor" until they blow up during delivery.
+                A client signs on Friday. Your team is excited. Kickoff is booked for Tuesday. By Monday night, the intake form is half complete, two required files are still missing, legal has not signed, and your account manager is writing a third follow-up email instead of preparing strategy. Tuesday arrives, the kickoff still happens, and everyone pretends the missing details are &quot;minor&quot; until they blow up during delivery.
               </p>
               <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 If this feels familiar, your team is not broken. Your process is. Client onboarding fails when requirements are treated as communication tasks instead of enforced workflow steps. Below are the seven root causes we see most often, plus practical fixes you can apply this week.
@@ -98,7 +98,7 @@ export default function WhyClientOnboardingFailsPostPage() {
                   When onboarding tasks live across email, forms, cloud folders, and ad hoc docs, clients do not experience onboarding as one process. They experience it as random requests from different people. That confusion creates drop-off and delay.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-                  Example: your team asks for assets in one email, sends an intake questionnaire in another, then requests legal signatures through a separate link. The client thinks they already "did onboarding" because they completed one piece.
+                  Example: your team asks for assets in one email, sends an intake questionnaire in another, then requests legal signatures through a separate link. The client thinks they already &quot;did onboarding&quot; because they completed one piece.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
                   Fix: move onboarding into one portal with one checklist and one source of truth. If you need a starting point, use a structured <Link href="/client-onboarding-checklist" className="font-medium text-[var(--color-text-primary)] underline underline-offset-4">client onboarding checklist</Link> so every required item is visible before kickoff.
@@ -108,10 +108,10 @@ export default function WhyClientOnboardingFailsPostPage() {
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>2. Requirements are communicated over email, not enforced in a system</h2>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-                  Email communicates. It does not enforce. You can send perfect instructions and still end up with incomplete onboarding because email has no concept of "required before kickoff." That gap is why projects start with missing inputs.
+                  Email communicates. It does not enforce. You can send perfect instructions and still end up with incomplete onboarding because email has no concept of &quot;required before kickoff.&quot; That gap is why projects start with missing inputs.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-                  Example: the client replies "Looks good" to an onboarding thread, but never uploads credentials. Your team notices only when delivery begins and access is still blocked.
+                  Example: the client replies &quot;Looks good&quot; to an onboarding thread, but never uploads credentials. Your team notices only when delivery begins and access is still blocked.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
                   Fix: convert requirements into enforceable workflow steps. Use <Link href="/client-onboarding-automation" className="font-medium text-[var(--color-text-primary)] underline underline-offset-4">client onboarding automation</Link> rules to prevent silent misses.
@@ -140,7 +140,7 @@ export default function WhyClientOnboardingFailsPostPage() {
                   Example: three onboarding projects are running. Each is 80 percent complete. None are actually kickoff-ready, but leadership has no single dashboard to see that pattern.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-                  Fix: track onboarding health at portfolio level. Ops should be able to answer "what is blocked right now" in under two minutes.
+                  Fix: track onboarding health at portfolio level. Ops should be able to answer &quot;what is blocked right now&quot; in under two minutes.
                 </p>
               </section>
 
@@ -173,7 +173,7 @@ export default function WhyClientOnboardingFailsPostPage() {
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>7. There is no definition of complete, so kickoff happens too early</h2>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-                  Teams often say onboarding is complete when it feels mostly done. That is how avoidable delivery risk enters the project. "Mostly done" is not an operational standard.
+                  Teams often say onboarding is complete when it feels mostly done. That is how avoidable delivery risk enters the project. &quot;Mostly done&quot; is not an operational standard.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
                   Example: kickoff starts while one key stakeholder has not signed, two files are pending, and the team still lacks access credentials. Delivery begins anyway because the date is on the calendar.

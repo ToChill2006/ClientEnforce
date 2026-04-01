@@ -744,7 +744,7 @@ export async function POST(req: Request) {
       // Keep creator column if it exists/was required.
       const msg = String(onboardingErr?.message || "");
       // Try updated_at-less with created_by_user_id first, then created_by, then none.
-      let r4 = await tryInsert({ ...withoutUpdatedAt, created_by_user_id: user.id });
+      const r4 = await tryInsert({ ...withoutUpdatedAt, created_by_user_id: user.id });
       onboarding = (r4 as any).data ?? null;
       onboardingErr = (r4 as any).error ?? null;
 
@@ -832,6 +832,8 @@ export async function POST(req: Request) {
 
           // If the template contains a stable id/key, keep it for traceability.
           const requirement_key = it.id ?? it.key ?? it.slug ?? null;
+          const attachment_path = it.attachment_path ?? null;
+          const options = it.options ?? null;
 
           return {
             org_id,
@@ -841,13 +843,27 @@ export async function POST(req: Request) {
             is_required,
             sort_order,
             requirement_key,
+            attachment_path,
+            options,
             created_at: nowIso,
             updated_at: nowIso,
           };
         });
 
-        // Insert defensively (some schemas won't have requirement_key/created_at/updated_at)
+        // Insert defensively (some schemas won't have all columns)
         let { error: rErr } = await supabase.from("onboarding_requirements").insert(rows);
+
+        if (rErr && isMissingColumnError(rErr, "attachment_path")) {
+          const stripped = rows.map(({ attachment_path, options, ...rest }) => rest);
+          const r0 = await supabase.from("onboarding_requirements").insert(stripped);
+          rErr = (r0 as any).error ?? null;
+        }
+
+        if (rErr && isMissingColumnError(rErr, "options")) {
+          const stripped = rows.map(({ options, ...rest }) => rest);
+          const r00 = await supabase.from("onboarding_requirements").insert(stripped);
+          rErr = (r00 as any).error ?? null;
+        }
 
         if (rErr && isMissingColumnError(rErr, "requirement_key")) {
           const stripped = rows.map(({ requirement_key, ...rest }) => rest);

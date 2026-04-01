@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +8,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 
-const RequirementSchema = z.object({
-  type: z.enum(["text", "file", "signature"]),
-  label: z.string().min(1),
-  is_required: z.boolean(),
-  sort_order: z.number().int().nonnegative(),
-});
+type RequirementType = "text" | "file" | "signature" | "multiple_choice";
+
+type Requirement = {
+  type: RequirementType;
+  label: string;
+  is_required: boolean;
+  sort_order: number;
+  attachment_path?: string | null;
+  options?: string[];
+};
 
 type TemplateRow = {
   id: string;
@@ -34,29 +37,40 @@ type TemplateApiItem = {
 type TemplateDetail = {
   id: string;
   name: string;
-  definition: { requirements: Array<z.infer<typeof RequirementSchema>> };
+  definition: { requirements: Requirement[] };
 };
 
+function fileNameFromPath(path?: string | null) {
+  if (!path) return null;
+  const noBucket = path.includes(":") ? path.split(":").slice(1).join(":") : path;
+  const parts = noBucket.split("/").filter(Boolean);
+  return parts[parts.length - 1] || path;
+}
+
 function normalizeTemplateDetail(input: any): TemplateDetail {
-  const requirements = Array.isArray(input?.definition?.requirements)
-    ? input.definition.requirements.map((r: any, i: number) => ({
-        type: r?.type === "file" || r?.type === "signature" ? r.type : "text",
-        label: typeof r?.label === "string" && r.label.trim() ? r.label : "New requirement",
-        is_required: Boolean(r?.is_required),
-        sort_order: typeof r?.sort_order === "number" ? r.sort_order : i,
-      }))
+  const requirements: Requirement[] = Array.isArray(input?.definition?.requirements)
+    ? input.definition.requirements.map((r: any, i: number) => {
+        const type: RequirementType =
+          r?.type === "file" || r?.type === "signature" || r?.type === "multiple_choice" ? r.type : "text";
+        return {
+          type,
+          label: typeof r?.label === "string" && r.label.trim() ? r.label : "New requirement",
+          is_required: Boolean(r?.is_required),
+          sort_order: typeof r?.sort_order === "number" ? r.sort_order : i,
+          attachment_path: r?.attachment_path ?? null,
+          options: type === "multiple_choice" && Array.isArray(r?.options) ? r.options : undefined,
+        };
+      })
     : [];
 
   return {
     id: String(input?.id ?? ""),
     name: typeof input?.name === "string" ? input.name : "Untitled template",
-    definition: {
-      requirements,
-    },
+    definition: { requirements },
   };
 }
 
-function defaultRequirements(): Array<z.infer<typeof RequirementSchema>> {
+function defaultRequirements(): Requirement[] {
   return [
     { type: "text", label: "Primary contact name", is_required: true, sort_order: 0 },
     { type: "file", label: "Upload contract", is_required: true, sort_order: 1 },
@@ -72,19 +86,19 @@ export default function TemplatesPage() {
       : typeof toastApi?.push === "function"
       ? toastApi.push
       : () => {};
+
   const [items, setItems] = React.useState<TemplateRow[]>([]);
   const [selected, setSelected] = React.useState<TemplateDetail | null>(null);
   const [name, setName] = React.useState("");
   const [loading, setLoading] = React.useState(true);
-  const [canCreateTemplate, setCanCreateTemplate] = React.useState(true);
-  const [canEditTemplate, setCanEditTemplate] = React.useState(true);
-  const [canDeleteTemplate, setCanDeleteTemplate] = React.useState(true);
   const [upgradeMessage, setUpgradeMessage] = React.useState<string | null>(null);
   const [detailCache, setDetailCache] = React.useState<Record<string, TemplateDetail>>({});
   const [creating, setCreating] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
   const [openingId, setOpeningId] = React.useState<string | null>(null);
+  // Track per-requirement upload state: requirementIdx -> uploading|null
+  const [uploadingIdx, setUploadingIdx] = React.useState<Record<number, boolean>>({});
 
   async function load() {
     setLoading(true);
@@ -144,12 +158,7 @@ export default function TemplatesPage() {
       const res = await fetch("/api/templates", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: templateName,
-          definition: {
-            requirements: defaultRequirements(),
-          },
-        }),
+        body: JSON.stringify({ name: templateName, definition: { requirements: defaultRequirements() } }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -165,22 +174,12 @@ export default function TemplatesPage() {
         if (res.status === 403) {
           const message = String(json?.error ?? "");
           const looksLikePlanLimit = /upgrade|current plan|allows|templates/i.test(message);
-
           if (looksLikePlanLimit) {
             setUpgradeMessage(message || "Your current subscription does not allow more templates.");
-            notify({
-              title: "Upgrade required",
-              description: message || "Your current subscription does not allow more templates.",
-              variant: "error",
-            });
+            notify({ title: "Upgrade required", description: message, variant: "error" });
             return;
           }
-
-          notify({
-            title: "Permission required",
-            description: "You do not have permission to create templates.",
-            variant: "error",
-          });
+          notify({ title: "Permission required", description: "You do not have permission to create templates.", variant: "error" });
           return;
         }
         throw new Error(JSON.stringify(json.error ?? json));
@@ -188,21 +187,13 @@ export default function TemplatesPage() {
 
       const createdRaw = (json?.item ?? null) as TemplateApiItem | null;
       const created = createdRaw
-        ? normalizeTemplateDetail({
-            ...createdRaw,
-            definition: createdRaw?.definition ?? optimisticDetail.definition,
-          })
+        ? normalizeTemplateDetail({ ...createdRaw, definition: createdRaw?.definition ?? optimisticDetail.definition })
         : null;
       setUpgradeMessage(null);
       notify({ title: "Template created", variant: "success" });
 
       if (created?.id) {
-        const createdRow = {
-          id: created.id,
-          name: created.name,
-          created_at: createdRaw?.created_at ?? now,
-          updated_at: createdRaw?.updated_at ?? now,
-        };
+        const createdRow = { id: created.id, name: created.name, created_at: createdRaw?.created_at ?? now, updated_at: createdRaw?.updated_at ?? now };
         setItems((prev) => [createdRow, ...prev.filter((x) => x.id !== tempId && x.id !== created.id)]);
         setDetailCache((prev) => {
           const next = { ...prev };
@@ -241,22 +232,15 @@ export default function TemplatesPage() {
     const cached = detailCache[id];
     if (cached) {
       setSelected(normalizeTemplateDetail(cached));
-      if (cached.definition?.requirements?.length > 0) {
-        return;
-      }
+      if (cached.definition?.requirements?.length > 0) return;
     }
 
-    // Show instant shell from list data while fetching full detail.
     const row = items.find((x) => x.id === id);
     if (row) {
       setSelected((prev) =>
         prev?.id === id
           ? normalizeTemplateDetail(prev)
-          : normalizeTemplateDetail({
-              id: row.id,
-              name: row.name,
-              definition: cached?.definition ?? { requirements: [] },
-            })
+          : normalizeTemplateDetail({ id: row.id, name: row.name, definition: cached?.definition ?? { requirements: [] } })
       );
     }
 
@@ -277,6 +261,23 @@ export default function TemplatesPage() {
 
   async function saveSelected() {
     if (!selected || saving) return;
+
+    // Validate: multiple_choice requirements must have at least 2 non-empty options
+    for (const r of selected.definition.requirements) {
+      if (r.type === "multiple_choice") {
+        const validOptions = (r.options ?? []).filter((o) => o.trim().length > 0);
+        if (validOptions.length < 2) {
+          notify({ title: "Validation error", description: `"${r.label}" must have at least 2 options.`, variant: "error" });
+          return;
+        }
+        const unique = new Set(validOptions.map((o) => o.trim().toLowerCase()));
+        if (unique.size !== validOptions.length) {
+          notify({ title: "Validation error", description: `"${r.label}" has duplicate options.`, variant: "error" });
+          return;
+        }
+      }
+    }
+
     const safeSelected = normalizeTemplateDetail(selected);
     setSaving(true);
     try {
@@ -295,11 +296,7 @@ export default function TemplatesPage() {
       const json = await res.json();
       if (!res.ok) {
         if (res.status === 403) {
-          notify({
-            title: "Permission required",
-            description: "You do not have permission to edit templates.",
-            variant: "error",
-          });
+          notify({ title: "Permission required", description: "You do not have permission to edit templates.", variant: "error" });
           return;
         }
         throw new Error(JSON.stringify(json.error ?? json));
@@ -309,15 +306,7 @@ export default function TemplatesPage() {
       setSelected(saved);
       setDetailCache((prev) => ({ ...prev, [saved.id]: saved }));
       setItems((prev) =>
-        prev.map((t) =>
-          t.id === saved.id
-            ? {
-                ...t,
-                name: saved.name,
-                updated_at: new Date().toISOString(),
-              }
-            : t
-        )
+        prev.map((t) => (t.id === saved.id ? { ...t, name: saved.name, updated_at: new Date().toISOString() } : t))
       );
       notify({ title: "Saved", variant: "success" });
     } catch (e: any) {
@@ -350,16 +339,11 @@ export default function TemplatesPage() {
           setItems(previousItems);
           setDetailCache(previousCache);
           setSelected(previousSelected);
-          notify({
-            title: "Permission required",
-            description: "You do not have permission to delete templates.",
-            variant: "error",
-          });
+          notify({ title: "Permission required", description: "You do not have permission to delete templates.", variant: "error" });
           return;
         }
         throw new Error(JSON.stringify(json.error ?? json));
       }
-
       notify({ title: "Deleted", variant: "success" });
     } catch (e: any) {
       setItems(previousItems);
@@ -369,6 +353,38 @@ export default function TemplatesPage() {
     } finally {
       setDeleting(false);
     }
+  }
+
+  async function uploadAttachment(idx: number, file: File) {
+    setUploadingIdx((p) => ({ ...p, [idx]: true }));
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      const res = await fetch("/api/templates/upload", { method: "POST", body: fd });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Upload failed");
+      const { attachment_path } = json;
+      setSelected((prev) => {
+        if (!prev) return prev;
+        const reqs = prev.definition.requirements.map((r, i) =>
+          i === idx ? { ...r, attachment_path } : r
+        );
+        return { ...prev, definition: { requirements: reqs } };
+      });
+      notify({ title: "Attachment uploaded", variant: "success" });
+    } catch (e: any) {
+      notify({ title: "Upload failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setUploadingIdx((p) => ({ ...p, [idx]: false }));
+    }
+  }
+
+  function updateReq(idx: number, patch: Partial<Requirement>) {
+    setSelected((prev) => {
+      if (!prev) return prev;
+      const reqs = prev.definition.requirements.map((r, i) => (i === idx ? { ...r, ...patch } : r));
+      return { ...prev, definition: { requirements: reqs } };
+    });
   }
 
   return (
@@ -449,69 +465,143 @@ export default function TemplatesPage() {
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] p-3">
               <div className="text-sm font-semibold">Requirements</div>
-              <div className="mt-3 flex flex-col gap-3">
+              <div className="mt-3 flex flex-col gap-4">
                 {(selected.definition?.requirements ?? [])
                   .slice()
                   .sort((a, b) => a.sort_order - b.sort_order)
                   .map((r, idx) => (
-                    <div key={idx} className="grid grid-cols-1 gap-2 md:grid-cols-12 md:items-center">
-                      <div className="md:col-span-3">
-                        <select
-                          className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
-                          value={r.type}
-                          onChange={(e) => {
-                            const type = e.target.value as any;
-                            const reqs = selected.definition.requirements.map((x, i) => (i === idx ? { ...x, type } : x));
-                            setSelected({ ...selected, definition: { requirements: reqs } });
-                          }}
-                        >
-                          <option value="text">text</option>
-                          <option value="file">file</option>
-                          <option value="signature">signature</option>
-                        </select>
+                    <div key={idx} className="rounded-[var(--radius-md)] border border-[var(--color-border)] p-3 flex flex-col gap-2">
+                      {/* Row 1: type selector, label input, required checkbox, delete */}
+                      <div className="grid grid-cols-1 gap-2 md:grid-cols-12 md:items-center">
+                        <div className="md:col-span-3">
+                          <select
+                            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
+                            value={r.type}
+                            onChange={(e) => {
+                              const type = e.target.value as RequirementType;
+                              const patch: Partial<Requirement> = { type };
+                              // Clear type-specific fields when switching away
+                              if (type !== "file") patch.attachment_path = null;
+                              if (type !== "multiple_choice") patch.options = undefined;
+                              if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
+                              updateReq(idx, patch);
+                            }}
+                          >
+                            <option value="text">Text</option>
+                            <option value="file">File upload</option>
+                            <option value="signature">Signature</option>
+                            <option value="multiple_choice">Multiple choice</option>
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-6">
+                          <Input
+                            value={r.label}
+                            onChange={(e) => updateReq(idx, { label: e.target.value })}
+                            placeholder="Requirement label"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2 flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={r.is_required}
+                            onChange={(e) => updateReq(idx, { is_required: e.target.checked })}
+                          />
+                          <span className="text-sm text-[var(--color-text-secondary)]">Required</span>
+                        </div>
+
+                        <div className="md:col-span-1">
+                          <Button
+                            variant="secondary"
+                            className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
+                            onClick={() => {
+                              const reqs = selected.definition.requirements
+                                .filter((_, i) => i !== idx)
+                                .map((x, i) => ({ ...x, sort_order: i }));
+                              setSelected({ ...selected, definition: { requirements: reqs } });
+                            }}
+                          >
+                            ✕
+                          </Button>
+                        </div>
                       </div>
 
-                      <div className="md:col-span-6">
-                        <Input
-                          value={r.label}
-                          onChange={(e) => {
-                            const label = e.target.value;
-                            const reqs = selected.definition.requirements.map((x, i) => (i === idx ? { ...x, label } : x));
-                            setSelected({ ...selected, definition: { requirements: reqs } });
-                          }}
-                        />
-                      </div>
+                      {/* Row 2: attachment upload (file type only) */}
+                      {r.type === "file" ? (
+                        <div className="flex flex-wrap items-center gap-3 pl-1">
+                          <span className="text-xs text-[var(--color-text-muted)]">Form template (optional):</span>
+                          {r.attachment_path ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-[var(--color-text-secondary)] truncate max-w-[200px]" title={fileNameFromPath(r.attachment_path) ?? ""}>
+                                {fileNameFromPath(r.attachment_path)}
+                              </span>
+                              <button
+                                type="button"
+                                className="text-xs text-[var(--color-text-muted)] hover:text-red-600"
+                                onClick={() => updateReq(idx, { attachment_path: null })}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="cursor-pointer text-xs text-[var(--color-accent)] hover:underline">
+                              {uploadingIdx[idx] ? "Uploading…" : "Attach file"}
+                              <input
+                                type="file"
+                                className="sr-only"
+                                disabled={!!uploadingIdx[idx]}
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f) void uploadAttachment(idx, f);
+                                  e.currentTarget.value = "";
+                                }}
+                              />
+                            </label>
+                          )}
+                        </div>
+                      ) : null}
 
-                      <div className="md:col-span-2 flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={r.is_required}
-                          onChange={(e) => {
-                            const is_required = e.target.checked;
-                            const reqs = selected.definition.requirements.map((x, i) =>
-                              i === idx ? { ...x, is_required } : x
-                            );
-                            setSelected({ ...selected, definition: { requirements: reqs } });
-                          }}
-                        />
-                        <span className="text-sm text-[var(--color-text-secondary)]">Required</span>
-                      </div>
-
-                      <div className="md:col-span-1">
-                        <Button
-                          variant="secondary"
-                          className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
-                          onClick={() => {
-                            const reqs = selected.definition.requirements.filter((_, i) => i !== idx).map((x, i) => ({
-                              ...x,
-                              sort_order: i,
-                            }));
-                            setSelected({ ...selected, definition: { requirements: reqs } });
-                          }}
-                        >
-                          ✕
-                        </Button>
-                      </div>
+                      {/* Row 3: options editor (multiple_choice type only) */}
+                      {r.type === "multiple_choice" ? (
+                        <div className="flex flex-col gap-2 pl-1">
+                          <span className="text-xs font-medium text-[var(--color-text-secondary)]">Options (min 2)</span>
+                          {(r.options ?? []).map((opt, optIdx) => (
+                            <div key={optIdx} className="flex items-center gap-2">
+                              <Input
+                                value={opt}
+                                onChange={(e) => {
+                                  const opts = [...(r.options ?? [])];
+                                  opts[optIdx] = e.target.value;
+                                  updateReq(idx, { options: opts });
+                                }}
+                                placeholder={`Option ${optIdx + 1}`}
+                                className="text-sm"
+                              />
+                              <button
+                                type="button"
+                                className="shrink-0 text-sm text-[var(--color-text-muted)] hover:text-red-600 disabled:opacity-40"
+                                disabled={(r.options ?? []).length <= 2}
+                                onClick={() => {
+                                  const opts = (r.options ?? []).filter((_, i) => i !== optIdx);
+                                  updateReq(idx, { options: opts });
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                          {(r.options ?? []).length < 20 ? (
+                            <button
+                              type="button"
+                              className="self-start text-xs text-[var(--color-accent)] hover:underline"
+                              onClick={() => updateReq(idx, { options: [...(r.options ?? []), ""] })}
+                            >
+                              + Add option
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                   ))}
 

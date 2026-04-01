@@ -406,7 +406,7 @@ export default function SettingsPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="font-medium">Updating subscription…</div>
-              <div className="mt-0.5 text-[var(--color-text-secondary)]">We're syncing your Stripe subscription. This can take a few seconds.</div>
+              <div className="mt-0.5 text-[var(--color-text-secondary)]">We&apos;re syncing your Stripe subscription. This can take a few seconds.</div>
             </div>
             <button
               className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"

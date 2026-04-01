@@ -28,7 +28,7 @@ export async function GET() {
 
   const userIds = Array.from(new Set((memberships ?? []).map((m: any) => m.user_id).filter(Boolean)));
 
-  let profilesByUserId = new Map<string, { email: string | null; full_name: string | null }>();
+  const profilesByUserId = new Map<string, { email: string | null; full_name: string | null }>();
 
   if (userIds.length > 0) {
     // Pull profiles separately (avoids needing a FK relationship for PostgREST embedding)

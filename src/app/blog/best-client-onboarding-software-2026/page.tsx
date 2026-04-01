@@ -36,7 +36,7 @@ export default function BestClientOnboardingSoftware2026Page() {
                 The Best Client Onboarding Software in 2026 (Ranked by Use Case)
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
-                There is no single "best" client onboarding software. The right tool depends on your onboarding volume, team size, and whether you need dedicated onboarding depth or an all-in-one business platform.
+                There is no single &quot;best&quot; client onboarding software. The right tool depends on your onboarding volume, team size, and whether you need dedicated onboarding depth or an all-in-one business platform.
               </p>
               <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 This guide is intentionally practical. We make ClientEnforce, so we are transparent about fit: some teams should use us, and some teams should not.

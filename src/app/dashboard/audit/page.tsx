@@ -112,7 +112,7 @@ export default function AuditPage() {
         ) : events.length === 0 ? (
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
             <div className="text-sm font-medium text-[var(--color-text-primary)]">No activity yet</div>
-            <div className="mt-1 text-sm text-[var(--color-text-muted)]">Once you create onboardings, upload files, send links, etc. it'll show up here.</div>
+            <div className="mt-1 text-sm text-[var(--color-text-muted)]">Once you create onboardings, upload files, send links, etc. it&apos;ll show up here.</div>
           </div>
         ) : (
           events.map((e) => (
@@ -183,7 +183,7 @@ export default function AuditPage() {
                 <tr>
                   <td colSpan={5} className="px-4 py-10">
                     <div className="text-sm font-medium text-[var(--color-text-primary)]">No activity yet</div>
-                    <div className="mt-1 text-sm text-[var(--color-text-muted)]">Once you create onboardings, upload files, send links, etc. it'll show up here.</div>
+                    <div className="mt-1 text-sm text-[var(--color-text-muted)]">Once you create onboardings, upload files, send links, etc. it&apos;ll show up here.</div>
                   </td>
                 </tr>
               ) : (

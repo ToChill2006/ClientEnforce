@@ -165,8 +165,6 @@ export default async function ClientTokenPage({
 
   // Requirements: prefer onboarding-scoped requirements, but fall back to template-scoped
   // and alternate table/column names when schemas differ.
-  let reqRows: any[] | null = null;
-  let reqErr: any = null;
 
   // Some deployments store the template FK under different names.
   const templateKey =
@@ -176,6 +174,7 @@ export default async function ClientTokenPage({
     null;
 
   type TryResult = { data: any[] | null; error: any | null };
+  type TryManyResult = { rows: any[] | null; err: any };
 
   const trySelect = async (
     table: string,
@@ -191,7 +190,7 @@ export default async function ClientTokenPage({
     }
   };
 
-  const tryMany = async (attempts: Array<() => Promise<TryResult>>) => {
+  const tryMany = async (attempts: Array<() => Promise<TryResult>>): Promise<TryManyResult> => {
     for (const fn of attempts) {
       const r = await fn();
       // If the table/column doesn't exist, continue to next attempt.
@@ -200,26 +199,21 @@ export default async function ClientTokenPage({
       }
       // If we have a non-missing error, stop and surface it.
       if (r.error) {
-        reqErr = r.error;
-        reqRows = null;
-        return;
+        return { rows: null, err: r.error };
       }
       // Success: keep the rows (even if empty) and stop.
-      reqRows = Array.isArray(r.data) ? r.data : [];
-      reqErr = null;
-      return;
+      return { rows: Array.isArray(r.data) ? r.data : [], err: null };
     }
     // If we exhausted attempts with only missing table/column issues,
     // treat it as no requirements rather than hard failing.
-    reqRows = [];
-    reqErr = null;
+    return { rows: [], err: null };
   };
 
   // Attempt order:
   // 1) onboarding-scoped requirements (these are usually the actual rows you answer against)
   // 2) template-scoped requirements tables (if present)
   // 3) templates table JSON (common: templates.requirements / templates.fields / templates.schema)
-  await tryMany([
+  const { rows: reqRowsInit, err: reqErr } = await tryMany([
     // requirements table (most common in this codebase: answer route returns { requirement: { id, value_text, completed_at } })
     () => trySelect("requirements", { col: "onboarding_id", val: onboarding.id }),
     () => trySelect("requirements", { col: "onboardingId", val: onboarding.id }),
@@ -264,6 +258,7 @@ export default async function ClientTokenPage({
   // If we did not find per-onboarding requirement rows, fall back to requirements stored on the template row.
   // Many schemas store form definitions as JSON on templates (and materialize requirement rows later).
   // This keeps the client portal from looking empty when the template does have fields.
+  let reqRows: any[] | null = reqRowsInit;
   const reqRowsArr = Array.isArray(reqRows) ? reqRows : [];
   if (!reqErr && reqRowsArr.length === 0 && templateKey) {
     try {
@@ -350,6 +345,8 @@ export default async function ClientTokenPage({
       value_text: r.value_text ?? r.value ?? r.answer_text ?? r.text ?? r.default ?? null,
       file_path: r.file_path ?? r.fileKey ?? r.storage_path ?? r.file_url ?? null,
       signature_path: r.signature_path ?? r.signatureKey ?? r.signature_storage_path ?? null,
+      attachment_path: r.attachment_path ?? null,
+      options: Array.isArray(r.options) ? r.options : null,
     };
   });
 
@@ -400,7 +397,7 @@ export default async function ClientTokenPage({
                   <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-3">
                     <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">Template preview</div>
                     <div className="mt-2 text-xs text-[var(--color-text-secondary)]">
-                      These questions exist in the template, but they haven't been added to this onboarding yet.
+                      These questions exist in the template, but they haven&apos;t been added to this onboarding yet.
                     </div>
                     <ul className="mt-3 space-y-2">
                       {templatePreview.slice(0, 12).map((r: any, i: number) => (

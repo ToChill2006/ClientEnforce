@@ -39,12 +39,23 @@ export async function POST(req: Request) {
   // Ensure requirement belongs to this onboarding
   const { data: reqRow, error: rErr } = await admin
     .from("onboarding_requirements")
-    .select("id, onboarding_id, is_required")
+    .select("id, onboarding_id, is_required, type, options")
     .eq("id", requirement_id)
     .eq("onboarding_id", onboarding.id)
     .single();
 
   if (rErr || !reqRow) return json(404, { error: "Requirement not found" });
+
+  // Validate multiple_choice answers against the allowed options list
+  const reqType = String((reqRow as any).type || "").toLowerCase();
+  if (reqType === "multiple_choice" && value_text) {
+    const opts: string[] | null = Array.isArray((reqRow as any).options) ? (reqRow as any).options : null;
+    if (opts && opts.length > 0) {
+      if (!opts.includes(value_text)) {
+        return json(400, { error: "Selected value is not a valid option." });
+      }
+    }
+  }
 
   // Determine completion: any non-empty value/file/signature counts as completed.
   const hasText = typeof value_text === "string" && value_text.trim().length > 0;

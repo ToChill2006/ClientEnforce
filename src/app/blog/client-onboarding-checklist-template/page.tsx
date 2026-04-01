@@ -70,7 +70,7 @@ export default function ClientOnboardingChecklistTemplatePostPage() {
                 The Complete Client Onboarding Checklist Template (2026)
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
-                A checklist only helps if it drives completion. Most teams already have a checklist somewhere, but it is either too vague, too long, or disconnected from the way clients actually submit information. That is why onboarding still feels chaotic even with "process docs" in place.
+                A checklist only helps if it drives completion. Most teams already have a checklist somewhere, but it is either too vague, too long, or disconnected from the way clients actually submit information. That is why onboarding still feels chaotic even with &quot;process docs&quot; in place.
               </p>
               <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 This client onboarding checklist template is built for teams that onboard clients repeatedly and want a reliable path from signed agreement to kickoff-ready. Use it as-is, then adapt it to your service model and automate it in your onboarding workflow.

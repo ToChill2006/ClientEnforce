@@ -41,7 +41,7 @@ export async function GET() {
     new Set((memberships ?? []).map((m: any) => m.user_id).filter(Boolean).map(String))
   );
 
-  let profilesByUserId = new Map<string, { full_name: string | null; email: string | null }>();
+  const profilesByUserId = new Map<string, { full_name: string | null; email: string | null }>();
 
   if (userIds.length > 0) {
     const { data: profs, error: pErr } = await admin

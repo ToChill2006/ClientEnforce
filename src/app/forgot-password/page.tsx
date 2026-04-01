@@ -67,7 +67,7 @@ export default async function ForgotPasswordPage({
             ) : null}
 
             <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
-              Enter your email address and we'll send you a secure link to reset your password.
+              Enter your email address and we&apos;ll send you a secure link to reset your password.
             </p>
 
             <form action={forgotPasswordAction} className="flex flex-col gap-4">

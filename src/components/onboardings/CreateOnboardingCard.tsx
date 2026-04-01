@@ -284,7 +284,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
                   );
                 })}
               </select>
-              <div className="text-xs text-[var(--color-text-muted)]">Uses the selected client's saved details.</div>
+              <div className="text-xs text-[var(--color-text-muted)]">Uses the selected client&apos;s saved details.</div>
             </div>
 
             <div className="flex flex-col gap-2">

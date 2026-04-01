@@ -83,7 +83,7 @@ export async function GET(req: Request) {
     const { data: fullReqs, error: fullErr } = await supabase
       .from("onboarding_requirements")
       .select(
-        "id,onboarding_id,type,label,is_required,sort_order,completed_at,completed_by,value_text,file_path,signature_path,created_at,updated_at"
+        "id,onboarding_id,type,label,is_required,sort_order,completed_at,completed_by,value_text,file_path,signature_path,attachment_path,options,created_at,updated_at"
       )
       .in("onboarding_id", ids)
       .order("sort_order", { ascending: true });

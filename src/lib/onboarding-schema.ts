@@ -1,12 +1,14 @@
 import { z } from "zod";
 
-export const RequirementTypeSchema = z.enum(["text", "file", "signature"]);
+export const RequirementTypeSchema = z.enum(["text", "file", "signature", "multiple_choice"]);
 
 export const TemplateRequirementSchema = z.object({
   type: RequirementTypeSchema,
   label: z.string().min(1),
   is_required: z.boolean().default(true),
   sort_order: z.number().int().nonnegative().default(0),
+  attachment_path: z.string().optional(),
+  options: z.array(z.string().min(1)).optional(),
 });
 
 export const TemplateDefinitionSchema = z.object({

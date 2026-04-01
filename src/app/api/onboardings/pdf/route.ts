@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import zlib from "zlib";
 import {
   exportUnavailableMessage,
   exportsEnabledForTier,
@@ -259,7 +260,6 @@ function parsePngToRgb(png: Buffer): { width: number; height: number; rgb: Buffe
   if (!width || !height) throw new Error("PNG missing IHDR");
   if (idatParts.length === 0) throw new Error("PNG missing IDAT");
 
-  const zlib = require("zlib") as typeof import("zlib");
   const inflated = zlib.inflateSync(Buffer.concat(idatParts));
 
   const bpp = colorType === 6 ? 4 : 3;
@@ -327,7 +327,6 @@ function makePdfImage(name: string, bytes: Buffer): PdfImage {
 
   if (isLikelyPng(bytes)) {
     const { width, height, rgb } = parsePngToRgb(bytes);
-    const zlib = require("zlib") as typeof import("zlib");
     const deflated = zlib.deflateSync(rgb);
     return { name, width, height, data: deflated, filter: "/FlateDecode" };
   }

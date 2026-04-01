@@ -102,7 +102,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing ?path=" }, { status: 400 });
     }
 
-    let { bucket, objectPath } = parseBucketAndObjectPath(pathParam, bucketParam);
+    const { bucket: parsedBucket, objectPath } = parseBucketAndObjectPath(pathParam, bucketParam);
+    let bucket = parsedBucket;
 
     // Normalize org id:
     // In this app, org_id often looks like "org_<uuid>".
