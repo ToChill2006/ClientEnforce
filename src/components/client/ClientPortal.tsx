@@ -200,93 +200,155 @@ export function ClientPortal({
     }
   }
 
+  const allRequiredDone = progress.required_total > 0 && progress.required_completed >= progress.required_total;
+
   return (
-    <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 sm:py-12">
-      <div className="sticky top-0 z-10 bg-[var(--color-bg-subtle)] py-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>{onboardingTitle}</CardTitle>
-            <CardDescription>
-              Required completed: {progress.required_completed}/{progress.required_total} —{" "}
-              <span className="font-semibold text-[var(--color-text-primary)]">{progress.percent}%</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Progress value={progress.percent} />
-            {isLocked ? (
-              <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
-                This onboarding is locked. No further changes can be made.
+    <div className="flex flex-col gap-5 px-4 py-6 sm:px-6 sm:py-10">
+      {/* Progress header */}
+      <div className="sticky top-0 z-10 pb-2 pt-1" style={{ background: "var(--color-bg-subtle)" }}>
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{onboardingTitle}</div>
+              <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                {progress.required_completed} of {progress.required_total} required steps completed
               </div>
-            ) : null}
-          </CardContent>
-        </Card>
+            </div>
+            <div
+              className="shrink-0 text-2xl font-bold tabular-nums"
+              style={{ color: allRequiredDone ? "var(--color-success, #16a34a)" : "var(--color-accent)" }}
+            >
+              {progress.percent}%
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${progress.percent}%`,
+                  background: allRequiredDone ? "var(--color-success, #16a34a)" : "var(--color-accent)",
+                }}
+              />
+            </div>
+          </div>
+          {isLocked ? (
+            <div className="mt-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-60"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+              Submission locked — no further changes can be made.
+            </div>
+          ) : null}
+        </div>
       </div>
 
-      {reqs.map((r) => (
-        <Card key={r.id} className="w-full rounded-[var(--radius-md)]">
-          <CardHeader>
-            <CardTitle className="text-base">
-              {r.label} {r.is_required ? <span className="text-red-600">*</span> : null}
-            </CardTitle>
-            <CardDescription>
-              Type: {r.type} — {r.completed_at ? "Completed" : "Incomplete"}
-            </CardDescription>
-          </CardHeader>
+      {/* Requirement cards */}
+      {reqs.map((r) => {
+        const completed = !!r.completed_at;
+        return (
+          <div
+            key={r.id}
+            className="rounded-[var(--radius-lg)] border bg-white shadow-[var(--shadow-sm)] overflow-hidden transition-colors"
+            style={{
+              borderColor: completed ? "var(--color-success, #16a34a)" : "var(--color-border)",
+            }}
+          >
+            {/* Card header */}
+            <div
+              className="flex items-start justify-between gap-3 px-5 py-4"
+              style={{
+                borderBottom: "1px solid var(--color-border)",
+                background: completed ? "var(--color-success-subtle, #f0fdf4)" : "var(--color-bg-subtle)",
+              }}
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">{r.label}</span>
+                  {r.is_required ? (
+                    <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-500 border border-red-100">Required</span>
+                  ) : (
+                    <span className="rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] border border-[var(--color-border)]">Optional</span>
+                  )}
+                </div>
+              </div>
+              <div className="shrink-0 flex items-center gap-1.5">
+                {completed ? (
+                  <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "var(--color-success-subtle, #f0fdf4)", color: "var(--color-success, #16a34a)", border: "1px solid var(--color-success, #16a34a)22" }}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Done
+                  </span>
+                ) : (
+                  <span className="rounded-full px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]" style={{ background: "var(--color-bg-subtle)", border: "1px solid var(--color-border)" }}>
+                    Pending
+                  </span>
+                )}
+              </div>
+            </div>
 
-          <CardContent className="flex flex-col gap-3">
-            {r.type === "text" ? (
-              <TextRequirement
-                disabled={isLocked}
-                busy={!!busyByReq[r.id]}
-                initialValue={r.value_text || ""}
-                onSave={(val) => saveText(r.id, val)}
-              />
-            ) : null}
+            {/* Card body */}
+            <div className="px-5 py-4">
+              {r.type === "text" ? (
+                <TextRequirement
+                  disabled={isLocked}
+                  busy={!!busyByReq[r.id]}
+                  initialValue={r.value_text || ""}
+                  onSave={(val) => saveText(r.id, val)}
+                />
+              ) : null}
 
-            {r.type === "file" ? (
-              <FileRequirement
-                disabled={isLocked}
-                busy={!!busyByReq[r.id]}
-                filePath={r.file_path}
-                attachmentPath={r.attachment_path}
-                requirementId={r.id}
-                token={token}
-                onUpload={(file) => uploadFile(r.id, file)}
-              />
-            ) : null}
+              {r.type === "file" ? (
+                <FileRequirement
+                  disabled={isLocked}
+                  busy={!!busyByReq[r.id]}
+                  filePath={r.file_path}
+                  attachmentPath={r.attachment_path}
+                  requirementId={r.id}
+                  token={token}
+                  onUpload={(file) => uploadFile(r.id, file)}
+                />
+              ) : null}
 
-            {r.type === "signature" ? (
-              <SignatureRequirement
-                disabled={isLocked}
-                busy={!!busyByReq[r.id]}
-                signaturePath={r.signature_path}
-                canvasRef={(c) => { sigRef.current[r.id] = c; }}
-                onSave={() => saveSignature(r.id)}
-              />
-            ) : null}
+              {r.type === "signature" ? (
+                <SignatureRequirement
+                  disabled={isLocked}
+                  busy={!!busyByReq[r.id]}
+                  signaturePath={r.signature_path}
+                  canvasRef={(c) => { sigRef.current[r.id] = c; }}
+                  onSave={() => saveSignature(r.id)}
+                />
+              ) : null}
 
-            {r.type === "multiple_choice" ? (
-              <MultipleChoiceRequirement
-                disabled={isLocked}
-                busy={!!busyByReq[r.id]}
-                options={r.options ?? []}
-                selectedValue={r.value_text}
-                onSelect={(val) => saveText(r.id, val)}
-              />
-            ) : null}
-          </CardContent>
-        </Card>
-      ))}
+              {r.type === "multiple_choice" ? (
+                <MultipleChoiceRequirement
+                  disabled={isLocked}
+                  busy={!!busyByReq[r.id]}
+                  options={r.options ?? []}
+                  selectedValue={r.value_text}
+                  onSelect={(val) => saveText(r.id, val)}
+                />
+              ) : null}
+            </div>
+          </div>
+        );
+      })}
 
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          onClick={submit}
-          disabled={isLocked || submitting || anyBusy}
-          className="w-full min-h-[48px]"
-        >
-          {submitting ? "Submitting..." : anyBusy ? "Saving..." : "Submit onboarding"}
-        </Button>
+      {/* Submit */}
+      <div className="pt-2">
+        {isLocked ? (
+          <div className="flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-6 py-4 text-sm text-[var(--color-text-muted)] shadow-[var(--shadow-sm)]">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+            This submission has been locked by the team.
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={submit}
+            disabled={submitting || anyBusy}
+            className="w-full rounded-[var(--radius-lg)] px-6 py-4 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition-all disabled:cursor-not-allowed disabled:opacity-60"
+            style={{ background: "var(--color-accent)", minHeight: "52px" }}
+          >
+            {submitting ? "Submitting…" : anyBusy ? "Saving…" : allRequiredDone ? "Submit onboarding ✓" : "Submit onboarding"}
+          </button>
+        )}
       </div>
     </div>
   );
