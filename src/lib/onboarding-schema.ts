@@ -7,8 +7,8 @@ export const TemplateRequirementSchema = z.object({
   label: z.string().min(1),
   is_required: z.boolean().default(true),
   sort_order: z.number().int().nonnegative().default(0),
-  attachment_path: z.string().optional(),
-  options: z.array(z.string().min(1)).optional(),
+  attachment_path: z.string().nullish(),
+  options: z.array(z.string()).optional(),
 });
 
 export const TemplateDefinitionSchema = z.object({
