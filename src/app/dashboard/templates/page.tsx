@@ -470,108 +470,67 @@ export default function TemplatesPage() {
                   .slice()
                   .sort((a, b) => a.sort_order - b.sort_order)
                   .map((r, idx) => (
-                    <div key={idx} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] overflow-hidden">
-                      {/* Card header: type label + required toggle + delete */}
-                      <div className="flex items-center justify-between gap-2 px-4 py-2.5 bg-[var(--color-bg-subtle)] border-b border-[var(--color-border)]">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                          {r.type === "text" && "Text field"}
-                          {r.type === "file" && "File upload"}
-                          {r.type === "signature" && "Signature"}
-                          {r.type === "multiple_choice" && "Multiple choice"}
-                        </span>
-                        <div className="flex items-center gap-3">
-                          <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                            <input
-                              type="checkbox"
-                              checked={r.is_required}
-                              onChange={(e) => updateReq(idx, { is_required: e.target.checked })}
-                              className="accent-[var(--color-accent)]"
-                            />
-                            <span className="text-xs text-[var(--color-text-secondary)]">Required</span>
-                          </label>
-                          <button
-                            type="button"
+                    <div key={idx} className="rounded-[var(--radius-md)] border border-[var(--color-border)] p-3 flex flex-col gap-2">
+                      {/* Row 1: type selector, label input, required checkbox, delete */}
+                      <div className="grid grid-cols-1 gap-2 md:grid-cols-12 md:items-center">
+                        <div className="md:col-span-3">
+                          <select
+                            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
+                            value={r.type}
+                            onChange={(e) => {
+                              const type = e.target.value as RequirementType;
+                              const patch: Partial<Requirement> = { type };
+                              // Clear type-specific fields when switching away
+                              if (type !== "file") patch.attachment_path = null;
+                              if (type !== "multiple_choice") patch.options = undefined;
+                              if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
+                              updateReq(idx, patch);
+                            }}
+                          >
+                            <option value="text">Text</option>
+                            <option value="file">File upload</option>
+                            <option value="signature">Signature</option>
+                            <option value="multiple_choice">Multiple choice</option>
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-6">
+                          <Input
+                            value={r.label}
+                            onChange={(e) => updateReq(idx, { label: e.target.value })}
+                            placeholder="Requirement label"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2 flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={r.is_required}
+                            onChange={(e) => updateReq(idx, { is_required: e.target.checked })}
+                          />
+                          <span className="text-sm text-[var(--color-text-secondary)]">Required</span>
+                        </div>
+
+                        <div className="md:col-span-1">
+                          <Button
+                            variant="secondary"
+                            className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
                             onClick={() => {
                               const reqs = selected.definition.requirements
                                 .filter((_, i) => i !== idx)
                                 .map((x, i) => ({ ...x, sort_order: i }));
                               setSelected({ ...selected, definition: { requirements: reqs } });
                             }}
-                            className="text-[var(--color-text-muted)] hover:text-red-500 text-sm px-1"
                           >
                             ✕
-                          </button>
+                          </Button>
                         </div>
                       </div>
 
-                      <div className="p-4 flex flex-col gap-4">
-                        {/* Type selector */}
-                        <div className="flex flex-col gap-1.5">
-                          <span className="text-xs font-medium text-[var(--color-text-secondary)]">Type</span>
-                          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            {(["text", "file", "signature", "multiple_choice"] as RequirementType[]).map((t) => {
-                              const active = r.type === t;
-                              const icons: Record<RequirementType, string> = {
-                                text: "✏️",
-                                file: "📎",
-                                signature: "✍️",
-                                multiple_choice: "☑️",
-                              };
-                              const labels: Record<RequirementType, string> = {
-                                text: "Text",
-                                file: "File upload",
-                                signature: "Signature",
-                                multiple_choice: "Multiple choice",
-                              };
-                              return (
-                                <button
-                                  key={t}
-                                  type="button"
-                                  onClick={() => {
-                                    const patch: Partial<Requirement> = { type: t };
-                                    if (t !== "file") patch.attachment_path = null;
-                                    if (t !== "multiple_choice") patch.options = undefined;
-                                    if (t === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
-                                    updateReq(idx, patch);
-                                  }}
-                                  className="flex flex-col items-center gap-1 rounded-[var(--radius-md)] border px-3 py-2.5 text-center transition-all"
-                                  style={{
-                                    borderColor: active ? "var(--color-accent)" : "var(--color-border)",
-                                    background: active ? "var(--color-accent-subtle)" : "white",
-                                    color: active ? "var(--color-accent)" : "var(--color-text-secondary)",
-                                    fontWeight: active ? 600 : 400,
-                                  }}
-                                >
-                                  <span className="text-base">{icons[t]}</span>
-                                  <span className="text-xs leading-tight">{labels[t]}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Label / Question input */}
-                        <div className="flex flex-col gap-1.5">
-                          <span className="text-xs font-medium text-[var(--color-text-secondary)]">
-                            {r.type === "multiple_choice" ? "Question" : "Label"}
-                          </span>
-                          <Input
-                            value={r.label}
-                            onChange={(e) => updateReq(idx, { label: e.target.value })}
-                            placeholder={
-                              r.type === "text" ? "e.g. Primary contact name"
-                              : r.type === "file" ? "e.g. Upload signed contract"
-                              : r.type === "signature" ? "e.g. Client signature"
-                              : "e.g. How did you hear about us?"
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      {/* Attachment upload (file type only) */}
+                      {/* Row 2: attachment upload (file type only) */}
                       {r.type === "file" ? (
-                        <div className="flex flex-wrap items-center gap-3 px-4 pb-4">
-                          <span className="text-xs font-medium text-[var(--color-text-secondary)]">Form template to attach (optional):</span>
+                        <div className="flex flex-wrap items-center gap-3 pl-1">
+                          <span className="text-xs text-[var(--color-text-muted)]">Form template (optional):</span>
                           {r.attachment_path ? (
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-[var(--color-text-secondary)] truncate max-w-[200px]" title={fileNameFromPath(r.attachment_path) ?? ""}>
@@ -603,9 +562,9 @@ export default function TemplatesPage() {
                         </div>
                       ) : null}
 
-                      {/* Options editor (multiple_choice type only) */}
+                      {/* Row 3: options editor (multiple_choice type only) */}
                       {r.type === "multiple_choice" ? (
-                        <div className="flex flex-col gap-2 px-4 pb-4">
+                        <div className="flex flex-col gap-2 pl-1">
                           <span className="text-xs font-medium text-[var(--color-text-secondary)]">Options (min 2)</span>
                           {(r.options ?? []).map((opt, optIdx) => (
                             <div key={optIdx} className="flex items-center gap-2">
