@@ -546,7 +546,6 @@ export default function TemplatesPage() {
                             </div>
                           ) : (
                             <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white">
-                              <span>📎</span>
                               {uploadingIdx[idx] ? "Uploading…" : "Attach form template"}
                               <input
                                 type="file"
