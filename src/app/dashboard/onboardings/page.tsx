@@ -177,7 +177,7 @@ export default function OnboardingsPage() {
 
   const [query, setQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<
-    "all" | "draft" | "sent" | "in_progress" | "submitted" | "archived"
+    "all" | "draft" | "sent" | "in_progress" | "submitted"
   >("all");
 
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -198,7 +198,7 @@ export default function OnboardingsPage() {
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
 
   const [rowBusy, setRowBusy] = React.useState<Record<string, boolean>>({});
-  const [rowAction, setRowAction] = React.useState<Record<string, "copy" | "send" | "lock" | "archive" | "delete" | null>>({});
+  const [rowAction, setRowAction] = React.useState<Record<string, "copy" | "send" | "lock" | "delete" | null>>({});
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
 
   async function load() {
@@ -206,7 +206,7 @@ export default function OnboardingsPage() {
       setLoading(true);
       setLoadError(null);
 
-      const res = await fetch("/api/onboardings?include_archived=1", {
+      const res = await fetch("/api/onboardings", {
         method: "GET",
         cache: "no-store",
       });
@@ -572,30 +572,6 @@ export default function OnboardingsPage() {
     }
   }
 
-  async function archive(row: OnboardingRow) {
-    setRowBusy((p) => ({ ...p, [row.id]: true }));
-    setRowAction((p) => ({ ...p, [row.id]: "archive" }));
-    try {
-      const res = await fetch(`/api/onboardings/${encodeURIComponent(row.id)}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ status: "archived" }),
-      });
-
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(txt || `Archive failed (${res.status})`);
-      }
-
-      setRows((prev) => prev.filter((x) => x.id !== row.id));
-      setBanner({ kind: "success", msg: "Onboarding archived." });
-    } catch (e: any) {
-      setBanner({ kind: "error", msg: e?.message || "Archive failed." });
-    } finally {
-      setRowBusy((p) => ({ ...p, [row.id]: false }));
-      setRowAction((p) => ({ ...p, [row.id]: null }));
-    }
-  }
 
   async function deleteOnboarding(row: OnboardingRow) {
     const ok = window.confirm(
@@ -706,7 +682,6 @@ export default function OnboardingsPage() {
                 <option value="sent">Sent</option>
                 <option value="in_progress">In progress</option>
                 <option value="submitted">Submitted</option>
-                <option value="archived">Archived</option>
               </select>
             </div>
           </div>
@@ -809,11 +784,6 @@ export default function OnboardingsPage() {
                   {sKey === "submitted" ? (
                     <SmallButton variant="secondary" onClick={() => lock(r)} disabled={busy} title="Lock submission">
                       {busy && action === "lock" ? "Locking..." : "Lock"}
-                    </SmallButton>
-                  ) : null}
-                  {sKey !== "archived" ? (
-                    <SmallButton variant="ghost" onClick={() => archive(r)} disabled={busy} title="Archive onboarding">
-                      {busy && action === "archive" ? "Archiving..." : "Archive"}
                     </SmallButton>
                   ) : null}
                   <SmallButton variant="danger" onClick={() => deleteOnboarding(r)} disabled={busy} title="Delete onboarding">
@@ -970,12 +940,6 @@ export default function OnboardingsPage() {
                           {sKey === "submitted" ? (
                             <SmallButton variant="secondary" onClick={() => lock(r)} disabled={busy} title="Lock submission">
                               {busy && action === "lock" ? "Locking..." : "Lock"}
-                            </SmallButton>
-                          ) : null}
-
-                          {sKey !== "archived" ? (
-                            <SmallButton variant="ghost" onClick={() => archive(r)} disabled={busy} title="Archive onboarding">
-                              {busy && action === "archive" ? "Archiving..." : "Archive"}
                             </SmallButton>
                           ) : null}
 

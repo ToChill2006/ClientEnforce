@@ -2,6 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 import { ToastProvider } from "@/components/ui/toast";
 import { JsonLd } from "@/components/marketing/public-shell";
 import { canonicalSiteOrigin } from "@/lib/app-url";
@@ -69,11 +71,19 @@ export default function RootLayout({
       className={`h-full ${plusJakartaSans.variable} ${inter.variable}`}
     >
       <body className="min-h-screen bg-white text-[#0F1117] antialiased overflow-x-hidden selection:bg-[#EBF2FF] selection:text-[#0D3D99]">
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-Y1W99ZK32F" strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Y1W99ZK32F');
+        `}</Script>
         <ToastProvider>
           <div className="min-h-screen w-full">{children}</div>
           <JsonLd data={buildOrganizationSchema()} />
           <JsonLd data={buildWebsiteSchema()} />
           <Analytics />
+          <SpeedInsights />
         </ToastProvider>
       </body>
     </html>
