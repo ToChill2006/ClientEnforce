@@ -605,17 +605,18 @@ export default function TemplatesPage() {
                     </div>
                   ))}
 
-                <Button
-                  variant="secondary"
-                  className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
+                <button
+                  type="button"
                   onClick={() => {
                     const reqs = (selected.definition?.requirements ?? []).slice();
                     reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
                     setSelected({ ...selected, definition: { requirements: reqs } });
                   }}
+                  className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
                 >
+                  <span className="text-lg leading-none">+</span>
                   Add requirement
-                </Button>
+                </button>
               </div>
             </div>
 
