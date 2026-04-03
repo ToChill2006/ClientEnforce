@@ -357,12 +357,16 @@ export async function GET(req: Request) {
   const selectBaseNoDenorm =
     "id, title, status, client_token, created_at, updated_at, client_id, template_id";
 
+  const url = new URL(req.url);
+  const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 100), 1), 500);
+
   const run = (sel: string) =>
     supabase
       .from("onboardings")
       .select(sel)
       .eq("org_id", org_id)
-      .order("updated_at", { ascending: false });
+      .order("updated_at", { ascending: false })
+      .limit(limit);
 
   // Try a small set of increasingly compatible selects.
   const selectCandidates = [
@@ -397,7 +401,6 @@ export async function GET(req: Request) {
 
   if (error) return jsonError(400, error.message);
 
-  const url = new URL(req.url);
   const includeArchived = url.searchParams.get("include_archived") === "1";
 
   const rows = (data ?? []).filter((r: any) => {

@@ -176,9 +176,15 @@ export default function OnboardingsPage() {
   const [progressLoading, setProgressLoading] = React.useState(false);
 
   const [query, setQuery] = React.useState("");
+  const [debouncedQuery, setDebouncedQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<
     "all" | "draft" | "sent" | "in_progress" | "submitted"
   >("all");
+
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(t);
+  }, [query]);
 
   const [createOpen, setCreateOpen] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
@@ -356,19 +362,17 @@ export default function OnboardingsPage() {
 
     loadProgress(ids);
 
-    const t = window.setInterval(() => loadProgress(ids), 5_000);
+    const t = window.setInterval(() => loadProgress(ids), 30_000);
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows.map((r) => r.id).join(",")]);
 
-  function filtered() {
-    const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
+  const list = React.useMemo(() => {
+    const q = debouncedQuery.trim().toLowerCase();
+    const filtered = rows.filter((r) => {
       const sk = statusKeyForFilter(r.status);
       const statusOk = statusFilter === "all" ? true : sk === statusFilter;
-
       if (!q) return statusOk;
-
       const hay = [
         r.title ?? "",
         r.client_name ?? "",
@@ -378,18 +382,14 @@ export default function OnboardingsPage() {
       ]
         .join(" ")
         .toLowerCase();
-
       return statusOk && hay.includes(q);
     });
-  }
-
-  function sortByUpdatedDesc(list: OnboardingRow[]) {
-    return [...list].sort((a, b) => {
+    return filtered.sort((a, b) => {
       const ta = new Date(a.updated_at || a.created_at || 0).getTime();
       const tb = new Date(b.updated_at || b.created_at || 0).getTime();
       return tb - ta;
     });
-  }
+  }, [rows, debouncedQuery, statusFilter]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -601,8 +601,6 @@ export default function OnboardingsPage() {
     }
   }
 
-  const list = sortByUpdatedDesc(filtered());
-
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -768,7 +766,7 @@ export default function OnboardingsPage() {
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <Link
                     href={`/dashboard/onboardings/${r.id}`}
-                    prefetch
+                    prefetch={false}
                     className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
                   >
                     View
