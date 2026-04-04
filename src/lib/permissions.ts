@@ -37,6 +37,7 @@ export const Permissions = {
   // Existing app capabilities still used by current routes/components
   storage_list: ["owner", "admin", "member"],
   storage_download: ["owner", "admin", "member"],
+  storage_delete: ["owner", "admin"],
 
   team_tasks_view: ["owner", "admin", "member"],
   team_tasks_create: ["owner", "admin"],

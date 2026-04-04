@@ -9,6 +9,7 @@ type Item = {
   // API may return either a normalized `type`/`path`/`name` shape,
   // or the legacy `file_path`/`signature_path` shape.
   type?: string | null; // e.g. "file" | "signature"
+  bucket?: string | null;
   path?: string | null;
   name?: string | null;
   file_path?: string | null;
@@ -36,6 +37,7 @@ function normalizeItem(raw: any): Item {
     path: raw?.path ?? null,
     name: raw?.name ?? null,
     type: raw?.type ?? null,
+    bucket: raw?.bucket ?? null,
   };
 }
 
@@ -92,6 +94,7 @@ export default function StoragePage() {
   const [query, setQuery] = React.useState("");
   const [previewingPath, setPreviewingPath] = React.useState<string | null>(null);
   const [downloadingPath, setDownloadingPath] = React.useState<string | null>(null);
+  const [deletingItemId, setDeletingItemId] = React.useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [previewName, setPreviewName] = React.useState<string>("File preview");
@@ -184,6 +187,46 @@ export default function StoragePage() {
       setErr(e?.message || "Download failed");
     } finally {
       setDownloadingPath(null);
+    }
+  }
+
+  async function deleteItem(it: Item) {
+    const path = (it.path ?? it.file_path ?? it.signature_path) || null;
+    if (!path) return;
+
+    const typeRaw = (it.type ?? "").toLowerCase();
+    const isSignature = typeRaw === "signature" || (!!it.signature_path && !it.file_path);
+    const kind = isSignature ? "signature" : "file";
+    const name = inferName(it, path);
+
+    const confirmed = window.confirm(`Delete this ${kind}?\n\n${name}\n\nThis cannot be undone.`);
+    if (!confirmed) return;
+
+    setDeletingItemId(it.id);
+    setErr(null);
+
+    try {
+      const res = await fetch("/api/storage/delete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          path,
+          bucket: it.bucket ?? undefined,
+          type: kind,
+        }),
+      });
+
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Delete failed");
+
+      setItems((prev) => prev.filter((row) => row.id !== it.id));
+      if (previewOpen) {
+        closePreview();
+      }
+    } catch (e: any) {
+      setErr(e?.message || "Delete failed");
+    } finally {
+      setDeletingItemId(null);
     }
   }
 
@@ -292,6 +335,7 @@ export default function StoragePage() {
             const rowKey = `${it.id || ""}|${path ?? ""}|${it.onboarding_id ?? ""}|${pickCreatedAt(it) ?? ""}|${idx}`;
             const previewBusy = !!path && previewingPath === path;
             const downloadBusy = !!path && downloadingPath === path;
+            const deleteBusy = deletingItemId === it.id;
 
             return (
               <div key={rowKey} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
@@ -305,12 +349,12 @@ export default function StoragePage() {
                   </span>
                 </div>
                 {path ? (
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3 grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                       onClick={() => openPreview(path, name)}
-                      disabled={previewBusy || downloadBusy}
+                      disabled={previewBusy || downloadBusy || deleteBusy}
                     >
                       {previewBusy ? "Previewing..." : "Preview"}
                     </button>
@@ -318,9 +362,17 @@ export default function StoragePage() {
                       type="button"
                       className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                       onClick={() => downloadFile(path, name)}
-                      disabled={previewBusy || downloadBusy}
+                      disabled={previewBusy || downloadBusy || deleteBusy}
                     >
                       {downloadBusy ? "Downloading..." : "Download"}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex-1 rounded-[var(--radius-md)] border border-red-200 bg-white py-2 text-xs font-medium text-red-600 shadow-[var(--shadow-sm)] hover:bg-red-50 disabled:opacity-60"
+                      onClick={() => void deleteItem(it)}
+                      disabled={previewBusy || downloadBusy || deleteBusy}
+                    >
+                      {deleteBusy ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 ) : null}
@@ -391,6 +443,7 @@ export default function StoragePage() {
                   const rowKey = `${it.id || ""}|${path ?? ""}|${it.onboarding_id ?? ""}|${pickCreatedAt(it) ?? ""}|${idx}`;
                   const previewBusy = !!path && previewingPath === path;
                   const downloadBusy = !!path && downloadingPath === path;
+                  const deleteBusy = deletingItemId === it.id;
 
                   return (
                     <tr key={rowKey} className="transition-colors duration-150 hover:bg-[var(--color-bg-subtle)]">
@@ -429,7 +482,7 @@ export default function StoragePage() {
                               type="button"
                               className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                               onClick={() => openPreview(path, name)}
-                              disabled={previewBusy || downloadBusy}
+                              disabled={previewBusy || downloadBusy || deleteBusy}
                             >
                               {previewBusy ? "Previewing..." : "Preview"}
                             </button>
@@ -437,9 +490,17 @@ export default function StoragePage() {
                               type="button"
                               className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                               onClick={() => downloadFile(path, name)}
-                              disabled={previewBusy || downloadBusy}
+                              disabled={previewBusy || downloadBusy || deleteBusy}
                             >
                               {downloadBusy ? "Downloading..." : "Download"}
+                            </button>
+                            <button
+                              type="button"
+                              className="rounded-[var(--radius-md)] border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 shadow-[var(--shadow-sm)] hover:bg-red-50 disabled:opacity-60"
+                              onClick={() => void deleteItem(it)}
+                              disabled={previewBusy || downloadBusy || deleteBusy}
+                            >
+                              {deleteBusy ? "Deleting..." : "Delete"}
                             </button>
                           </div>
                         ) : (
