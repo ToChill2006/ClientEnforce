@@ -119,10 +119,13 @@ export default function SettingsPage() {
 
     // If Stripe redirected back with success params, poll briefly until webhook updates DB.
     const params = new URLSearchParams(window.location.search);
+    const billingParam = String(params.get("billing") ?? "").toLowerCase();
+    const sessionId = String(params.get("session_id") ?? "").trim();
     const returnedFromStripe =
       params.has("billing_success") ||
       params.has("checkout_success") ||
       params.has("session_id") ||
+      billingParam === "success" ||
       params.has("success") ||
       params.has("stripe");
 
@@ -130,12 +133,31 @@ export default function SettingsPage() {
 
     let cancelled = false;
     let attempts = 0;
+    const shouldConfirmCheckout =
+      !!sessionId &&
+      (billingParam === "success" || params.has("checkout_success") || params.has("billing_success"));
 
     setSyncingBilling(true);
+
+    const confirmCheckoutSession = async () => {
+      if (!shouldConfirmCheckout) return;
+      try {
+        await fetch("/api/stripe/checkout/confirm", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+      } catch {
+        // webhook sync will still run server-side; avoid noisy client error here
+      }
+    };
 
     const tick = async () => {
       attempts += 1;
       try {
+        if (attempts === 1) {
+          await confirmCheckoutSession();
+        }
         await load();
       } finally {
         queueMicrotask(() => {
@@ -155,7 +177,6 @@ export default function SettingsPage() {
       cancelled = true;
       clearTimeout(t);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function createInvite() {

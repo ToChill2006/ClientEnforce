@@ -31,6 +31,20 @@ function safeSameOriginUrl(input: unknown, origin: string): string | null {
   }
 }
 
+function withCheckoutSuccessParams(returnUrl: string) {
+  const u = new URL(returnUrl);
+  u.searchParams.set("checkout_success", "1");
+  u.searchParams.set("billing_success", "1");
+  u.searchParams.set("session_id", "{CHECKOUT_SESSION_ID}");
+  return u.toString();
+}
+
+function withCheckoutCancelParam(returnUrl: string) {
+  const u = new URL(returnUrl);
+  u.searchParams.set("billing_cancel", "1");
+  return u.toString();
+}
+
 export async function POST(req: Request) {
   const supabase = await supabaseServer();
   const { data: userData } = await supabase.auth.getUser();
@@ -161,8 +175,8 @@ export async function POST(req: Request) {
       mode: "subscription",
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${returnUrl}?billing=success`,
-      cancel_url: `${returnUrl}?billing=cancel`,
+      success_url: withCheckoutSuccessParams(returnUrl),
+      cancel_url: withCheckoutCancelParam(returnUrl),
       allow_promotion_codes: true,
       subscription_data: {
         metadata: {

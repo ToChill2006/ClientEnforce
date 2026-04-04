@@ -54,31 +54,110 @@ function tierToSeatsLimit(tier: string | null | undefined) {
   return 1;
 }
 
+function isMissingColumnError(error: any, column: string) {
+  const msg = String(error?.message ?? "").toLowerCase();
+  if (!msg) return false;
+  return (
+    msg.includes(column.toLowerCase()) &&
+    (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find"))
+  );
+}
+
+function shouldRetryWithoutPendingColumns(error: any) {
+  return (
+    isMissingColumnError(error, "pending_tier") ||
+    isMissingColumnError(error, "pending_interval") ||
+    isMissingColumnError(error, "pending_seats_limit")
+  );
+}
+
+function stripPendingColumns(patch: Record<string, any>) {
+  if ("pending_tier" in patch) delete patch.pending_tier;
+  if ("pending_interval" in patch) delete patch.pending_interval;
+  if ("pending_seats_limit" in patch) delete patch.pending_seats_limit;
+}
+
 async function updateOrg(orgId: string, patch: Record<string, any>) {
-  const { data, error } = await supabaseAdmin
-    .from("organizations")
-    .update(patch)
-    .eq("id", orgId)
-    .select("id, tier, seats_limit, stripe_customer_id, stripe_subscription_id, stripe_subscription_status")
-    .single();
+  const patchToApply = { ...patch };
 
-  if (error) throw error;
-  if (!data?.id) {
-    throw new Error(`org update matched 0 rows for orgId=${orgId}`);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const { data, error } = await supabaseAdmin
+      .from("organizations")
+      .update(patchToApply)
+      .eq("id", orgId)
+      .select("id, tier, seats_limit, stripe_customer_id, stripe_subscription_id, stripe_subscription_status")
+      .single();
+
+    if (!error) {
+      if (!data?.id) {
+        throw new Error(`org update matched 0 rows for orgId=${orgId}`);
+      }
+      return data;
+    }
+
+    const canRetry = attempt === 0 && shouldRetryWithoutPendingColumns(error);
+    if (canRetry) {
+      stripPendingColumns(patchToApply);
+      continue;
+    }
+
+    throw error;
   }
-
-  return data;
 }
 
 async function getOrg(orgId: string) {
-  const { data, error } = await supabaseAdmin
+  const primary = await supabaseAdmin
     .from("organizations")
     .select("id, stripe_subscription_id, pending_tier, pending_interval, pending_seats_limit")
     .eq("id", orgId)
     .maybeSingle();
 
-  if (error) throw error;
-  return data ?? null;
+  if (!(primary as any)?.error) {
+    return (primary as any).data ?? null;
+  }
+
+  const error = (primary as any).error;
+  if (shouldRetryWithoutPendingColumns(error)) {
+    const fallback = await supabaseAdmin
+      .from("organizations")
+      .select("id, stripe_subscription_id")
+      .eq("id", orgId)
+      .maybeSingle();
+
+    if ((fallback as any)?.error) throw (fallback as any).error;
+    return (fallback as any).data ?? null;
+  }
+
+  throw error;
+}
+
+async function findOrgIdByStripeRefs(params: {
+  customerId?: string | null;
+  subscriptionId?: string | null;
+}) {
+  if (params.subscriptionId) {
+    const { data, error } = await supabaseAdmin
+      .from("organizations")
+      .select("id")
+      .eq("stripe_subscription_id", params.subscriptionId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (data?.id) return String(data.id);
+  }
+
+  if (params.customerId) {
+    const { data, error } = await supabaseAdmin
+      .from("organizations")
+      .select("id")
+      .eq("stripe_customer_id", params.customerId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (data?.id) return String(data.id);
+  }
+
+  return null;
 }
 
 async function cancelOtherSubscriptions(customerId: string, keepSubscriptionId: string) {
@@ -146,10 +225,11 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      const orgId = (session.metadata?.org_id as string) || null;
+      const orgIdFromMetadata = (session.metadata?.org_id as string) || null;
       const tier = (session.metadata?.tier as string) || null;
       const customerId = asStripeId(session.customer);
       const subscriptionId = asStripeId(session.subscription);
+      const orgId = orgIdFromMetadata || (await findOrgIdByStripeRefs({ customerId, subscriptionId }));
 
       if (orgId && (customerId || subscriptionId || tier)) {
         const nextTier = (tier ?? "pro").toLowerCase();
@@ -191,19 +271,24 @@ export async function POST(req: Request) {
       const orgId = (sub.metadata?.org_id as string) || null;
       const tier = (sub.metadata?.tier as string) || null;
       const customerId = asStripeId(sub.customer);
+      const resolvedOrgId = orgId || (await findOrgIdByStripeRefs({ customerId, subscriptionId: sub.id }));
 
-      if (!orgId) {
-        console.warn("[stripe-webhook] subscription missing org_id metadata", { subId: sub.id, type: event.type });
+      if (!resolvedOrgId) {
+        console.warn("[stripe-webhook] subscription missing org_id metadata and no org match", {
+          subId: sub.id,
+          type: event.type,
+          customerId,
+        });
         return NextResponse.json({ received: true });
       }
 
-      const org = await getOrg(String(orgId));
+      const org = await getOrg(String(resolvedOrgId));
       const canonicalSubId = org?.stripe_subscription_id ?? null;
 
       // Ignore events for non-canonical subscriptions (e.g., the previous plan being canceled).
       if (canonicalSubId && canonicalSubId !== sub.id) {
         console.log("[stripe-webhook] ignoring non-canonical subscription event", {
-          orgId,
+          orgId: resolvedOrgId,
           canonicalSubId,
           eventSubId: sub.id,
           type: event.type,
@@ -249,7 +334,7 @@ export async function POST(req: Request) {
         patch.seats_limit = tierToSeatsLimit(nextTier);
       }
 
-      await updateOrg(orgId, patch);
+      await updateOrg(String(resolvedOrgId), patch);
       return NextResponse.json({ received: true });
     }
 
@@ -270,23 +355,30 @@ export async function POST(req: Request) {
 
       const customerId = asStripeId((invoice as any).customer);
       const subscriptionId = getInvoiceSubscriptionId(invoice);
+      const resolvedOrgId =
+        orgId || (await findOrgIdByStripeRefs({ customerId, subscriptionId }));
 
       if (!subscriptionId) {
         console.warn("[stripe-webhook] invoice missing subscription id", { invoiceId: invoice.id, type: event.type });
         return NextResponse.json({ received: true });
       }
 
-      if (!orgId) {
-        console.warn("[stripe-webhook] invoice missing org_id metadata", { invoiceId: invoice.id, type: event.type });
+      if (!resolvedOrgId) {
+        console.warn("[stripe-webhook] invoice missing org_id metadata and no org match", {
+          invoiceId: invoice.id,
+          type: event.type,
+          customerId,
+          subscriptionId,
+        });
         return NextResponse.json({ received: true });
       }
 
-      const org = await getOrg(String(orgId));
+      const org = await getOrg(String(resolvedOrgId));
       const canonicalSubId = org?.stripe_subscription_id ?? null;
 
       if (canonicalSubId && subscriptionId && canonicalSubId !== subscriptionId) {
         console.log("[stripe-webhook] ignoring non-canonical invoice event", {
-          orgId,
+          orgId: resolvedOrgId,
           canonicalSubId,
           eventSubId: subscriptionId,
           type: event.type,
@@ -296,7 +388,7 @@ export async function POST(req: Request) {
 
       const nextTier = (tier ?? "pro").toLowerCase();
 
-      await updateOrg(String(orgId), {
+      await updateOrg(String(resolvedOrgId), {
         stripe_customer_id: customerId,
         stripe_subscription_id: subscriptionId,
         stripe_subscription_status: "active",
