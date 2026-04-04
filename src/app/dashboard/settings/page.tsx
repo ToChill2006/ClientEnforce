@@ -89,6 +89,7 @@ export default function SettingsPage() {
   const [syncingBilling, setSyncingBilling] = React.useState(false);
   const [canManageBilling, setCanManageBilling] = React.useState(true);
   const [canInviteMembers, setCanInviteMembers] = React.useState(true);
+  const attemptedBackgroundBillingSync = React.useRef(false);
 
   async function load() {
     setLoading(true);
@@ -111,6 +112,16 @@ export default function SettingsPage() {
       setPageError(e?.message ?? "Failed to load settings");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function syncBillingFromStripe() {
+    try {
+      const res = await fetch("/api/stripe/sync", { method: "POST" });
+      if (!res.ok) return false;
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -157,6 +168,7 @@ export default function SettingsPage() {
       try {
         if (attempts === 1) {
           await confirmCheckoutSession();
+          await syncBillingFromStripe();
         }
         await load();
       } finally {
@@ -178,6 +190,27 @@ export default function SettingsPage() {
       clearTimeout(t);
     };
   }, []);
+
+  React.useEffect(() => {
+    if (loading) return;
+    if (attemptedBackgroundBillingSync.current) return;
+
+    const currentTier = normalizeTier(org?.tier);
+    const stripeStatus = String(org?.stripe_subscription_status ?? "").trim().toLowerCase();
+    const needsRecoverySync =
+      currentTier === "free" &&
+      stripeStatus !== "active" &&
+      stripeStatus !== "trialing";
+
+    if (!needsRecoverySync) return;
+    attemptedBackgroundBillingSync.current = true;
+
+    (async () => {
+      const synced = await syncBillingFromStripe();
+      if (synced) await load();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, org?.tier, org?.stripe_subscription_status]);
 
   async function createInvite() {
     const email = inviteEmail.trim().toLowerCase();
