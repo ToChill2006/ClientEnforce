@@ -17,7 +17,9 @@
       "Bash(find /Users/tc/clientenforce/src -type f \\\\\\(-name *.html \\\\\\))",
       "Bash(supabase status:*)",
       "Bash(supabase link:*)",
-      "Bash(supabase db:*)"
+      "Bash(supabase db:*)",
+      "Bash(git revert:*)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

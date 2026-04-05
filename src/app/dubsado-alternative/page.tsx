@@ -2,17 +2,63 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Mail, BarChart3 } from "lucide-react";
 
-import { PageContainer, PublicFooter, PublicHeader, CtaBand } from "@/components/marketing/public-shell";
+import { PageContainer, PublicFooter, PublicHeader, CtaBand, JsonLd } from "@/components/marketing/public-shell";
 import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Dubsado Alternative for Agencies & Consultants | ClientEnforce",
-  description: "Looking for a Dubsado alternative built for teams, not just freelancers? ClientEnforce focuses entirely on client onboarding — structured workflows, enforced completion, full audit trail.",
+  title: "Best Dubsado Alternative for Agencies & Teams in 2026 | ClientEnforce",
+  description: "Outgrown Dubsado for client onboarding? ClientEnforce enforces completion at every step — document collection, e-signatures, audit trail — built for agencies running multiple onboardings at once. Start free.",
   path: "/dubsado-alternative",
-  keywords: ["Dubsado alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist"],
+  keywords: ["Dubsado alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist", "best Dubsado alternative 2026"],
   type: "website",
 });
+
+const faqItems = [
+  {
+    question: "What is the best Dubsado alternative for agencies?",
+    answer: "For agencies that need structured, repeatable client onboarding at volume, ClientEnforce is the most purpose-built Dubsado alternative. Unlike Dubsado — which covers the full client lifecycle for solo freelancers — ClientEnforce focuses entirely on the onboarding phase: required-step enforcement, document collection, e-signatures, automated reminders, and a full audit trail.",
+  },
+  {
+    question: "Can I migrate my Dubsado workflows to ClientEnforce?",
+    answer: "You do not need to migrate — you rebuild. ClientEnforce templates are fast to set up (under 20 minutes for a first template). Map your current onboarding steps, define required tasks, and send the portal link when a new client signs. Most teams go live within one working day.",
+  },
+  {
+    question: "Does ClientEnforce replace Dubsado completely?",
+    answer: "No. ClientEnforce handles client onboarding execution — from signed agreement to kickoff-ready. It does not include invoicing, proposals, lead management, or scheduling. If you need those features, you would run ClientEnforce alongside your billing or CRM tool. Many teams switch from using Dubsado for onboarding to ClientEnforce, while keeping a separate invoicing tool.",
+  },
+  {
+    question: "Why do agencies outgrow Dubsado for onboarding?",
+    answer: "Dubsado was designed for solo freelancers who manage every client themselves. When a team of account managers runs multiple concurrent onboardings, Dubsado's flexibility becomes a liability — it does not enforce required steps, does not provide a clean cross-portfolio view, and its audit trail is not compliance-grade. Teams with three or more active onboardings at any time consistently find that a dedicated onboarding tool outperforms a CRM workaround.",
+  },
+  {
+    question: "Is ClientEnforce cheaper than Dubsado?",
+    answer: "Pricing depends on your team size and plan. ClientEnforce is focused on onboarding execution, so you are not paying for features you do not use (invoicing, proposals, scheduling). Check the pricing page for current plan details.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClientEnforce",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: "https://clientenforce.com/dubsado-alternative",
+  description: "Client onboarding software for agencies and service teams. Enforces required-step completion, collects documents and signatures, automates follow-ups, and maintains a full audit trail.",
+};
 
 const comparisonRows = [
   ["Primary focus", "Full CRM — invoicing, proposals, contracts, scheduling", "Client onboarding execution only"],
@@ -202,12 +248,38 @@ export default function DubsadoAlternativePage() {
           secondaryHref="/features"
         />
 
+        {/* FAQ */}
+        <section className="border-b border-[var(--color-border)] bg-white py-16">
+          <PageContainer>
+            <FadeUp>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Frequently asked questions</h2>
+              <p className="mt-3 text-base text-[var(--color-text-secondary)]">Common questions from teams evaluating ClientEnforce as a Dubsado alternative.</p>
+            </FadeUp>
+            <div className="mt-8 grid gap-5 md:grid-cols-2">
+              {faqItems.map((item) => (
+                <FadeUp key={item.question}>
+                  <article className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6">
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{item.question}</h3>
+                    <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">{item.answer}</p>
+                  </article>
+                </FadeUp>
+              ))}
+            </div>
+          </PageContainer>
+        </section>
+
         {/* Related */}
         <section className="bg-[var(--color-bg-subtle)] py-12">
           <PageContainer>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Related</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {[{ href: "/client-onboarding-software", label: "Client onboarding software" }, { href: "/client-onboarding-automation", label: "Onboarding automation" }, { href: "/onboarding-for-agencies", label: "For agencies" }, { href: "/honeybook-alternative", label: "HoneyBook alternative" }, { href: "/client-onboarding-checklist", label: "Onboarding checklist" }].map((link) => (
+              {[
+                { href: "/client-onboarding-software", label: "Client onboarding software" },
+                { href: "/client-onboarding-automation", label: "Onboarding automation" },
+                { href: "/onboarding-for-agencies", label: "For agencies" },
+                { href: "/honeybook-alternative", label: "HoneyBook alternative" },
+                { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
+              ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
                   {link.label}
                 </Link>
@@ -218,6 +290,8 @@ export default function DubsadoAlternativePage() {
 
       </main>
       <PublicFooter />
+      <JsonLd data={faqSchema} />
+      <JsonLd data={productSchema} />
     </div>
   );
 }

@@ -2,17 +2,63 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Mail, BarChart3 } from "lucide-react";
 
-import { PageContainer, PublicFooter, PublicHeader, CtaBand } from "@/components/marketing/public-shell";
+import { PageContainer, PublicFooter, PublicHeader, CtaBand, JsonLd } from "@/components/marketing/public-shell";
 import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best HoneyBook Alternative for Agencies & Service Teams | ClientEnforce",
-  description: "Need a HoneyBook alternative with deeper onboarding? ClientEnforce is purpose-built for teams who onboard clients at volume — enforced completion, audit trail, zero inbox chasing.",
+  title: "Best HoneyBook Alternative for Agencies & Service Teams in 2026 | ClientEnforce",
+  description: "Outgrown HoneyBook for client onboarding? ClientEnforce enforces completion at every step — document collection, audit trail, zero inbox chasing. Built for teams, not solo freelancers. Start free.",
   path: "/honeybook-alternative",
-  keywords: ["HoneyBook alternative", "client onboarding software", "client onboarding automation", "onboarding software for accountants", "client onboarding checklist"],
+  keywords: ["HoneyBook alternative", "client onboarding software", "client onboarding automation", "onboarding software for accountants", "client onboarding checklist", "best HoneyBook alternative 2026"],
   type: "website",
 });
+
+const hbFaqItems = [
+  {
+    question: "What is the best HoneyBook alternative for agencies?",
+    answer: "For agencies that run multiple client onboardings simultaneously, ClientEnforce is the most focused HoneyBook alternative. Where HoneyBook manages the full client lifecycle for solo professionals, ClientEnforce is built specifically for onboarding execution — required-step enforcement, document collection, automated reminders, and a compliance-grade audit trail.",
+  },
+  {
+    question: "Does ClientEnforce replace HoneyBook completely?",
+    answer: "No. ClientEnforce handles client onboarding from signed agreement to kickoff-ready. It does not include invoicing, proposal management, scheduling, or lead capture — features HoneyBook covers well for solo operators. Many teams run ClientEnforce alongside a separate billing or CRM tool.",
+  },
+  {
+    question: "Why do agencies switch from HoneyBook to a dedicated onboarding tool?",
+    answer: "HoneyBook was designed for independent creatives, not agency teams. When a team has more than one person involved in onboarding, HoneyBook's flexibility becomes a liability: it does not enforce required steps, does not give a cross-client dashboard, and its audit trail is not compliance-grade. Teams with three or more active onboardings at any time consistently outperform with a dedicated onboarding platform.",
+  },
+  {
+    question: "Is ClientEnforce suitable for accountants switching from HoneyBook?",
+    answer: "Yes. ClientEnforce is purpose-built for compliance-sensitive onboarding. The full timestamped audit trail — every document received, signature collected, and required step completed — is exportable as a PDF evidence pack. For accounting firms with AML and KYC obligations, this replaces the inadequate activity logs most general CRMs provide.",
+  },
+  {
+    question: "How long does it take to switch from HoneyBook to ClientEnforce?",
+    answer: "Most teams have a first onboarding template live within one working day. You do not migrate your HoneyBook data — you build a fresh onboarding workflow for each service line. The simplicity of setup is a deliberate design choice: ClientEnforce should take minutes to configure, not days.",
+  },
+];
+
+const hbFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: hbFaqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
+const hbProductSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClientEnforce",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: "https://clientenforce.com/honeybook-alternative",
+  description: "Client onboarding software for agencies and service teams. Enforces required-step completion, collects documents and signatures, automates follow-ups, and maintains a full audit trail.",
+};
 
 const comparisonRows = [
   ["Primary focus", "Full clientflow — leads, proposals, contracts, payments, projects", "Client onboarding execution only"],
@@ -199,12 +245,38 @@ export default function HoneyBookAlternativePage() {
           secondaryHref="/features"
         />
 
+        {/* FAQ */}
+        <section className="border-b border-[var(--color-border)] bg-white py-16">
+          <PageContainer>
+            <FadeUp>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Frequently asked questions</h2>
+              <p className="mt-3 text-base text-[var(--color-text-secondary)]">Common questions from teams evaluating ClientEnforce as a HoneyBook alternative.</p>
+            </FadeUp>
+            <div className="mt-8 grid gap-5 md:grid-cols-2">
+              {hbFaqItems.map((item) => (
+                <FadeUp key={item.question}>
+                  <article className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6">
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{item.question}</h3>
+                    <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">{item.answer}</p>
+                  </article>
+                </FadeUp>
+              ))}
+            </div>
+          </PageContainer>
+        </section>
+
         {/* Related */}
         <section className="bg-[var(--color-bg-subtle)] py-12">
           <PageContainer>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Related</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {[{ href: "/client-onboarding-software", label: "Client onboarding software" }, { href: "/client-onboarding-automation", label: "Onboarding automation" }, { href: "/onboarding-for-accountants", label: "For accountants" }, { href: "/dubsado-alternative", label: "Dubsado alternative" }, { href: "/client-onboarding-checklist", label: "Onboarding checklist" }].map((link) => (
+              {[
+                { href: "/client-onboarding-software", label: "Client onboarding software" },
+                { href: "/client-onboarding-automation", label: "Onboarding automation" },
+                { href: "/onboarding-for-accountants", label: "For accountants" },
+                { href: "/dubsado-alternative", label: "Dubsado alternative" },
+                { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
+              ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
                   {link.label}
                 </Link>
@@ -215,6 +287,8 @@ export default function HoneyBookAlternativePage() {
 
       </main>
       <PublicFooter />
+      <JsonLd data={hbFaqSchema} />
+      <JsonLd data={hbProductSchema} />
     </div>
   );
 }

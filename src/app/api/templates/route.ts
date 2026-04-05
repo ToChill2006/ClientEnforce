@@ -4,7 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
-import { TemplateDefinitionSchema } from "@/lib/onboarding-schema";
+import { RequirementTypeSchema, TemplateDefinitionSchema } from "@/lib/onboarding-schema";
 import {
   maxTemplatesForTier,
   permissionDenied,
@@ -12,9 +12,23 @@ import {
   templateLimitMessage,
 } from "@/lib/plan-enforcement";
 
+const CreateDefinitionSchema = z.object({
+  requirements: z.array(
+    z.object({
+      type: RequirementTypeSchema,
+      // Allow blank labels on initial template creation; enforced on explicit save (PUT).
+      label: z.string(),
+      is_required: z.boolean().default(true),
+      sort_order: z.number().int().nonnegative().default(0),
+      attachment_path: z.string().nullish(),
+      options: z.array(z.string()).optional(),
+    })
+  ).min(1),
+});
+
 const CreateSchema = z.object({
   name: z.string().min(2).max(80),
-  definition: TemplateDefinitionSchema,
+  definition: CreateDefinitionSchema,
 });
 
 export async function GET() {

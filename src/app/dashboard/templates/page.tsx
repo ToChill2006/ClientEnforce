@@ -54,7 +54,7 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
           r?.type === "file" || r?.type === "signature" || r?.type === "multiple_choice" ? r.type : "text";
         return {
           type,
-          label: typeof r?.label === "string" && r.label.trim() ? r.label : "New requirement",
+          label: typeof r?.label === "string" ? r.label : "",
           is_required: Boolean(r?.is_required),
           sort_order: typeof r?.sort_order === "number" ? r.sort_order : i,
           attachment_path: r?.attachment_path ?? null,
@@ -72,9 +72,9 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
 
 function defaultRequirements(): Requirement[] {
   return [
-    { type: "text", label: "Primary contact name", is_required: true, sort_order: 0 },
-    { type: "file", label: "Upload contract", is_required: true, sort_order: 1 },
-    { type: "signature", label: "Signature", is_required: true, sort_order: 2 },
+    { type: "text", label: "", is_required: true, sort_order: 0 },
+    { type: "file", label: "", is_required: true, sort_order: 1 },
+    { type: "signature", label: "", is_required: true, sort_order: 2 },
   ];
 }
 
@@ -262,17 +262,31 @@ export default function TemplatesPage() {
   async function saveSelected() {
     if (!selected || saving) return;
 
+    for (let i = 0; i < selected.definition.requirements.length; i += 1) {
+      const r = selected.definition.requirements[i];
+      if (!r.label?.trim()) {
+        notify({
+          title: "Validation error",
+          description: `Requirement ${i + 1} label is required.`,
+          variant: "error",
+        });
+        return;
+      }
+    }
+
     // Validate: multiple_choice requirements must have at least 2 non-empty options
-    for (const r of selected.definition.requirements) {
+    for (let i = 0; i < selected.definition.requirements.length; i += 1) {
+      const r = selected.definition.requirements[i];
+      const reqLabel = r.label.trim() || `Requirement ${i + 1}`;
       if (r.type === "multiple_choice") {
         const validOptions = (r.options ?? []).filter((o) => o.trim().length > 0);
         if (validOptions.length < 2) {
-          notify({ title: "Validation error", description: `"${r.label}" must have at least 2 options.`, variant: "error" });
+          notify({ title: "Validation error", description: `"${reqLabel}" must have at least 2 options.`, variant: "error" });
           return;
         }
         const unique = new Set(validOptions.map((o) => o.trim().toLowerCase()));
         if (unique.size !== validOptions.length) {
-          notify({ title: "Validation error", description: `"${r.label}" has duplicate options.`, variant: "error" });
+          notify({ title: "Validation error", description: `"${reqLabel}" has duplicate options.`, variant: "error" });
           return;
         }
       }
@@ -609,7 +623,7 @@ export default function TemplatesPage() {
                   type="button"
                   onClick={() => {
                     const reqs = (selected.definition?.requirements ?? []).slice();
-                    reqs.push({ type: "text", label: "New requirement", is_required: true, sort_order: reqs.length });
+                    reqs.push({ type: "text", label: "", is_required: true, sort_order: reqs.length });
                     setSelected({ ...selected, definition: { requirements: reqs } });
                   }}
                   className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
