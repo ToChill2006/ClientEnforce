@@ -45,12 +45,14 @@ const CreatePayload = z.union([
   z.object({
     title: z.string().min(1).max(160).optional(),
     template_id: z.string().uuid().optional(),
+    owner_id: z.string().uuid().optional(),
     client_id: z.string().uuid(),
   }),
   // Nested client object (supports either selecting an existing client by id, or providing email+name/full_name)
   z.object({
     title: z.string().min(1).max(160).optional(),
     template_id: z.string().uuid().optional(),
+    owner_id: z.string().uuid().optional(),
     client: z.union([
       z.object({
         id: z.string().uuid(),
@@ -71,6 +73,7 @@ const CreatePayload = z.union([
     .object({
       title: z.string().min(1).max(160).optional(),
       template_id: z.string().uuid().optional(),
+      owner_id: z.string().uuid().optional(),
       client_email: z.string().email(),
       client_name: z.string().min(1).optional(),
       client_full_name: z.string().min(1).optional(),
@@ -349,12 +352,20 @@ export async function GET(req: Request) {
   // Prefer richer columns if they exist in your schema, but be defensive: some deployments
   // won't have denormalized fields like `client_full_name` / `client_email`.
   const selectExtendedWithDenorm =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, owner_id";
   const selectExtendedNoDenorm =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, owner_id";
   const selectBaseWithDenorm =
-    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email";
+    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email, owner_id";
   const selectBaseNoDenorm =
+    "id, title, status, client_token, created_at, updated_at, client_id, template_id, owner_id";
+  const selectExtendedWithDenormNoOwner =
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email";
+  const selectExtendedNoDenormNoOwner =
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id";
+  const selectBaseWithDenormNoOwner =
+    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email";
+  const selectBaseNoDenormNoOwner =
     "id, title, status, client_token, created_at, updated_at, client_id, template_id";
 
   const url = new URL(req.url);
@@ -374,6 +385,11 @@ export async function GET(req: Request) {
     selectExtendedNoDenorm,
     selectBaseWithDenorm,
     selectBaseNoDenorm,
+    // Fallbacks without owner_id in case the column doesn't exist yet
+    selectExtendedWithDenormNoOwner,
+    selectExtendedNoDenormNoOwner,
+    selectBaseWithDenormNoOwner,
+    selectBaseNoDenormNoOwner,
   ];
 
   let data: any[] | null = null;
@@ -511,6 +527,22 @@ export async function GET(req: Request) {
     }
   }
 
+  // Owners: look up full_name for any owner_id values present on onboardings.
+  const ownerIds = Array.from(new Set(rows.map((r: any) => r.owner_id).filter(Boolean)));
+  let ownerNamesById: Record<string, string | null> = {};
+  if (ownerIds.length > 0) {
+    const { data: ownerProfiles } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email")
+      .in("user_id", ownerIds);
+
+    if (ownerProfiles) {
+      for (const p of ownerProfiles) {
+        ownerNamesById[String((p as any).user_id)] = (p as any).full_name || (p as any).email || null;
+      }
+    }
+  }
+
   const enriched = rows.map((o: any) => {
     const client = o.client_id ? clientsById[o.client_id] : undefined;
     const template = o.template_id ? templatesById[o.template_id] : undefined;
@@ -520,6 +552,7 @@ export async function GET(req: Request) {
     const resolvedClientName = o.client_full_name ?? o.client_name ?? client?.name ?? null;
 
     const resolvedTemplateName = (template as any)?.name ?? null;
+    const resolvedOwnerName = o.owner_id ? (ownerNamesById[o.owner_id] ?? null) : null;
 
     return {
       ...o,
@@ -532,6 +565,8 @@ export async function GET(req: Request) {
 
       // Backward compatibility for older UI code
       template_title: resolvedTemplateName,
+
+      owner_name: resolvedOwnerName,
     };
   });
 
@@ -690,6 +725,8 @@ export async function POST(req: Request) {
 
   const now = new Date().toISOString();
 
+  const owner_id = (parsed.data as any).owner_id ?? null;
+
   // Some environments may not have newer columns (e.g. created_by). Try with the full payload,
   // and fall back gracefully if the schema doesn't include optional columns.
   const insertBase: Record<string, any> = {
@@ -702,6 +739,7 @@ export async function POST(req: Request) {
     // Generate it here so onboarding creation always succeeds.
     client_token: randomUUID(),
     updated_at: now,
+    ...(owner_id ? { owner_id } : {}),
   };
 
   const tryInsert = async (payload: Record<string, any>) =>
@@ -718,50 +756,61 @@ export async function POST(req: Request) {
   let onboarding: any = null;
   let onboardingErr: any = null;
 
-  // 1) Prefer `created_by_user_id`
-  {
-    const r1 = await tryInsert({ ...insertBase, created_by_user_id: user.id });
-    onboarding = (r1 as any).data ?? null;
-    onboardingErr = (r1 as any).error ?? null;
+  const runInsertChain = async (base: Record<string, any>) => {
+    // 1) Prefer `created_by_user_id`
+    const r1 = await tryInsert({ ...base, created_by_user_id: user.id });
+    let ob = (r1 as any).data ?? null;
+    let err = (r1 as any).error ?? null;
 
     // If that column doesn't exist, fall back to `created_by`.
-    if (onboardingErr && isMissingColumnError(onboardingErr, "created_by_user_id")) {
-      const r2 = await tryInsert({ ...insertBase, created_by: user.id });
-      onboarding = (r2 as any).data ?? null;
-      onboardingErr = (r2 as any).error ?? null;
+    if (err && isMissingColumnError(err, "created_by_user_id")) {
+      const r2 = await tryInsert({ ...base, created_by: user.id });
+      ob = (r2 as any).data ?? null;
+      err = (r2 as any).error ?? null;
     }
 
     // If `created_by` also doesn't exist, only then try without any creator column.
-    // NOTE: If your DB enforces a NOT NULL creator column, this attempt will fail —
-    // which is correct and will surface a clear error.
-    if (onboardingErr && isMissingColumnError(onboardingErr, "created_by")) {
-      const r3 = await tryInsert(insertBase);
-      onboarding = (r3 as any).data ?? null;
-      onboardingErr = (r3 as any).error ?? null;
+    if (err && isMissingColumnError(err, "created_by")) {
+      const r3 = await tryInsert(base);
+      ob = (r3 as any).data ?? null;
+      err = (r3 as any).error ?? null;
     }
 
     // Secondary fallback: if `updated_at` is missing (older schema), retry without it.
-    if (onboardingErr && isMissingColumnError(onboardingErr, "updated_at")) {
-      const { updated_at, ...withoutUpdatedAt } = insertBase;
+    if (err && isMissingColumnError(err, "updated_at")) {
+      const { updated_at, ...withoutUpdatedAt } = base;
 
-      // Keep creator column if it exists/was required.
-      const msg = String(onboardingErr?.message || "");
-      // Try updated_at-less with created_by_user_id first, then created_by, then none.
       const r4 = await tryInsert({ ...withoutUpdatedAt, created_by_user_id: user.id });
-      onboarding = (r4 as any).data ?? null;
-      onboardingErr = (r4 as any).error ?? null;
+      ob = (r4 as any).data ?? null;
+      err = (r4 as any).error ?? null;
 
-      if (onboardingErr && isMissingColumnError(onboardingErr, "created_by_user_id")) {
+      if (err && isMissingColumnError(err, "created_by_user_id")) {
         const r5 = await tryInsert({ ...withoutUpdatedAt, created_by: user.id });
-        onboarding = (r5 as any).data ?? null;
-        onboardingErr = (r5 as any).error ?? null;
+        ob = (r5 as any).data ?? null;
+        err = (r5 as any).error ?? null;
       }
 
-      if (onboardingErr && isMissingColumnError(onboardingErr, "created_by")) {
+      if (err && isMissingColumnError(err, "created_by")) {
         const r6 = await tryInsert(withoutUpdatedAt);
-        onboarding = (r6 as any).data ?? null;
-        onboardingErr = (r6 as any).error ?? null;
+        ob = (r6 as any).data ?? null;
+        err = (r6 as any).error ?? null;
       }
+    }
+
+    return { ob, err };
+  };
+
+  {
+    const { ob, err } = await runInsertChain(insertBase);
+    onboarding = ob;
+    onboardingErr = err;
+
+    // If owner_id column doesn't exist, retry without it.
+    if (onboardingErr && isMissingColumnError(onboardingErr, "owner_id")) {
+      const { owner_id: _oid, ...baseWithoutOwner } = insertBase;
+      const { ob: ob2, err: err2 } = await runInsertChain(baseWithoutOwner);
+      onboarding = ob2;
+      onboardingErr = err2;
     }
   }
 

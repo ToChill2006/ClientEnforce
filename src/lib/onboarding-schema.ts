@@ -4,7 +4,7 @@ export const RequirementTypeSchema = z.enum(["text", "file", "signature", "multi
 
 export const TemplateRequirementSchema = z.object({
   type: RequirementTypeSchema,
-  label: z.string().min(1),
+  label: z.string().trim().min(1),
   is_required: z.boolean().default(true),
   sort_order: z.number().int().nonnegative().default(0),
   attachment_path: z.string().nullish(),

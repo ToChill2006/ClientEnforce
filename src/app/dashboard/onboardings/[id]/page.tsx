@@ -85,6 +85,8 @@ type DetailPayload = {
     client_email: string | null;
     client_name: string | null;
     template_name: string | null;
+    owner_id: string | null;
+    owner_name: string | null;
     created_at: string | null;
     updated_at: string | null;
   };
@@ -710,6 +712,13 @@ export default function OnboardingDetailAdminPage() {
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 shadow-[var(--shadow-sm)]">
             <div className="text-sm font-semibold text-[var(--color-text-primary)]">Details</div>
             <div className="mt-3 space-y-2 text-sm text-[var(--color-text-secondary)]">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-text-muted)]">Owner</span>
+                {ob?.owner_name
+                  ? <span className="font-medium text-[var(--color-text-primary)]">{ob.owner_name}</span>
+                  : <span className="text-[var(--color-text-muted)]">Unassigned</span>
+                }
+              </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[var(--color-text-muted)]">Template</span>
                 <span className="font-medium text-[var(--color-text-primary)]">{ob?.template_name || "Default"}</span>

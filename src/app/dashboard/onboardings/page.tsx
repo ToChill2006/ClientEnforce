@@ -22,8 +22,18 @@ type OnboardingRow = {
   client_token?: string | null;
   token?: string | null;
 
+  owner_id?: string | null;
+  owner_name?: string | null;
+
   updated_at?: string | null;
   created_at?: string | null;
+};
+
+type TeamMember = {
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  role: string | null;
 };
 
 type ListResponse =
@@ -198,10 +208,12 @@ export default function OnboardingsPage() {
   const [clients, setClients] = React.useState<
     Array<{ id: string; email: string; full_name?: string | null; name?: string | null }>
   >([]);
+  const [members, setMembers] = React.useState<TeamMember[]>([]);
 
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<string>("");
   const [useExistingClient, setUseExistingClient] = React.useState<boolean>(false);
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
+  const [selectedOwnerId, setSelectedOwnerId] = React.useState<string>("");
 
   const [rowBusy, setRowBusy] = React.useState<Record<string, boolean>>({});
   const [rowAction, setRowAction] = React.useState<Record<string, "copy" | "send" | "lock" | "delete" | null>>({});
@@ -311,9 +323,10 @@ export default function OnboardingsPage() {
 
     async function loadMeta() {
       try {
-        const [tRes, cRes] = await Promise.all([
+        const [tRes, cRes, mRes] = await Promise.all([
           fetch("/api/templates", { cache: "no-store" }),
           fetch("/api/clients", { cache: "no-store" }),
+          fetch("/api/team/members", { cache: "no-store" }),
         ]);
 
         if (tRes.ok) {
@@ -342,6 +355,12 @@ export default function OnboardingsPage() {
                 ? cJson
                 : [];
           if (!cancelled) setClients(list);
+        }
+
+        if (mRes.ok) {
+          const mJson = (await mRes.json().catch(() => null)) as any;
+          const list = Array.isArray(mJson?.members) ? mJson.members : [];
+          if (!cancelled) setMembers(list);
         }
       } catch {
         // ignore – manual entry still works
@@ -378,6 +397,7 @@ export default function OnboardingsPage() {
         r.client_name ?? "",
         r.client_email ?? "",
         r.template_title ?? "",
+        r.owner_name ?? "",
         statusLabel(r.status),
       ]
         .join(" ")
@@ -436,6 +456,7 @@ export default function OnboardingsPage() {
         body: JSON.stringify({
           title: t,
           template_id: selectedTemplateId || null,
+          owner_id: selectedOwnerId || null,
           client: useExistingClient
             ? { id: selectedClientId }
             : { email: em, full_name: nm || null },
@@ -455,6 +476,7 @@ export default function OnboardingsPage() {
       setClientName("");
       setUseExistingClient(false);
       setSelectedClientId("");
+      setSelectedOwnerId("");
       // keep selectedTemplateId so the next onboarding uses the same template
 
       const created = (json?.item ?? json?.onboarding ?? null) as OnboardingRow | null;
@@ -759,6 +781,13 @@ export default function OnboardingsPage() {
                   {r.title || "—"}
                 </div>
 
+                {/* Owner */}
+                {r.owner_name ? (
+                  <div className="truncate text-xs text-[var(--color-text-muted)]">
+                    Owner: {r.owner_name}
+                  </div>
+                ) : null}
+
                 {/* Progress bar */}
                 <ProgressBar value={pct} />
 
@@ -810,6 +839,9 @@ export default function OnboardingsPage() {
                   Template
                 </th>
                 <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                  Owner
+                </th>
+                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Status
                 </th>
                 <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
@@ -827,7 +859,7 @@ export default function OnboardingsPage() {
             <tbody className="divide-y divide-[var(--color-border)]">
               {loadError ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8">
+                  <td colSpan={8} className="px-4 py-8">
                     <div className="text-sm font-medium text-[var(--color-text-primary)]">Could not load onboardings</div>
                     <div className="mt-1 text-sm text-[var(--color-text-muted)]">{loadError}</div>
                     <div className="mt-3">
@@ -841,7 +873,7 @@ export default function OnboardingsPage() {
                 <>
                   {Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i}>
-                      <td colSpan={7} className="px-4 py-3">
+                      <td colSpan={8} className="px-4 py-3">
                         <div className="grid grid-cols-12 gap-3">
                           <Skeleton className="col-span-3 h-4 w-full" />
                           <Skeleton className="col-span-2 h-4 w-full" />
@@ -856,7 +888,7 @@ export default function OnboardingsPage() {
                 </>
               ) : list.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10">
+                  <td colSpan={8} className="px-4 py-10">
                     <div className="text-sm font-medium text-[var(--color-text-primary)]">No onboardings found</div>
                     <div className="mt-1 text-sm text-[var(--color-text-muted)]">
                       Create a new onboarding to start collecting requirements, uploads, and signatures.
@@ -894,6 +926,12 @@ export default function OnboardingsPage() {
 
                       <td className="px-4 py-3 align-middle">
                         <div className="truncate text-sm text-[var(--color-text-secondary)]">{r.template_title || "Default"}</div>
+                      </td>
+
+                      <td className="px-4 py-3 align-middle">
+                        <div className="truncate text-sm text-[var(--color-text-secondary)]">
+                          {r.owner_name || "—"}
+                        </div>
                       </td>
 
                       <td className="px-4 py-3 align-middle">
@@ -1001,6 +1039,26 @@ export default function OnboardingsPage() {
                   </option>
                 ))
               )}
+            </select>
+          </div>
+
+          {/* Owner */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">Owner</label>
+            <select
+              value={selectedOwnerId}
+              onChange={(e) => setSelectedOwnerId(e.target.value)}
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
+            >
+              <option value="">Unassigned</option>
+              {members.map((m) => {
+                const label = (m.full_name || m.email || m.user_id).trim();
+                return (
+                  <option key={m.user_id} value={m.user_id}>
+                    {label}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
