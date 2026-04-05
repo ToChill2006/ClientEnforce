@@ -295,6 +295,21 @@ export function BlogPostTemplate({
                 {post.h1}
               </h1>
 
+              <div className="mt-4 flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-subtle)] text-xs font-bold text-[var(--color-accent)]">
+                  T
+                </div>
+                <div>
+                  <span className="font-medium text-[var(--color-text-primary)]">Thomas</span>
+                  <span className="mx-1.5 text-[var(--color-text-muted)]">·</span>
+                  <span>Founder, ClientEnforce</span>
+                  <span className="mx-1.5 text-[var(--color-text-muted)]">·</span>
+                  <time dateTime={post.publishedTime}>
+                    {new Date(post.publishedTime).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                  </time>
+                </div>
+              </div>
+
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">{post.intro}</p>
 
               <section className="mt-6 max-w-3xl rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
@@ -357,6 +372,20 @@ export function BlogPostTemplate({
               ) : null}
 
               <RelatedReading links={post.relatedLinks} title="Related posts" />
+
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-subtle)] text-sm font-bold text-[var(--color-accent)]">
+                    T
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">Thomas — Founder, ClientEnforce</p>
+                    <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+                      Thomas built ClientEnforce to solve a problem he faced running a service business: client onboarding that fell apart in email threads. He writes about onboarding systems, workflow automation, and ops for service teams.
+                    </p>
+                  </div>
+                </div>
+              </section>
 
               <CtaPanel
                 title="Ready to fix your onboarding? Try ClientEnforce free."

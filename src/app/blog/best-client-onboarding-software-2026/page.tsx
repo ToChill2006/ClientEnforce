@@ -35,6 +35,16 @@ export default function BestClientOnboardingSoftware2026Page() {
               <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 The Best Client Onboarding Software in 2026 (Ranked by Use Case)
               </h1>
+              <div className="mt-4 flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-subtle)] text-xs font-bold text-[var(--color-accent)]">T</div>
+                <div>
+                  <span className="font-medium text-[var(--color-text-primary)]">Thomas</span>
+                  <span className="mx-1.5 text-[var(--color-text-muted)]">·</span>
+                  <span>Founder, ClientEnforce</span>
+                  <span className="mx-1.5 text-[var(--color-text-muted)]">·</span>
+                  <time dateTime={publishedTime}>{new Date(publishedTime).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</time>
+                </div>
+              </div>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 There is no single &quot;best&quot; client onboarding software. The right tool depends on your onboarding volume, team size, and whether you need dedicated onboarding depth or an all-in-one business platform.
               </p>

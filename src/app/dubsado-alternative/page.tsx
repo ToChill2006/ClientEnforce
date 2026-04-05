@@ -7,12 +7,22 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Dubsado Alternative for Agencies & Teams in 2026 | ClientEnforce",
+  title: "Best Dubsado Alternative for Agencies & Teams | ClientEnforce",
   description: "Outgrown Dubsado for client onboarding? ClientEnforce enforces completion at every step — document collection, e-signatures, audit trail — built for agencies running multiple onboardings at once. Start free.",
   path: "/dubsado-alternative",
-  keywords: ["Dubsado alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist", "best Dubsado alternative 2026"],
+  keywords: ["Dubsado alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist"],
   type: "website",
+  ogImage: "https://clientenforce.com/images/og/clientenforce-dubsado-alternative-og.png",
 });
+
+const webPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Best Dubsado Alternative for Agencies & Teams | ClientEnforce",
+  url: "https://clientenforce.com/dubsado-alternative",
+  description: "ClientEnforce vs Dubsado: a comparison of client onboarding software for agencies and service teams.",
+  dateModified: "2026-04-05",
+};
 
 const faqItems = [
   {
@@ -292,6 +302,7 @@ export default function DubsadoAlternativePage() {
       <PublicFooter />
       <JsonLd data={faqSchema} />
       <JsonLd data={productSchema} />
+      <JsonLd data={webPageSchema} />
     </div>
   );
 }

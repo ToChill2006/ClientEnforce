@@ -27,10 +27,12 @@ type BuildMetadataInput = {
   path: string;
   keywords?: string[];
   type?: "website" | "article";
+  ogImage?: string;
 };
 
 export function buildPageMetadata(input: BuildMetadataInput): Metadata {
   const url = absoluteUrl(input.path);
+  const ogImageUrl = input.ogImage ?? null;
 
   return {
     title: input.title,
@@ -45,11 +47,13 @@ export function buildPageMetadata(input: BuildMetadataInput): Metadata {
       url,
       siteName: SITE_NAME,
       type: input.type ?? "website",
+      ...(ogImageUrl ? { images: [{ url: ogImageUrl, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: input.title,
       description: input.description,
+      ...(ogImageUrl ? { images: [ogImageUrl] } : {}),
     },
   };
 }

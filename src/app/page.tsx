@@ -11,7 +11,7 @@ import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Software | Stop Chasing Clients | ClientEnforce",
+  title: "Client Onboarding Software — Stop Chasing Clients | ClientEnforce",
   description:
     "ClientEnforce is client onboarding software that enforces completion - not just tracks it. Built for agencies, consultants, and accountants. Start free.",
   path: "/",
@@ -23,6 +23,7 @@ export const metadata: Metadata = buildPageMetadata({
     "onboarding software for agencies",
   ],
   type: "website",
+  ogImage: "https://clientenforce.com/images/og/clientenforce-homepage-og.png",
 });
 
 /* ─── Data ────────────────────────────────────────────────────────────────── */
@@ -48,7 +49,7 @@ const whoItsFor = [
   { icon: <TrendingUp className="h-5 w-5" />, title: "Agencies", href: "/onboarding-for-agencies", pain: "Running 10 onboardings at once with no consistent process.", solution: "One repeatable template. Live status across every active account." },
   { icon: <PenLine className="h-5 w-5" />, title: "Consultants", href: "/onboarding-for-consultants", pain: "Discovery and intake details buried in email before kickoff.", solution: "Keep intake, documents, and approvals in one portal before work begins." },
   { icon: <ShieldCheck className="h-5 w-5" />, title: "Accountants", href: "/onboarding-for-accountants", pain: "Compliance docs must be traceable — inbox collection is not enough.", solution: "Enforce required submissions. Maintain an audit-ready timeline." },
-  { icon: <BarChart3 className="h-5 w-5" />, title: "Ops teams", href: "/client-onboarding-software", pain: "Onboarding quality depends on your most organised teammate.", solution: "Standardise workflows so quality stays high as volume increases." },
+  { icon: <BarChart3 className="h-5 w-5" />, title: "Ops teams", href: "/client-onboarding-software", pain: "Onboarding quality depends on your most organized teammate.", solution: "Standardize workflows so quality stays high as volume increases." },
 ] as const;
 
 const homepageFaqItems = [
@@ -189,7 +190,7 @@ export default function MarketingPage() {
                 </Link>
               </div>
               <p className="mt-4 text-xs text-[var(--color-text-muted)]">
-                No credit card needed · Set up in 20 minutes · Cancel anytime
+                No credit card needed · Set up in 20 minutes · Automated follow-ups included · Cancel anytime
               </p>
             </div>
             <div>
@@ -222,7 +223,7 @@ export default function MarketingPage() {
                 Sound familiar?
               </h2>
               <p className="mt-3 max-w-xl text-lg text-[var(--color-text-secondary)]">
-                Every service team recognises at least one of these.
+                Every service team recognizes at least one of these.
               </p>
             </FadeUp>
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -303,6 +304,34 @@ export default function MarketingPage() {
                     <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-primary)]">{f.name}</p>
                     <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{f.desc}</p>
                   </div>
+                </FadeUp>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── AI automation ───────────────────────────────────────────────── */}
+        <section className="border-b border-[var(--color-border)] bg-white py-24">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <FadeUp>
+              <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
+                Intelligent onboarding automation — without the setup complexity
+              </h2>
+              <p className="mt-4 max-w-3xl text-lg text-[var(--color-text-secondary)]">
+                Set your rules once. ClientEnforce handles the rest — reminders, deadlines, escalations, and completion gates that run without manual input from your team.
+              </p>
+            </FadeUp>
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { title: "Reminders run automatically", desc: "When a step is overdue, ClientEnforce follows up on a schedule you set. No manual nudging required." },
+                { title: "Steps enforce themselves", desc: "Clients can't move past required items. The portal stays open until every mandatory step is done." },
+                { title: "Kickoff alerts fire when intake is complete", desc: "Your team gets notified the moment a client finishes everything. No checking required." },
+              ].map((item, i) => (
+                <FadeUp key={item.title} delay={i * 80}>
+                  <article className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+                    <h3 className="text-[15px] font-semibold text-[var(--color-text-primary)]">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{item.desc}</p>
+                  </article>
                 </FadeUp>
               ))}
             </div>

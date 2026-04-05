@@ -7,6 +7,8 @@ import { MobileMenu } from "@/components/marketing/mobile-menu";
 
 const solutionsByUseCase = [
   { href: "/client-onboarding-software", label: "Client onboarding software" },
+  { href: "/client-portal-software", label: "Client portal software" },
+  { href: "/client-intake-software", label: "Client intake software" },
   { href: "/client-onboarding-automation", label: "Client onboarding automation" },
   { href: "/client-onboarding-checklist", label: "Client onboarding checklist" },
   { href: "/client-onboarding-tools", label: "Best client onboarding tools" },
@@ -118,6 +120,7 @@ export function PublicHeader() {
 /* ─── Footer ──────────────────────────────────────────────────────────────── */
 const productLinks = [
   { href: "/client-onboarding-software", label: "Client onboarding software" },
+  { href: "/client-portal-software", label: "Client portal software" },
   { href: "/features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
   { href: "/client-onboarding-automation", label: "Onboarding automation" },
@@ -127,6 +130,8 @@ const productLinks = [
 const comparisonLinks = [
   { href: "/dubsado-alternative", label: "vs Dubsado" },
   { href: "/honeybook-alternative", label: "vs HoneyBook" },
+  { href: "/copilot-alternative", label: "vs Copilot" },
+  { href: "/bonsai-alternative", label: "vs Bonsai" },
   { href: "/best-client-onboarding-software", label: "Best onboarding software" },
 ] as const;
 

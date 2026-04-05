@@ -14,14 +14,38 @@ import {
   Clock,
 } from "lucide-react";
 
-import { PageContainer, PublicFooter, PublicHeader, CtaBand } from "@/components/marketing/public-shell";
+import { PageContainer, PublicFooter, PublicHeader, CtaBand, JsonLd } from "@/components/marketing/public-shell";
 import { FadeUp } from "@/components/marketing/fade-up";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildPageMetadata, buildSoftwareApplicationSchema } from "@/lib/seo";
+
+const softwareSchema = {
+  ...buildSoftwareApplicationSchema({
+    description:
+      "Client onboarding software that enforces completion at every step. Document collection, e-signatures, automated reminders, and a full audit trail — built for agencies and service teams.",
+    path: "/features",
+  }),
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    description: "Free trial available, no credit card required",
+  },
+  featureList: [
+    "Client onboarding templates",
+    "Required step enforcement",
+    "Automated reminders",
+    "Progress tracking",
+    "E-signatures",
+    "Document collection",
+    "Audit trail",
+    "Team roles and permissions",
+  ],
+};
 
 export const metadata: Metadata = buildPageMetadata({
   title: "ClientEnforce Features | Client Onboarding Automation Tools",
   description:
-    "Document collection, e-signatures, automated reminders, audit trail, and client portal - every feature ClientEnforce has is built for one job: getting clients through onboarding completely.",
+    "Every feature ClientEnforce has is built for one job: getting clients through onboarding completely. Document collection, e-signatures, audit trail, and more.",
   path: "/features",
   keywords: [
     "client onboarding software features",
@@ -29,6 +53,7 @@ export const metadata: Metadata = buildPageMetadata({
     "client onboarding workflow software",
   ],
   type: "website",
+  ogImage: "https://clientenforce.com/images/og/clientenforce-features-og.png",
 });
 
 /* ─── Mockup components ───────────────────────────────────────────────────── */
@@ -413,6 +438,33 @@ export default function FeaturesPage() {
           </PageContainer>
         </section>
 
+        {/* AI copy section */}
+        <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-16 sm:py-20">
+          <PageContainer>
+            <FadeUp>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[40px]" style={{ fontFamily: "var(--font-display)" }}>
+                Automated onboarding intelligence — built into every step
+              </h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
+                ClientEnforce doesn&apos;t just track what&apos;s been submitted — it knows what&apos;s overdue, who needs following up, and when to escalate. Reminder logic, deadline tracking, and completion enforcement run automatically in the background so your team can focus on delivery, not admin.
+              </p>
+              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+                {[
+                  "Reminders fire automatically when deadlines pass",
+                  "Required steps block progression until complete",
+                  "Overdue items surface on the dashboard without manual checking",
+                  "Teams get notified when intake is fully complete and kickoff-ready",
+                ].map((item) => (
+                  <li key={item} className="flex gap-2.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-primary)]">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </FadeUp>
+          </PageContainer>
+        </section>
+
         <CtaBand
           heading="Ready to run onboarding properly?"
           subtext="Launch a repeatable onboarding workflow with one portal, automated follow-ups, and clear completion visibility."
@@ -423,6 +475,7 @@ export default function FeaturesPage() {
       </main>
 
       <PublicFooter />
+      <JsonLd data={softwareSchema} />
     </div>
   );
 }

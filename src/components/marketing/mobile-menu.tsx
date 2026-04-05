@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const solutionsByUseCase = [
   { href: "/client-onboarding-software", label: "Client onboarding software" },
+  { href: "/client-portal-software", label: "Client portal software" },
+  { href: "/client-intake-software", label: "Client intake software" },
   { href: "/client-onboarding-automation", label: "Client onboarding automation" },
   { href: "/client-onboarding-checklist", label: "Client onboarding checklist" },
   { href: "/client-onboarding-tools", label: "Best client onboarding tools" },
@@ -21,6 +23,8 @@ const solutionsWhoFor = [
 const solutionsCompare = [
   { href: "/dubsado-alternative", label: "vs Dubsado" },
   { href: "/honeybook-alternative", label: "vs HoneyBook" },
+  { href: "/copilot-alternative", label: "vs Copilot" },
+  { href: "/bonsai-alternative", label: "vs Bonsai" },
   { href: "/client-onboarding-software#why-software", label: "vs manual process" },
 ] as const;
 

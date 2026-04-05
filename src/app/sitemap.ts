@@ -6,6 +6,10 @@ import { absoluteUrl } from "@/lib/seo";
 const recentlyUpdatedPaths = new Set([
   "/dubsado-alternative",
   "/honeybook-alternative",
+  "/copilot-alternative",
+  "/bonsai-alternative",
+  "/client-portal-software",
+  "/client-intake-software",
   "/client-onboarding-software-for-agencies",
   "/blog/best-client-onboarding-software",
 ]);
@@ -14,6 +18,10 @@ const recentlyUpdatedPaths = new Set([
 const highPriorityPages = new Set([
   "/dubsado-alternative",
   "/honeybook-alternative",
+  "/copilot-alternative",
+  "/bonsai-alternative",
+  "/client-portal-software",
+  "/client-intake-software",
   "/client-onboarding-software-for-agencies",
   "/client-onboarding-automation",
   "/client-onboarding-checklist",
@@ -27,6 +35,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const recentDate = new Date("2026-04-05");
 
   const additionalPublicPaths = [
+    "/copilot-alternative",
+    "/bonsai-alternative",
+    "/client-portal-software",
+    "/client-intake-software",
     "/onboarding-for-agencies",
     "/onboarding-for-accountants",
     "/onboarding-for-consultants",

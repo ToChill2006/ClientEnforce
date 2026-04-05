@@ -69,6 +69,16 @@ export default function ClientOnboardingChecklistTemplatePostPage() {
               <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 The Complete Client Onboarding Checklist Template (2026)
               </h1>
+              <div className="mt-4 flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-subtle)] text-xs font-bold text-[var(--color-accent)]">T</div>
+                <div>
+                  <span className="font-medium text-[var(--color-text-primary)]">Thomas</span>
+                  <span className="mx-1.5 text-[var(--color-text-muted)]">·</span>
+                  <span>Founder, ClientEnforce</span>
+                  <span className="mx-1.5 text-[var(--color-text-muted)]">·</span>
+                  <time dateTime={publishedTime}>{new Date(publishedTime).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</time>
+                </div>
+              </div>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 A checklist only helps if it drives completion. Most teams already have a checklist somewhere, but it is either too vague, too long, or disconnected from the way clients actually submit information. That is why onboarding still feels chaotic even with &quot;process docs&quot; in place.
               </p>

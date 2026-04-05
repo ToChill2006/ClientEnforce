@@ -24,7 +24,7 @@ const painPoints = [
 
 const faqItems = [
   { question: "Why do agencies need dedicated onboarding software?", answer: "Agencies often onboard multiple clients at once. Dedicated onboarding software keeps required steps, documents, and approvals in one enforceable workflow so kickoff quality stays consistent." },
-  { question: "How many onboarding templates should an agency start with?", answer: "Most agencies start with one template per core service line. That keeps setup simple while still standardising onboarding across account managers." },
+  { question: "How many onboarding templates should an agency start with?", answer: "Most agencies start with one template per core service line. That keeps setup simple while still standardizing onboarding across account managers." },
   { question: "Can account managers see all active onboardings in one place?", answer: "Yes. ClientEnforce gives visibility across active onboardings so teams can spot blockers and overdue tasks quickly." },
   { question: "What if a client does not complete tasks on time?", answer: "Automated reminders and escalation rules handle overdue tasks so account managers do not have to manually chase every item." },
   { question: "How fast can an agency launch?", answer: "Most teams can launch their first onboarding template in under 20 minutes and refine it during the first week of live usage." },
@@ -157,7 +157,7 @@ export default function OnboardingForAgenciesPage() {
         </section>
 
         <CtaBand
-          heading="Ready to standardise agency onboarding?"
+          heading="Ready to standardize agency onboarding?"
           subtext="Launch a template your whole team can use and stop delaying kickoffs for missing intake."
           primaryLabel="Try ClientEnforce free"
           secondaryLabel="View pricing"

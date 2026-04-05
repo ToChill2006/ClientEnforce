@@ -7,7 +7,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Client Onboarding Automation | Automate Follow-Ups and Intake | ClientEnforce",
   description:
-    "Automate your client onboarding with structured workflows, automated reminders, and completion enforcement. Stop chasing clients manually - let the system do it.",
+    "Automate your entire client onboarding workflow — reminders, document collection, e-signatures, and completion enforcement — without building custom integrations.",
   path: "/client-onboarding-automation",
   keywords: [
     "client onboarding automation",
@@ -71,8 +71,25 @@ export default function ClientOnboardingAutomationPage() {
                 Client onboarding automation for teams that are done being the reminder system
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
-                Automating client onboarding means your team stops being the reminder system. Instead of manually following up every time a client stalls on a task, the system nudges them automatically - and you get a clear view of exactly where each client is in the process.
+                Automating client onboarding means your team stops being the reminder system. Instead of manually following up every time a client stalls on a task, the system nudges them automatically — and you get a clear view of exactly where each client is in the process.
               </p>
+              <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
+                ClientEnforce handles the repetitive parts of onboarding — the follow-up emails, the deadline tracking, the &quot;did you get my last message?&quot; loops — so your team can focus on client relationships and delivery.
+              </p>
+              <ul className="mt-5 max-w-3xl space-y-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 text-sm text-[var(--color-text-primary)]">
+                {[
+                  "Automated reminders when steps are overdue",
+                  "Required completion gates that prevent skipped steps",
+                  "Document receipt confirmations sent without manual input",
+                  "Kickoff-ready alerts when intake is fully complete",
+                  "Progress tracking visible across all active onboardings",
+                ].map((item) => (
+                  <li key={item} className="flex gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-sm)] hover:bg-[var(--color-accent-hover)]">
                   Build your first onboarding template

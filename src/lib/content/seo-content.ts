@@ -1750,7 +1750,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "client-onboarding-software-for-agencies": {
     path: "/client-onboarding-software-for-agencies",
-    title: "Client Onboarding Software for Agencies in 2026 | ClientEnforce",
+    title: "Client Onboarding Software for Agencies | ClientEnforce",
     description:
       "Client onboarding software built for agencies running multiple clients at once. Enforce required steps, collect documents and signatures, automate follow-ups, and give ops teams live visibility across every active onboarding.",
     keywords: [
@@ -3202,9 +3202,9 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "bonsai-alternative": {
     path: "/bonsai-alternative",
-    title: "Bonsai Alternative for Client Onboarding | ClientEnforce",
+    title: "Best Bonsai Alternative for Agencies & Consultants | ClientEnforce",
     description:
-      "Compare ClientEnforce as a Bonsai alternative for client onboarding workflows, automation, and kickoff-readiness control.",
+      "Outgrown Bonsai for client onboarding? ClientEnforce enforces completion at every step — structured intake, document collection, e-signatures, and automated follow-ups. Start free.",
     keywords: [
       "bonsai alternative",
       "tools like bonsai",

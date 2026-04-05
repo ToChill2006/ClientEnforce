@@ -7,11 +7,12 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best HoneyBook Alternative for Agencies & Service Teams in 2026 | ClientEnforce",
+  title: "Best HoneyBook Alternative for Agencies & Service Teams | ClientEnforce",
   description: "Outgrown HoneyBook for client onboarding? ClientEnforce enforces completion at every step — document collection, audit trail, zero inbox chasing. Built for teams, not solo freelancers. Start free.",
   path: "/honeybook-alternative",
-  keywords: ["HoneyBook alternative", "client onboarding software", "client onboarding automation", "onboarding software for accountants", "client onboarding checklist", "best HoneyBook alternative 2026"],
+  keywords: ["HoneyBook alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist"],
   type: "website",
+  ogImage: "https://clientenforce.com/images/og/clientenforce-honeybook-alternative-og.png",
 });
 
 const hbFaqItems = [
@@ -115,7 +116,7 @@ export default function HoneyBookAlternativePage() {
             <FadeUp>
               <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>HoneyBook is excellent — for independent business owners</h2>
               <div className="mt-5 max-w-3xl space-y-4 text-base leading-7 text-[var(--color-text-secondary)]">
-                <p>HoneyBook earned its loyal following by solving a real problem for solo creative professionals. Photographers, event planners, coaches, designers — people who need to manage enquiries, send proposals, collect contracts, take payments, and keep client comms organised, all without a dedicated ops person.</p>
+                <p>HoneyBook earned its loyal following by solving a real problem for solo creative professionals. Photographers, event planners, coaches, designers — people who need to manage inquiries, send proposals, collect contracts, take payments, and keep client comms organized, all without a dedicated ops person.</p>
                 <p>The challenge comes when a team tries to use it as a structured onboarding system. HoneyBook was not designed for an operations manager tracking eight active onboardings simultaneously. It does not enforce required completion. And there is no compliance-grade audit trail of what was submitted, when, and by whom.</p>
                 <p className="font-semibold text-[var(--color-text-primary)]">For agencies, consultancies, accounting firms, and ops-led service teams, those gaps matter.</p>
               </div>
