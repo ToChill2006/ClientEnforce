@@ -160,13 +160,23 @@ function reqKindLabel(kind?: string | null) {
 }
 
 // Parse a multi-select JSON array stored in value_text, or return null.
-function parseMultiSelect(vt: string | null | undefined): string[] | null {
+// Returns items labelled "Other: [text]" for any value not in knownOptions.
+function parseMultiSelect(
+  vt: string | null | undefined,
+  knownOptions?: string[] | null
+): Array<{ label: string; isOther: boolean }> | null {
   if (!vt) return null;
   const s = vt.trim();
   if (!s.startsWith("[")) return null;
   try {
     const parsed = JSON.parse(s);
-    return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : null;
+    if (!Array.isArray(parsed)) return null;
+    const items = parsed.map(String).filter(Boolean);
+    if (items.length === 0) return null;
+    return items.map((item) => {
+      const isOther = !!(knownOptions && knownOptions.length > 0 && !knownOptions.includes(item));
+      return { label: isOther ? `Other: ${item}` : item, isOther };
+    });
   } catch {
     return null;
   }
@@ -839,11 +849,11 @@ export default function OnboardingDetailAdminPage() {
                           </div>
                         );
                       })()
-                    ) : rType === "multiple_choice" && preview.type === "text" && parseMultiSelect(r.value_text) ? (
+                    ) : rType === "multiple_choice" && preview.type === "text" && parseMultiSelect(r.value_text, r.options) ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {parseMultiSelect(r.value_text)!.map((item, i) => (
-                          <span key={i} className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-primary)]">
-                            {item}
+                        {parseMultiSelect(r.value_text, r.options)!.map(({ label, isOther }, i) => (
+                          <span key={i} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${isOther ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]"}`}>
+                            {label}
                           </span>
                         ))}
                       </div>
@@ -1011,13 +1021,13 @@ export default function OnboardingDetailAdminPage() {
                       </div>
                     );
                   } else if (rType === "multiple_choice" && preview.type === "text") {
-                    const items = parseMultiSelect(r.value_text);
+                    const items = parseMultiSelect(r.value_text, r.options);
                     if (items) {
                       responseCell = (
                         <div className="flex flex-wrap gap-1.5">
-                          {items.map((item, i) => (
-                            <span key={i} className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-primary)]">
-                              {item}
+                          {items.map(({ label, isOther }, i) => (
+                            <span key={i} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${isOther ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]"}`}>
+                              {label}
                             </span>
                           ))}
                         </div>
