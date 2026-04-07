@@ -914,11 +914,35 @@ export async function POST(req: Request) {
           };
         });
 
+        // Known stable enum values that exist in all DB versions.
+        const STABLE_TYPES = new Set(["text", "file", "signature", "multiple_choice"]);
+        function isInvalidEnumError(err: any) {
+          const msg = String(err?.message || "");
+          return msg.toLowerCase().includes("invalid input value for enum") ||
+            (msg.toLowerCase().includes("invalid") && msg.toLowerCase().includes("enum") && msg.toLowerCase().includes("requirement_type"));
+        }
+
         // Insert defensively — strip columns that may not exist in older DB schemas.
         let { error: rErr } = await supabase.from("onboarding_requirements").insert(rows);
 
+        // If the DB enum doesn't have newer types (checkbox, heading), remap them to "text" and retry.
+        if (rErr && isInvalidEnumError(rErr)) {
+          const remapped = rows.map((r) => ({
+            ...r,
+            type: STABLE_TYPES.has(r.type) ? r.type : "text",
+            // Headings have no interaction, so just become a labeled text item (not required).
+            is_required: r.type === "heading" ? false : r.is_required,
+          }));
+          const rEnum = await supabase.from("onboarding_requirements").insert(remapped);
+          rErr = (rEnum as any).error ?? null;
+        }
+
         if (rErr && isMissingColumnError(rErr, "metadata")) {
-          const stripped = rows.map(({ metadata, ...rest }) => rest);
+          const stripped = rows.map(({ metadata, ...rest }) => ({
+            ...rest,
+            type: STABLE_TYPES.has(rest.type) ? rest.type : "text",
+            is_required: rest.type === "heading" ? false : rest.is_required,
+          }));
           const rM = await supabase.from("onboarding_requirements").insert(stripped);
           rErr = (rM as any).error ?? null;
         }
