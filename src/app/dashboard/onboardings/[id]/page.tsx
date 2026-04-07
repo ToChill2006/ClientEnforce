@@ -153,7 +153,21 @@ function reqKindLabel(kind?: string | null) {
   if (k === "select") return "Select";
   if (k === "date") return "Date";
   if (k === "multiple_choice") return "Multiple choice";
+  if (k === "heading") return "Section";
   return kind as string;
+}
+
+// Parse a multi-select JSON array stored in value_text, or return null.
+function parseMultiSelect(vt: string | null | undefined): string[] | null {
+  if (!vt) return null;
+  const s = vt.trim();
+  if (!s.startsWith("[")) return null;
+  try {
+    const parsed = JSON.parse(s);
+    return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : null;
+  } catch {
+    return null;
+  }
 }
 
 
@@ -562,9 +576,11 @@ export default function OnboardingDetailAdminPage() {
   const ob = payload?.onboarding;
   const reqs = payload?.requirements ?? [];
 
-  const answered = reqs.filter((r) => valuePreview(r).type !== "empty").length;
-  const required = reqs.filter((r) => !!(r.is_required ?? r.required)).length;
-  const requiredCompleted = reqs.filter((r) => {
+  // Exclude section headings from all counts — they are decorative, not interactive.
+  const interactiveReqs = reqs.filter((r) => (r.type ?? r.kind ?? "").toLowerCase() !== "heading");
+  const answered = interactiveReqs.filter((r) => valuePreview(r).type !== "empty").length;
+  const required = interactiveReqs.filter((r) => !!(r.is_required ?? r.required)).length;
+  const requiredCompleted = interactiveReqs.filter((r) => {
     if (!(r.is_required ?? r.required)) return false;
     return valuePreview(r).type !== "empty" || !!r.completed_at || !!r.completed;
   }).length;
@@ -699,7 +715,7 @@ export default function OnboardingDetailAdminPage() {
                 <div className="mt-1 text-sm text-[var(--color-text-muted)]">Completion across required items.</div>
               </div>
               <div className="text-sm text-[var(--color-text-muted)]">
-                {answered}/{reqs.length} answered{required ? <span className="ml-2">• {required} required</span> : null}
+                {answered}/{interactiveReqs.length} answered{required ? <span className="ml-2">• {required} required</span> : null}
               </div>
             </div>
             <div className="mt-4">
@@ -766,8 +782,24 @@ export default function OnboardingDetailAdminPage() {
             </div>
           ) : (
             reqs.map((r) => {
+              const rType = (r.type ?? r.kind ?? "").toLowerCase();
               const preview = valuePreview(r);
-              const completed = !!r.completed_at || !!r.completed || valuePreview(r).type !== "empty";
+              const completed = !!r.completed_at || !!r.completed || preview.type !== "empty";
+
+              // ── Heading: section divider ──
+              if (rType === "heading") {
+                return (
+                  <div key={r.id} className="px-4 py-2">
+                    <div className="flex items-center gap-3">
+                      <div className="h-px flex-1 bg-[var(--color-border)]" />
+                      <span className="shrink-0 text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+                        {r.label || "Section"}
+                      </span>
+                      <div className="h-px flex-1 bg-[var(--color-border)]" />
+                    </div>
+                  </div>
+                );
+              }
 
               return (
                 <div key={r.id} className="min-h-[48px] w-full p-4">
@@ -783,18 +815,36 @@ export default function OnboardingDetailAdminPage() {
                       <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
                         {reqKindLabel(r.kind ?? r.type)}
                       </span>
-                      <span
-                        className={cx(
-                          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
-                          completed ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]" : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
-                        )}
-                      >
+                      <span className={cx(
+                        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
+                        completed ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
+                      )}>
                         {completed ? "Completed" : "Pending"}
                       </span>
                     </div>
                   </div>
                   <div className="mt-2">
-                    {preview.type === "empty" ? (
+                    {rType === "checkbox" ? (
+                      (() => {
+                        const checked = (r.value_text ?? "").toLowerCase() === "true";
+                        return (
+                          <div className="flex items-center gap-2">
+                            <span className={cx("inline-flex h-5 w-5 items-center justify-center rounded border text-xs", checked ? "border-emerald-400 bg-emerald-50 text-emerald-600" : "border-[var(--color-border)] bg-white")}>
+                              {checked ? "✓" : ""}
+                            </span>
+                            <span className="text-sm text-[var(--color-text-primary)]">{checked ? "Confirmed" : <span className="text-[var(--color-text-muted)]">Not confirmed</span>}</span>
+                          </div>
+                        );
+                      })()
+                    ) : rType === "multiple_choice" && preview.type === "text" && parseMultiSelect(r.value_text) ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {parseMultiSelect(r.value_text)!.map((item, i) => (
+                          <span key={i} className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-primary)]">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    ) : preview.type === "empty" ? (
                       <div className="text-sm text-[var(--color-text-muted)]">—</div>
                     ) : preview.type === "text" ? (
                       <div className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>
@@ -802,9 +852,6 @@ export default function OnboardingDetailAdminPage() {
                       <pre className="overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>
                     ) : preview.type === "file" ? (
                       <div className="space-y-2">
-                        <div className="truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
-                          {fileNameFromPath(String(preview.v))}
-                        </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => openPreview(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)))}
@@ -838,15 +885,13 @@ export default function OnboardingDetailAdminPage() {
                             }}
                             className="w-full rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition"
                           >
-                            Form template
+                            Form template ↓
                           </button>
                         ) : null}
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <div className="truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
-                          {fileNameFromPath(String(preview.v))}
-                        </div>
+                        {/* signature */}
                         <div className="flex gap-2">
                           <button
                             onClick={() => openPreview(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)))}
@@ -902,12 +947,139 @@ export default function OnboardingDetailAdminPage() {
                 </tr>
               ) : (
                 reqs.map((r) => {
+                  const rType = (r.type ?? r.kind ?? "").toLowerCase();
                   const preview = valuePreview(r);
-                  const completed = !!r.completed_at || !!r.completed || valuePreview(r).type !== "empty";
+                  const completed = !!r.completed_at || !!r.completed || preview.type !== "empty";
+
+                  // ── Heading row: full-width section divider ──────────────────
+                  if (rType === "heading") {
+                    return (
+                      <tr key={r.id}>
+                        <td colSpan={4} className="px-4 py-2">
+                          <div className="flex items-center gap-3">
+                            <div className="h-px flex-1 bg-[var(--color-border)]" />
+                            <span className="shrink-0 text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+                              {r.label || "Section"}
+                            </span>
+                            <div className="h-px flex-1 bg-[var(--color-border)]" />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  // ── Response cell content ────────────────────────────────────
+                  let responseCell: React.ReactNode;
+
+                  if (rType === "checkbox") {
+                    const checked = (r.value_text ?? "").toLowerCase() === "true";
+                    responseCell = (
+                      <div className="flex items-center gap-2">
+                        <span className={cx(
+                          "inline-flex h-5 w-5 items-center justify-center rounded border text-xs",
+                          checked
+                            ? "border-emerald-400 bg-emerald-50 text-emerald-600"
+                            : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
+                        )}>
+                          {checked ? "✓" : ""}
+                        </span>
+                        <span className="text-sm text-[var(--color-text-primary)]">
+                          {checked ? "Confirmed" : <span className="text-[var(--color-text-muted)]">Not confirmed</span>}
+                        </span>
+                      </div>
+                    );
+                  } else if (rType === "multiple_choice" && preview.type === "text") {
+                    const items = parseMultiSelect(r.value_text);
+                    if (items) {
+                      responseCell = (
+                        <div className="flex flex-wrap gap-1.5">
+                          {items.map((item, i) => (
+                            <span key={i} className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-primary)]">
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    } else {
+                      responseCell = <div className="text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>;
+                    }
+                  } else if (preview.type === "empty") {
+                    responseCell = <div className="text-sm text-[var(--color-text-muted)]">—</div>;
+                  } else if (preview.type === "text") {
+                    responseCell = <div className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>;
+                  } else if (preview.type === "json") {
+                    responseCell = <pre className="max-w-[680px] overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>;
+                  } else if (preview.type === "file") {
+                    responseCell = (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openPreview(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)))}
+                            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                          >
+                            Preview
+                          </button>
+                          <button
+                            onClick={() => {
+                              try {
+                                downloadRef(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)));
+                                setBanner({ kind: "success", msg: "Download started." });
+                              } catch (e: any) {
+                                setBanner({ kind: "error", msg: e?.message || "Could not download file." });
+                              }
+                            }}
+                            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                          >
+                            Download
+                          </button>
+                        </div>
+                        {r.attachment_path ? (
+                          <button
+                            onClick={() => {
+                              try {
+                                downloadRef(r.attachment_path!, "clientenforce-uploads", fileNameFromPath(r.attachment_path));
+                                setBanner({ kind: "success", msg: "Form template download started." });
+                              } catch (e: any) {
+                                setBanner({ kind: "error", msg: e?.message || "Could not download form template." });
+                              }
+                            }}
+                            className="self-start rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-2.5 py-1.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition"
+                          >
+                            Form template ↓
+                          </button>
+                        ) : null}
+                      </div>
+                    );
+                  } else {
+                    // signature
+                    responseCell = (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openPreview(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)))}
+                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                        >
+                          View signature
+                        </button>
+                        <button
+                          onClick={() => {
+                            try {
+                              downloadRef(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)));
+                              setBanner({ kind: "success", msg: "Download started." });
+                            } catch (e: any) {
+                              setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
+                            }
+                          }}
+                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                        >
+                          Download
+                        </button>
+                      </div>
+                    );
+                  }
 
                   return (
                     <tr key={r.id} className="hover:bg-[var(--color-bg-subtle)]">
-                      <td className="px-4 py-3 align-top">
+                      <td className="px-4 py-3 align-middle">
                         <div className="text-sm font-medium text-[var(--color-text-primary)]">
                           {r.label || "Untitled field"}
                           {(r.is_required ?? r.required) ? <span className="ml-2 text-xs text-[var(--color-text-muted)]">Required</span> : null}
@@ -915,107 +1087,26 @@ export default function OnboardingDetailAdminPage() {
                         {r.prompt ? <div className="mt-1 max-w-[520px] text-sm text-[var(--color-text-muted)]">{r.prompt}</div> : null}
                       </td>
 
-                      <td className="px-4 py-3 align-top">
+                      <td className="px-4 py-3 align-middle">
                         <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
                           {reqKindLabel(r.kind ?? r.type)}
                         </span>
                       </td>
 
-                      <td className="px-4 py-3 align-top">
-                        {preview.type === "empty" ? (
-                          <div className="text-sm text-[var(--color-text-muted)]">—</div>
-                        ) : preview.type === "text" ? (
-                          <div className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>
-                        ) : preview.type === "json" ? (
-                          <pre className="max-w-[680px] overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>
-                        ) : preview.type === "file" ? (
-                          <div className="flex flex-col gap-2">
-                            <div className="flex w-full items-center gap-3">
-                              <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
-                                {fileNameFromPath(String(preview.v))}
-                              </span>
-                              <div className="ml-auto flex items-center gap-2">
-                                <button
-                                  onClick={() => openPreview(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)))}
-                                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                                >
-                                  Preview
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    try {
-                                      downloadRef(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)));
-                                      setBanner({ kind: "success", msg: "Download started." });
-                                    } catch (e: any) {
-                                      setBanner({ kind: "error", msg: e?.message || "Could not download file." });
-                                    }
-                                  }}
-                                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                                >
-                                  Download
-                                </button>
-                              </div>
-                            </div>
-                            {r.attachment_path ? (
-                              <button
-                                onClick={() => {
-                                  try {
-                                    downloadRef(r.attachment_path!, "clientenforce-uploads", fileNameFromPath(r.attachment_path));
-                                    setBanner({ kind: "success", msg: "Form template download started." });
-                                  } catch (e: any) {
-                                    setBanner({ kind: "error", msg: e?.message || "Could not download form template." });
-                                  }
-                                }}
-                                className="self-start rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-2.5 py-1.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition"
-                              >
-                                Form template
-                              </button>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <div className="flex w-full items-center gap-3">
-                            <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-primary)]" title={fileNameFromPath(String(preview.v))}>
-                              {fileNameFromPath(String(preview.v))}
-                            </span>
-                            <div className="ml-auto flex items-center gap-2">
-                              <button
-                                onClick={() => openPreview(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)))}
-                                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                              >
-                                Preview
-                              </button>
-                              <button
-                                onClick={() => {
-                                  try {
-                                    downloadRef(
-                                      String(preview.v),
-                                      "clientenforce-signatures",
-                                      fileNameFromPath(String(preview.v)),
-                                    );
-                                    setBanner({ kind: "success", msg: "Download started." });
-                                  } catch (e: any) {
-                                    setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
-                                  }
-                                }}
-                                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                              >
-                                Download
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </td>
+                      <td className="px-4 py-3 align-middle">{responseCell}</td>
 
-                      <td className="px-4 py-3 align-top text-right">
-                        <span
-                          className={cx(
-                            "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                            completed ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]" : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
-                          )}
-                        >
+                      <td className="px-4 py-3 align-middle text-right">
+                        <span className={cx(
+                          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                          completed
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
+                        )}>
                           {completed ? "Completed" : "Pending"}
                         </span>
-                        <div className="mt-1 text-xs text-[var(--color-text-muted)]">{completed ? formatDate(r.completed_at || r.updated_at) : ""}</div>
+                        {completed && (r.completed_at || r.updated_at) ? (
+                          <div className="mt-1 text-xs text-[var(--color-text-muted)]">{formatDate(r.completed_at || r.updated_at)}</div>
+                        ) : null}
                       </td>
                     </tr>
                   );
