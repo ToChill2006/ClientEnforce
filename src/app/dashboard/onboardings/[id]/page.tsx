@@ -27,6 +27,7 @@ type Requirement = {
   value_text?: string | null;
   value_json?: any;
   file_path?: string | null;
+  file_paths?: string[] | null;
   signature_path?: string | null;
   attachment_path?: string | null;
   options?: string[] | null;
@@ -60,6 +61,7 @@ function normalizeRequirement(raw: any): Requirement {
     value_text: r.value_text ?? r.valueText ?? null,
     value_json: r.value_json ?? r.valueJson ?? null,
     file_path: r.file_path ?? r.filePath ?? null,
+    file_paths: Array.isArray(r.file_paths) ? r.file_paths : null,
     signature_path: r.signature_path ?? r.signaturePath ?? null,
     attachment_path: r.attachment_path ?? null,
     options: Array.isArray(r.options) ? r.options : null,
@@ -279,6 +281,7 @@ async function fetchRequirementsDirect(onboardingId: string): Promise<Requiremen
         "completed_by",
         "value_text",
         "file_path",
+        "file_paths",
         "signature_path",
         "attachment_path",
         "options",
@@ -851,44 +854,63 @@ export default function OnboardingDetailAdminPage() {
                     ) : preview.type === "json" ? (
                       <pre className="overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>
                     ) : preview.type === "file" ? (
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => openPreview(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)))}
-                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                          >
-                            Preview
-                          </button>
-                          <button
-                            onClick={() => {
-                              try {
-                                downloadRef(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)));
-                                setBanner({ kind: "success", msg: "Download started." });
-                              } catch (e: any) {
-                                setBanner({ kind: "error", msg: e?.message || "Could not download file." });
-                              }
-                            }}
-                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                          >
-                            Download
-                          </button>
-                        </div>
-                        {r.attachment_path ? (
-                          <button
-                            onClick={() => {
-                              try {
-                                downloadRef(r.attachment_path!, "clientenforce-uploads", fileNameFromPath(r.attachment_path));
-                                setBanner({ kind: "success", msg: "Form template download started." });
-                              } catch (e: any) {
-                                setBanner({ kind: "error", msg: e?.message || "Could not download form template." });
-                              }
-                            }}
-                            className="w-full rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition"
-                          >
-                            Form template ↓
-                          </button>
-                        ) : null}
-                      </div>
+                      (() => {
+                        const allFiles: string[] =
+                          r.file_paths && r.file_paths.length > 0
+                            ? r.file_paths
+                            : r.file_path
+                            ? [r.file_path]
+                            : [String(preview.v)];
+                        return (
+                          <div className="space-y-2">
+                            {allFiles.map((fp, fi) => (
+                              <div key={fi} className="space-y-1">
+                                {allFiles.length > 1 ? (
+                                  <div className="text-xs text-[var(--color-text-muted)] truncate" title={fileNameFromPath(fp)}>
+                                    {fi + 1}. {fileNameFromPath(fp)}
+                                  </div>
+                                ) : null}
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => openPreview(fp, "clientenforce-uploads", fileNameFromPath(fp))}
+                                    className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                                  >
+                                    Preview
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      try {
+                                        downloadRef(fp, "clientenforce-uploads", fileNameFromPath(fp));
+                                        setBanner({ kind: "success", msg: "Download started." });
+                                      } catch (e: any) {
+                                        setBanner({ kind: "error", msg: e?.message || "Could not download file." });
+                                      }
+                                    }}
+                                    className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                                  >
+                                    Download
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            {r.attachment_path ? (
+                              <button
+                                onClick={() => {
+                                  try {
+                                    downloadRef(r.attachment_path!, "clientenforce-uploads", fileNameFromPath(r.attachment_path));
+                                    setBanner({ kind: "success", msg: "Form template download started." });
+                                  } catch (e: any) {
+                                    setBanner({ kind: "error", msg: e?.message || "Could not download form template." });
+                                  }
+                                }}
+                                className="w-full rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition"
+                              >
+                                Form template ↓
+                              </button>
+                            ) : null}
+                          </div>
+                        );
+                      })()
                     ) : (
                       <div className="space-y-2">
                         {/* signature */}
@@ -1010,29 +1032,41 @@ export default function OnboardingDetailAdminPage() {
                   } else if (preview.type === "json") {
                     responseCell = <pre className="max-w-[680px] overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>;
                   } else if (preview.type === "file") {
+                    // All uploaded files: prefer file_paths array, fall back to single file_path.
+                    const allFiles: string[] =
+                      r.file_paths && r.file_paths.length > 0
+                        ? r.file_paths
+                        : r.file_path
+                        ? [r.file_path]
+                        : [String(preview.v)];
                     responseCell = (
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openPreview(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)))}
-                            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                          >
-                            Preview
-                          </button>
-                          <button
-                            onClick={() => {
-                              try {
-                                downloadRef(String(preview.v), "clientenforce-uploads", fileNameFromPath(String(preview.v)));
-                                setBanner({ kind: "success", msg: "Download started." });
-                              } catch (e: any) {
-                                setBanner({ kind: "error", msg: e?.message || "Could not download file." });
-                              }
-                            }}
-                            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                          >
-                            Download
-                          </button>
-                        </div>
+                        {allFiles.map((fp, fi) => (
+                          <div key={fi} className="flex items-center gap-2">
+                            <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-muted)]" title={fileNameFromPath(fp)}>
+                              {allFiles.length > 1 ? `${fi + 1}. ` : ""}{fileNameFromPath(fp)}
+                            </span>
+                            <button
+                              onClick={() => openPreview(fp, "clientenforce-uploads", fileNameFromPath(fp))}
+                              className="shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                            >
+                              Preview
+                            </button>
+                            <button
+                              onClick={() => {
+                                try {
+                                  downloadRef(fp, "clientenforce-uploads", fileNameFromPath(fp));
+                                  setBanner({ kind: "success", msg: "Download started." });
+                                } catch (e: any) {
+                                  setBanner({ kind: "error", msg: e?.message || "Could not download file." });
+                                }
+                              }}
+                              className="shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
+                            >
+                              Download
+                            </button>
+                          </div>
+                        ))}
                         {r.attachment_path ? (
                           <button
                             onClick={() => {
