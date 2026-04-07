@@ -123,9 +123,9 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
 
 function defaultRequirements(): Requirement[] {
   return [
-    { type: "text", label: "", is_required: true, sort_order: 0 },
-    { type: "file", label: "", is_required: true, sort_order: 1, file_mode: "upload" },
-    { type: "signature", label: "", is_required: true, sort_order: 2 },
+    { type: "text", label: "Full name", is_required: true, sort_order: 0 },
+    { type: "file", label: "Upload document", is_required: true, sort_order: 1, file_mode: "upload" },
+    { type: "signature", label: "Signature", is_required: true, sort_order: 2 },
   ];
 }
 
@@ -142,13 +142,7 @@ const TYPE_LABELS: Record<RequirementType, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TemplatesPage() {
-  const toastApi = useToast() as any;
-  const notify: (t: any) => void =
-    typeof toastApi?.notify === "function"
-      ? toastApi.notify
-      : typeof toastApi?.push === "function"
-      ? toastApi.push
-      : () => {};
+  const { toast: notify } = useToast();
 
   const [items, setItems] = React.useState<TemplateRow[]>([]);
   const [selected, setSelected] = React.useState<TemplateDetail | null>(null);
