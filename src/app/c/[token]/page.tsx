@@ -344,9 +344,14 @@ export default async function ClientTokenPage({
       completed_at: r.completed_at ?? r.completedAt ?? null,
       value_text: r.value_text ?? r.value ?? r.answer_text ?? r.text ?? r.default ?? null,
       file_path: r.file_path ?? r.fileKey ?? r.storage_path ?? r.file_url ?? null,
+      // Feature 4: multi-file paths array (JSONB column)
+      file_paths: Array.isArray(r.file_paths) ? r.file_paths : null,
       signature_path: r.signature_path ?? r.signatureKey ?? r.signature_storage_path ?? null,
       attachment_path: r.attachment_path ?? null,
       options: Array.isArray(r.options) ? r.options : null,
+      // Features 1–3, 5: per-type config snapshotted from template (file_mode, link_url,
+      // allow_multi_select, include_other, multiline)
+      metadata: r.metadata && typeof r.metadata === "object" ? r.metadata : null,
     };
   });
 

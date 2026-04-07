@@ -54,9 +54,10 @@ export async function POST(req: Request) {
   if (onboarding.locked_at || onboarding.status === "locked") return jsonError(423, "Onboarding is locked");
   if (onboarding.status === "submitted") return jsonError(409, "Onboarding is already submitted");
 
+  // Fetch the requirement row — include file_paths so we can append to it
   const { data: reqRow, error: reqErr } = await admin
     .from("onboarding_requirements")
-    .select("id, onboarding_id, type")
+    .select("id, onboarding_id, type, file_paths")
     .eq("id", parsed.data.requirement_id)
     .single();
 
@@ -76,11 +77,11 @@ export async function POST(req: Request) {
     return jsonError(500, "Storage bucket error", e?.message || String(e));
   }
 
+  // Build a unique storage path
   const now = new Date();
   const yyyy = String(now.getUTCFullYear());
   const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
   const dd = String(now.getUTCDate()).padStart(2, "0");
-
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
   const path = `org_${onboarding.org_id}/onboarding_${onboarding.id}/${yyyy}-${mm}-${dd}/${reqRow.id}/${Date.now()}_${safeName}`;
 
@@ -92,21 +93,46 @@ export async function POST(req: Request) {
   if (uploadErr) return jsonError(400, uploadErr.message);
 
   const nowIso = new Date().toISOString();
+  const newFilePath = `${bucket}:${path}`;
+
+  // Feature 4: append the new path to the existing file_paths array.
+  // file_paths is a JSONB column storing an array of "bucket:path" strings.
+  // We also keep file_path in sync as the most recent upload (for backward compat).
+  const existingPaths: string[] = Array.isArray((reqRow as any).file_paths)
+    ? (reqRow as any).file_paths as string[]
+    : [];
+  const updatedPaths = [...existingPaths, newFilePath];
 
   const { data: updated, error: updErr } = await admin
     .from("onboarding_requirements")
     .update({
-      file_path: `${bucket}:${path}`,
+      file_path: newFilePath,          // backward-compat: most recent file
+      file_paths: updatedPaths,        // Feature 4: full list
       completed_at: nowIso,
       completed_by: "client",
       updated_at: nowIso,
     })
     .eq("id", reqRow.id)
-    .select("id, file_path, completed_at")
+    .select("id, file_path, file_paths, completed_at")
     .single();
 
-  if (updErr) return jsonError(400, updErr.message);
+  if (updErr) {
+    // If file_paths column doesn't exist yet (migration not run), fall back gracefully
+    const msg = String(updErr.message || "");
+    if (msg.includes("file_paths") || msg.includes("schema cache") || msg.includes("does not exist")) {
+      const { data: fallback, error: fallbackErr } = await admin
+        .from("onboarding_requirements")
+        .update({ file_path: newFilePath, completed_at: nowIso, completed_by: "client", updated_at: nowIso })
+        .eq("id", reqRow.id)
+        .select("id, file_path, completed_at")
+        .single();
+      if (fallbackErr) return jsonError(400, fallbackErr.message);
+      return NextResponse.json({ ok: true, file_path: newFilePath, requirement: fallback });
+    }
+    return jsonError(400, updErr.message);
+  }
 
+  // Auto-transition onboarding status
   if (onboarding.status === "sent") {
     await admin.from("onboardings").update({ status: "in_progress", updated_at: nowIso }).eq("id", onboarding.id);
     await admin.from("audit_logs").insert({
@@ -130,5 +156,5 @@ export async function POST(req: Request) {
     metadata: { onboarding_id: onboarding.id, requirement_id: reqRow.id, storage: { bucket, path } },
   });
 
-  return NextResponse.json({ ok: true, file_path: updated.file_path, requirement: updated });
+  return NextResponse.json({ ok: true, file_path: newFilePath, requirement: updated });
 }

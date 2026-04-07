@@ -9,19 +9,34 @@ import { useToast } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+// Per-requirement config that is snapshotted from the template definition.
+type RequirementMetadata = {
+  file_mode?: "upload" | "link";   // Feature 1
+  link_url?: string | null;        // Feature 1
+  allow_multi_select?: boolean;    // Feature 2
+  include_other?: boolean;         // Feature 3
+  multiline?: boolean;             // Feature 5
+} | null;
+
 type Requirement = {
   id: string;
-  type: "text" | "file" | "signature" | "multiple_choice";
+  type: "text" | "file" | "signature" | "multiple_choice" | "checkbox" | "heading";
   label: string;
   is_required: boolean;
   sort_order: number;
   completed_at: string | null;
   value_text: string | null;
   file_path: string | null;
+  file_paths: string[] | null;     // Feature 4: multi-file uploads
   signature_path: string | null;
   attachment_path: string | null;
   options: string[] | null;
+  metadata: RequirementMetadata;
 };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function prettyStoredName(path: string | null) {
   if (!path) return null;
@@ -40,6 +55,22 @@ function triggerBrowserDownload(url: string, filename?: string) {
   a.click();
   a.remove();
 }
+
+// Parses a multi-select value_text (JSON array string) back into an array.
+// Falls back to a single-item array for legacy single-choice values.
+function parseMultiSelectValue(value: string | null): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed as string[];
+  } catch {
+    // Legacy: single string value
+    return [value];
+  }
+  return [];
+}
+
+// ─── ClientPortal ─────────────────────────────────────────────────────────────
 
 export function ClientPortal({
   token,
@@ -66,16 +97,19 @@ export function ClientPortal({
     [toast]
   );
 
-  const [reqs, setReqs] = React.useState(requirements.slice().sort((a, b) => a.sort_order - b.sort_order));
+  // Sort by sort_order, exclude headings from the interactive list
+  const [reqs, setReqs] = React.useState(
+    requirements.slice().sort((a, b) => a.sort_order - b.sort_order)
+  );
   const [submitting, setSubmitting] = React.useState(false);
   const [busyByReq, setBusyByReq] = React.useState<Record<string, boolean>>({});
   const sigRef = React.useRef<Record<string, SignatureCanvas | null>>({});
 
-  const [progress, setProgress] = React.useState<{ percent: number; required_total: number; required_completed: number }>({
-    percent: 0,
-    required_total: 0,
-    required_completed: 0,
-  });
+  const [progress, setProgress] = React.useState<{
+    percent: number;
+    required_total: number;
+    required_completed: number;
+  }>({ percent: 0, required_total: 0, required_completed: 0 });
 
   async function refreshProgress() {
     try {
@@ -89,26 +123,30 @@ export function ClientPortal({
     }
   }
 
-  React.useEffect(() => {
-    refreshProgress();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  React.useEffect(() => { refreshProgress(); }, []);
+
+  // ── Answer saving ────────────────────────────────────────────────────────────
 
   async function saveText(requirement_id: string, value_text: string) {
-    const trimmed = value_text;
     try {
       setBusyByReq((p) => ({ ...p, [requirement_id]: true }));
       const res = await fetch("/api/onboardings/client/answer", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, requirement_id, value_text: trimmed }),
+        body: JSON.stringify({ token, requirement_id, value_text }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || (json && json.ok === false)) throw new Error(json?.error || `Failed (${res.status})`);
       setReqs((prev) =>
         prev.map((r) =>
           r.id === requirement_id
-            ? { ...r, value_text: trimmed, completed_at: (json?.requirement?.completed_at as string | undefined) || new Date().toISOString() }
+            ? {
+                ...r,
+                value_text,
+                completed_at:
+                  (json?.requirement?.completed_at as string | undefined) ||
+                  (json?.requirement?.completed_at === null ? null : new Date().toISOString()),
+              }
             : r
         )
       );
@@ -120,6 +158,8 @@ export function ClientPortal({
       setBusyByReq((p) => ({ ...p, [requirement_id]: false }));
     }
   }
+
+  // ── File upload (Feature 4: appends to file_paths array) ────────────────────
 
   async function uploadFile(requirement_id: string, file: File) {
     try {
@@ -133,9 +173,19 @@ export function ClientPortal({
       if (!res.ok) throw new Error(json?.error || "Upload failed");
       notify({ title: "Uploaded", variant: "success" });
       setReqs((prev) =>
-        prev.map((r) =>
-          r.id === requirement_id ? { ...r, file_path: json.file_path, completed_at: new Date().toISOString() } : r
-        )
+        prev.map((r) => {
+          if (r.id !== requirement_id) return r;
+          // Append the new path to the existing file_paths array
+          const existingPaths = r.file_paths ?? (r.file_path ? [r.file_path] : []);
+          const newPath: string = json.file_path ?? "";
+          const updatedPaths = newPath ? [...existingPaths.filter((p) => p !== newPath), newPath] : existingPaths;
+          return {
+            ...r,
+            file_paths: updatedPaths,
+            file_path: newPath || r.file_path,
+            completed_at: new Date().toISOString(),
+          };
+        })
       );
       refreshProgress();
     } catch (e: any) {
@@ -145,6 +195,40 @@ export function ClientPortal({
       setBusyByReq((p) => ({ ...p, [requirement_id]: false }));
     }
   }
+
+  // ── File removal (Feature 4: removes one path from file_paths) ───────────────
+
+  async function removeFile(requirement_id: string, file_path_to_remove: string) {
+    try {
+      setBusyByReq((p) => ({ ...p, [requirement_id]: true }));
+      const res = await fetch("/api/onboardings/client/remove-file", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token, requirement_id, file_path: file_path_to_remove }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Remove failed");
+      setReqs((prev) =>
+        prev.map((r) => {
+          if (r.id !== requirement_id) return r;
+          const remaining = (r.file_paths ?? []).filter((p) => p !== file_path_to_remove);
+          return {
+            ...r,
+            file_paths: remaining,
+            file_path: remaining[remaining.length - 1] ?? null,
+            completed_at: remaining.length > 0 ? r.completed_at : null,
+          };
+        })
+      );
+      refreshProgress();
+    } catch (e: any) {
+      notify({ title: "Remove failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setBusyByReq((p) => ({ ...p, [requirement_id]: false }));
+    }
+  }
+
+  // ── Signature saving ─────────────────────────────────────────────────────────
 
   async function saveSignature(requirement_id: string) {
     const canvas = sigRef.current[requirement_id];
@@ -202,6 +286,8 @@ export function ClientPortal({
 
   const allRequiredDone = progress.required_total > 0 && progress.required_completed >= progress.required_total;
 
+  // ── Render ───────────────────────────────────────────────────────────────────
+
   return (
     <div className="flex flex-col gap-5 px-4 py-6 sm:px-6 sm:py-10">
       {/* Progress header */}
@@ -234,7 +320,10 @@ export function ClientPortal({
           </div>
           {isLocked ? (
             <div className="mt-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-60"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-60">
+                <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+                <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
               Submission locked — no further changes can be made.
             </div>
           ) : null}
@@ -243,14 +332,29 @@ export function ClientPortal({
 
       {/* Requirement cards */}
       {reqs.map((r) => {
+        // Feature 7: section headings render as a visual separator, not an interactive card
+        if (r.type === "heading") {
+          return (
+            <div key={r.id} className="flex items-center gap-4 pt-2">
+              <div className="h-px flex-1 bg-[var(--color-border)]" />
+              <span
+                className="shrink-0 text-base font-semibold tracking-tight text-[var(--color-text-primary)]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {r.label}
+              </span>
+              <div className="h-px flex-1 bg-[var(--color-border)]" />
+            </div>
+          );
+        }
+
         const completed = !!r.completed_at;
+
         return (
           <div
             key={r.id}
             className="rounded-[var(--radius-lg)] border bg-white shadow-[var(--shadow-sm)] overflow-hidden transition-colors"
-            style={{
-              borderColor: completed ? "var(--color-success, #16a34a)" : "var(--color-border)",
-            }}
+            style={{ borderColor: completed ? "var(--color-success, #16a34a)" : "var(--color-border)" }}
           >
             {/* Card header */}
             <div
@@ -264,16 +368,22 @@ export function ClientPortal({
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-semibold text-[var(--color-text-primary)]">{r.label}</span>
                   {r.is_required ? (
-                    <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-500 border border-red-100">Required</span>
+                    <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-500 border border-red-100">
+                      Required
+                    </span>
                   ) : (
-                    <span className="rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] border border-[var(--color-border)]">Optional</span>
+                    <span className="rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                      Optional
+                    </span>
                   )}
                 </div>
               </div>
-              <div className="shrink-0 flex items-center gap-1.5">
+              <div className="shrink-0">
                 {completed ? (
                   <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "var(--color-success-subtle, #f0fdf4)", color: "var(--color-success, #16a34a)", border: "1px solid var(--color-success, #16a34a)22" }}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                     Done
                   </span>
                 ) : (
@@ -286,24 +396,30 @@ export function ClientPortal({
 
             {/* Card body */}
             <div className="px-5 py-4">
+              {/* Feature 5: text with optional multiline */}
               {r.type === "text" ? (
                 <TextRequirement
                   disabled={isLocked}
                   busy={!!busyByReq[r.id]}
                   initialValue={r.value_text || ""}
                   onSave={(val) => saveText(r.id, val)}
+                  multiline={!!r.metadata?.multiline}
                 />
               ) : null}
 
+              {/* Feature 1 + 4: file with link mode + multi-file */}
               {r.type === "file" ? (
                 <FileRequirement
                   disabled={isLocked}
                   busy={!!busyByReq[r.id]}
-                  filePath={r.file_path}
+                  filePaths={r.file_paths ?? (r.file_path ? [r.file_path] : [])}
                   attachmentPath={r.attachment_path}
+                  fileMode={r.metadata?.file_mode ?? "upload"}
+                  linkUrl={r.metadata?.link_url ?? null}
                   requirementId={r.id}
                   token={token}
                   onUpload={(file) => uploadFile(r.id, file)}
+                  onRemove={(path) => removeFile(r.id, path)}
                 />
               ) : null}
 
@@ -317,13 +433,27 @@ export function ClientPortal({
                 />
               ) : null}
 
+              {/* Feature 2 + 3: multi-select and "Other" option */}
               {r.type === "multiple_choice" ? (
                 <MultipleChoiceRequirement
                   disabled={isLocked}
                   busy={!!busyByReq[r.id]}
                   options={r.options ?? []}
                   selectedValue={r.value_text}
+                  allowMultiSelect={!!r.metadata?.allow_multi_select}
+                  includeOther={!!r.metadata?.include_other}
                   onSelect={(val) => saveText(r.id, val)}
+                />
+              ) : null}
+
+              {/* Feature 6: completion checkbox */}
+              {r.type === "checkbox" ? (
+                <CheckboxRequirement
+                  disabled={isLocked}
+                  busy={!!busyByReq[r.id]}
+                  checked={r.value_text === "true"}
+                  label={r.label}
+                  onToggle={(checked) => saveText(r.id, checked ? "true" : "false")}
                 />
               ) : null}
             </div>
@@ -335,7 +465,10 @@ export function ClientPortal({
       <div className="pt-2">
         {isLocked ? (
           <div className="flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-6 py-4 text-sm text-[var(--color-text-muted)] shadow-[var(--shadow-sm)]">
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
             This submission has been locked by the team.
           </div>
         ) : (
@@ -354,16 +487,21 @@ export function ClientPortal({
   );
 }
 
+// ─── TextRequirement ──────────────────────────────────────────────────────────
+// Feature 5: multiline prop switches between <Input> and <textarea>.
+
 function TextRequirement({
   initialValue,
   onSave,
   disabled,
   busy,
+  multiline,
 }: {
   initialValue: string;
   onSave: (v: string) => Promise<void> | void;
   disabled: boolean;
   busy: boolean;
+  multiline: boolean;
 }) {
   const [value, setValue] = React.useState(initialValue);
   const [lastSaved, setLastSaved] = React.useState(initialValue);
@@ -395,48 +533,72 @@ function TextRequirement({
     }
   }
 
+  // Auto-save on debounce
   React.useEffect(() => {
     if (!mountedRef.current) { mountedRef.current = true; return; }
     if (disabled) return;
     const t = window.setTimeout(() => { void doSave(value); }, 650);
     return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, disabled]);
+
+  const statusText = disabled ? "Locked" : status === "saving" || busy ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Save failed" : "";
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <Label>Answer</Label>
-        <div className="text-xs text-[var(--color-text-muted)]">
-          {disabled ? "Locked" : status === "saving" || busy ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Save failed" : ""}
-        </div>
+        <div className="text-xs text-[var(--color-text-muted)]">{statusText}</div>
       </div>
-      <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={() => void doSave(value)}
-        disabled={disabled}
-        className="w-full text-base"
-        style={{ fontSize: "16px" }}
-      />
+      {multiline ? (
+        // Feature 5: multi-line textarea with auto-height and preserved line breaks
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={() => void doSave(value)}
+          disabled={disabled}
+          rows={4}
+          className="w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-base leading-6 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)] focus:outline-none disabled:opacity-50"
+          style={{ fontSize: "16px", minHeight: "100px" }}
+          placeholder="Type your answer…"
+        />
+      ) : (
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={() => void doSave(value)}
+          disabled={disabled}
+          className="w-full text-base"
+          style={{ fontSize: "16px" }}
+        />
+      )}
     </div>
   );
 }
 
+// ─── FileRequirement ──────────────────────────────────────────────────────────
+// Feature 1: link mode shows a clickable link instead of a download button.
+// Feature 4: supports multiple uploaded files, each with its own remove button.
+
 function FileRequirement({
-  filePath,
+  filePaths,
   attachmentPath,
+  fileMode,
+  linkUrl,
   requirementId,
   token,
   onUpload,
+  onRemove,
   disabled,
   busy,
 }: {
-  filePath: string | null;
+  filePaths: string[];
   attachmentPath: string | null;
+  fileMode: "upload" | "link";
+  linkUrl: string | null;
   requirementId: string;
   token: string;
   onUpload: (f: File) => void;
+  onRemove: (path: string) => void;
   disabled: boolean;
   busy: boolean;
 }) {
@@ -464,28 +626,78 @@ function FileRequirement({
 
   return (
     <div className="flex flex-col gap-3">
-      {attachmentPath ? (
+      {/* Feature 1: show either an upload download button or a clickable link */}
+      {(attachmentPath || (fileMode === "link" && linkUrl)) ? (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">Form template provided</span>
-            <span className="text-xs text-[var(--color-text-secondary)]">Download, fill it out, then upload your completed version below.</span>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+              {fileMode === "link" ? "Template link provided" : "Form template provided"}
+            </span>
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              {fileMode === "link"
+                ? "Open the link, complete the form, then upload your response below."
+                : "Download, fill it out, then upload your completed version below."}
+            </span>
           </div>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={downloadAttachment}
-            disabled={downloading}
-            className="shrink-0 min-h-[40px]"
-          >
-            {downloading ? "Downloading…" : "Download form"}
-          </Button>
+          {fileMode === "link" && linkUrl ? (
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
+            >
+              Open link ↗
+            </a>
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={downloadAttachment}
+              disabled={downloading}
+              className="shrink-0 min-h-[40px]"
+            >
+              {downloading ? "Downloading…" : "Download form"}
+            </Button>
+          )}
         </div>
       ) : null}
 
+      {/* Feature 4: list of already-uploaded files */}
+      {filePaths.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+            Uploaded file{filePaths.length > 1 ? "s" : ""}
+          </span>
+          <ul className="flex flex-col gap-1.5">
+            {filePaths.map((path) => (
+              <li
+                key={path}
+                className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2"
+              >
+                <span className="text-sm text-[var(--color-text-primary)] truncate" title={prettyStoredName(path) ?? path}>
+                  {prettyStoredName(path)}
+                </span>
+                {!disabled ? (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(path)}
+                    disabled={busy}
+                    className="shrink-0 text-xs text-[var(--color-text-muted)] hover:text-red-600 disabled:opacity-40 transition"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {/* Upload area */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm text-[var(--color-text-secondary)]">
-            {filePath ? `Uploaded: ${prettyStoredName(filePath)}` : "Upload your file"}
+            {filePaths.length > 0 ? "Add another file" : "Upload your file"}
           </div>
           <div className="text-xs text-[var(--color-text-muted)]">{disabled ? "Locked" : busy ? "Uploading…" : ""}</div>
         </div>
@@ -507,27 +719,59 @@ function FileRequirement({
   );
 }
 
+// ─── MultipleChoiceRequirement ────────────────────────────────────────────────
+// Feature 2: allowMultiSelect renders checkboxes instead of radio buttons.
+// Feature 3: includeOther adds an "Other" option with inline free-text input.
+
 function MultipleChoiceRequirement({
   options,
   selectedValue,
+  allowMultiSelect,
+  includeOther,
   onSelect,
   disabled,
   busy,
 }: {
   options: string[];
   selectedValue: string | null;
+  allowMultiSelect: boolean;
+  includeOther: boolean;
   onSelect: (v: string) => Promise<void> | void;
   disabled: boolean;
   busy: boolean;
 }) {
   const [status, setStatus] = React.useState<"idle" | "saving" | "saved" | "error">("idle");
-  const useDropdown = options.length > 5;
 
-  async function handleSelect(val: string) {
-    if (disabled || val === selectedValue) return;
+  // For multi-select: parse the stored JSON array
+  const selectedArray = React.useMemo(
+    () => (allowMultiSelect ? parseMultiSelectValue(selectedValue) : []),
+    [allowMultiSelect, selectedValue]
+  );
+
+  // For "Other" detection: if stored value isn't in options, it's an "Other" entry
+  const otherText = React.useMemo(() => {
+    if (!includeOther) return "";
+    if (allowMultiSelect) {
+      // Find the first item in selectedArray that isn't a predefined option
+      return selectedArray.find((v) => !options.includes(v)) ?? "";
+    }
+    // Single select: if value isn't in options, it's the "Other" text
+    return selectedValue && !options.includes(selectedValue) ? selectedValue : "";
+  }, [includeOther, allowMultiSelect, selectedArray, options, selectedValue]);
+
+  const [otherInput, setOtherInput] = React.useState(otherText);
+  const [otherSelected, setOtherSelected] = React.useState(otherText.length > 0);
+
+  // Keep otherInput in sync when the stored value changes (e.g. initial load)
+  React.useEffect(() => {
+    setOtherInput(otherText);
+    setOtherSelected(otherText.length > 0);
+  }, [otherText]);
+
+  async function handleSave(value: string) {
     setStatus("saving");
     try {
-      await onSelect(val);
+      await onSelect(value);
       setStatus("saved");
       window.setTimeout(() => { setStatus((s) => (s === "saved" ? "idle" : s)); }, 1200);
     } catch {
@@ -536,56 +780,266 @@ function MultipleChoiceRequirement({
     }
   }
 
+  // ── Single-select ────────────────────────────────────────────────────────────
+
+  if (!allowMultiSelect) {
+    const useDropdown = options.length > 5 && !includeOther;
+
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <Label>Select an option</Label>
+          <div className="text-xs text-[var(--color-text-muted)]">
+            {disabled ? "Locked" : status === "saving" || busy ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Save failed" : ""}
+          </div>
+        </div>
+
+        {useDropdown ? (
+          <select
+            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-base focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)] disabled:opacity-50"
+            style={{ fontSize: "16px" }}
+            value={selectedValue ?? ""}
+            disabled={disabled || busy}
+            onChange={(e) => { if (e.target.value) void handleSave(e.target.value); }}
+          >
+            <option value="" disabled>Choose an option…</option>
+            {options.map((opt, i) => (
+              <option key={i} value={opt}>{opt}</option>
+            ))}
+          </select>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {options.map((opt, i) => {
+              const isSelected = selectedValue === opt;
+              return (
+                <label
+                  key={i}
+                  className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
+                    isSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+                  } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name={`mcq-single-${i}`}
+                    value={opt}
+                    checked={isSelected}
+                    disabled={disabled || busy}
+                    onChange={() => { setOtherSelected(false); void handleSave(opt); }}
+                    className="accent-[var(--color-accent)]"
+                  />
+                  <span className="text-sm text-[var(--color-text-primary)]">{opt}</span>
+                </label>
+              );
+            })}
+
+            {/* Feature 3: "Other" option for single-select */}
+            {includeOther ? (
+              <div className="flex flex-col gap-2">
+                <label
+                  className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
+                    otherSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+                  } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name={`mcq-single-other`}
+                    checked={otherSelected}
+                    disabled={disabled || busy}
+                    onChange={() => { setOtherSelected(true); }}
+                    className="accent-[var(--color-accent)]"
+                  />
+                  <span className="text-sm text-[var(--color-text-primary)]">Other</span>
+                </label>
+                {otherSelected ? (
+                  <Input
+                    value={otherInput}
+                    onChange={(e) => setOtherInput(e.target.value)}
+                    onBlur={() => { if (otherInput.trim()) void handleSave(otherInput.trim()); }}
+                    disabled={disabled || busy}
+                    placeholder="Describe your answer…"
+                    className="text-sm"
+                    style={{ fontSize: "16px" }}
+                    autoFocus
+                  />
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Multi-select (Feature 2) ──────────────────────────────────────────────────
+
+  function toggleOption(opt: string) {
+    if (disabled || busy) return;
+    const current = parseMultiSelectValue(selectedValue);
+    const next = current.includes(opt)
+      ? current.filter((v) => v !== opt)
+      : [...current, opt];
+    void handleSave(JSON.stringify(next));
+  }
+
+  function toggleOtherMulti(checked: boolean) {
+    if (disabled || busy) return;
+    if (!checked) {
+      // Remove any "other" text from the selection
+      const current = parseMultiSelectValue(selectedValue);
+      const next = current.filter((v) => options.includes(v));
+      setOtherSelected(false);
+      setOtherInput("");
+      void handleSave(JSON.stringify(next));
+    } else {
+      setOtherSelected(true);
+    }
+  }
+
+  function commitOtherText(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const current = parseMultiSelectValue(selectedValue).filter((v) => options.includes(v));
+    void handleSave(JSON.stringify([...current, trimmed]));
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <Label>Select an option</Label>
+        <Label>Select all that apply</Label>
         <div className="text-xs text-[var(--color-text-muted)]">
           {disabled ? "Locked" : status === "saving" || busy ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Save failed" : ""}
         </div>
       </div>
-
-      {useDropdown ? (
-        <select
-          className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-base focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)] disabled:opacity-50"
-          style={{ fontSize: "16px" }}
-          value={selectedValue ?? ""}
-          disabled={disabled || busy}
-          onChange={(e) => { if (e.target.value) void handleSelect(e.target.value); }}
-        >
-          <option value="" disabled>Choose an option…</option>
-          {options.map((opt, i) => (
-            <option key={i} value={opt}>{opt}</option>
-          ))}
-        </select>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {options.map((opt, i) => (
+      <div className="flex flex-col gap-2">
+        {options.map((opt, i) => {
+          const isChecked = selectedArray.includes(opt);
+          return (
             <label
               key={i}
               className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
-                selectedValue === opt
-                  ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]"
-                  : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+                isChecked ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
               } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <input
-                type="radio"
-                name={`mcq-${i}`}
-                value={opt}
-                checked={selectedValue === opt}
+                type="checkbox"
+                checked={isChecked}
                 disabled={disabled || busy}
-                onChange={() => void handleSelect(opt)}
+                onChange={() => toggleOption(opt)}
                 className="accent-[var(--color-accent)]"
               />
               <span className="text-sm text-[var(--color-text-primary)]">{opt}</span>
             </label>
-          ))}
-        </div>
-      )}
+          );
+        })}
+
+        {/* Feature 3 + Feature 2: "Other" checkbox for multi-select */}
+        {includeOther ? (
+          <div className="flex flex-col gap-2">
+            <label
+              className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
+                otherSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+              } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              <input
+                type="checkbox"
+                checked={otherSelected}
+                disabled={disabled || busy}
+                onChange={(e) => toggleOtherMulti(e.target.checked)}
+                className="accent-[var(--color-accent)]"
+              />
+              <span className="text-sm text-[var(--color-text-primary)]">Other</span>
+            </label>
+            {otherSelected ? (
+              <Input
+                value={otherInput}
+                onChange={(e) => setOtherInput(e.target.value)}
+                onBlur={() => commitOtherText(otherInput)}
+                disabled={disabled || busy}
+                placeholder="Describe your answer…"
+                className="text-sm"
+                style={{ fontSize: "16px" }}
+                autoFocus
+              />
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
+
+// ─── CheckboxRequirement ──────────────────────────────────────────────────────
+// Feature 6: completion checkbox — visually denotes completion when checked.
+
+function CheckboxRequirement({
+  checked,
+  label,
+  onToggle,
+  disabled,
+  busy,
+}: {
+  checked: boolean;
+  label: string;
+  onToggle: (checked: boolean) => Promise<void> | void;
+  disabled: boolean;
+  busy: boolean;
+}) {
+  const [status, setStatus] = React.useState<"idle" | "saving" | "error">("idle");
+
+  async function handleToggle() {
+    if (disabled || busy) return;
+    setStatus("saving");
+    try {
+      await onToggle(!checked);
+      setStatus("idle");
+    } catch {
+      setStatus("error");
+      window.setTimeout(() => setStatus("idle"), 2000);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <label
+        className={`flex items-center gap-4 rounded-[var(--radius-md)] border p-4 cursor-pointer transition ${
+          checked
+            ? "border-[var(--color-success,#16a34a)] bg-[var(--color-success-subtle,#f0fdf4)]"
+            : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+        } ${disabled || busy ? "cursor-not-allowed opacity-60" : ""}`}
+      >
+        <div className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] border-2 transition ${
+          checked ? "border-[var(--color-success,#16a34a)] bg-[var(--color-success,#16a34a)]" : "border-[var(--color-border-strong,#d1d5db)] bg-white"
+        }`}>
+          {checked ? (
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M2 7l3.5 3.5 5.5-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : null}
+          <input
+            type="checkbox"
+            className="sr-only"
+            checked={checked}
+            disabled={disabled || busy}
+            onChange={handleToggle}
+          />
+        </div>
+        <span
+          className={`text-sm font-medium transition ${
+            checked ? "text-[var(--color-success,#16a34a)] line-through decoration-[var(--color-success,#16a34a)]" : "text-[var(--color-text-primary)]"
+          }`}
+        >
+          {label}
+        </span>
+        <div className="ml-auto text-xs text-[var(--color-text-muted)]">
+          {disabled ? "Locked" : status === "saving" || busy ? "Saving…" : status === "error" ? "Save failed" : ""}
+        </div>
+      </label>
+    </div>
+  );
+}
+
+// ─── SignatureRequirement ─────────────────────────────────────────────────────
+// Unchanged from original.
 
 function SignatureRequirement({
   signaturePath,

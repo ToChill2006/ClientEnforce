@@ -9,7 +9,7 @@ function json(status: number, body: any) {
 const Payload = z.object({
   token: z.string().min(8),
   requirement_id: z.string().min(1),
-  // one of these will typically be present depending on requirement type
+  // One of these will be present depending on requirement type
   value_text: z.string().optional().nullable(),
   file_path: z.string().optional().nullable(),
   signature_path: z.string().optional().nullable(),
@@ -39,29 +39,85 @@ export async function POST(req: Request) {
   // Ensure requirement belongs to this onboarding
   const { data: reqRow, error: rErr } = await admin
     .from("onboarding_requirements")
-    .select("id, onboarding_id, is_required, type, options")
+    .select("id, onboarding_id, is_required, type, options, metadata")
     .eq("id", requirement_id)
     .eq("onboarding_id", onboarding.id)
     .single();
 
   if (rErr || !reqRow) return json(404, { error: "Requirement not found" });
 
-  // Validate multiple_choice answers against the allowed options list
   const reqType = String((reqRow as any).type || "").toLowerCase();
+
+  // Headings are display-only — they cannot be answered
+  if (reqType === "heading") {
+    return json(400, { error: "Section headings cannot be answered." });
+  }
+
+  // Unpack per-type config from the snapshotted metadata column
+  const meta = (reqRow as any).metadata ?? {};
+  const allowMultiSelect = Boolean(meta?.allow_multi_select);
+  const includeOther = Boolean(meta?.include_other);
+
+  // ── Validate multiple_choice answers ──────────────────────────────────────
+
   if (reqType === "multiple_choice" && value_text) {
     const opts: string[] | null = Array.isArray((reqRow as any).options) ? (reqRow as any).options : null;
+
     if (opts && opts.length > 0) {
-      if (!opts.includes(value_text)) {
-        return json(400, { error: "Selected value is not a valid option." });
+      if (allowMultiSelect) {
+        // Feature 2: value_text is a JSON-encoded array of selected option strings
+        let selected: unknown;
+        try {
+          selected = JSON.parse(value_text);
+        } catch {
+          return json(400, { error: "Multi-select value must be a valid JSON array." });
+        }
+        if (!Array.isArray(selected)) {
+          return json(400, { error: "Multi-select value must be a JSON array." });
+        }
+        // Validate each selected item
+        for (const item of selected as string[]) {
+          if (!opts.includes(item)) {
+            if (!includeOther) {
+              return json(400, { error: `"${item}" is not a valid option.` });
+            }
+            // Feature 3: if includeOther is enabled, free-text entries not in options are valid
+            // — only ONE other entry is expected (the last non-option item)
+          }
+        }
+      } else {
+        // Single-select: value_text is the chosen option string (or "Other" free text)
+        const isInOptions = opts.includes(value_text);
+        if (!isInOptions && !includeOther) {
+          return json(400, { error: "Selected value is not a valid option." });
+        }
+        // If includeOther is true, any text not in options is allowed as a free-text "Other" answer
       }
     }
   }
 
-  // Determine completion: any non-empty value/file/signature counts as completed.
+  // ── Determine completion ───────────────────────────────────────────────────
+
   const hasText = typeof value_text === "string" && value_text.trim().length > 0;
   const hasFile = typeof file_path === "string" && file_path.trim().length > 0;
   const hasSig = typeof signature_path === "string" && signature_path.trim().length > 0;
-  const isComplete = hasText || hasFile || hasSig;
+
+  // Feature 2: an empty JSON array "[]" should NOT count as completed
+  let multiSelectIsEmpty = false;
+  if (reqType === "multiple_choice" && allowMultiSelect && value_text) {
+    try {
+      const arr = JSON.parse(value_text);
+      if (Array.isArray(arr) && arr.length === 0) multiSelectIsEmpty = true;
+    } catch { /* ignore parse error */ }
+  }
+
+  // Feature 6: checkbox is completed only when value_text === "true"
+  let isComplete: boolean;
+  if (reqType === "checkbox") {
+    isComplete = value_text === "true";
+  } else {
+    isComplete = (hasText && !multiSelectIsEmpty) || hasFile || hasSig;
+  }
 
   const now = new Date().toISOString();
 
@@ -83,6 +139,7 @@ export async function POST(req: Request) {
 
   if (uErr || !updated) return json(400, { error: uErr?.message || "Update failed" });
 
+  // Auto-transition onboarding to in_progress on first completion
   if (isComplete && onboarding.status === "sent") {
     await admin
       .from("onboardings")
@@ -99,7 +156,6 @@ export async function POST(req: Request) {
       metadata: { requirement_id },
     });
   } else {
-    // Touch onboarding updated_at (optional but makes lists look correct)
     await admin.from("onboardings").update({ updated_at: now }).eq("id", onboarding.id).eq("org_id", onboarding.org_id);
   }
 

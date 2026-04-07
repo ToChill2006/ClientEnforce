@@ -879,13 +879,24 @@ export async function POST(req: Request) {
         const rows = rawList.map((it: any, idx: number) => {
           const type = it.type ?? it.kind ?? it.field_type ?? it.input_type ?? "text";
           const label = it.label ?? it.name ?? it.title ?? it.prompt ?? `Field ${idx + 1}`;
-          const is_required = Boolean(it.is_required ?? it.required ?? it.mandatory ?? false);
+          // Headings are never required — enforce at snapshot time
+          const is_required = type === "heading" ? false : Boolean(it.is_required ?? it.required ?? it.mandatory ?? false);
           const sort_order = Number(it.sort_order ?? it.position ?? it.order ?? idx);
 
           // If the template contains a stable id/key, keep it for traceability.
           const requirement_key = it.id ?? it.key ?? it.slug ?? null;
           const attachment_path = it.attachment_path ?? null;
           const options = it.options ?? null;
+
+          // Build metadata from new per-type config fields (Features 1–3, 5).
+          // This is snapshotted so the client portal can read config without loading the template.
+          const metadataObj: Record<string, unknown> = {};
+          if (it.file_mode) metadataObj.file_mode = it.file_mode;
+          if (it.link_url) metadataObj.link_url = it.link_url;
+          if (it.allow_multi_select) metadataObj.allow_multi_select = it.allow_multi_select;
+          if (it.include_other) metadataObj.include_other = it.include_other;
+          if (it.multiline) metadataObj.multiline = it.multiline;
+          const metadata = Object.keys(metadataObj).length > 0 ? metadataObj : null;
 
           return {
             org_id,
@@ -897,22 +908,29 @@ export async function POST(req: Request) {
             requirement_key,
             attachment_path,
             options,
+            metadata,
             created_at: nowIso,
             updated_at: nowIso,
           };
         });
 
-        // Insert defensively (some schemas won't have all columns)
+        // Insert defensively — strip columns that may not exist in older DB schemas.
         let { error: rErr } = await supabase.from("onboarding_requirements").insert(rows);
 
+        if (rErr && isMissingColumnError(rErr, "metadata")) {
+          const stripped = rows.map(({ metadata, ...rest }) => rest);
+          const rM = await supabase.from("onboarding_requirements").insert(stripped);
+          rErr = (rM as any).error ?? null;
+        }
+
         if (rErr && isMissingColumnError(rErr, "attachment_path")) {
-          const stripped = rows.map(({ attachment_path, options, ...rest }) => rest);
+          const stripped = rows.map(({ attachment_path, options, metadata, ...rest }) => rest);
           const r0 = await supabase.from("onboarding_requirements").insert(stripped);
           rErr = (r0 as any).error ?? null;
         }
 
         if (rErr && isMissingColumnError(rErr, "options")) {
-          const stripped = rows.map(({ options, ...rest }) => rest);
+          const stripped = rows.map(({ options, metadata, ...rest }) => rest);
           const r00 = await supabase.from("onboarding_requirements").insert(stripped);
           rErr = (r00 as any).error ?? null;
         }

@@ -1,14 +1,40 @@
 import { z } from "zod";
 
-export const RequirementTypeSchema = z.enum(["text", "file", "signature", "multiple_choice"]);
+// All supported requirement/field types.
+// checkbox  = Feature 6: completion checkbox
+// heading   = Feature 7: visual section heading (no interaction)
+export const RequirementTypeSchema = z.enum([
+  "text",
+  "file",
+  "signature",
+  "multiple_choice",
+  "checkbox",
+  "heading",
+]);
 
 export const TemplateRequirementSchema = z.object({
   type: RequirementTypeSchema,
   label: z.string().trim().min(1),
   is_required: z.boolean().default(true),
   sort_order: z.number().int().nonnegative().default(0),
+  // file type: optional admin-provided form template (upload or link)
   attachment_path: z.string().nullish(),
+  // multiple_choice: list of selectable options
   options: z.array(z.string()).optional(),
+
+  // Feature 1: file upload vs link mode for form templates
+  // "upload" = existing file-based attachment; "link" = clickable URL shown to client
+  file_mode: z.enum(["upload", "link"]).optional(),
+  link_url: z.string().nullish(),
+
+  // Feature 2: allow multiple selections for multiple_choice
+  allow_multi_select: z.boolean().optional(),
+
+  // Feature 3: include an "Other" free-text option for multiple_choice
+  include_other: z.boolean().optional(),
+
+  // Feature 5: multi-line textarea instead of single-line input for text type
+  multiline: z.boolean().optional(),
 });
 
 export const TemplateDefinitionSchema = z.object({
