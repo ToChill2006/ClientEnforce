@@ -123,7 +123,7 @@ function SmallButton({
       onClick={onClick}
       disabled={disabled}
       className={cx(
-        "inline-flex items-center justify-center rounded-[var(--radius-md)] px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)] disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-[var(--radius-md)] px-2.5 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)] disabled:cursor-not-allowed disabled:opacity-50",
         variant === "primary" && "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-[var(--shadow-sm)]",
         variant === "secondary" && "border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] shadow-[var(--shadow-sm)]",
         variant === "ghost" && "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]",
@@ -829,28 +829,28 @@ export default function OnboardingsPage() {
           <table className="min-w-[1100px] w-full border-collapse">
             <thead className="bg-[var(--color-bg-subtle)]">
               <tr className="border-b border-[var(--color-border)]">
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Title
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Client
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Template
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Owner
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Progress
                 </th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Updated
                 </th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                   Actions
                 </th>
               </tr>
@@ -909,35 +909,35 @@ export default function OnboardingsPage() {
 
                   return (
                     <tr key={r.id} className="transition-colors duration-150 hover:bg-[var(--color-bg-subtle)]">
-                      <td className="px-4 py-3 align-middle">
+                      <td className="px-4 py-4 align-middle">
                         <div className="min-w-0">
                           <div className="truncate text-sm text-[var(--color-text-secondary)] max-w-[260px]">{r.title || "—"}</div>
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 align-middle">
+                      <td className="px-4 py-4 align-middle">
                         <div className="min-w-0">
                           <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">
                             {r.client_name || "—"}
                           </div>
-                          <div className="truncate text-sm text-[var(--color-text-muted)]">{r.client_email || "—"}</div>
+                          <div className="truncate text-xs text-[var(--color-text-muted)] mt-0.5">{r.client_email || "—"}</div>
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 align-middle">
+                      <td className="px-4 py-4 align-middle">
                         <div className="truncate text-sm text-[var(--color-text-secondary)]">{r.template_title || "Default"}</div>
                       </td>
 
-                      <td className="px-4 py-3 align-middle">
+                      <td className="px-4 py-4 align-middle">
                         <div className="truncate text-sm text-[var(--color-text-secondary)]">
                           {r.owner_name || "—"}
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 align-middle">
+                      <td className="px-4 py-4 align-middle">
                         <span
                           className={cx(
-                            "inline-flex items-center rounded-full border px-2 py-0.5 text-[12px] font-medium",
+                            "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
                             statusPillClasses(r.status)
                           )}
                         >
@@ -945,20 +945,20 @@ export default function OnboardingsPage() {
                         </span>
                       </td>
 
-                      <td className="px-4 py-3 align-middle">
+                      <td className="px-4 py-4 align-middle">
                         <ProgressBar value={pct} />
                       </td>
 
-                      <td className="px-4 py-3 align-middle text-right text-sm tabular-nums text-[var(--color-text-muted)]">
+                      <td className="px-4 py-4 align-middle text-right text-xs tabular-nums text-[var(--color-text-muted)]">
                         {toLocaleDate(r.updated_at || r.created_at)}
                       </td>
 
-                      <td className="px-4 py-3 align-middle">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-4 py-4 align-middle">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/dashboard/onboardings/${r.id}`}
                             prefetch
-                            className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
+                            className="inline-flex items-center justify-center whitespace-nowrap rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
                           >
                             View
                           </Link>
