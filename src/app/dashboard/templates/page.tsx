@@ -528,7 +528,7 @@ export default function TemplatesPage() {
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] p-3">
               <div className="text-sm font-semibold">Requirements</div>
-              <div className="mt-3 flex flex-col gap-4">
+              <div className="mt-3 flex flex-col gap-2">
                 {(selected.definition?.requirements ?? [])
                   .slice()
                   .sort((a, b) => a.sort_order - b.sort_order)
@@ -632,257 +632,145 @@ function RequirementEditor({
 }) {
   const isHeading = r.type === "heading";
 
+  // Shared small toggle class
+  const toggleCls = "flex items-center gap-1.5 cursor-pointer select-none";
+  const toggleLabelCls = "text-xs text-[var(--color-text-secondary)]";
+
   return (
-    <div
-      className={`rounded-[var(--radius-md)] border p-3 flex flex-col gap-2 ${
-        isHeading
-          ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)]"
-          : "border-[var(--color-border)] bg-white"
-      }`}
-    >
-      {/* ── Row 1: type selector, label, required checkbox, delete ── */}
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-12 md:items-center">
+    <div className={`rounded-[var(--radius-md)] border flex flex-col gap-0 overflow-hidden ${
+      isHeading ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)]" : "border-[var(--color-border)] bg-white"
+    }`}>
+      {/* ── Main row ── */}
+      <div className="flex items-center gap-2 px-3 py-2">
+        {/* Reorder arrows */}
+        <div className="flex shrink-0 flex-col gap-px">
+          <button type="button" disabled={!canMoveUp} onClick={onMoveUp} title="Move up"
+            className="flex h-4 w-4 items-center justify-center rounded text-[9px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-20">▲</button>
+          <button type="button" disabled={!canMoveDown} onClick={onMoveDown} title="Move down"
+            className="flex h-4 w-4 items-center justify-center rounded text-[9px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-20">▼</button>
+        </div>
+
         {/* Type selector */}
-        <div className="md:col-span-3">
-          <select
-            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
-            value={r.type}
-            onChange={(e) => {
-              const type = e.target.value as RequirementType;
-              const patch: Partial<Requirement> = { type };
+        <select
+          className="shrink-0 rounded border border-[var(--color-border)] bg-white px-2 py-1.5 text-xs text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+          style={{ minWidth: 148 }}
+          value={r.type}
+          onChange={(e) => {
+            const type = e.target.value as RequirementType;
+            const patch: Partial<Requirement> = { type };
+            if (type !== "file") { patch.attachment_path = null; patch.file_mode = undefined; patch.link_url = null; }
+            if (type !== "multiple_choice") { patch.options = undefined; patch.allow_multi_select = undefined; patch.include_other = undefined; }
+            if (type !== "text") { patch.multiline = undefined; }
+            if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
+            if (type === "file") patch.file_mode = "upload";
+            if (type === "heading") patch.is_required = false;
+            onUpdate(patch);
+          }}
+        >
+          {(Object.keys(TYPE_LABELS) as RequirementType[]).map((t) => (
+            <option key={t} value={t}>{TYPE_LABELS[t]}</option>
+          ))}
+        </select>
 
-              // Clear stale type-specific fields when switching
-              if (type !== "file") { patch.attachment_path = null; patch.file_mode = undefined; patch.link_url = null; }
-              if (type !== "multiple_choice") { patch.options = undefined; patch.allow_multi_select = undefined; patch.include_other = undefined; }
-              if (type !== "text") { patch.multiline = undefined; }
+        {/* Label */}
+        <Input
+          value={r.label}
+          onChange={(e) => onUpdate({ label: e.target.value })}
+          placeholder={isHeading ? "Section heading text" : "Label"}
+          className="flex-1 text-sm"
+        />
 
-              // Defaults for new type
-              if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
-              if (type === "file") patch.file_mode = "upload";
-              // Headings are never required
-              if (type === "heading") patch.is_required = false;
+        {/* Required toggle or heading hint */}
+        {!isHeading ? (
+          <label className="flex shrink-0 cursor-pointer items-center gap-1.5">
+            <input type="checkbox" checked={r.is_required} onChange={(e) => onUpdate({ is_required: e.target.checked })} className="accent-[var(--color-accent)]" />
+            <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">Required</span>
+          </label>
+        ) : (
+          <span className="shrink-0 text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">divider</span>
+        )}
 
-              onUpdate(patch);
-            }}
-          >
-            {(Object.keys(TYPE_LABELS) as RequirementType[]).map((t) => (
-              <option key={t} value={t}>{TYPE_LABELS[t]}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Label input */}
-        <div className="md:col-span-5">
-          <Input
-            value={r.label}
-            onChange={(e) => onUpdate({ label: e.target.value })}
-            placeholder={isHeading ? "Heading text" : "Requirement label"}
-          />
-        </div>
-
-        {/* Required checkbox — hidden for headings */}
-        <div className="md:col-span-2 flex items-center gap-2">
-          {!isHeading ? (
-            <>
-              <input
-                type="checkbox"
-                checked={r.is_required}
-                onChange={(e) => onUpdate({ is_required: e.target.checked })}
-              />
-              <span className="text-sm text-[var(--color-text-secondary)]">Required</span>
-            </>
-          ) : (
-            <span className="text-xs text-[var(--color-text-muted)] italic">Section divider</span>
-          )}
-        </div>
-
-        {/* Reorder + delete */}
-        <div className="md:col-span-2 flex items-center gap-1">
-          <div className="flex flex-col">
-            <button
-              type="button"
-              disabled={!canMoveUp}
-              onClick={onMoveUp}
-              className="flex h-5 w-6 items-center justify-center rounded-t border border-b-0 border-[var(--color-border)] bg-white text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-30"
-              title="Move up"
-            >▲</button>
-            <button
-              type="button"
-              disabled={!canMoveDown}
-              onClick={onMoveDown}
-              className="flex h-5 w-6 items-center justify-center rounded-b border border-[var(--color-border)] bg-white text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-30"
-              title="Move down"
-            >▼</button>
-          </div>
-          <Button
-            variant="secondary"
-            className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
-            onClick={onDelete}
-          >
-            ✕
-          </Button>
-        </div>
+        {/* Delete */}
+        <button type="button" onClick={onDelete}
+          className="shrink-0 flex h-6 w-6 items-center justify-center rounded text-[var(--color-text-muted)] hover:bg-red-50 hover:text-red-500 text-sm">
+          ✕
+        </button>
       </div>
 
-      {/* ── File type options (Feature 1: upload vs link mode) ── */}
-      {r.type === "file" ? (
-        <div className="flex flex-col gap-3 pl-1 pt-1">
-          {/* Mode toggle */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-[var(--color-text-muted)]">Form template for client:</span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => onUpdate({ file_mode: "upload", link_url: null })}
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                  !r.file_mode || r.file_mode === "upload"
-                    ? "bg-[var(--color-accent)] text-white border-[var(--color-accent)]"
-                    : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
-                }`}
-              >
-                Upload file
-              </button>
-              <button
-                type="button"
-                onClick={() => onUpdate({ file_mode: "link", attachment_path: null })}
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                  r.file_mode === "link"
-                    ? "bg-[var(--color-accent)] text-white border-[var(--color-accent)]"
-                    : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
-                }`}
-              >
-                Paste link
-              </button>
-            </div>
-          </div>
+      {/* ── Sub-options (only when needed) ── */}
+      {(r.type === "file" || r.type === "text" || r.type === "multiple_choice") ? (
+        <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 flex flex-col gap-2">
 
-          {/* Upload mode — existing attachment UI */}
-          {(!r.file_mode || r.file_mode === "upload") ? (
-            <div className="flex flex-wrap items-center gap-3">
-              {r.attachment_path ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[var(--color-text-secondary)] truncate max-w-[200px]" title={fileNameFromPath(r.attachment_path) ?? ""}>
-                    {fileNameFromPath(r.attachment_path)}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-xs text-[var(--color-text-muted)] hover:text-red-600"
-                    onClick={() => onUpdate({ attachment_path: null })}
-                  >
-                    Remove
-                  </button>
+          {/* File: template mode toggle + input */}
+          {r.type === "file" ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-[var(--color-text-muted)]">Template:</span>
+              <div className="flex items-center gap-1">
+                {(["upload", "link"] as const).map((mode) => (
+                  <button key={mode} type="button"
+                    onClick={() => onUpdate(mode === "upload" ? { file_mode: "upload", link_url: null } : { file_mode: "link", attachment_path: null })}
+                    className={`rounded border px-2.5 py-0.5 text-xs font-medium transition ${
+                      (r.file_mode ?? "upload") === mode
+                        ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
+                        : "border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
+                    }`}
+                  >{mode === "upload" ? "Upload file" : "Paste link"}</button>
+                ))}
+              </div>
+              {r.file_mode === "link" ? (
+                <Input value={r.link_url || ""} onChange={(e) => onUpdate({ link_url: e.target.value })}
+                  placeholder="https://…" className="flex-1 text-xs" />
+              ) : r.attachment_path ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-xs text-[var(--color-text-secondary)] max-w-[180px]">{fileNameFromPath(r.attachment_path)}</span>
+                  <button type="button" className="text-xs text-[var(--color-text-muted)] hover:text-red-600" onClick={() => onUpdate({ attachment_path: null })}>Remove</button>
                 </div>
               ) : (
-                <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white">
-                  {uploadingIdx[idx] ? "Uploading…" : "Attach form template"}
-                  <input
-                    type="file"
-                    className="sr-only"
-                    disabled={!!uploadingIdx[idx]}
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) onUploadAttachment(f);
-                      e.currentTarget.value = "";
-                    }}
-                  />
+                <label className="cursor-pointer rounded border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition">
+                  {uploadingIdx[idx] ? "Uploading…" : "Attach file"}
+                  <input type="file" className="sr-only" disabled={!!uploadingIdx[idx]} onChange={(e) => { const f = e.target.files?.[0]; if (f) onUploadAttachment(f); e.currentTarget.value = ""; }} />
                 </label>
               )}
             </div>
           ) : null}
 
-          {/* Link mode — URL input (Feature 1) */}
-          {r.file_mode === "link" ? (
-            <div className="flex items-center gap-2">
-              <Input
-                value={r.link_url || ""}
-                onChange={(e) => onUpdate({ link_url: e.target.value })}
-                placeholder="https://… (link shown to client as a button)"
-                className="text-sm"
-              />
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      {/* ── Text type options (Feature 5: multiline toggle) ── */}
-      {r.type === "text" ? (
-        <div className="flex items-center gap-2 pl-1 pt-1">
-          <input
-            type="checkbox"
-            id={`multiline-${idx}`}
-            checked={!!r.multiline}
-            onChange={(e) => onUpdate({ multiline: e.target.checked })}
-          />
-          <label htmlFor={`multiline-${idx}`} className="text-xs text-[var(--color-text-secondary)] cursor-pointer select-none">
-            Multi-line input (textarea)
-          </label>
-        </div>
-      ) : null}
-
-      {/* ── Multiple choice options (existing + Feature 2 + Feature 3) ── */}
-      {r.type === "multiple_choice" ? (
-        <div className="flex flex-col gap-2 pl-1 pt-1">
-          <span className="text-xs font-medium text-[var(--color-text-secondary)]">Options (min 2)</span>
-          {(r.options ?? []).map((opt, optIdx) => (
-            <div key={optIdx} className="flex items-center gap-2">
-              <Input
-                value={opt}
-                onChange={(e) => {
-                  const opts = [...(r.options ?? [])];
-                  opts[optIdx] = e.target.value;
-                  onUpdate({ options: opts });
-                }}
-                placeholder={`Option ${optIdx + 1}`}
-                className="text-sm"
-              />
-              <button
-                type="button"
-                className="shrink-0 text-sm text-[var(--color-text-muted)] hover:text-red-600 disabled:opacity-40"
-                disabled={(r.options ?? []).length <= 2}
-                onClick={() => {
-                  const opts = (r.options ?? []).filter((_, i) => i !== optIdx);
-                  onUpdate({ options: opts });
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-          {(r.options ?? []).length < 20 ? (
-            <button
-              type="button"
-              className="self-start text-xs text-[var(--color-accent)] hover:underline"
-              onClick={() => onUpdate({ options: [...(r.options ?? []), ""] })}
-            >
-              + Add option
-            </button>
+          {/* Text: multiline toggle */}
+          {r.type === "text" ? (
+            <label className={toggleCls}>
+              <input type="checkbox" id={`multiline-${idx}`} checked={!!r.multiline} onChange={(e) => onUpdate({ multiline: e.target.checked })} className="accent-[var(--color-accent)]" />
+              <span className={toggleLabelCls}>Multi-line textarea</span>
+            </label>
           ) : null}
 
-          {/* Feature 2: allow multiple selections */}
-          <div className="flex items-center gap-2 pt-1 border-t border-[var(--color-border)]">
-            <input
-              type="checkbox"
-              id={`multi-select-${idx}`}
-              checked={!!r.allow_multi_select}
-              onChange={(e) => onUpdate({ allow_multi_select: e.target.checked })}
-            />
-            <label htmlFor={`multi-select-${idx}`} className="text-xs text-[var(--color-text-secondary)] cursor-pointer select-none">
-              Allow multiple selections (renders as checkboxes)
-            </label>
-          </div>
+          {/* Multiple choice: options list + feature toggles */}
+          {r.type === "multiple_choice" ? (
+            <div className="flex flex-col gap-1.5">
+              {(r.options ?? []).map((opt, optIdx) => (
+                <div key={optIdx} className="flex items-center gap-1.5">
+                  <Input value={opt} onChange={(e) => { const opts = [...(r.options ?? [])]; opts[optIdx] = e.target.value; onUpdate({ options: opts }); }}
+                    placeholder={`Option ${optIdx + 1}`} className="flex-1 text-xs py-1" />
+                  <button type="button" disabled={(r.options ?? []).length <= 2}
+                    className="shrink-0 text-xs text-[var(--color-text-muted)] hover:text-red-600 disabled:opacity-30"
+                    onClick={() => onUpdate({ options: (r.options ?? []).filter((_, i) => i !== optIdx) })}>✕</button>
+                </div>
+              ))}
+              {(r.options ?? []).length < 20 ? (
+                <button type="button" className="self-start text-xs text-[var(--color-accent)] hover:underline"
+                  onClick={() => onUpdate({ options: [...(r.options ?? []), ""] })}>+ Add option</button>
+              ) : null}
+              <div className="flex flex-wrap gap-4 pt-1 border-t border-[var(--color-border)]">
+                <label className={toggleCls}>
+                  <input type="checkbox" checked={!!r.allow_multi_select} onChange={(e) => onUpdate({ allow_multi_select: e.target.checked })} className="accent-[var(--color-accent)]" />
+                  <span className={toggleLabelCls}>Allow multiple selections</span>
+                </label>
+                <label className={toggleCls}>
+                  <input type="checkbox" checked={!!r.include_other} onChange={(e) => onUpdate({ include_other: e.target.checked })} className="accent-[var(--color-accent)]" />
+                  <span className={toggleLabelCls}>Include "Other" option</span>
+                </label>
+              </div>
+            </div>
+          ) : null}
 
-          {/* Feature 3: include "Other" option */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id={`include-other-${idx}`}
-              checked={!!r.include_other}
-              onChange={(e) => onUpdate({ include_other: e.target.checked })}
-            />
-            <label htmlFor={`include-other-${idx}`} className="text-xs text-[var(--color-text-secondary)] cursor-pointer select-none">
-              Include "Other" option with free-text input
-            </label>
-          </div>
         </div>
       ) : null}
     </div>
