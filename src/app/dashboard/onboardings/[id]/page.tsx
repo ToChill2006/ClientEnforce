@@ -1008,15 +1008,13 @@ export default function OnboardingDetailAdminPage() {
                     responseCell = (
                       <div className="flex items-center gap-2">
                         <span className={cx(
-                          "inline-flex h-5 w-5 items-center justify-center rounded border text-xs",
-                          checked
-                            ? "border-emerald-400 bg-emerald-50 text-emerald-600"
-                            : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"
+                          "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px]",
+                          checked ? "border-emerald-400 bg-emerald-50 text-emerald-600" : "border-[var(--color-border)] bg-white"
                         )}>
                           {checked ? "✓" : ""}
                         </span>
-                        <span className="text-sm text-[var(--color-text-primary)]">
-                          {checked ? "Confirmed" : <span className="text-[var(--color-text-muted)]">Not confirmed</span>}
+                        <span className={cx("text-xs font-medium", checked ? "text-emerald-700" : "text-[var(--color-text-muted)]")}>
+                          {checked ? "Confirmed" : "Not confirmed"}
                         </span>
                       </div>
                     );
@@ -1042,53 +1040,23 @@ export default function OnboardingDetailAdminPage() {
                   } else if (preview.type === "json") {
                     responseCell = <pre className="max-w-[680px] overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">{JSON.stringify(preview.v, null, 2)}</pre>;
                   } else if (preview.type === "file") {
-                    // All uploaded files: prefer file_paths array, fall back to single file_path.
                     const allFiles: string[] =
-                      r.file_paths && r.file_paths.length > 0
-                        ? r.file_paths
-                        : r.file_path
-                        ? [r.file_path]
-                        : [String(preview.v)];
+                      r.file_paths && r.file_paths.length > 0 ? r.file_paths
+                      : r.file_path ? [r.file_path]
+                      : [String(preview.v)];
                     responseCell = (
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-1.5">
                         {allFiles.map((fp, fi) => (
-                          <div key={fi} className="flex items-center gap-2">
-                            <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-muted)]" title={fileNameFromPath(fp)}>
-                              {allFiles.length > 1 ? `${fi + 1}. ` : ""}{fileNameFromPath(fp)}
-                            </span>
-                            <button
-                              onClick={() => openPreview(fp, "clientenforce-uploads", fileNameFromPath(fp))}
-                              className="shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                            >
-                              Preview
-                            </button>
-                            <button
-                              onClick={() => {
-                                try {
-                                  downloadRef(fp, "clientenforce-uploads", fileNameFromPath(fp));
-                                  setBanner({ kind: "success", msg: "Download started." });
-                                } catch (e: any) {
-                                  setBanner({ kind: "error", msg: e?.message || "Could not download file." });
-                                }
-                              }}
-                              className="shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                            >
-                              Download
-                            </button>
+                          <div key={fi} className="flex items-center gap-1.5">
+                            {allFiles.length > 1 ? (
+                              <span className="w-5 shrink-0 text-xs text-[var(--color-text-muted)]">{fi + 1}.</span>
+                            ) : null}
+                            <button onClick={() => openPreview(fp, "clientenforce-uploads", fileNameFromPath(fp))} className="rounded border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]">Preview</button>
+                            <button onClick={() => { try { downloadRef(fp, "clientenforce-uploads", fileNameFromPath(fp)); setBanner({ kind: "success", msg: "Download started." }); } catch (e: any) { setBanner({ kind: "error", msg: e?.message || "Could not download file." }); } }} className="rounded border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]">Download</button>
                           </div>
                         ))}
                         {r.attachment_path ? (
-                          <button
-                            onClick={() => {
-                              try {
-                                downloadRef(r.attachment_path!, "clientenforce-uploads", fileNameFromPath(r.attachment_path));
-                                setBanner({ kind: "success", msg: "Form template download started." });
-                              } catch (e: any) {
-                                setBanner({ kind: "error", msg: e?.message || "Could not download form template." });
-                              }
-                            }}
-                            className="self-start rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-2.5 py-1.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition"
-                          >
+                          <button onClick={() => { try { downloadRef(r.attachment_path!, "clientenforce-uploads", fileNameFromPath(r.attachment_path)); setBanner({ kind: "success", msg: "Form template download started." }); } catch (e: any) { setBanner({ kind: "error", msg: e?.message || "Could not download form template." }); } }} className="self-start rounded border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition">
                             Form template ↓
                           </button>
                         ) : null}
@@ -1097,26 +1065,9 @@ export default function OnboardingDetailAdminPage() {
                   } else {
                     // signature
                     responseCell = (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openPreview(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)))}
-                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                        >
-                          View signature
-                        </button>
-                        <button
-                          onClick={() => {
-                            try {
-                              downloadRef(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)));
-                              setBanner({ kind: "success", msg: "Download started." });
-                            } catch (e: any) {
-                              setBanner({ kind: "error", msg: e?.message || "Could not download signature." });
-                            }
-                          }}
-                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)]"
-                        >
-                          Download
-                        </button>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => openPreview(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v)))} className="rounded border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]">View</button>
+                        <button onClick={() => { try { downloadRef(String(preview.v), "clientenforce-signatures", fileNameFromPath(String(preview.v))); setBanner({ kind: "success", msg: "Download started." }); } catch (e: any) { setBanner({ kind: "error", msg: e?.message || "Could not download signature." }); } }} className="rounded border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]">Download</button>
                       </div>
                     );
                   }
@@ -1124,15 +1075,15 @@ export default function OnboardingDetailAdminPage() {
                   return (
                     <tr key={r.id} className="hover:bg-[var(--color-bg-subtle)]">
                       <td className="px-4 py-3 align-middle">
-                        <div className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {r.label || "Untitled field"}
-                          {(r.is_required ?? r.required) ? <span className="ml-2 text-xs text-[var(--color-text-muted)]">Required</span> : null}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium text-[var(--color-text-primary)]">{r.label || "Untitled field"}</span>
+                          {(r.is_required ?? r.required) ? <span className="rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-muted)]">Required</span> : null}
                         </div>
-                        {r.prompt ? <div className="mt-1 max-w-[520px] text-sm text-[var(--color-text-muted)]">{r.prompt}</div> : null}
+                        {r.prompt ? <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{r.prompt}</div> : null}
                       </td>
 
                       <td className="px-4 py-3 align-middle">
-                        <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
+                        <span className="inline-flex rounded border border-[var(--color-border)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
                           {reqKindLabel(r.kind ?? r.type)}
                         </span>
                       </td>
@@ -1141,7 +1092,7 @@ export default function OnboardingDetailAdminPage() {
 
                       <td className="px-4 py-3 align-middle text-right">
                         <span className={cx(
-                          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                          "inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium",
                           completed
                             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                             : "border-[var(--color-border)] bg-white text-[var(--color-text-muted)]"

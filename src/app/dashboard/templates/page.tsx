@@ -532,22 +532,37 @@ export default function TemplatesPage() {
                 {(selected.definition?.requirements ?? [])
                   .slice()
                   .sort((a, b) => a.sort_order - b.sort_order)
-                  .map((r, idx) => (
-                    <RequirementEditor
-                      key={idx}
-                      idx={idx}
-                      r={r}
-                      uploadingIdx={uploadingIdx}
-                      onUpdate={(patch) => updateReq(idx, patch)}
-                      onDelete={() => {
-                        const reqs = selected.definition.requirements
-                          .filter((_, i) => i !== idx)
-                          .map((x, i) => ({ ...x, sort_order: i }));
-                        setSelected({ ...selected, definition: { requirements: reqs } });
-                      }}
-                      onUploadAttachment={(file) => uploadAttachment(idx, file)}
-                    />
-                  ))}
+                  .map((r, idx) => {
+                    const total = selected.definition.requirements.length;
+                    return (
+                      <RequirementEditor
+                        key={idx}
+                        idx={idx}
+                        r={r}
+                        uploadingIdx={uploadingIdx}
+                        canMoveUp={idx > 0}
+                        canMoveDown={idx < total - 1}
+                        onMoveUp={() => {
+                          const reqs = selected.definition.requirements.slice();
+                          [reqs[idx - 1], reqs[idx]] = [reqs[idx], reqs[idx - 1]];
+                          setSelected({ ...selected, definition: { requirements: reqs.map((x, i) => ({ ...x, sort_order: i })) } });
+                        }}
+                        onMoveDown={() => {
+                          const reqs = selected.definition.requirements.slice();
+                          [reqs[idx], reqs[idx + 1]] = [reqs[idx + 1], reqs[idx]];
+                          setSelected({ ...selected, definition: { requirements: reqs.map((x, i) => ({ ...x, sort_order: i })) } });
+                        }}
+                        onUpdate={(patch) => updateReq(idx, patch)}
+                        onDelete={() => {
+                          const reqs = selected.definition.requirements
+                            .filter((_, i) => i !== idx)
+                            .map((x, i) => ({ ...x, sort_order: i }));
+                          setSelected({ ...selected, definition: { requirements: reqs } });
+                        }}
+                        onUploadAttachment={(file) => uploadAttachment(idx, file)}
+                      />
+                    );
+                  })}
 
                 {/* Add requirement button */}
                 <button
@@ -596,6 +611,10 @@ function RequirementEditor({
   idx,
   r,
   uploadingIdx,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
   onUpdate,
   onDelete,
   onUploadAttachment,
@@ -603,6 +622,10 @@ function RequirementEditor({
   idx: number;
   r: Requirement;
   uploadingIdx: Record<number, boolean>;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   onUpdate: (patch: Partial<Requirement>) => void;
   onDelete: () => void;
   onUploadAttachment: (file: File) => void;
@@ -649,7 +672,7 @@ function RequirementEditor({
         </div>
 
         {/* Label input */}
-        <div className="md:col-span-6">
+        <div className="md:col-span-5">
           <Input
             value={r.label}
             onChange={(e) => onUpdate({ label: e.target.value })}
@@ -673,8 +696,24 @@ function RequirementEditor({
           )}
         </div>
 
-        {/* Delete button */}
-        <div className="md:col-span-1">
+        {/* Reorder + delete */}
+        <div className="md:col-span-2 flex items-center gap-1">
+          <div className="flex flex-col">
+            <button
+              type="button"
+              disabled={!canMoveUp}
+              onClick={onMoveUp}
+              className="flex h-5 w-6 items-center justify-center rounded-t border border-b-0 border-[var(--color-border)] bg-white text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-30"
+              title="Move up"
+            >▲</button>
+            <button
+              type="button"
+              disabled={!canMoveDown}
+              onClick={onMoveDown}
+              className="flex h-5 w-6 items-center justify-center rounded-b border border-[var(--color-border)] bg-white text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-30"
+              title="Move down"
+            >▼</button>
+          </div>
           <Button
             variant="secondary"
             className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"

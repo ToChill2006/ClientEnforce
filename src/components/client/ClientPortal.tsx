@@ -973,7 +973,6 @@ function MultipleChoiceRequirement({
 
 function CheckboxRequirement({
   checked,
-  label,
   onToggle,
   disabled,
   busy,
@@ -999,42 +998,24 @@ function CheckboxRequirement({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <label
-        className={`flex items-center gap-4 rounded-[var(--radius-md)] border p-4 cursor-pointer transition ${
-          checked
-            ? "border-[var(--color-success,#16a34a)] bg-[var(--color-success-subtle,#f0fdf4)]"
-            : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
-        } ${disabled || busy ? "cursor-not-allowed opacity-60" : ""}`}
-      >
-        <div className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] border-2 transition ${
-          checked ? "border-[var(--color-success,#16a34a)] bg-[var(--color-success,#16a34a)]" : "border-[var(--color-border-strong,#d1d5db)] bg-white"
-        }`}>
-          {checked ? (
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path d="M2 7l3.5 3.5 5.5-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          ) : null}
-          <input
-            type="checkbox"
-            className="sr-only"
-            checked={checked}
-            disabled={disabled || busy}
-            onChange={handleToggle}
-          />
-        </div>
-        <span
-          className={`text-sm font-medium transition ${
-            checked ? "text-[var(--color-success,#16a34a)] line-through decoration-[var(--color-success,#16a34a)]" : "text-[var(--color-text-primary)]"
-          }`}
-        >
-          {label}
-        </span>
-        <div className="ml-auto text-xs text-[var(--color-text-muted)]">
-          {disabled ? "Locked" : status === "saving" || busy ? "Saving…" : status === "error" ? "Save failed" : ""}
-        </div>
-      </label>
-    </div>
+    <label className={`flex items-center gap-3 ${disabled || busy ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+      <div className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 transition ${
+        checked ? "border-[var(--color-success,#16a34a)] bg-[var(--color-success,#16a34a)]" : "border-[var(--color-border-strong,#d1d5db)] bg-white"
+      }`}>
+        {checked ? (
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M2 7l3.5 3.5 5.5-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        ) : null}
+        <input type="checkbox" className="sr-only" checked={checked} disabled={disabled || busy} onChange={handleToggle} />
+      </div>
+      <span className={`text-sm transition ${checked ? "text-[var(--color-success,#16a34a)] line-through" : "text-[var(--color-text-secondary)]"}`}>
+        {checked ? "Confirmed" : "Click to confirm"}
+      </span>
+      <span className="ml-auto text-xs text-[var(--color-text-muted)]">
+        {disabled ? "Locked" : status === "saving" || busy ? "Saving…" : status === "error" ? "Save failed" : ""}
+      </span>
+    </label>
   );
 }
 
