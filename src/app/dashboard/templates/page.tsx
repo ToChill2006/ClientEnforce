@@ -17,6 +17,28 @@ type EmailSettings = {
   email_cta_label: string;
 };
 
+type SmtpSettings = {
+  email_provider: "clientenforce" | "smtp";
+  smtp_host: string;
+  smtp_port: string;
+  smtp_secure: boolean;
+  smtp_username: string;
+  smtp_password: string;
+  smtp_from_email: string;
+  smtp_from_name: string;
+};
+
+const DEFAULT_SMTP: SmtpSettings = {
+  email_provider: "clientenforce",
+  smtp_host: "",
+  smtp_port: "587",
+  smtp_secure: false,
+  smtp_username: "",
+  smtp_password: "",
+  smtp_from_email: "",
+  smtp_from_name: "",
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 // All supported requirement types, matching the DB enum + Zod schema.
@@ -180,6 +202,12 @@ export default function TemplatesPage() {
   const [emailLoading, setEmailLoading] = React.useState(true);
   const [emailSaving, setEmailSaving] = React.useState(false);
 
+  // ── SMTP provider state ───────────────────────────────────────────────────────
+  const [smtpSettings, setSmtpSettings] = React.useState<SmtpSettings>(DEFAULT_SMTP);
+  const [smtpLoading, setSmtpLoading] = React.useState(true);
+  const [smtpSaving, setSmtpSaving] = React.useState(false);
+  const [smtpTesting, setSmtpTesting] = React.useState(false);
+
   // ── Data loading ────────────────────────────────────────────────────────────
 
   async function load() {
@@ -251,6 +279,78 @@ export default function TemplatesPage() {
       notify({ title: "Save failed", description: e?.message ?? "Unknown error", variant: "error" });
     } finally {
       setEmailSaving(false);
+    }
+  }
+
+  React.useEffect(() => {
+    async function loadSmtpSettings() {
+      try {
+        const res = await fetch("/api/email-settings/smtp");
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json?.settings) {
+          const s = json.settings;
+          setSmtpSettings({
+            email_provider: s.email_provider ?? "clientenforce",
+            smtp_host: s.smtp_host ?? "",
+            smtp_port: String(s.smtp_port ?? "587"),
+            smtp_secure: s.smtp_secure ?? false,
+            smtp_username: s.smtp_username ?? "",
+            smtp_password: s.smtp_password ?? "",
+            smtp_from_email: s.smtp_from_email ?? "",
+            smtp_from_name: s.smtp_from_name ?? "",
+          });
+        }
+      } catch {
+        // Non-fatal — keep defaults
+      } finally {
+        setSmtpLoading(false);
+      }
+    }
+    void loadSmtpSettings();
+  }, []);
+
+  async function saveSmtpSettings() {
+    if (smtpSaving) return;
+    setSmtpSaving(true);
+    try {
+      const portNum = parseInt(smtpSettings.smtp_port, 10);
+      const res = await fetch("/api/email-settings/smtp", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email_provider: smtpSettings.email_provider,
+          smtp_host: smtpSettings.smtp_host || null,
+          smtp_port: isNaN(portNum) ? null : portNum,
+          smtp_secure: smtpSettings.smtp_secure,
+          smtp_username: smtpSettings.smtp_username || null,
+          smtp_password: smtpSettings.smtp_password || null,
+          smtp_from_email: smtpSettings.smtp_from_email || null,
+          smtp_from_name: smtpSettings.smtp_from_name || null,
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error ?? "Failed to save");
+      notify({ title: "Email provider saved", variant: "success" });
+    } catch (e: any) {
+      notify({ title: "Save failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setSmtpSaving(false);
+    }
+  }
+
+  async function testSmtpSettings() {
+    if (smtpTesting) return;
+    setSmtpTesting(true);
+    try {
+      const res = await fetch("/api/email-settings/test", { method: "POST" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error ?? "Test failed");
+      notify({ title: "Test email sent", description: `Sent to ${json?.to ?? "your email"}`, variant: "success" });
+    } catch (e: any) {
+      notify({ title: "Test failed", description: e?.message ?? "Could not send test email", variant: "error" });
+    } finally {
+      setSmtpTesting(false);
     }
   }
 
@@ -651,6 +751,17 @@ export default function TemplatesPage() {
         onChange={setEmailSettings}
         onSave={saveEmailSettings}
       />
+
+      {/* ── Email provider / SMTP ── */}
+      <SmtpSettingsSection
+        settings={smtpSettings}
+        loading={smtpLoading}
+        saving={smtpSaving}
+        testing={smtpTesting}
+        onChange={setSmtpSettings}
+        onSave={saveSmtpSettings}
+        onTest={testSmtpSettings}
+      />
     </div>
   );
 }
@@ -1009,6 +1120,179 @@ function EmailTemplateSection({
               </div>
             </div>
           </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── SmtpSettingsSection ──────────────────────────────────────────────────────
+
+function SmtpSettingsSection({
+  settings,
+  loading,
+  saving,
+  testing,
+  onChange,
+  onSave,
+  onTest,
+}: {
+  settings: SmtpSettings;
+  loading: boolean;
+  saving: boolean;
+  testing: boolean;
+  onChange: (s: SmtpSettings) => void;
+  onSave: () => void;
+  onTest: () => void;
+}) {
+  const isSmtp = settings.email_provider === "smtp";
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle style={{ fontFamily: "var(--font-display)" }}>Email provider</CardTitle>
+        <CardDescription>
+          Choose how client-facing emails (onboarding dispatches and follow-up reminders) are sent.
+          Internal emails such as team invites and password resets always use ClientEnforce.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-6">
+        {loading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-full max-w-xs" />
+            <Skeleton className="h-9 w-2/3" />
+          </div>
+        ) : (
+          <>
+            {/* Provider selector */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">Provider</label>
+              <select
+                className="h-9 w-full max-w-xs rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+                value={settings.email_provider}
+                onChange={(e) =>
+                  onChange({ ...settings, email_provider: e.target.value as "clientenforce" | "smtp" })
+                }
+              >
+                <option value="clientenforce">ClientEnforce (default)</option>
+                <option value="smtp">Custom SMTP</option>
+              </select>
+              <p className="text-xs text-[var(--color-text-muted)]">
+                {isSmtp
+                  ? "Emails will be sent using your SMTP credentials below."
+                  : 'Emails are sent by ClientEnforce from "ClientEnforce <info@clientenforce.com>".'}
+              </p>
+            </div>
+
+            {/* SMTP fields — only visible when smtp is selected */}
+            {isSmtp && (
+              <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                  SMTP credentials
+                </p>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">Host</label>
+                    <Input
+                      value={settings.smtp_host}
+                      onChange={(e) => onChange({ ...settings, smtp_host: e.target.value })}
+                      placeholder="smtp.gmail.com"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">Port</label>
+                    <Input
+                      type="number"
+                      value={settings.smtp_port}
+                      onChange={(e) => onChange({ ...settings, smtp_port: e.target.value })}
+                      placeholder="587"
+                    />
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      587 (STARTTLS) · 465 (SSL/TLS) · 25 (unencrypted)
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">Username</label>
+                    <Input
+                      value={settings.smtp_username}
+                      onChange={(e) => onChange({ ...settings, smtp_username: e.target.value })}
+                      placeholder="you@gmail.com"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">Password / App password</label>
+                    <Input
+                      type="password"
+                      value={settings.smtp_password}
+                      onChange={(e) => onChange({ ...settings, smtp_password: e.target.value })}
+                      placeholder="Leave blank to keep existing"
+                      autoComplete="new-password"
+                    />
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      Gmail: use an App Password, not your Google account password.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">From email</label>
+                    <Input
+                      type="email"
+                      value={settings.smtp_from_email}
+                      onChange={(e) => onChange({ ...settings, smtp_from_email: e.target.value })}
+                      placeholder="noreply@yourcompany.com"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">From name</label>
+                    <Input
+                      value={settings.smtp_from_name}
+                      onChange={(e) => onChange({ ...settings, smtp_from_name: e.target.value })}
+                      placeholder="Your Company"
+                    />
+                  </div>
+                </div>
+
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded accent-[var(--color-accent)]"
+                    checked={settings.smtp_secure}
+                    onChange={(e) => onChange({ ...settings, smtp_secure: e.target.checked })}
+                  />
+                  <span className="text-sm text-[var(--color-text-secondary)]">
+                    Use TLS — enable for port 465, leave off for STARTTLS on 587
+                  </span>
+                </label>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={onSave}
+                disabled={saving}
+                className="rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+              >
+                {saving ? "Saving..." : "Save provider settings"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={onTest}
+                disabled={testing}
+                className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
+              >
+                {testing ? "Sending..." : "Send test email"}
+              </Button>
+            </div>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              "Send test email" sends a test message to your own account email using the current settings.
+            </p>
+          </>
         )}
       </CardContent>
     </Card>

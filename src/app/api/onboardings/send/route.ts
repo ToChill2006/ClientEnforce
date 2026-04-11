@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { SendOnboardingSchema } from "@/lib/onboarding-schema";
-import { resend } from "@/lib/resend";
+import { sendOrgEmail } from "@/lib/send-email";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import {
@@ -56,10 +56,6 @@ export async function POST(req: Request) {
   const appUrl = appOrigin();
   const link = `${appUrl}/c/${onboarding.client_token}`;
 
-  if (!process.env.RESEND_API_KEY) {
-    return NextResponse.json({ error: "RESEND_API_KEY is not set" }, { status: 500 });
-  }
-
   // Load org email template settings (best-effort — fall back to defaults if columns missing)
   let emailSettings: {
     email_subject_template?: string | null;
@@ -107,15 +103,16 @@ export async function POST(req: Request) {
     footerNote: "This is a transactional email from ClientEnforce.",
   });
 
-  const { error: emailErr } = await resend.emails.send({
-    from: "ClientEnforce <info@clientenforce.com>",
-    to: [client.email],
-    subject,
-    html: emailTemplate.html,
-    text: emailTemplate.text,
-  });
-
-  if (emailErr) return NextResponse.json({ error: emailErr.message }, { status: 400 });
+  try {
+    await sendOrgEmail(orgId, {
+      to: client.email,
+      subject,
+      html: emailTemplate.html,
+      text: emailTemplate.text,
+    });
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message ?? "Failed to send email" }, { status: 400 });
+  }
 
   // Update onboarding state
   const { error: updErr } = await admin

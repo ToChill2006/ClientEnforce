@@ -3,7 +3,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireRole, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { resend } from "@/lib/resend";
+import { sendOrgEmail } from "@/lib/send-email";
 import { renderClientEnforceEmail } from "@/lib/email-template";
 import {
   followupsEnabledForTier,
@@ -85,21 +85,6 @@ export async function POST(req: Request) {
         error: followupsUnavailableMessage("run"),
       });
     }
-  }
-
-  if (!process.env.RESEND_API_KEY) {
-    console.error("[followups/run] RESEND_API_KEY is not set — cannot send emails");
-    return json(500, { error: "RESEND_API_KEY is not set" });
-  }
-
-  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-  const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
-  const from = `${fromName} <${fromEmail}>`;
-
-  if (fromEmail === "onboarding@resend.dev") {
-    console.warn("[followups/run] RESEND_FROM_EMAIL is not set — using Resend test domain. Emails will only deliver to the Resend account owner. Set RESEND_FROM_EMAIL to a verified domain address in production.");
-  } else {
-    console.log(`[followups/run] Sending from: ${from}`);
   }
 
   const admin = supabaseAdmin();
@@ -211,21 +196,13 @@ export async function POST(req: Request) {
         footerNote: "This is an automated reminder from ClientEnforce.",
       });
 
-      console.log(`[followups/run] Calling Resend for job ${job.id}: from="${from}" to="${job.to_email}" subject="${job.subject}"`);
-      const { error: emailErr } = await resend.emails.send({
-        from,
-        to: [job.to_email],
+      console.log(`[followups/run] Sending job ${job.id} to="${job.to_email}" subject="${job.subject}"`);
+      await sendOrgEmail(String(job.org_id), {
+        to: job.to_email,
         subject: job.subject,
         html: emailTemplate.html,
         text: emailTemplate.text,
       });
-
-      if (emailErr) {
-        const statusCode = (emailErr as any).statusCode ?? "unknown";
-        const errMsg = `Resend error ${statusCode}: ${emailErr.message} (name: ${(emailErr as any).name ?? "unknown"})`;
-        console.error(`[followups/run] Failed to send job ${job.id} to ${job.to_email} — ${errMsg}`);
-        throw new Error(errMsg);
-      }
 
       const upd = await safeUpdateFollowupJob(admin, job.id, {
         status: "sent",
@@ -274,7 +251,7 @@ export async function POST(req: Request) {
         action: "followup.failed",
         entity_type: "followup_job",
         entity_id: job.id,
-        metadata: { to: job.to_email, from, error: errMsg },
+        metadata: { to: job.to_email, error: errMsg },
       });
 
       failed += 1;
