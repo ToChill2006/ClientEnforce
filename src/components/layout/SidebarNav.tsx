@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ClipboardList,
   LayoutTemplate,
+  Mail,
   Bell,
   Clock,
   FolderOpen,
@@ -70,6 +71,7 @@ export default function SidebarNav({ onClose }: { onClose?: () => void }) {
         <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} onClose={onClose} />
         <NavItem href="/dashboard/onboardings" label="Onboardings" icon={ClipboardList} onClose={onClose} />
         <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} onClose={onClose} />
+        <NavItem href="/dashboard/email" label="Email" icon={Mail} onClose={onClose} />
         <NavItem href="/dashboard/clients" label="Clients" icon={User} onClose={onClose} />
       </div>
 
