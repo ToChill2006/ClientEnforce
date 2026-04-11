@@ -60,20 +60,48 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "RESEND_API_KEY is not set" }, { status: 500 });
   }
 
-  const subject = `Action required: ${onboarding.title}`;
+  // Load org email template settings (best-effort — fall back to defaults if columns missing)
+  let emailSettings: {
+    email_subject_template?: string | null;
+    email_heading?: string | null;
+    email_body?: string | null;
+    email_cta_label?: string | null;
+  } = {};
+  try {
+    const { data: orgEmail } = await admin
+      .from("organizations")
+      .select("email_subject_template, email_heading, email_body, email_cta_label")
+      .eq("id", orgId)
+      .single();
+    if (orgEmail) emailSettings = orgEmail;
+  } catch {
+    // Columns not yet migrated — use defaults
+  }
+
+  function interpolate(template: string | null | undefined, title: string) {
+    if (!template) return null;
+    return template.replace(/\{\{title\}\}/gi, title);
+  }
+
+  const subject =
+    interpolate(emailSettings.email_subject_template, onboarding.title) ??
+    `Action required: ${onboarding.title}`;
+
   const greeting = client.full_name ? `Hi ${client.full_name},` : "Hi,";
+
   const emailTemplate = renderClientEnforceEmail({
     preheader: `Complete your onboarding: ${onboarding.title}`,
     eyebrow: "Client onboarding",
-    title: "Complete your onboarding",
+    title: emailSettings.email_heading?.trim() || "Complete your onboarding",
     subtitle: onboarding.title,
     intro: greeting,
     paragraphs: [
-      "Please complete your onboarding in ClientEnforce so your team can continue the next step.",
+      emailSettings.email_body?.trim() ||
+        "Please complete your onboarding in ClientEnforce so your team can continue the next step.",
       `If the button does not work, copy and paste this link into your browser:\n${link}`,
     ],
     primaryCta: {
-      label: "Open onboarding",
+      label: emailSettings.email_cta_label?.trim() || "Open onboarding",
       href: link,
     },
     footerNote: "This is a transactional email from ClientEnforce.",

@@ -8,6 +8,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 
+// ─── Email Template Types ─────────────────────────────────────────────────────
+
+type EmailSettings = {
+  email_subject_template: string;
+  email_heading: string;
+  email_body: string;
+  email_cta_label: string;
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 // All supported requirement types, matching the DB enum + Zod schema.
@@ -139,6 +148,15 @@ const TYPE_LABELS: Record<RequirementType, string> = {
   heading: "Section heading",
 };
 
+// ─── Email defaults ───────────────────────────────────────────────────────────
+
+const DEFAULT_EMAIL: EmailSettings = {
+  email_subject_template: "Action required: {{title}}",
+  email_heading: "Complete your onboarding",
+  email_body: "Please complete your onboarding in ClientEnforce so your team can continue the next step.",
+  email_cta_label: "Open onboarding",
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TemplatesPage() {
@@ -156,6 +174,11 @@ export default function TemplatesPage() {
   const [openingId, setOpeningId] = React.useState<string | null>(null);
   // Per-requirement upload state (keyed by array index)
   const [uploadingIdx, setUploadingIdx] = React.useState<Record<number, boolean>>({});
+
+  // ── Email template state ─────────────────────────────────────────────────────
+  const [emailSettings, setEmailSettings] = React.useState<EmailSettings>(DEFAULT_EMAIL);
+  const [emailLoading, setEmailLoading] = React.useState(true);
+  const [emailSaving, setEmailSaving] = React.useState(false);
 
   // ── Data loading ────────────────────────────────────────────────────────────
 
@@ -188,6 +211,48 @@ export default function TemplatesPage() {
   }
 
   React.useEffect(() => { load(); }, []);
+
+  React.useEffect(() => {
+    async function loadEmailSettings() {
+      setEmailLoading(true);
+      try {
+        const res = await fetch("/api/email-settings");
+        const json = await res.json();
+        if (res.ok && json.settings) {
+          setEmailSettings({
+            email_subject_template: json.settings.email_subject_template ?? DEFAULT_EMAIL.email_subject_template,
+            email_heading: json.settings.email_heading ?? DEFAULT_EMAIL.email_heading,
+            email_body: json.settings.email_body ?? DEFAULT_EMAIL.email_body,
+            email_cta_label: json.settings.email_cta_label ?? DEFAULT_EMAIL.email_cta_label,
+          });
+        }
+      } catch {
+        // Non-fatal — keep defaults
+      } finally {
+        setEmailLoading(false);
+      }
+    }
+    void loadEmailSettings();
+  }, []);
+
+  async function saveEmailSettings() {
+    if (emailSaving) return;
+    setEmailSaving(true);
+    try {
+      const res = await fetch("/api/email-settings", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(emailSettings),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Failed");
+      notify({ title: "Email template saved", variant: "success" });
+    } catch (e: any) {
+      notify({ title: "Save failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setEmailSaving(false);
+    }
+  }
 
   // ── CRUD ────────────────────────────────────────────────────────────────────
 
@@ -528,56 +593,33 @@ export default function TemplatesPage() {
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] p-3">
               <div className="text-sm font-semibold">Requirements</div>
-              <div className="mt-3 flex flex-col gap-2">
-                {(selected.definition?.requirements ?? [])
-                  .slice()
-                  .sort((a, b) => a.sort_order - b.sort_order)
-                  .map((r, idx) => {
-                    const total = selected.definition.requirements.length;
-                    return (
-                      <RequirementEditor
-                        key={idx}
-                        idx={idx}
-                        r={r}
-                        uploadingIdx={uploadingIdx}
-                        canMoveUp={idx > 0}
-                        canMoveDown={idx < total - 1}
-                        onMoveUp={() => {
-                          const reqs = selected.definition.requirements.slice();
-                          [reqs[idx - 1], reqs[idx]] = [reqs[idx], reqs[idx - 1]];
-                          setSelected({ ...selected, definition: { requirements: reqs.map((x, i) => ({ ...x, sort_order: i })) } });
-                        }}
-                        onMoveDown={() => {
-                          const reqs = selected.definition.requirements.slice();
-                          [reqs[idx], reqs[idx + 1]] = [reqs[idx + 1], reqs[idx]];
-                          setSelected({ ...selected, definition: { requirements: reqs.map((x, i) => ({ ...x, sort_order: i })) } });
-                        }}
-                        onUpdate={(patch) => updateReq(idx, patch)}
-                        onDelete={() => {
-                          const reqs = selected.definition.requirements
-                            .filter((_, i) => i !== idx)
-                            .map((x, i) => ({ ...x, sort_order: i }));
-                          setSelected({ ...selected, definition: { requirements: reqs } });
-                        }}
-                        onUploadAttachment={(file) => uploadAttachment(idx, file)}
-                      />
-                    );
-                  })}
+              <RequirementList
+                requirements={selected.definition.requirements}
+                uploadingIdx={uploadingIdx}
+                onReorder={(reqs) => setSelected({ ...selected, definition: { requirements: reqs } })}
+                onUpdate={(idx, patch) => updateReq(idx, patch)}
+                onDelete={(idx) => {
+                  const reqs = selected.definition.requirements
+                    .filter((_, i) => i !== idx)
+                    .map((x, i) => ({ ...x, sort_order: i }));
+                  setSelected({ ...selected, definition: { requirements: reqs } });
+                }}
+                onUploadAttachment={(idx, file) => uploadAttachment(idx, file)}
+              />
 
-                {/* Add requirement button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const reqs = (selected.definition?.requirements ?? []).slice();
-                    reqs.push({ type: "text", label: "", is_required: true, sort_order: reqs.length });
-                    setSelected({ ...selected, definition: { requirements: reqs } });
-                  }}
-                  className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  Add requirement
-                </button>
-              </div>
+              {/* Add requirement button */}
+              <button
+                type="button"
+                onClick={() => {
+                  const reqs = (selected.definition?.requirements ?? []).slice();
+                  reqs.push({ type: "text", label: "", is_required: true, sort_order: reqs.length });
+                  setSelected({ ...selected, definition: { requirements: reqs } });
+                }}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
+              >
+                <span className="text-lg leading-none">+</span>
+                Add requirement
+              </button>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -600,21 +642,87 @@ export default function TemplatesPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* ── Email template ── */}
+      <EmailTemplateSection
+        settings={emailSettings}
+        loading={emailLoading}
+        saving={emailSaving}
+        onChange={setEmailSettings}
+        onSave={saveEmailSettings}
+      />
+    </div>
+  );
+}
+
+// ─── RequirementList ──────────────────────────────────────────────────────────
+// Drag-and-drop list wrapper.
+
+function RequirementList({
+  requirements,
+  uploadingIdx,
+  onReorder,
+  onUpdate,
+  onDelete,
+  onUploadAttachment,
+}: {
+  requirements: Requirement[];
+  uploadingIdx: Record<number, boolean>;
+  onReorder: (reqs: Requirement[]) => void;
+  onUpdate: (idx: number, patch: Partial<Requirement>) => void;
+  onDelete: (idx: number) => void;
+  onUploadAttachment: (idx: number, file: File) => void;
+}) {
+  const [dragIdx, setDragIdx] = React.useState<number | null>(null);
+  const [overIdx, setOverIdx] = React.useState<number | null>(null);
+
+  const sorted = requirements.slice().sort((a, b) => a.sort_order - b.sort_order);
+
+  function handleDrop(targetIdx: number) {
+    if (dragIdx === null || dragIdx === targetIdx) return;
+    const reqs = sorted.slice();
+    const [moved] = reqs.splice(dragIdx, 1);
+    reqs.splice(targetIdx, 0, moved);
+    onReorder(reqs.map((x, i) => ({ ...x, sort_order: i })));
+    setDragIdx(null);
+    setOverIdx(null);
+  }
+
+  return (
+    <div className="mt-3 flex flex-col gap-2">
+      {sorted.map((r, idx) => (
+        <div
+          key={idx}
+          draggable
+          onDragStart={(e) => { setDragIdx(idx); e.dataTransfer.effectAllowed = "move"; }}
+          onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
+          onDragOver={(e) => { e.preventDefault(); setOverIdx(idx); }}
+          onDragLeave={() => setOverIdx((prev) => (prev === idx ? null : prev))}
+          onDrop={(e) => { e.preventDefault(); handleDrop(idx); }}
+          className={`transition-opacity ${dragIdx === idx ? "opacity-40" : "opacity-100"} ${
+            overIdx === idx && dragIdx !== idx ? "ring-2 ring-[var(--color-accent)] ring-offset-1 rounded-[var(--radius-md)]" : ""
+          }`}
+        >
+          <RequirementEditor
+            idx={idx}
+            r={r}
+            uploadingIdx={uploadingIdx}
+            onUpdate={(patch) => onUpdate(idx, patch)}
+            onDelete={() => onDelete(idx)}
+            onUploadAttachment={(file) => onUploadAttachment(idx, file)}
+          />
+        </div>
+      ))}
     </div>
   );
 }
 
 // ─── RequirementEditor ────────────────────────────────────────────────────────
-// Extracted sub-component to keep the main page readable.
 
 function RequirementEditor({
   idx,
   r,
   uploadingIdx,
-  canMoveUp,
-  canMoveDown,
-  onMoveUp,
-  onMoveDown,
   onUpdate,
   onDelete,
   onUploadAttachment,
@@ -622,10 +730,6 @@ function RequirementEditor({
   idx: number;
   r: Requirement;
   uploadingIdx: Record<number, boolean>;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
   onUpdate: (patch: Partial<Requirement>) => void;
   onDelete: () => void;
   onUploadAttachment: (file: File) => void;
@@ -642,12 +746,17 @@ function RequirementEditor({
     }`}>
       {/* ── Main row ── */}
       <div className="flex items-center gap-2 px-3 py-2">
-        {/* Reorder arrows */}
-        <div className="flex shrink-0 flex-col gap-px">
-          <button type="button" disabled={!canMoveUp} onClick={onMoveUp} title="Move up"
-            className="flex h-4 w-4 items-center justify-center rounded text-[9px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-20">▲</button>
-          <button type="button" disabled={!canMoveDown} onClick={onMoveDown} title="Move down"
-            className="flex h-4 w-4 items-center justify-center rounded text-[9px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-20">▼</button>
+        {/* Drag handle */}
+        <div
+          title="Drag to reorder"
+          className="flex shrink-0 cursor-grab items-center px-0.5 text-[var(--color-text-muted)] active:cursor-grabbing"
+          style={{ touchAction: "none" }}
+        >
+          <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
+            <circle cx="2.5" cy="2.5" r="1.5" /><circle cx="7.5" cy="2.5" r="1.5" />
+            <circle cx="2.5" cy="8" r="1.5" /><circle cx="7.5" cy="8" r="1.5" />
+            <circle cx="2.5" cy="13.5" r="1.5" /><circle cx="7.5" cy="13.5" r="1.5" />
+          </svg>
         </div>
 
         {/* Type selector */}
@@ -774,5 +883,134 @@ function RequirementEditor({
         </div>
       ) : null}
     </div>
+  );
+}
+
+// ─── EmailTemplateSection ─────────────────────────────────────────────────────
+
+function EmailTemplateSection({
+  settings,
+  loading,
+  saving,
+  onChange,
+  onSave,
+}: {
+  settings: EmailSettings;
+  loading: boolean;
+  saving: boolean;
+  onChange: (s: EmailSettings) => void;
+  onSave: () => void;
+}) {
+  const previewSubject = settings.email_subject_template.replace(/\{\{title\}\}/gi, "Your onboarding title");
+  const previewBody = settings.email_body || "Please complete your onboarding in ClientEnforce so your team can continue the next step.";
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle style={{ fontFamily: "var(--font-display)" }}>Email template</CardTitle>
+        <CardDescription>
+          Customise the email sent to clients when an onboarding is dispatched. Use{" "}
+          <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs font-mono">{"{{title}}"}</code>{" "}
+          in the subject line to insert the onboarding name.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-6">
+        {loading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-8">
+            {/* ── Fields ── */}
+            <div className="flex flex-1 flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Subject line</label>
+                <Input
+                  value={settings.email_subject_template}
+                  onChange={(e) => onChange({ ...settings, email_subject_template: e.target.value })}
+                  placeholder="Action required: {{title}}"
+                />
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  Use {"{{title}}"} to include the onboarding name.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Email heading</label>
+                <Input
+                  value={settings.email_heading}
+                  onChange={(e) => onChange({ ...settings, email_heading: e.target.value })}
+                  placeholder="Complete your onboarding"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Message body</label>
+                <textarea
+                  rows={3}
+                  value={settings.email_body}
+                  onChange={(e) => onChange({ ...settings, email_body: e.target.value })}
+                  placeholder="Please complete your onboarding in ClientEnforce so your team can continue the next step."
+                  className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Button label</label>
+                <Input
+                  value={settings.email_cta_label}
+                  onChange={(e) => onChange({ ...settings, email_cta_label: e.target.value })}
+                  placeholder="Open onboarding"
+                />
+              </div>
+
+              <Button
+                onClick={onSave}
+                disabled={saving}
+                className="w-full sm:w-auto self-start rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+              >
+                {saving ? "Saving..." : "Save email template"}
+              </Button>
+            </div>
+
+            {/* ── Preview ── */}
+            <div className="w-full lg:w-80 shrink-0">
+              <div className="text-xs font-semibold text-[var(--color-text-secondary)] mb-2 uppercase tracking-wide">Preview</div>
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white overflow-hidden text-sm">
+                {/* Subject */}
+                <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2.5">
+                  <span className="text-xs text-[var(--color-text-muted)]">Subject: </span>
+                  <span className="text-xs font-medium text-[var(--color-text-primary)]">{previewSubject || "—"}</span>
+                </div>
+                {/* Email body mock */}
+                <div className="px-5 py-5 flex flex-col gap-3">
+                  <div className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">Client onboarding</div>
+                  <div className="text-base font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+                    {settings.email_heading || "Complete your onboarding"}
+                  </div>
+                  <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+                    Hi [Client name],
+                  </div>
+                  <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+                    {previewBody}
+                  </div>
+                  <div className="pt-1">
+                    <div className="inline-block rounded-full bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-white">
+                      {settings.email_cta_label || "Open onboarding"}
+                    </div>
+                  </div>
+                  <div className="pt-2 text-[10px] text-[var(--color-text-muted)]">
+                    This is a transactional email from ClientEnforce.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
