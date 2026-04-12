@@ -71,6 +71,15 @@ function shouldRetryWithoutPendingColumns(error: any) {
   );
 }
 
+function isNoRowsError(error: any) {
+  // PostgREST PGRST116: .single() found 0 rows
+  return (
+    error?.code === "PGRST116" ||
+    String(error?.message ?? "").toLowerCase().includes("0 rows") ||
+    String(error?.message ?? "").toLowerCase().includes("no rows")
+  );
+}
+
 function stripPendingColumns(patch: Record<string, any>) {
   if ("pending_tier" in patch) delete patch.pending_tier;
   if ("pending_interval" in patch) delete patch.pending_interval;
@@ -86,13 +95,21 @@ async function updateOrg(orgId: string, patch: Record<string, any>) {
       .update(patchToApply)
       .eq("id", orgId)
       .select("id, tier, seats_limit, stripe_customer_id, stripe_subscription_id, stripe_subscription_status")
-      .single();
+      .maybeSingle();
 
     if (!error) {
       if (!data?.id) {
-        throw new Error(`org update matched 0 rows for orgId=${orgId}`);
+        // Org not found — likely deleted. Log and return null so the caller
+        // can acknowledge the event rather than letting Stripe retry forever.
+        console.warn("[stripe-webhook] updateOrg matched 0 rows, org may have been deleted", { orgId });
+        return null;
       }
       return data;
+    }
+
+    if (isNoRowsError(error)) {
+      console.warn("[stripe-webhook] updateOrg no-rows error, org may have been deleted", { orgId, code: error?.code });
+      return null;
     }
 
     const canRetry = attempt === 0 && shouldRetryWithoutPendingColumns(error);
@@ -404,8 +421,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ received: true });
   } catch (err: any) {
+    // Org-not-found is a permanent condition — acknowledge so Stripe stops retrying.
+    if (isNoRowsError(err)) {
+      console.warn("[stripe-webhook] org not found, acknowledging to stop retries", { type: event.type, message: err?.message });
+      return NextResponse.json({ received: true });
+    }
     console.error("[stripe-webhook] handler failed", { type: event.type, message: err?.message ?? String(err), err });
-    // IMPORTANT: return non-2xx so you can see failures in `stripe listen` and Stripe retries in production.
+    // IMPORTANT: return non-2xx so Stripe retries transient failures (DB down, etc.)
     return NextResponse.json({ error: "webhook handler failed", type: event.type }, { status: 500 });
   }
 }

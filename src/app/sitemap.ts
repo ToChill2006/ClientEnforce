@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { sitemapPublicPaths } from "@/lib/content/seo-content";
+import { allLpPaths } from "@/lib/verticals";
 import { absoluteUrl } from "@/lib/seo";
 
 // Pages recently updated (April 2026) — signal freshness to search engines
@@ -49,7 +50,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog/best-client-onboarding-software-2026",
   ] as const;
 
-  const canonicalPaths = Array.from(new Set([...sitemapPublicPaths, ...additionalPublicPaths]));
+  const canonicalPaths = Array.from(new Set([...sitemapPublicPaths, ...additionalPublicPaths, ...allLpPaths]));
 
   return canonicalPaths.map((path) => {
     const isHome = path === "/";
@@ -57,12 +58,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const isHighPriority = highPriorityPages.has(path);
     const isBlogPost = path.startsWith("/blog/");
     const isHighValueBlog = path === "/blog/best-client-onboarding-software";
+    const isLpVertical = path.startsWith("/lp/") && path.split("/").length === 3;
+    const isLpSubPage = path.startsWith("/lp/") && path.split("/").length === 4;
     const wasRecentlyUpdated = recentlyUpdatedPaths.has(path);
 
     return {
       url: absoluteUrl(path),
       lastModified: wasRecentlyUpdated ? recentDate : now,
-      changeFrequency: isBlogPost ? "monthly" : "weekly",
+      changeFrequency: isBlogPost || isLpVertical || isLpSubPage ? "monthly" : "weekly",
       priority: isHome
         ? 1
         : isMoneyPage
@@ -71,9 +74,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
             ? 0.9
             : isHighValueBlog
               ? 0.85
-              : isBlogPost
-                ? 0.72
-                : 0.85,
+              : isLpVertical
+                ? 0.8
+                : isLpSubPage
+                  ? 0.75
+                  : isBlogPost
+                    ? 0.72
+                    : 0.85,
     } satisfies MetadataRoute.Sitemap[number];
   });
 }
