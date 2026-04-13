@@ -15,9 +15,13 @@ const solutionsByUseCase = [
 ] as const;
 
 const solutionsWhoFor = [
-  { href: "/onboarding-for-agencies", label: "For agencies" },
-  { href: "/onboarding-for-accountants", label: "For accountants" },
-  { href: "/onboarding-for-consultants", label: "For consultants" },
+  { href: "/agencies", label: "Agencies" },
+  { href: "/consultants", label: "Consultants" },
+  { href: "/accountants", label: "Accountants" },
+  { href: "/ops-teams", label: "Ops teams" },
+  { href: "/auto-service", label: "Auto service" },
+  { href: "/dental-practices", label: "Dental practices" },
+  { href: "/health-wellness", label: "Health & wellness" },
 ] as const;
 
 const solutionsCompare = [
@@ -62,7 +66,7 @@ export function PublicHeader() {
                 ))}
               </div>
               <p className="mb-2 mt-4 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Who it&apos;s for</p>
-              <div className="space-y-0.5">
+              <div className="grid grid-cols-2 gap-0.5">
                 {solutionsWhoFor.map((item) => (
                   <Link key={item.href} href={item.href} className="block rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]">
                     {item.label}
@@ -108,7 +112,7 @@ export function PublicHeader() {
             href="/signup"
             className="hidden items-center justify-center whitespace-nowrap rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] md:inline-flex"
           >
-            Get started
+            Start Free Trial
           </Link>
           <MobileMenu />
         </div>
@@ -139,9 +143,12 @@ const resourceLinks = [
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  { href: "/onboarding-for-agencies", label: "For agencies" },
-  { href: "/onboarding-for-accountants", label: "For accountants" },
-  { href: "/onboarding-for-consultants", label: "For consultants" },
+  { href: "/agencies", label: "For agencies" },
+  { href: "/consultants", label: "For consultants" },
+  { href: "/accountants", label: "For accountants" },
+  { href: "/auto-service", label: "For auto service" },
+  { href: "/dental-practices", label: "For dental practices" },
+  { href: "/health-wellness", label: "For health & wellness" },
 ] as const;
 
 export function PublicFooter() {
