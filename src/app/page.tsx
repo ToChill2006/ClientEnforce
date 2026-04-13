@@ -13,7 +13,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Client Onboarding Software for US Agencies & Consultants | ClientEnforce",
   description:
-    "ClientEnforce is client onboarding software that enforces completion — not just tracks it. Built for US agencies, consultants, and accountants. Live in 20 minutes. Start free.",
+    "ClientEnforce is onboarding enforcement software that locks down required steps, automates follow-ups, and gives your team one dashboard to track every client — not just tracks it. Built for US agencies, consultants, and accountants. Live in 20 minutes. Start free.",
   path: "/",
   keywords: [
     "client onboarding software",
@@ -357,6 +357,28 @@ export default function MarketingPage() {
                 </FadeUp>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── Enforcement ─────────────────────────────────────────────────── */}
+        <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-20">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <FadeUp>
+              <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
+                Onboarding enforcement software — not just tracking
+              </h2>
+              <p className="mt-4 max-w-3xl text-lg text-[var(--color-text-secondary)]">
+                Most onboarding tools show you what&apos;s missing. ClientEnforce stops clients from skipping it. Required steps are gated — clients cannot move forward or mark a task complete without actually completing it. That is the difference between a checklist and an enforced workflow.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]">
+                  Start free — no credit card
+                </Link>
+                <Link href="/client-onboarding-software" className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]">
+                  How enforcement works →
+                </Link>
+              </div>
+            </FadeUp>
           </div>
         </section>
 

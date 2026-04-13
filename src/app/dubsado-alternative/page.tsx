@@ -7,8 +7,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Dubsado Alternative for Agencies & Teams | ClientEnforce",
-  description: "Outgrown Dubsado for client onboarding? ClientEnforce enforces completion at every step — document collection, e-signatures, audit trail — built for agencies running multiple onboardings at once. Start free.",
+  title: "Dubsado Alternative for Agencies Running Multiple Onboardings | ClientEnforce",
+  description: "Need a Dubsado alternative built for agency scale? ClientEnforce enforces required steps, collects documents and signatures, and automates follow-ups — live in 20 minutes. No credit card required.",
   path: "/dubsado-alternative",
   keywords: ["Dubsado alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist"],
   type: "website",
@@ -103,7 +103,7 @@ export default function DubsadoAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              The Dubsado alternative built for agencies — not just freelancers
+              Dubsado alternative built for agencies running multiple onboardings at once
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
               Dubsado is a solid tool. But if you run an agency or service team and your main pain is chaotic client onboarding, you need something more focused.

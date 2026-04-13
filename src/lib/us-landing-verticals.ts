@@ -132,9 +132,9 @@ const consultants: UsVerticalConfig = {
     "consultant onboarding automation",
     "consulting firm client onboarding",
   ],
-  heroHeadline: "Get everything you need from a new client — before the first call.",
+  heroHeadline: "The consultant client portal that gets everything you need before day one.",
   heroSubheadline:
-    "ClientEnforce gives consultants a structured intake portal that collects documents, answers, and signatures upfront — so you can hit the ground running on day one.",
+    "ClientEnforce is a consultant client portal — no login required for clients — that collects documents, answers, and signatures upfront so you can hit the ground running from the first call.",
   painPoints: [
     {
       title: "Discovery takes three sessions instead of one",
@@ -208,9 +208,9 @@ const accountants: UsVerticalConfig = {
     "bookkeeper client intake software",
     "accounting practice onboarding system",
   ],
-  heroHeadline: "Collect every client document before the deadline — not after.",
+  heroHeadline: "Accounting client onboarding software that enforces every deadline.",
   heroSubheadline:
-    "ClientEnforce helps accounting firms collect required documents, track completion, and maintain an audit-ready timeline — without a single manual follow-up.",
+    "ClientEnforce is accounting client onboarding software that collects required documents, tracks completion, and maintains an audit-ready timeline — without a single manual follow-up.",
   painPoints: [
     {
       title: "Tax season hits and half your clients still haven't submitted their docs",
@@ -442,9 +442,9 @@ const dentalPractices: UsVerticalConfig = {
     "multi-location dental practice management",
     "dental new patient forms software",
   ],
-  heroHeadline: "New patient intake shouldn't start with a clipboard in the waiting room.",
+  heroHeadline: "Dental patient software that collects intake before the waiting room.",
   heroSubheadline:
-    "ClientEnforce gives dental practices and DSOs a structured intake system — required forms, consent documents, insurance info, and payment setup collected upfront, automatically, before the first appointment.",
+    "ClientEnforce gives dental practices and DSOs a structured intake system — required forms, HIPAA consent documents, insurance info, and payment setup collected upfront, automatically, before the first appointment.",
   painPoints: [
     {
       title: "New patients arrive with half their paperwork done",
@@ -520,10 +520,9 @@ const healthWellness: UsVerticalConfig = {
     "health services onboarding automation",
     "health and wellness intake software",
   ],
-  heroHeadline:
-    "Health and wellness businesses can't afford gaps in onboarding. ClientEnforce closes them.",
+  heroHeadline: "Home health agency onboarding software that closes every compliance gap.",
   heroSubheadline:
-    "ClientEnforce gives health and wellness businesses a structured onboarding system — required intake forms, consent documents, insurance info, and care agreements collected upfront, with automated reminders and a full audit trail.",
+    "ClientEnforce gives home health agencies and wellness businesses a structured onboarding system — required intake forms, consent documents, insurance info, and care agreements collected upfront, with automated reminders and a full audit trail.",
   painPoints: [
     {
       title: "Care starts before intake is complete",

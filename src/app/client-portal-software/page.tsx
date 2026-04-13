@@ -119,6 +119,21 @@ export default function ClientPortalSoftwarePage() {
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
 
+              {/* No Login Required */}
+              <FadeUp>
+                <section className="rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                  <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-accent)]" style={{ fontFamily: "var(--font-display)" }}>
+                    No login required for clients
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
+                    Clients access their onboarding portal through a single secure link — no account creation, no password, no app to download. They click the link, see exactly what they need to complete, and work through it on any device. When their session ends, they return to the same link and pick up exactly where they left off.
+                  </p>
+                  <p className="mt-3 text-sm font-semibold text-[var(--color-text-secondary)]">
+                    Fewer barriers = higher completion rates. It&apos;s the most common reason teams switch from generic portals to ClientEnforce.
+                  </p>
+                </section>
+              </FadeUp>
+
               {/* What client portal software needs to do */}
               <FadeUp>
                 <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">

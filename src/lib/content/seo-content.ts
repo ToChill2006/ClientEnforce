@@ -3350,9 +3350,9 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "dubsado-vs-honeybook": {
     path: "/dubsado-vs-honeybook",
-    title: "Dubsado vs HoneyBook for Client Onboarding (and Better Alternative)",
+    title: "HoneyBook vs Dubsado for Client Onboarding (and a Better Alternative) | ClientEnforce",
     description:
-      "Compare Dubsado vs HoneyBook for client onboarding workflows, automation, and readiness controls, then evaluate ClientEnforce as an onboarding-first alternative.",
+      "HoneyBook vs Dubsado: compare both tools for client onboarding workflows, required-step enforcement, and audit trails — then see why onboarding-first teams choose ClientEnforce instead.",
     keywords: [
       "honeybook vs dubsado",
       "dubsado vs honeybook",
@@ -3361,8 +3361,8 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       "best dubsado alternatives",
       "tools like dubsado",
     ],
-    eyebrow: "Dubsado vs HoneyBook",
-    h1: "Dubsado vs HoneyBook for Client Onboarding: Which Fits Better?",
+    eyebrow: "HoneyBook vs Dubsado",
+    h1: "HoneyBook vs Dubsado for Client Onboarding: Which Actually Enforces Completion?",
     intro:
       "Dubsado and HoneyBook are both broad client-operations platforms. This page compares them through an onboarding lens and shows when onboarding-first software like ClientEnforce is the better fit.",
     highlights: [

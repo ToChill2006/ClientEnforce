@@ -7,8 +7,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best HoneyBook Alternative for Agencies & Service Teams | ClientEnforce",
-  description: "Outgrown HoneyBook for client onboarding? ClientEnforce enforces completion at every step — document collection, audit trail, zero inbox chasing. Built for teams, not solo freelancers. Start free.",
+  title: "HoneyBook Alternative for Agencies & Service Teams | ClientEnforce",
+  description: "Looking for a HoneyBook alternative built for teams? ClientEnforce enforces completion at every step — required-step intake, document collection, audit trail, automated reminders. No credit card required.",
   path: "/honeybook-alternative",
   keywords: ["HoneyBook alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist"],
   type: "website",
@@ -94,7 +94,7 @@ export default function HoneyBookAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              The HoneyBook alternative for teams that have outgrown freelancer tools
+              HoneyBook alternative for teams that need enforcement, not flexibility
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
               HoneyBook works beautifully for independent creatives. But if you run a team, onboard multiple clients a month, and need structured intake with an audit trail — you need something built for that job specifically.

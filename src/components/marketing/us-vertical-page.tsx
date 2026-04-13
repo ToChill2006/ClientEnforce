@@ -302,7 +302,7 @@ function WhiteLabelCallout() {
                 className="mt-4 text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[36px]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Your brand. Your portal. Your experience.
+                White label client onboarding software — your brand, your portal.
               </h2>
               <p className="mt-3 text-base leading-7 text-[var(--color-text-secondary)]">
                 With Agency Pro, every client portal carries your agency&apos;s logo, colors, and domain. Clients never see ClientEnforce — they see a premium, branded onboarding experience that builds trust from day one.
