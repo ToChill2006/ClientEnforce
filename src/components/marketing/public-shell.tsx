@@ -146,6 +146,7 @@ const resourceLinks = [
   { href: "/agencies", label: "For agencies" },
   { href: "/consultants", label: "For consultants" },
   { href: "/accountants", label: "For accountants" },
+  { href: "/ops-teams", label: "For ops teams" },
   { href: "/auto-service", label: "For auto service" },
   { href: "/dental-practices", label: "For dental practices" },
   { href: "/health-wellness", label: "For health & wellness" },
