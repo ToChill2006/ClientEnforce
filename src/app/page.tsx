@@ -286,28 +286,6 @@ export default function MarketingPage() {
           </div>
         </section>
 
-        {/* ── Testimonial ─────────────────────────────────────────────────── */}
-        {/* TODO: Replace placeholder with real US customer testimonial when available */}
-        <section className="border-b border-[var(--color-border)] bg-white py-20">
-          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <figure className="mx-auto max-w-3xl text-center">
-                <blockquote className="text-2xl font-semibold leading-snug text-[var(--color-text-primary)] sm:text-3xl" style={{ fontFamily: "var(--font-display)" }}>
-                  &ldquo;We went live in under 20 minutes. Our first client completed onboarding the same day.&rdquo;
-                </blockquote>
-                <figcaption className="mt-6 flex items-center justify-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-[var(--color-bg-muted)]" aria-hidden="true" />
-                  <div className="text-left">
-                    {/* TODO: Replace with real customer name, company, and location */}
-                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">[Customer Name]</p>
-                    <p className="text-xs text-[var(--color-text-muted)]">[Agency Name] · [City, State]</p>
-                  </div>
-                </figcaption>
-              </figure>
-            </FadeUp>
-          </div>
-        </section>
-
         {/* ── Feature highlights ───────────────────────────────────────────── */}
         <section className="border-b border-[var(--color-border)] bg-white py-24">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">

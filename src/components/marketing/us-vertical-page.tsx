@@ -184,35 +184,6 @@ function HowItWorksSection({ config }: { config: UsVerticalConfig }) {
   );
 }
 
-function TestimonialSection({ config }: { config: UsVerticalConfig }) {
-  return (
-    <section className="border-b border-[var(--color-border)] bg-white py-20">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-        <FadeUp>
-          {/* TODO: Replace placeholder text with a real customer quote, name, title, and location */}
-          <figure className="mx-auto max-w-3xl text-center">
-            <blockquote
-              className="text-2xl font-semibold leading-snug text-[var(--color-text-primary)] sm:text-3xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              &ldquo;{config.testimonialQuote}&rdquo;
-            </blockquote>
-            <figcaption className="mt-6 flex items-center justify-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-[var(--color-bg-muted)]" aria-hidden="true" />
-              <div className="text-left">
-                <p className="text-sm font-semibold text-[var(--color-text-primary)]">{config.testimonialName}</p>
-                <p className="text-xs text-[var(--color-text-muted)]">
-                  {config.testimonialTitle} · {config.testimonialLocation}
-                </p>
-              </div>
-            </figcaption>
-          </figure>
-        </FadeUp>
-      </div>
-    </section>
-  );
-}
-
 function FeaturesSection({ config }: { config: UsVerticalConfig }) {
   return (
     <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-24">
@@ -426,7 +397,6 @@ export function UsVerticalPage({ config }: { config: UsVerticalConfig }) {
         <TrustBar config={config} />
         <PainPointsSection config={config} />
         <HowItWorksSection config={config} />
-        <TestimonialSection config={config} />
         <FeaturesSection config={config} />
         {config.showComplianceCallout && config.complianceCallout && (
           <ComplianceCallout text={config.complianceCallout} />
