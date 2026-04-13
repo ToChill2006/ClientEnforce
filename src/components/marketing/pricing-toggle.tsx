@@ -2,11 +2,13 @@
 import { useState } from "react";
 import Link from "next/link";
 
+type Currency = "GBP" | "USD";
+
 const plans = [
   {
     name: "Solo",
-    monthlyPrice: "£0",
-    annualPrice: "£0",
+    GBP: { monthly: "£0", annual: "£0" },
+    USD: { monthly: "$0", annual: "$0" },
     cadence: "/month",
     tagline: "For testing your onboarding flow and first client rollouts.",
     features: [
@@ -22,8 +24,8 @@ const plans = [
   },
   {
     name: "Team",
-    monthlyPrice: "£29",
-    annualPrice: "£24",
+    GBP: { monthly: "£29", annual: "£24" },
+    USD: { monthly: "$37", annual: "$30" },
     cadence: "/month",
     tagline: "For small teams running onboarding at pace.",
     features: [
@@ -39,8 +41,8 @@ const plans = [
   },
   {
     name: "Scale",
-    monthlyPrice: "£89",
-    annualPrice: "£74",
+    GBP: { monthly: "£89", annual: "£74" },
+    USD: { monthly: "$113", annual: "$94" },
     cadence: "/month",
     tagline: "For teams onboarding clients at volume with stricter controls.",
     features: [
@@ -64,7 +66,7 @@ function CheckIcon() {
   );
 }
 
-export function PricingToggle() {
+export function PricingToggle({ currency = "GBP" }: { currency?: Currency }) {
   const [annual, setAnnual] = useState(false);
 
   return (
@@ -138,7 +140,7 @@ export function PricingToggle() {
                 className="text-5xl font-bold text-[var(--color-text-primary)]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                {annual ? plan.annualPrice : plan.monthlyPrice}
+                {annual ? plan[currency].annual : plan[currency].monthly}
               </span>
               <span className="mb-1.5 text-sm text-[var(--color-text-muted)]">{plan.cadence}</span>
             </div>

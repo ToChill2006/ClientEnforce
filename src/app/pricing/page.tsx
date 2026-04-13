@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 
 import { JsonLd, PageContainer, PublicFooter, PublicHeader, CtaBand } from "@/components/marketing/public-shell";
 import { FadeUp } from "@/components/marketing/fade-up";
@@ -56,7 +57,11 @@ function Cell({ val }: { val: boolean | string }) {
   return <span className="text-xs text-[var(--color-text-secondary)]">{val}</span>;
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const headersList = await headers();
+  const country = headersList.get("x-vercel-ip-country") ?? "GB";
+  const currency = country === "US" ? "USD" : "GBP";
+
   return (
     <div className="min-h-screen bg-white">
       <PublicHeader />
@@ -88,7 +93,7 @@ export default function PricingPage() {
         {/* Plans */}
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-20">
           <PageContainer>
-            <PricingToggle />
+            <PricingToggle currency={currency} />
           </PageContainer>
         </section>
 
