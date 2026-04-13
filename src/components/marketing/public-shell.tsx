@@ -136,6 +136,8 @@ const comparisonLinks = [
   { href: "/honeybook-alternative", label: "vs HoneyBook" },
   { href: "/copilot-alternative", label: "vs Copilot" },
   { href: "/bonsai-alternative", label: "vs Bonsai" },
+  { href: "/rocketlane-alternative", label: "vs Rocketlane" },
+  { href: "/guidecx-alternative", label: "vs GUIDEcx" },
   { href: "/best-client-onboarding-software", label: "Best onboarding software" },
 ] as const;
 

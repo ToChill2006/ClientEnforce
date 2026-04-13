@@ -475,7 +475,29 @@ const dentalPractices: UsVerticalConfig = {
   showComplianceCallout: true,
   complianceCallout:
     "Every submission is timestamped and logged — giving your practice a defensible, audit-ready record of patient intake and consent.",
-  showUseCasesBlock: false,
+  showUseCasesBlock: true,
+  useCases: [
+    {
+      title: "Single-Location Dental Practices",
+      description:
+        "Dental patient intake software that collects new patient forms, insurance information, HIPAA consent, and payment method — automatically, before the appointment. Front desk staff spend less time chasing paperwork and more time on patient experience.",
+    },
+    {
+      title: "Multi-Location Groups",
+      description:
+        "Standardize new patient intake across every location with one template. Each location follows the same process — same forms, same order, same completion requirements — so your operations team can monitor intake quality across the whole group from one dashboard.",
+    },
+    {
+      title: "DSO Onboarding Software",
+      description:
+        "DSO onboarding software built for scale. Deploy one intake template across every practice in your network. Required-step enforcement ensures no patient arrives without complete paperwork, regardless of location size or front desk experience level.",
+    },
+    {
+      title: "New Associate & Staff Onboarding",
+      description:
+        "Use ClientEnforce for new associate and front desk hire onboarding too. Credentialing documents, signed employment agreements, and required compliance training confirmations — all collected in a structured portal before their first day.",
+    },
+  ],
   faqItems: [
     {
       question: "Does this work for multi-location dental groups and DSOs?",
@@ -558,22 +580,22 @@ const healthWellness: UsVerticalConfig = {
     {
       title: "Home Health Agencies",
       description:
-        "Collect caregiver credentials, client care agreements, and emergency contacts before the first visit. Required-step enforcement means nothing is missed before care begins.",
+        "Home health agency onboarding software that collects caregiver credentials, client care agreements, and emergency contact forms before the first visit. Required-step enforcement means care can't begin until intake is provably complete — giving you a defensible record for every client from day one.",
     },
     {
       title: "Therapy & Mental Health Practices",
       description:
-        "Intake questionnaires, consent forms, and insurance verification — done before session one. Clients complete everything from a link, no account needed.",
+        "Therapy practice intake software that collects psychosocial history forms, HIPAA consent, insurance verification, and session agreements — all before session one. Clients complete their intake from a secure link with no account required, on any device, at their own pace.",
     },
     {
-      title: "Wellness Studios",
+      title: "Wellness Studios & Fitness Businesses",
       description:
-        "New member agreements, health screening forms, and liability waivers — automated and enforced. Members complete intake on their own time before their first visit.",
+        "Wellness studio onboarding for new member agreements, health screening questionnaires, and liability waivers — sent automatically when a membership is confirmed. Members finish intake before their first class; your front desk doesn't chase paperwork.",
     },
     {
       title: "Benefits Brokers & EAPs",
       description:
-        "Employer group enrollment, employee eligibility forms, and plan documentation — one portal per account. Automated reminders handle the follow-up.",
+        "Structured employer group enrollment — eligibility forms, plan documentation, and employee consent — in one portal per account. Automated reminders handle follow-up during open enrollment so your brokers focus on relationships, not administrative chasing.",
     },
   ],
   faqItems: [
