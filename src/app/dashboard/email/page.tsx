@@ -325,14 +325,12 @@ export default function EmailPage() {
                     ? "Emails will be sent using your SMTP credentials below."
                     : 'Emails are sent by ClientEnforce from "ClientEnforce <info@clientenforce.com>".'}
                 </p>
-                {smtpSettings.email_provider === "smtp" && (
-                  <Link
-                    href="/dashboard/email/custom-domain-guide"
-                    className="inline-flex items-center gap-1 text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
-                  >
-                    How do I set this up? →
-                  </Link>
-                )}
+                <Link
+                  href="/dashboard/email/custom-domain-guide"
+                  className="inline-flex items-center gap-1 text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
+                >
+                  How do I set this up? →
+                </Link>
               </div>
 
               {smtpSettings.email_provider === "smtp" && (
