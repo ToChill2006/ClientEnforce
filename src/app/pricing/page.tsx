@@ -9,10 +9,10 @@ import { PricingToggle } from "@/components/marketing/pricing-toggle";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "ClientEnforce Pricing | Client Onboarding Software Plans",
-  description: "Simple, transparent pricing for client onboarding software. Start free, upgrade when you need more. No long contracts.",
+  title: "ClientEnforce Pricing | Onboarding Software Plans for US Teams",
+  description: "Simple, transparent pricing for US agencies, consultants, and accountants. Start free — no credit card required. Plans from $0 to $149/month.",
   path: "/pricing",
-  keywords: ["client onboarding software pricing", "client onboarding platform pricing", "client onboarding automation plans"],
+  keywords: ["client onboarding software pricing", "client portal software pricing US", "onboarding automation for agencies pricing"],
   type: "website",
 });
 
@@ -25,18 +25,20 @@ const pricingFaqItems = [
 ] as const;
 
 const comparisonFeatures = [
-  { name: "Admin users", solo: "1", team: "Up to 5", scale: "Up to 15" },
-  { name: "Onboarding templates", solo: "1", team: "Up to 10", scale: "Unlimited" },
-  { name: "Active onboardings", solo: "5", team: "50", scale: "200" },
-  { name: "Client portal (no login)", solo: true, team: true, scale: true },
-  { name: "Document uploads", solo: true, team: true, scale: true },
-  { name: "E-signatures", solo: true, team: true, scale: true },
-  { name: "Automated reminders", solo: false, team: true, scale: true },
-  { name: "Audit trail", solo: false, team: true, scale: true },
-  { name: "Evidence export (PDF)", solo: false, team: true, scale: true },
-  { name: "Team roles (RBAC)", solo: false, team: true, scale: true },
-  { name: "Advanced reporting", solo: false, team: "Limited", scale: "Full" },
-  { name: "Priority support", solo: false, team: true, scale: true },
+  { name: "Admin users", solo: "1", team: "Up to 5", scale: "Up to 15", agency: "Up to 15" },
+  { name: "Onboarding templates", solo: "1", team: "Up to 10", scale: "Unlimited", agency: "Unlimited" },
+  { name: "Active onboardings", solo: "5", team: "50", scale: "200", agency: "Unlimited" },
+  { name: "Client portal (no login)", solo: true, team: true, scale: true, agency: true },
+  { name: "Document uploads", solo: true, team: true, scale: true, agency: true },
+  { name: "E-signatures", solo: true, team: true, scale: true, agency: true },
+  { name: "Automated reminders", solo: false, team: true, scale: true, agency: true },
+  { name: "Audit trail", solo: false, team: true, scale: true, agency: true },
+  { name: "Evidence export (PDF)", solo: false, team: true, scale: true, agency: true },
+  { name: "Team roles (RBAC)", solo: false, team: true, scale: true, agency: true },
+  { name: "Advanced reporting", solo: false, team: "Limited", scale: "Full", agency: "Full" },
+  { name: "White-label portals", solo: false, team: false, scale: false, agency: true },
+  { name: "Custom portal domain", solo: false, team: false, scale: false, agency: true },
+  { name: "Priority support", solo: false, team: true, scale: true, agency: "Dedicated" },
 ] as const;
 
 const pricingFaqSchema = {
@@ -73,19 +75,20 @@ export default async function PricingPage() {
             <FadeUp>
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Pricing</p>
               <h1 className="mt-3 text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl lg:text-[56px]" style={{ fontFamily: "var(--font-display)" }}>
-                Simple pricing for client onboarding software
+                Straightforward pricing for US teams that onboard clients
               </h1>
               <p className="mt-5 max-w-xl text-lg text-[var(--color-text-secondary)]">
-                Start free, then upgrade as your onboarding volume grows. Every plan includes the core workflow tools you need.
+                Start free, then upgrade as your onboarding volume grows. Every paid plan includes automated reminders, audit trails, and required-step enforcement — no IT setup required.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
-                  Start free trial
+                  Start Free Trial
                 </Link>
-                <Link href="/features" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
-                  Explore features
+                <Link href="/contact" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
+                  Book a 15-min Demo
                 </Link>
               </div>
+              <p className="mt-4 text-xs text-[var(--color-text-muted)]">No credit card required · 30-day money-back guarantee · Cancel anytime</p>
             </FadeUp>
           </PageContainer>
         </section>
@@ -103,11 +106,12 @@ export default async function PricingPage() {
             <FadeUp>
               <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Which plan should you pick?</h2>
             </FadeUp>
-            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {[
-                { name: "Solo", desc: "Best when you are validating one onboarding workflow and volume is still low." },
-                { name: "Team", desc: "Best for agencies and service teams that need automated reminders and repeatable execution." },
-                { name: "Scale", desc: "Best when you manage higher onboarding volume and need stronger governance across multiple team members." },
+                { name: "Solo", desc: "Best when you're testing one workflow or onboarding your first few clients. Free, no card required." },
+                { name: "Team", desc: "Best for US agencies and service teams that need automated follow-ups, audit trails, and repeatable execution." },
+                { name: "Scale", desc: "Best when you're managing high onboarding volume and need stronger governance across a larger team." },
+                { name: "Agency Pro", desc: "Best for agencies that want to deliver a fully branded onboarding experience under their own domain." },
               ].map((p, i) => (
                 <FadeUp key={p.name} delay={i * 80}>
                   <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6">
@@ -136,6 +140,7 @@ export default async function PricingPage() {
                       <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Solo</th>
                       <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Team</th>
                       <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Scale</th>
+                      <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Agency Pro</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--color-border)]">
@@ -145,6 +150,7 @@ export default async function PricingPage() {
                         <td className="px-5 py-3.5 text-center"><Cell val={row.solo} /></td>
                         <td className="px-5 py-3.5 text-center"><Cell val={row.team} /></td>
                         <td className="px-5 py-3.5 text-center"><Cell val={row.scale} /></td>
+                        <td className="px-5 py-3.5 text-center"><Cell val={row.agency} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -169,8 +175,10 @@ export default async function PricingPage() {
 
         <CtaBand
           heading="Your next client deserves a better start."
-          subtext="Set up your first onboarding template in under 20 minutes."
-          primaryLabel="Start free trial — no credit card needed"
+          subtext="Launch your first onboarding template in under 20 minutes. No credit card required. 30-day money-back guarantee."
+          primaryLabel="Start Free Trial"
+          secondaryLabel="Book a 15-min Demo →"
+          secondaryHref="/contact"
         />
 
       </main>

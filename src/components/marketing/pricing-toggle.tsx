@@ -10,15 +10,15 @@ const plans = [
     GBP: { monthly: "£0", annual: "£0" },
     USD: { monthly: "$0", annual: "$0" },
     cadence: "/month",
-    tagline: "For testing your onboarding flow and first client rollouts.",
+    tagline: "Test your onboarding flow and get your first client live.",
     features: [
       "1 admin user",
       "1 onboarding template",
       "Client portal link per onboarding",
-      "Document uploads + signatures",
+      "Document uploads + e-signatures",
       "Up to 5 active onboardings",
     ],
-    cta: { label: "Start free — no card needed", href: "/signup" },
+    cta: { label: "Start free — no card required", href: "/signup" },
     badge: null as string | null,
     highlighted: false,
   },
@@ -27,7 +27,7 @@ const plans = [
     GBP: { monthly: "£29", annual: "£24" },
     USD: { monthly: "$37", annual: "$30" },
     cadence: "/month",
-    tagline: "For small teams running onboarding at pace.",
+    tagline: "For small US teams running client onboarding at pace.",
     features: [
       "Up to 5 admin users",
       "Up to 10 templates",
@@ -42,9 +42,9 @@ const plans = [
   {
     name: "Scale",
     GBP: { monthly: "£89", annual: "£74" },
-    USD: { monthly: "$113", annual: "$94" },
+    USD: { monthly: "$99", annual: "$83" },
     cadence: "/month",
-    tagline: "For teams onboarding clients at volume with stricter controls.",
+    tagline: "For teams onboarding at volume who need stronger controls.",
     features: [
       "Up to 15 admin users",
       "Unlimited templates",
@@ -54,6 +54,23 @@ const plans = [
     ],
     cta: { label: "Start Scale plan", href: "/signup" },
     badge: "Best value",
+    highlighted: false,
+  },
+  {
+    name: "Agency Pro",
+    GBP: { monthly: "£119", annual: "£99" },
+    USD: { monthly: "$149", annual: "$124" },
+    cadence: "/month",
+    tagline: "White-label portals + unlimited onboardings for agencies that sell the experience.",
+    features: [
+      "Everything in Scale",
+      "White-label client portals (your brand)",
+      "Custom domain for portals",
+      "Unlimited active onboardings",
+      "Dedicated onboarding support",
+    ],
+    cta: { label: "Start Agency Pro plan", href: "/signup" },
+    badge: "Best for agencies",
     highlighted: false,
   },
 ];
@@ -102,15 +119,15 @@ export function PricingToggle({ currency = "GBP" }: { currency?: Currency }) {
       </div>
 
       {/* Plan cards */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {plans.map((plan) => (
           <div
             key={plan.name}
             className={[
               "relative flex flex-col rounded-[var(--radius-xl)] border p-8 transition",
               plan.highlighted
-                ? "order-first border-[var(--color-accent)] bg-[var(--color-accent-subtle)] shadow-[var(--shadow-lg)] lg:order-none"
-                : "order-last border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] lg:order-none",
+                ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)] shadow-[var(--shadow-lg)]"
+                : "border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]",
             ].join(" ")}
           >
             {plan.badge && (

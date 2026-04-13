@@ -11,16 +11,16 @@ import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Software — Stop Chasing Clients | ClientEnforce",
+  title: "Client Onboarding Software for US Agencies & Consultants | ClientEnforce",
   description:
-    "ClientEnforce is client onboarding software that enforces completion - not just tracks it. Built for agencies, consultants, and accountants. Start free.",
+    "ClientEnforce is client onboarding software that enforces completion — not just tracks it. Built for US agencies, consultants, and accountants. Live in 20 minutes. Start free.",
   path: "/",
   keywords: [
     "client onboarding software",
     "client onboarding automation",
-    "client onboarding checklist",
+    "onboarding automation for agencies",
+    "client portal software US",
     "best client onboarding tools",
-    "onboarding software for agencies",
   ],
   type: "website",
   ogImage: "https://clientenforce.com/images/og/clientenforce-homepage-og.png",
@@ -28,10 +28,10 @@ export const metadata: Metadata = buildPageMetadata({
 
 /* ─── Data ────────────────────────────────────────────────────────────────── */
 const painPoints = [
-  { icon: <Mail className="h-5 w-5" />, title: "You've sent the same request three times", body: "Documents, signatures, and approvals vanish into email threads and go unanswered." },
-  { icon: <AlertCircle className="h-5 w-5" />, title: "Projects kick off with gaps", body: "A new engagement is technically started, but half the intake information is still missing." },
-  { icon: <Layers className="h-5 w-5" />, title: "Status lives in three places at once", body: "Your team tracks onboarding across email threads, a spreadsheet, and someone's memory." },
-  { icon: <Users className="h-5 w-5" />, title: "Clients blame delays on you", body: "A client blamed your team for delays that started because they never completed onboarding." },
+  { icon: <Mail className="h-5 w-5" />, title: "You've followed up three times. They still haven't sent it.", body: "The document, the signature, the account access — sitting in their inbox, ignored. And the project clock is already ticking." },
+  { icon: <AlertCircle className="h-5 w-5" />, title: "You kicked off the project. Half the intake is still missing.", body: "You needed their brand assets, signed agreement, and credentials on day one. It's week two. You're still waiting." },
+  { icon: <Layers className="h-5 w-5" />, title: "You have no idea where three clients stand right now.", body: "One's in email, one's in a spreadsheet, one's in someone's head. None of it updates automatically. Something always falls through." },
+  { icon: <Users className="h-5 w-5" />, title: "The client thinks the delay is your fault.", body: "They haven't completed onboarding — but from their side, nothing's happened yet. Now you're defending a timeline that isn't yours to own." },
 ] as const;
 
 const features = [
@@ -53,11 +53,11 @@ const whoItsFor = [
 ] as const;
 
 const homepageFaqItems = [
-  { question: "What is client onboarding software?", answer: "Client onboarding software is a structured system that moves a new client from signed agreement to active delivery with trackable steps, document collection, e-signatures, and reminders." },
-  { question: "How is ClientEnforce different from a CRM like Dubsado or HoneyBook?", answer: "ClientEnforce focuses on onboarding execution. Instead of broad CRM management, it is built to enforce completion from contract to kickoff-ready with a full audit trail and automated follow-ups." },
-  { question: "Who is ClientEnforce built for?", answer: "ClientEnforce is built for agencies, consultants, accountants, and operations-led service teams that onboard clients repeatedly and need a reliable, repeatable process." },
-  { question: "How long does it take to set up ClientEnforce?", answer: "Most teams can launch a first onboarding template in under 20 minutes, then refine it as they onboard real clients." },
-  { question: "Does ClientEnforce replace my project management tool?", answer: "No. ClientEnforce handles onboarding from signed agreement to kickoff-ready. Your project management tool handles delivery after kickoff. The two work together." },
+  { question: "What is client onboarding software?", answer: "Client onboarding software is a structured system that moves a new client from signed agreement to active delivery — with trackable steps, document collection, e-signatures, and automated reminders. It replaces the back-and-forth that typically happens over email." },
+  { question: "How is ClientEnforce different from tools like Dubsado or HoneyBook?", answer: "ClientEnforce focuses specifically on onboarding execution. Unlike broad CRM or proposal tools, it is built to enforce completion from contract signed to kickoff-ready — with required-step gates, a full audit trail, and automated follow-ups. It's built for teams, not just solopreneurs." },
+  { question: "Who is ClientEnforce built for?", answer: "ClientEnforce is built for US-based agencies, independent consultants, accounting firms, and operations-led service teams that onboard clients repeatedly and need a fast, reliable, repeatable process." },
+  { question: "How long does it take to get started?", answer: "Most teams launch their first onboarding template in under 20 minutes. You don't need IT support or a lengthy setup process — just build your template, copy the portal link, and send it." },
+  { question: "Does ClientEnforce replace my project management tool?", answer: "No — and it's not trying to. ClientEnforce handles the intake phase: from signed agreement to kickoff-ready. Your project management tool handles delivery after that. They work alongside each other." },
 ] as const;
 
 /* ─── Hero product mockup ─────────────────────────────────────────────────── */
@@ -140,7 +140,7 @@ const homepageSoftwareSchema = {
   operatingSystem: "Web",
   description: "Client onboarding software that replaces email chaos with structured workflows, document collection, e-signatures, automated reminders, and audit-ready tracking.",
   url: "https://clientenforce.com",
-  offers: { "@type": "AggregateOffer", priceCurrency: "GBP", lowPrice: "0", offerCount: "3" },
+  offers: { "@type": "AggregateOffer", priceCurrency: "USD", lowPrice: "0", offerCount: "4" },
 };
 
 const homepageFaqSchema = {
@@ -170,27 +170,27 @@ export default function MarketingPage() {
           <div className="relative mx-auto grid max-w-[1200px] gap-12 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
-                For agencies · consultants · accountants
+                For US agencies · consultants · accountants
               </div>
               <h1
                 className="mt-6 text-4xl font-bold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-5xl lg:text-[64px]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Client onboarding that enforces completion — not just tracks it
+                Stop chasing clients. Start enforcing completion.
               </h1>
               <p className="mt-5 text-lg leading-7 text-[var(--color-text-secondary)]">
-                Most teams lose hours every week chasing clients for documents, signatures, and approvals. ClientEnforce replaces that chaos with one structured workflow your clients actually complete.
+                ClientEnforce automates follow-ups, locks down required docs, and gives your team one dashboard to track every onboarding — without lifting a finger. Built for US agencies, consultants, and accountants who onboard clients repeatedly.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
-                  Start free trial
+                  Start Free Trial
                 </Link>
                 <Link href="#how-it-works" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
-                  See how it works
+                  See It in Action
                 </Link>
               </div>
               <p className="mt-4 text-xs text-[var(--color-text-muted)]">
-                No credit card needed · Set up in 20 minutes · Automated follow-ups included · Cancel anytime
+                No credit card required · Live in 20 minutes · Automated follow-ups included · 30-day money-back guarantee
               </p>
             </div>
             <div>
@@ -203,7 +203,7 @@ export default function MarketingPage() {
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
           <div className="mx-auto max-w-[1200px] px-4 py-5 sm:px-6 lg:px-8">
             <p className="text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
-              Trusted by teams in marketing, accounting, and consulting
+              Trusted by teams across the US in marketing, accounting, and consulting
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-6">
               {["Marketing agencies", "Accounting firms", "Consulting practices", "Operations teams", "Legal services"].map((label) => (
@@ -223,7 +223,7 @@ export default function MarketingPage() {
                 Sound familiar?
               </h2>
               <p className="mt-3 max-w-xl text-lg text-[var(--color-text-secondary)]">
-                Every service team recognizes at least one of these.
+                If you run a service business in the US, at least one of these hits home.
               </p>
             </FadeUp>
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -286,6 +286,28 @@ export default function MarketingPage() {
           </div>
         </section>
 
+        {/* ── Testimonial ─────────────────────────────────────────────────── */}
+        {/* TODO: Replace placeholder with real US customer testimonial when available */}
+        <section className="border-b border-[var(--color-border)] bg-white py-20">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <FadeUp>
+              <figure className="mx-auto max-w-3xl text-center">
+                <blockquote className="text-2xl font-semibold leading-snug text-[var(--color-text-primary)] sm:text-3xl" style={{ fontFamily: "var(--font-display)" }}>
+                  &ldquo;We went live in under 20 minutes. Our first client completed onboarding the same day.&rdquo;
+                </blockquote>
+                <figcaption className="mt-6 flex items-center justify-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-[var(--color-bg-muted)]" aria-hidden="true" />
+                  <div className="text-left">
+                    {/* TODO: Replace with real customer name, company, and location */}
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">[Customer Name]</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">[Agency Name] · [City, State]</p>
+                  </div>
+                </figcaption>
+              </figure>
+            </FadeUp>
+          </div>
+        </section>
+
         {/* ── Feature highlights ───────────────────────────────────────────── */}
         <section className="border-b border-[var(--color-border)] bg-white py-24">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
@@ -315,10 +337,10 @@ export default function MarketingPage() {
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
-                Intelligent onboarding automation — without the setup complexity
+                Set it and forget it — onboarding that runs itself
               </h2>
               <p className="mt-4 max-w-3xl text-lg text-[var(--color-text-secondary)]">
-                Set your rules once. ClientEnforce handles the rest — reminders, deadlines, escalations, and completion gates that run without manual input from your team.
+                Set your rules once. ClientEnforce handles the rest — automated reminders, required-step gates, and kickoff alerts that fire without any manual input from your team.
               </p>
             </FadeUp>
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -343,7 +365,7 @@ export default function MarketingPage() {
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
-                Built for teams who onboard clients repeatedly
+                Built for US teams who onboard clients repeatedly
               </h2>
             </FadeUp>
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -371,10 +393,10 @@ export default function MarketingPage() {
         {/* ── CTA band ─────────────────────────────────────────────────────── */}
         <CtaBand
           heading="Your next client deserves a better start"
-          subtext="Set up your first onboarding template in under 20 minutes."
-          primaryLabel="Start free trial — no credit card needed"
-          secondaryLabel="Explore features →"
-          secondaryHref="/features"
+          subtext="Launch your first onboarding template in under 20 minutes. No credit card required. 30-day money-back guarantee."
+          primaryLabel="Start Free Trial"
+          secondaryLabel="Book a 15-min Demo →"
+          secondaryHref="/contact"
         />
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
