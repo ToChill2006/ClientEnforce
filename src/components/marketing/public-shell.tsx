@@ -22,6 +22,8 @@ const solutionsWhoFor = [
   { href: "/auto-service", label: "Auto service" },
   { href: "/dental-practices", label: "Dental practices" },
   { href: "/health-wellness", label: "Health & wellness" },
+  { href: "/law-firm", label: "Law firms" },
+  { href: "/financial-advisors", label: "Financial advisors" },
 ] as const;
 
 const solutionsCompare = [
@@ -152,6 +154,8 @@ const resourceLinks = [
   { href: "/auto-service", label: "For auto service" },
   { href: "/dental-practices", label: "For dental practices" },
   { href: "/health-wellness", label: "For health & wellness" },
+  { href: "/law-firm", label: "For law firms" },
+  { href: "/financial-advisors", label: "For financial advisors" },
 ] as const;
 
 export function PublicFooter() {

@@ -65,6 +65,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/auto-service",
     "/dental-practices",
     "/health-wellness",
+    "/law-firm",
+    "/financial-advisors",
   ] as const;
 
   const canonicalPaths = Array.from(new Set([...sitemapPublicPaths, ...additionalPublicPaths, ...allLpPaths]));

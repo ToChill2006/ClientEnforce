@@ -626,6 +626,206 @@ const healthWellness: UsVerticalConfig = {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────── */
+/*  Law Firms                                                                   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+const lawFirm: UsVerticalConfig = {
+  slug: "law-firm",
+  vertical: "Law Firms",
+  badge: "For US Law Firms & Solo Attorneys",
+  metaTitle: "Law Firm Client Intake Software | ClientEnforce",
+  metaDescription:
+    "Law firm client intake software that enforces document collection before the engagement opens. Retainer agreements, KYC checks, and engagement letters — required, timestamped, and audit-trailed.",
+  keywords: [
+    "law firm client intake software",
+    "law firm client intake forms",
+    "attorney client onboarding",
+    "law firm intake software",
+    "client intake for law firms",
+  ],
+  heroHeadline: "Law firm client intake software that closes every file before the engagement opens.",
+  heroSubheadline:
+    "ClientEnforce enforces retainer agreements, conflict checks, and KYC documentation before your attorneys begin any billable work — with a full timestamped audit trail for bar compliance.",
+  painPoints: [
+    {
+      title: "Engagement letters sit unsigned for weeks",
+      body: "You send the retainer, the client says they'll sign, and three weeks later the matter is underway with nothing executed. Enforcement eliminates the follow-up loop.",
+    },
+    {
+      title: "Missing KYC documentation creates compliance exposure",
+      body: "Incomplete identity verification and conflict-check documentation is a liability. Without a required-step gate, matters open with gaps that surface only when regulators or bar counsel ask.",
+    },
+    {
+      title: "Associates are chasing intake instead of doing billable work",
+      body: "Every hour an associate spends tracking down a signed form or a missing ID document is an hour not billed. Automated enforcement removes that burden entirely.",
+    },
+    {
+      title: "No defensible record of what was collected and when",
+      body: "If a client later disputes the scope of the engagement or the terms of the retainer, you need a timestamped log of every document collected, every step completed, and every signature obtained.",
+    },
+  ],
+  howItWorksIntro:
+    "Law firms use ClientEnforce to enforce intake from the moment a matter opens — retainer agreements, ID verification, conflict check authorization, and scope documentation — before any work begins.",
+  testimonialQuote:
+    "We used to open matters with incomplete intake files constantly. Now nothing moves forward until the required steps are done.",
+  testimonialName: "[Managing Partner]",
+  testimonialTitle: "[Title]",
+  testimonialLocation: "[City, State]",
+  leadMagnetTitle: "The Law Firm Client Intake Checklist",
+  showWhiteLabel: false,
+  showComplianceCallout: true,
+  complianceCallout:
+    "Every form submission, document signature, and intake step is timestamped and logged — providing a defensible, exportable audit trail for bar compliance, matter management, and client disputes.",
+  showUseCasesBlock: true,
+  useCases: [
+    {
+      title: "Solo & Small Firm Attorneys",
+      description:
+        "Law firm intake software for solo attorneys and small firms that eliminates manual follow-up — engagement letters, retainer agreements, and KYC documentation enforced automatically before any billable work begins.",
+    },
+    {
+      title: "Multi-Attorney Practices",
+      description:
+        "Standardize intake across every attorney and practice area — so every client file is complete to the same standard, regardless of which associate handled the intake.",
+    },
+    {
+      title: "Litigation & Transactional Practices",
+      description:
+        "Collect case-specific information, signed authority documents, and client representations through structured intake portals — with conditional logic that adapts to matter type.",
+    },
+    {
+      title: "Compliance-Sensitive Specialties",
+      description:
+        "For immigration, estate planning, M&A, and regulated practice areas — enforce identity verification, conflict-check authorization, and engagement documentation with a timestamped audit trail.",
+    },
+  ],
+  faqItems: [
+    {
+      question: "Can I collect signed retainer agreements through ClientEnforce?",
+      answer:
+        "Yes. You can include document upload steps and require clients to confirm receipt and agreement before proceeding. Combine with your existing e-signature tool or use the built-in acknowledgement step.",
+    },
+    {
+      question: "Does ClientEnforce produce an audit trail for bar compliance?",
+      answer:
+        "Yes. Every step completion, form submission, and document upload is timestamped and logged per client. You can export the full intake record as a PDF evidence pack for compliance review or client disputes.",
+    },
+    {
+      question: "Can I have different intake templates for different practice areas?",
+      answer:
+        "Yes. Build separate templates for litigation, transactional, immigration, estate planning, and any other practice area — each enforced independently with its own required steps.",
+    },
+    {
+      question: "Do clients need to create an account to complete intake?",
+      answer:
+        "No. Clients receive a secure link and complete their intake portal without logging in — reducing friction and increasing the likelihood of timely completion.",
+    },
+  ],
+  ctaHeading: "Open every matter with a complete file",
+  ctaSubtext:
+    "Build your first intake template in under 20 minutes. No credit card required. 30-day money-back guarantee.",
+};
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  Financial Advisors                                                          */
+/* ─────────────────────────────────────────────────────────────────────────── */
+const financialAdvisors: UsVerticalConfig = {
+  slug: "financial-advisors",
+  vertical: "Financial Advisors",
+  badge: "For US RIAs & Independent Financial Advisors",
+  metaTitle: "Financial Advisor Client Onboarding Software | ClientEnforce",
+  metaDescription:
+    "Financial advisor client onboarding software with built-in KYC enforcement. Collect CIP documentation, suitability forms, and signed disclosures before any account is opened — with a full audit trail.",
+  keywords: [
+    "financial advisor client onboarding software",
+    "KYC document collection software financial advisor",
+    "RIA new client intake form",
+    "financial advisor onboarding software",
+    "RIA client onboarding",
+  ],
+  heroHeadline: "Financial advisor client onboarding software with built-in KYC enforcement.",
+  heroSubheadline:
+    "ClientEnforce enforces CIP documentation, suitability questionnaires, and signed disclosures before any account is opened — so your compliance team has a defensible, timestamped record for every client.",
+  painPoints: [
+    {
+      title: "KYC documentation arrives incomplete or weeks late",
+      body: "You open new accounts provisionally, then spend weeks chasing missing ID documents and source-of-funds declarations. Every gap is a compliance exposure — and a distraction for your advisors.",
+    },
+    {
+      title: "AML and suitability checks stall account openings",
+      body: "Without required-step enforcement, clients submit partial suitability forms, skip risk tolerance sections, and return documents that need re-collection. The account opening drags on.",
+    },
+    {
+      title: "No defensible audit trail when regulators ask",
+      body: "SEC, FINRA, and state regulators want to see exactly what was collected, when, and in what order. A spreadsheet or email thread is not an audit trail.",
+    },
+    {
+      title: "Advisors spend time on administration instead of client relationships",
+      body: "Every hour an advisor spends following up on missing forms is an hour not spent on financial planning, client calls, or new business development.",
+    },
+  ],
+  howItWorksIntro:
+    "RIAs and independent advisors use ClientEnforce to enforce client onboarding from day one — CIP documentation, suitability forms, signed disclosures, and account paperwork — before any investment activity begins.",
+  testimonialQuote:
+    "Our compliance team used to spend half their time chasing incomplete onboarding documents. That time is now zero.",
+  testimonialName: "[RIA Principal]",
+  testimonialTitle: "[Title]",
+  testimonialLocation: "[City, State]",
+  leadMagnetTitle: "The RIA Client Onboarding Compliance Checklist",
+  showWhiteLabel: false,
+  showComplianceCallout: true,
+  complianceCallout:
+    "Every form submission, document upload, and intake step is timestamped and logged per client — producing a defensible audit trail for SEC, FINRA, and state regulator examinations.",
+  showUseCasesBlock: true,
+  useCases: [
+    {
+      title: "Registered Investment Advisers (RIAs)",
+      description:
+        "Financial advisor onboarding software that enforces CIP documentation, Form ADV delivery acknowledgement, and suitability questionnaire completion — before any account is funded. Full audit trail for SEC and state examinations.",
+    },
+    {
+      title: "Independent Financial Planners",
+      description:
+        "Collect signed engagement agreements, financial data gathering questionnaires, and document uploads in a structured intake portal — so every planning engagement starts with a complete client file.",
+    },
+    {
+      title: "Wealth Management Practices",
+      description:
+        "Standardize new client onboarding across every advisor in the practice — investment policy statements, risk tolerance assessments, and KYC documentation enforced consistently regardless of who handled intake.",
+    },
+    {
+      title: "Insurance-Linked Financial Advisors",
+      description:
+        "Enforce needs analysis forms, replacement notices, and suitability documentation for insurance-linked products — with a timestamped record that satisfies state insurance department requirements.",
+    },
+  ],
+  faqItems: [
+    {
+      question: "Does ClientEnforce support KYC and CIP documentation collection?",
+      answer:
+        "Yes. You can build required-step intake flows that collect identity documents, source-of-funds declarations, beneficial ownership information, and any other CIP-required documentation — enforced before any account progresses.",
+    },
+    {
+      question: "Can I use this for Form ADV Part 2 delivery acknowledgement?",
+      answer:
+        "Yes. Include an acknowledgement step that requires the client to confirm receipt before the intake portal advances — producing a timestamped record of delivery for your compliance files.",
+    },
+    {
+      question: "Does ClientEnforce produce an audit trail for regulatory exams?",
+      answer:
+        "Yes. Every step completion, form submission, document upload, and timestamp is logged per client and exportable as a PDF evidence pack — designed to answer examiner requests for onboarding documentation.",
+    },
+    {
+      question: "Can I have different intake workflows for different client types?",
+      answer:
+        "Yes. Build separate templates for individual accounts, joint accounts, entity accounts, retirement accounts, and trust accounts — each with the specific required steps for that client type.",
+    },
+  ],
+  ctaHeading: "Open every account with a complete compliance file",
+  ctaSubtext:
+    "Build your first client intake template in under 20 minutes. No credit card required. 30-day money-back guarantee.",
+};
+
+/* ─────────────────────────────────────────────────────────────────────────── */
 /*  Exports                                                                     */
 /* ─────────────────────────────────────────────────────────────────────────── */
 export const usVerticals: UsVerticalConfig[] = [
@@ -636,6 +836,8 @@ export const usVerticals: UsVerticalConfig[] = [
   autoService,
   dentalPractices,
   healthWellness,
+  lawFirm,
+  financialAdvisors,
 ];
 
 export const usVerticalBySlug: Record<string, UsVerticalConfig> = Object.fromEntries(
