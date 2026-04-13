@@ -382,6 +382,58 @@ export default function MarketingPage() {
           </div>
         </section>
 
+        {/* ── From the blog ────────────────────────────────────────────────── */}
+        <section className="border-b border-[var(--color-border)] bg-white py-16">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <FadeUp>
+              <div className="flex items-baseline justify-between gap-4">
+                <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+                  From the blog
+                </h2>
+                <Link href="/blog" className="text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+                  All posts →
+                </Link>
+              </div>
+            </FadeUp>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {[
+                {
+                  href: "/blog/how-to-stop-chasing-clients-during-onboarding",
+                  tag: "Automation",
+                  title: "How to Stop Chasing Clients During Onboarding",
+                  desc: "Tracking tools show you what's missing. Enforcement stops clients from skipping steps. Here's the difference — and how to fix your process.",
+                },
+                {
+                  href: "/blog/client-onboarding-guide",
+                  tag: "Strategy",
+                  title: "The Complete Client Onboarding Guide",
+                  desc: "What client onboarding actually is, why it fails, and a step-by-step process for getting every new client from signed to kickoff-ready.",
+                },
+                {
+                  href: "/blog/why-client-onboarding-fails",
+                  tag: "Process",
+                  title: "Why Client Onboarding Fails: 7 Root Causes",
+                  desc: "Most onboarding problems are structural, not personal. Here are the seven root causes — and a practical fix for each one.",
+                },
+              ].map((post, i) => (
+                <FadeUp key={post.href} delay={i * 60}>
+                  <Link
+                    href={post.href}
+                    className="card-lift group flex h-full flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 transition hover:border-[var(--color-accent)]"
+                  >
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">{post.tag}</span>
+                    <h3 className="mt-2 text-base font-semibold leading-snug text-[var(--color-text-primary)] transition group-hover:text-[var(--color-accent)]" style={{ fontFamily: "var(--font-display)" }}>
+                      {post.title}
+                    </h3>
+                    <p className="mt-2 flex-1 text-sm leading-6 text-[var(--color-text-secondary)]">{post.desc}</p>
+                    <span className="mt-4 text-xs font-semibold text-[var(--color-accent)]">Read →</span>
+                  </Link>
+                </FadeUp>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── Built for ────────────────────────────────────────────────────── */}
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-24">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">

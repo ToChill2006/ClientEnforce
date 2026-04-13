@@ -50,6 +50,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog/why-client-onboarding-fails",
     "/blog/client-onboarding-checklist-template",
     "/blog/best-client-onboarding-software-2026",
+    "/blog/how-to-stop-chasing-clients-during-onboarding",
     "/blog/client-onboarding-guide",
     "/blog/honeybook-alternatives",
     "/blog/what-is-client-onboarding",
