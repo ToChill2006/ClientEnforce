@@ -61,6 +61,7 @@ export default function EmailPage() {
   const [smtpLoading, setSmtpLoading] = React.useState(true);
   const [smtpSaving, setSmtpSaving] = React.useState(false);
   const [smtpTesting, setSmtpTesting] = React.useState(false);
+  const [hasExistingPassword, setHasExistingPassword] = React.useState(false);
 
   // ── Load ──────────────────────────────────────────────────────────────────
 
@@ -95,13 +96,14 @@ export default function EmailPage() {
         const json = await res.json();
         if (json?.settings) {
           const s = json.settings;
+          setHasExistingPassword(!!s.smtp_password);
           setSmtpSettings({
             email_provider: s.email_provider ?? "clientenforce",
             smtp_host: s.smtp_host ?? "",
             smtp_port: String(s.smtp_port ?? "587"),
             smtp_secure: s.smtp_secure ?? false,
             smtp_username: s.smtp_username ?? "",
-            smtp_password: s.smtp_password ?? "",
+            smtp_password: "", // never pre-fill — leave blank to keep existing
             smtp_from_email: s.smtp_from_email ?? "",
             smtp_from_name: s.smtp_from_name ?? "",
           });
@@ -157,6 +159,10 @@ export default function EmailPage() {
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Failed to save");
+      if (smtpSettings.smtp_password) {
+        setHasExistingPassword(true);
+        setSmtpSettings((s) => ({ ...s, smtp_password: "" }));
+      }
       notify({ title: "Email provider saved", variant: "success" });
     } catch (e: any) {
       notify({ title: "Save failed", description: e?.message ?? "Unknown error", variant: "error" });
@@ -377,6 +383,11 @@ export default function EmailPage() {
                         placeholder="Leave blank to keep existing"
                         autoComplete="new-password"
                       />
+                      {hasExistingPassword && !smtpSettings.smtp_password && (
+                        <p className="text-xs text-[var(--color-success)]">
+                          App password saved — leave blank to keep existing.
+                        </p>
+                      )}
                       <p className="text-xs text-[var(--color-text-muted)]">
                         Gmail: use an App Password, not your Google account password.
                       </p>

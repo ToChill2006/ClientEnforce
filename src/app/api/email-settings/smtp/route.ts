@@ -82,9 +82,10 @@ export async function PATCH(req: Request) {
     return json(400, { error: "Invalid payload", details: parsed.error.flatten() });
   }
 
-  // Build update — skip smtp_password if it's the mask placeholder or absent
+  // Build update — skip smtp_password if blank, the mask placeholder, or absent
   const updatePayload: Record<string, any> = { ...parsed.data };
   if (
+    !updatePayload.smtp_password ||
     updatePayload.smtp_password === PASSWORD_MASK ||
     updatePayload.smtp_password === undefined
   ) {
