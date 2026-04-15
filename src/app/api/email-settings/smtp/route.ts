@@ -83,6 +83,7 @@ export async function PATCH(req: Request) {
   }
 
   // Build update — skip smtp_password if blank, the mask placeholder, or absent
+  // Strip spaces: Google shows app passwords as "xxxx xxxx xxxx xxxx" but SMTP needs no spaces
   const updatePayload: Record<string, any> = { ...parsed.data };
   if (
     !updatePayload.smtp_password ||
@@ -90,6 +91,8 @@ export async function PATCH(req: Request) {
     updatePayload.smtp_password === undefined
   ) {
     delete updatePayload.smtp_password;
+  } else {
+    updatePayload.smtp_password = updatePayload.smtp_password.replace(/\s/g, "");
   }
 
   const { error } = await supabase
