@@ -8,10 +8,10 @@ import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Software for Accountants | Compliant and Auditable | ClientEnforce",
-  description: "Client onboarding software for accountants and accounting firms. Collect documents, capture signatures, run AML checks, and maintain a full audit trail - all in one structured workflow.",
+  title: "Accounting Client Onboarding Software — Compliant and Auditable | ClientEnforce",
+  description: "Accounting client onboarding software for accountants and accounting firms. Collect documents, capture signatures, run AML checks, and maintain a full audit trail — all in one structured workflow.",
   path: "/onboarding-for-accountants",
-  keywords: ["onboarding software for accountants", "client onboarding software", "client onboarding checklist", "client onboarding automation", "client document collection software"],
+  keywords: ["accounting client onboarding software", "client onboarding software for accountants", "onboarding software for accountants", "accounting client onboarding checklist", "client onboarding automation", "accounting firm client onboarding"],
   type: "website",
 });
 
@@ -28,6 +28,8 @@ const faqItems = [
   { question: "Does the client need to create an account to access the portal?", answer: "No. Clients access their onboarding portal through a secure link. No account creation, no password, no friction." },
   { question: "Can we use different templates for different types of client?", answer: "Yes. Build separate templates for business clients versus individual clients, or for different service types such as audit, tax, or bookkeeping." },
   { question: "Is ClientEnforce suitable for sole practitioners as well as larger firms?", answer: "Yes. Pricing is based on onboarding volume rather than team size. A sole practitioner onboarding a small number of clients per month can use ClientEnforce cost-effectively." },
+  { question: "What should an accounting client onboarding checklist include?", answer: "An accounting client onboarding checklist should cover: proof of identity (passport or driving licence), proof of address, AML screening completion, signed engagement letter, fee agreement, W-9 or equivalent tax form, and payment method on file. Each item should be marked required so onboarding is not marked complete until every document is received and verified. ClientEnforce enforces this automatically — no manual tracking required." },
+  { question: "What is the best accounting firm client onboarding software?", answer: "The best accounting firm client onboarding software enforces required-step completion rather than just tracking progress. ClientEnforce is purpose-built for this: clients submit documents and sign agreements through a secure portal, required steps block onboarding completion until everything is in, and every submission is timestamped for audit purposes. Unlike general CRMs, it is designed specifically around the compliance obligations accounting firms face during client intake." },
 ] as const;
 
 export default function OnboardingForAccountantsPage() {
@@ -43,7 +45,7 @@ export default function OnboardingForAccountantsPage() {
               Built for accountants
             </div>
             <h1 className="mt-4 max-w-4xl text-5xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[56px]" style={{ fontFamily: "var(--font-display)" }}>
-              Client onboarding software for accountants — compliant, auditable, and structured
+              Accounting client onboarding software — compliant, auditable, and structured
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-7 text-[var(--color-text-secondary)]">
               For accounting firms, client onboarding is not just a process — it is a compliance obligation. Documents need to be collected correctly, stored securely, and traceable. An email thread is not an audit trail.

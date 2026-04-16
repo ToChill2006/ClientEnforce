@@ -105,10 +105,10 @@ export default function ClientOnboardingAutomationPage() {
                 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Client onboarding automation for teams that are done being the reminder system
+                How to automate client onboarding — automated client onboarding for agencies and service teams
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
-                Automating client onboarding means your team stops being the reminder system. Instead of manually following up every time a client stalls on a task, the system nudges them automatically — and you get a clear view of exactly where each client is in the process.
+                Automated client onboarding means your team stops being the reminder system. Instead of manually following up every time a client stalls on a task, the system nudges them automatically — and you get a clear view of exactly where each client is in the process.
               </p>
               <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 ClientEnforce handles the repetitive parts of onboarding — the follow-up emails, the deadline tracking, the &quot;did you get my last message?&quot; loops — so your team can focus on client relationships and delivery.

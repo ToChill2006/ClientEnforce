@@ -781,19 +781,22 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "client-onboarding-checklist": {
     path: "/client-onboarding-checklist",
-    title: "Client Onboarding Checklist for Agencies | ClientEnforce",
+    title: "Client Onboarding Checklist — New Client Checklist Template | ClientEnforce",
     description:
-      "Use this client onboarding checklist for agencies to standardize intake, collect documents, set expectations, and launch clients faster with automated client onboarding workflows.",
+      "Free client onboarding checklist for new clients — standardize intake, collect documents, set expectations, and launch every client faster. Used by agencies, consultants, and accounting firms.",
     keywords: [
       "client onboarding checklist",
+      "new client checklist",
+      "onboarding checklist for new clients",
+      "onboarding new clients checklist",
       "client onboarding process",
       "client onboarding workflow",
-      "automated client onboarding",
+      "new client to do checklist",
     ],
     eyebrow: "Client onboarding checklist",
-    h1: "Client Onboarding Checklist for Agencies",
+    h1: "Client Onboarding Checklist — New Client Checklist Template",
     intro:
-      "A structured client onboarding checklist helps agencies launch projects with fewer delays and fewer missing requirements. Use this framework to standardize every new account from welcome email to kickoff readiness.",
+      "A structured client onboarding checklist helps agencies, consultants, and service teams onboard new clients without delays or missing requirements. Use this checklist template to standardize every new client from welcome email to kickoff readiness.",
     highlights: [
       "Standardize onboarding tasks across account managers",
       "Reduce kickoff delays caused by missing files and approvals",
@@ -889,6 +892,33 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
       },
       {
+        heading: "Onboarding checklist for new clients — what to collect in the first 3 days",
+        paragraphs: [
+          "A new client onboarding checklist should be structured around what your team needs before work can start, not what is convenient to collect later. Most onboarding delays happen because the checklist is too vague, too long, or has no enforcement mechanism.",
+          "For new clients specifically, the first three days set the tone for the entire relationship. A clear new client to-do checklist — sent immediately after the agreement is signed — removes ambiguity and gives clients a single place to complete everything.",
+        ],
+        bullets: [
+          "Send the portal link within one hour of contract signing",
+          "Collect legal name, billing contact, and company details on day one",
+          "Request all access credentials (logins, ad accounts, analytics) in the intake form",
+          "Confirm kickoff call date before chasing any other documents",
+          "Set explicit due dates on every required checklist item",
+          "Automate reminder nudges so new clients complete tasks without manual follow-up",
+        ],
+        links: [
+          {
+            href: "/downloads/client-onboarding-checklist",
+            label: "Download the free checklist template",
+            description: "Get a printable, 25-step new client onboarding checklist template.",
+          },
+          {
+            href: "/client-onboarding-automation",
+            label: "client onboarding automation",
+            description: "Automate reminders so new clients complete checklist steps without chasing.",
+          },
+        ],
+      },
+      {
         heading: "Best practices for onboarding new clients",
         paragraphs: [
           "Checklist quality improves when teams treat onboarding as an operating system, not a one-time document. Focus on process clarity, consistent ownership, and regular review.",
@@ -943,6 +973,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
     ],
     faq: [
       {
+        question: "What should a new client onboarding checklist include?",
+        answer:
+          "A new client onboarding checklist should cover four phases: internal setup before the client is involved, client intake in the first 1–3 days (business details, access credentials, brand assets), document and signature collection (signed agreement, NDA if required, payment method), and kickoff readiness checks before work begins. Every item should have a clear owner and a definition of complete. Download our free printable checklist at /downloads/client-onboarding-checklist.",
+      },
+      {
+        question: "What is a new client to-do checklist?",
+        answer:
+          "A new client to-do checklist is a structured list of tasks the client must complete before work can begin — typically sent within the first hour of signing. It includes things like submitting business information, uploading required documents, granting access credentials, and signing any outstanding agreements. When enforced through a client portal rather than email, completion rates improve significantly because clients have a single place to see exactly what is outstanding.",
+      },
+      {
         question: "What should every client onboarding checklist include?",
         answer:
           "Every checklist should include welcome communication, client information capture, questionnaires, required documents, approvals, kickoff readiness checks, and clear owners for each task.",
@@ -950,17 +990,12 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         question: "How do agencies automate onboarding checklists?",
         answer:
-          "Agencies automate checklists by defining required tasks first, then adding reminder and escalation rules tied to due dates and task inactivity.",
+          "Agencies automate checklists by defining required tasks first, then adding reminder and escalation rules tied to due dates and task inactivity. Tools like ClientEnforce send automated nudges when items are overdue, so account managers no longer need to manually follow up.",
       },
       {
         question: "What software helps run onboarding checklists?",
         answer:
-          "Client onboarding software that combines templates, reminders, document collection, and progress tracking is usually the most effective for checklist execution.",
-      },
-      {
-        question: "Can onboarding checklists improve kickoff reliability?",
-        answer:
-          "Yes. Checklists improve kickoff reliability by making required tasks visible, assigning ownership, and preventing delivery starts before onboarding is complete.",
+          "Client onboarding software that combines templates, reminders, document collection, and progress tracking is usually the most effective for checklist execution. The key feature to look for is required-step enforcement — meaning clients cannot skip mandatory items.",
       },
       {
         question: "Can a checklist become an automated client onboarding system?",
@@ -4644,9 +4679,16 @@ export const blogPosts: Record<string, BlogPost> = {
       {
         heading: "What makes onboarding software genuinely 'the best' for your team",
         paragraphs: [
-          "There is no single best client onboarding software that suits every team. The right answer depends on your client volume, team size, service type, and how much of your bottleneck is a process problem versus a communication problem.",
+          "There is no single best client onboarding software that suits every team. The right answer depends on your client volume, team size, service type, and how much of your bottleneck is a process problem versus a communication problem. For a full breakdown of what client onboarding software is and how to choose the right platform, see our complete client onboarding software guide.",
           "That said, there are clear signals that separate high-performing onboarding platforms from tools that look good on a demo but struggle in daily use. The most important signal: does the software enforce required steps, or does it simply let you create a checklist that clients can ignore?",
           "Teams that use enforcement-first onboarding software consistently report faster kickoffs, fewer follow-up emails, and cleaner project starts. Teams that use checklist-style tools often see the same onboarding delays they had before — just with more structure around them.",
+        ],
+        links: [
+          {
+            href: "/client-onboarding-software",
+            label: "client onboarding software",
+            description: "Full guide to client onboarding software — features, use cases, and how to choose.",
+          },
         ],
         bullets: [
           "Enforcement-first: clients cannot skip required steps",

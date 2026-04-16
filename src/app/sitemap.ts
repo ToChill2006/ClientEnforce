@@ -16,6 +16,8 @@ const recentlyUpdatedPaths = new Set([
   "/client-onboarding-software",
   "/client-onboarding-software-for-agencies",
   "/client-onboarding-automation",
+  "/client-onboarding-checklist",
+  "/onboarding-for-accountants",
   "/blog/best-client-onboarding-software",
 ]);
 
