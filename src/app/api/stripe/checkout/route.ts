@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     return json(500, { error: "STRIPE_SECRET_KEY missing" });
   }
 
-  const PRICE_IDS = {
+  const PRICE_IDS: Record<Tier, Record<BillingInterval, string | undefined>> = {
     pro: {
       monthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
       yearly: process.env.STRIPE_PRICE_PRO_YEARLY,
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY,
       yearly: process.env.STRIPE_PRICE_AGENCY_YEARLY,
     },
-  } as const;
+  };
 
   console.log("[stripe.checkout] config", {
     keyMode: process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_") ? "live" : process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ? "test" : "unknown",
@@ -94,6 +94,8 @@ export async function POST(req: Request) {
     proYearly: PRICE_IDS.pro.yearly,
     businessMonthly: PRICE_IDS.business.monthly,
     businessYearly: PRICE_IDS.business.yearly,
+    agencyMonthly: PRICE_IDS.agency.monthly,
+    agencyYearly: PRICE_IDS.agency.yearly,
   });
 
   const priceId = PRICE_IDS[tier]?.[interval];
