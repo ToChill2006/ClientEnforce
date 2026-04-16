@@ -18,7 +18,7 @@ const contactOptions = [
     title: "Book a demo",
     description: "See ClientEnforce live. We&apos;ll walk you through a real onboarding workflow in 20 minutes.",
     ctaLabel: "Book a time",
-    ctaHref: "mailto:info@clientenforce.com?subject=Book%20a%20Demo",
+    ctaHref: "https://calendar.app.google/QfkFs4hWUoCbKupj7",
   },
   {
     title: "Start a free trial",
@@ -64,23 +64,37 @@ export default function ContactPage() {
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
               <section className="grid gap-4 md:grid-cols-3">
-                {contactOptions.map((option) => (
-                  <article key={option.title} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-                    <h2
-                      className="text-lg font-semibold text-[var(--color-text-primary)]"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      {option.title}
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{option.description}</p>
-                    <Link
-                      href={option.ctaHref}
-                      className="mt-4 inline-flex rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
-                    >
-                      {option.ctaLabel}
-                    </Link>
-                  </article>
-                ))}
+                {contactOptions.map((option) => {
+                  const isExternal = option.ctaHref.startsWith("http");
+                  return (
+                    <article key={option.title} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+                      <h2
+                        className="text-lg font-semibold text-[var(--color-text-primary)]"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        {option.title}
+                      </h2>
+                      <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{option.description}</p>
+                      {isExternal ? (
+                        <a
+                          href={option.ctaHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-flex rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
+                        >
+                          {option.ctaLabel}
+                        </a>
+                      ) : (
+                        <Link
+                          href={option.ctaHref}
+                          className="mt-4 inline-flex rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
+                        >
+                          {option.ctaLabel}
+                        </Link>
+                      )}
+                    </article>
+                  );
+                })}
               </section>
 
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
