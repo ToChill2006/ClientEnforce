@@ -1,4 +1,4 @@
-export type PlanTier = "free" | "pro" | "business";
+export type PlanTier = "free" | "pro" | "business" | "agency";
 
 export type PlanEntitlements = {
   maxUsers: number;
@@ -12,6 +12,9 @@ export type PlanEntitlements = {
   advancedReportingEnabled: boolean;
   advancedReportingLevel: "none" | "limited" | "full";
   prioritySupport: boolean;
+  whiteLabelEnabled: boolean;
+  customDomainEnabled: boolean;
+  dedicatedSupport: boolean;
 };
 
 export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
@@ -27,6 +30,9 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     advancedReportingEnabled: false,
     advancedReportingLevel: "none",
     prioritySupport: false,
+    whiteLabelEnabled: false,
+    customDomainEnabled: false,
+    dedicatedSupport: false,
   },
   pro: {
     maxUsers: 5,
@@ -40,6 +46,9 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     advancedReportingEnabled: true,
     advancedReportingLevel: "limited",
     prioritySupport: true,
+    whiteLabelEnabled: false,
+    customDomainEnabled: false,
+    dedicatedSupport: false,
   },
   business: {
     maxUsers: 15,
@@ -53,12 +62,31 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     advancedReportingEnabled: true,
     advancedReportingLevel: "full",
     prioritySupport: true,
+    whiteLabelEnabled: false,
+    customDomainEnabled: false,
+    dedicatedSupport: false,
+  },
+  agency: {
+    maxUsers: 25,
+    maxAdmins: 25,
+    maxTemplates: Infinity,
+    maxActiveOnboardings: Infinity,
+    auditEnabled: true,
+    remindersEnabled: true,
+    exportEvidenceEnabled: true,
+    teamRolesEnabled: true,
+    advancedReportingEnabled: true,
+    advancedReportingLevel: "full",
+    prioritySupport: true,
+    whiteLabelEnabled: true,
+    customDomainEnabled: true,
+    dedicatedSupport: true,
   },
 };
 
 export function normalizePlanTier(t?: string | null): PlanTier {
   const v = (t ?? "free").toLowerCase().trim();
-  if (v === "pro" || v === "business" || v === "free") return v;
+  if (v === "pro" || v === "business" || v === "free" || v === "agency") return v;
   if (v === "starter") return "free";
   return "free";
 }

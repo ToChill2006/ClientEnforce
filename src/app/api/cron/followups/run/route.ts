@@ -102,7 +102,7 @@ export async function POST(req: Request) {
   if (jobsErr) return json(400, { error: jobsErr.message });
 
   const orgIds = Array.from(new Set((jobs ?? []).map((job) => String(job.org_id)).filter(Boolean)));
-  const tierByOrg = new Map<string, "free" | "pro" | "business">();
+  const tierByOrg = new Map<string, "free" | "pro" | "business" | "agency">();
 
   await Promise.all(
     orgIds.map(async (orgId) => {

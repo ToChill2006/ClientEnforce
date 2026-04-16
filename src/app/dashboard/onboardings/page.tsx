@@ -190,6 +190,7 @@ export default function OnboardingsPage() {
   const [statusFilter, setStatusFilter] = React.useState<
     "all" | "draft" | "sent" | "in_progress" | "submitted"
   >("all");
+  const [ownerFilter, setOwnerFilter] = React.useState<string>("all");
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 300);
@@ -391,7 +392,8 @@ export default function OnboardingsPage() {
     const filtered = rows.filter((r) => {
       const sk = statusKeyForFilter(r.status);
       const statusOk = statusFilter === "all" ? true : sk === statusFilter;
-      if (!q) return statusOk;
+      const ownerOk = ownerFilter === "all" ? true : (ownerFilter === "unassigned" ? !r.owner_id : r.owner_id === ownerFilter);
+      if (!q) return statusOk && ownerOk;
       const hay = [
         r.title ?? "",
         r.client_name ?? "",
@@ -402,14 +404,14 @@ export default function OnboardingsPage() {
       ]
         .join(" ")
         .toLowerCase();
-      return statusOk && hay.includes(q);
+      return statusOk && ownerOk && hay.includes(q);
     });
     return filtered.sort((a, b) => {
       const ta = new Date(a.updated_at || a.created_at || 0).getTime();
       const tb = new Date(b.updated_at || b.created_at || 0).getTime();
       return tb - ta;
     });
-  }, [rows, debouncedQuery, statusFilter]);
+  }, [rows, debouncedQuery, statusFilter, ownerFilter]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -688,7 +690,7 @@ export default function OnboardingsPage() {
               />
             </div>
 
-            <div className="w-full sm:w-56">
+            <div className="w-full sm:w-44">
               <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
                 Status
               </label>
@@ -697,11 +699,30 @@ export default function OnboardingsPage() {
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
               >
-                <option value="all">All</option>
+                <option value="all">All statuses</option>
                 <option value="draft">Draft</option>
                 <option value="sent">Sent</option>
                 <option value="in_progress">In progress</option>
                 <option value="submitted">Submitted</option>
+              </select>
+            </div>
+
+            <div className="w-full sm:w-44">
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
+                Owner
+              </label>
+              <select
+                value={ownerFilter}
+                onChange={(e) => setOwnerFilter(e.target.value)}
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
+              >
+                <option value="all">All owners</option>
+                <option value="unassigned">Unassigned</option>
+                {members.map((m) => (
+                  <option key={m.user_id} value={m.user_id}>
+                    {(m.full_name || m.email || m.user_id).trim()}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

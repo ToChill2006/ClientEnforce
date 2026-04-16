@@ -1,4 +1,4 @@
-export type SubscriptionTier = "starter" | "pro" | "business";
+export type SubscriptionTier = "starter" | "pro" | "business" | "agency";
 export type MemberRole = "owner" | "admin" | "member";
 
 export type Profile = {

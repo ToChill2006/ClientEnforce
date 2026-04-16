@@ -52,12 +52,24 @@ function inviteEmailOf(i: Invite) {
   return (i.email ?? i.invite_email ?? i.to_email ?? "").toString();
 }
 
-function normalizeTier(t?: string | null) {
+type PlanTier = "free" | "pro" | "business" | "agency";
+
+function normalizeTier(t?: string | null): PlanTier {
   const v = (t ?? "free").toString().trim().toLowerCase();
-  if (v === "pro" || v === "business" || v === "free") return v as "free" | "pro" | "business";
+  if (v === "pro" || v === "business" || v === "free" || v === "agency") return v;
   // Some older values: "starter", "basic" etc. Treat as free.
-  return "free" as const;
+  return "free";
 }
+
+type WhiteLabelSettings = {
+  brand_name: string;
+  support_email: string;
+  portal_tagline: string;
+  accent_color: string;
+  logo_url: string;
+  remove_branding: boolean;
+  custom_domain: string;
+};
 
 async function postJson(url: string, body: any) {
   const res = await fetch(url, {
@@ -81,6 +93,15 @@ export default function SettingsPage() {
   const [inviteRole, setInviteRole] = React.useState<"member" | "admin">("member");
   const [inviting, setInviting] = React.useState(false);
   const [loggingOut, setLoggingOut] = React.useState(false);
+
+  // White-label state
+  const [wl, setWl] = React.useState<WhiteLabelSettings>({
+    brand_name: "", support_email: "", portal_tagline: "",
+    accent_color: "", logo_url: "", remove_branding: false, custom_domain: "",
+  });
+  const [wlLoading, setWlLoading] = React.useState(false);
+  const [wlSaving, setWlSaving] = React.useState(false);
+  const [wlLoaded, setWlLoaded] = React.useState(false);
 
   // Inline banners (no toast dependency)
   const [pageError, setPageError] = React.useState<string | null>(null);
@@ -115,6 +136,49 @@ export default function SettingsPage() {
     }
   }
 
+  async function loadWhiteLabel() {
+    setWlLoading(true);
+    try {
+      const res = await fetch("/api/white-label", { cache: "no-store" });
+      if (!res.ok) return; // not on agency plan — silently skip
+      const json = await res.json().catch(() => null);
+      if (json?.settings) {
+        setWl({
+          brand_name: json.settings.brand_name ?? "",
+          support_email: json.settings.support_email ?? "",
+          portal_tagline: json.settings.portal_tagline ?? "",
+          accent_color: json.settings.accent_color ?? "",
+          logo_url: json.settings.logo_url ?? "",
+          remove_branding: Boolean(json.settings.remove_branding),
+          custom_domain: json.settings.custom_domain ?? "",
+        });
+        setWlLoaded(true);
+      }
+    } finally {
+      setWlLoading(false);
+    }
+  }
+
+  async function saveWhiteLabel() {
+    setWlSaving(true);
+    setPageError(null);
+    setPageSuccess(null);
+    try {
+      const res = await fetch("/api/white-label", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(wl),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to save white-label settings");
+      setPageSuccess("White-label settings saved.");
+    } catch (e: any) {
+      setPageError(e?.message ?? "Save failed");
+    } finally {
+      setWlSaving(false);
+    }
+  }
+
   async function syncBillingFromStripe() {
     try {
       const res = await fetch("/api/stripe/sync", { method: "POST" });
@@ -127,6 +191,7 @@ export default function SettingsPage() {
 
   React.useEffect(() => {
     load();
+    loadWhiteLabel();
 
     // If Stripe redirected back with success params, poll briefly until webhook updates DB.
     const params = new URLSearchParams(window.location.search);
@@ -527,12 +592,14 @@ export default function SettingsPage() {
                   ? "You're currently on Free."
                   : currentTier === "pro"
                     ? "You're currently on Pro."
-                    : "You're currently on Business."}
+                    : currentTier === "business"
+                      ? "You're currently on Business."
+                      : "You're currently on Agency Pro."}
                 {!canManageBilling ? " Billing changes are restricted for your role." : ""}
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
               {/* Starter */}
               <div className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -691,17 +758,77 @@ export default function SettingsPage() {
                     className="w-full"
                     variant="secondary"
                     onClick={() => startUpgrade("business", "monthly")}
-                    disabled={!canManageBilling || currentTier === "business"}
+                    disabled={!canManageBilling || currentTier === "business" || currentTier === "agency"}
                   >
                     {currentTier === "business" ? "Current plan" : "Subscribe monthly"}
                   </Button>
                   <Button
                     className="w-full"
                     onClick={() => startUpgrade("business", "yearly")}
-                    disabled={!canManageBilling || currentTier === "business"}
+                    disabled={!canManageBilling || currentTier === "business" || currentTier === "agency"}
                   >
                     {currentTier === "business" ? "Current plan" : "Subscribe yearly"}
                   </Button>
+                </div>
+              </div>
+
+              {/* Agency Pro */}
+              <div className="flex flex-col rounded-[var(--radius-lg)] border-2 border-[var(--color-accent)] bg-white p-5 shadow-[var(--shadow-sm)]">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-semibold text-[var(--color-text-primary)]">Agency Pro</div>
+                      <span className="rounded-full bg-[var(--color-accent)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">White Label</span>
+                    </div>
+                    <div className="mt-1 text-3xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+                      £149<span className="text-base font-semibold text-[var(--color-text-muted)]">/mo</span>
+                    </div>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                      £1,430.40 yearly <span className="text-[var(--color-text-muted)]">(20% off)</span>
+                    </div>
+                    <div className="mt-1 text-sm text-[var(--color-text-secondary)]">For agencies delivering a branded client experience.</div>
+                  </div>
+                  {currentTier === "agency" ? (
+                    <span className={pill()}>Current</span>
+                  ) : null}
+                </div>
+
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-[var(--color-text-secondary)]">
+                  <li>• Everything in Business</li>
+                  <li>• Up to 25 users</li>
+                  <li>• Unlimited onboardings</li>
+                  <li className="font-semibold text-[var(--color-text-primary)]">• White-label client portals</li>
+                  <li className="font-semibold text-[var(--color-text-primary)]">• Custom portal domain</li>
+                  <li className="font-semibold text-[var(--color-text-primary)]">• Your logo + brand colours</li>
+                  <li className="font-semibold text-[var(--color-text-primary)]">• Remove "Powered by ClientEnforce"</li>
+                  <li>• Dedicated account support</li>
+                </ul>
+
+                <div className="mt-6 grid gap-2">
+                  {currentTier === "agency" ? (
+                    <Button className="w-full" disabled>Current plan</Button>
+                  ) : (
+                    <>
+                      <Button
+                        className="w-full"
+                        onClick={() => startUpgrade("business", "monthly")}
+                        disabled={!canManageBilling}
+                      >
+                        Subscribe monthly
+                      </Button>
+                      <Button
+                        className="w-full"
+                        variant="secondary"
+                        onClick={() => startUpgrade("business", "yearly")}
+                        disabled={!canManageBilling}
+                      >
+                        Subscribe yearly
+                      </Button>
+                      <div className="text-xs text-[var(--color-text-muted)]">
+                        Contact us after subscribing to enable white-label features for your account.
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -710,6 +837,178 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+
+      {/* White Label */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <CardTitle>White Label</CardTitle>
+            {currentTier !== "agency" ? (
+              <span className="rounded-full border border-[var(--color-accent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-accent)]">
+                Agency Pro
+              </span>
+            ) : null}
+          </div>
+          <CardDescription>
+            {currentTier === "agency"
+              ? "Customise your client portal with your own brand, colours, and domain."
+              : "Upgrade to Agency Pro to white-label your client portals, remove all ClientEnforce branding, and serve clients under your own domain."}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          {currentTier !== "agency" ? (
+            <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6 text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-lg">🏷️</div>
+              <div className="text-sm font-medium text-[var(--color-text-primary)]">White-label features are locked</div>
+              <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                Upgrade to Agency Pro to apply your logo, brand colours, custom domain, and remove all ClientEnforce branding from every client portal.
+              </div>
+              <div className="mt-4 flex flex-col items-center gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-sm text-left max-w-md w-full">
+                  {[
+                    "Your logo on every client portal",
+                    "Custom accent colour",
+                    "Remove \"Powered by ClientEnforce\"",
+                    "Custom portal domain",
+                    "Brand name + support email",
+                    "Custom portal tagline",
+                  ].map((f) => (
+                    <div key={f} className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+                      <span className="text-[var(--color-success)]">✓</span> {f}
+                    </div>
+                  ))}
+                </div>
+                <Button className="mt-4" onClick={() => startUpgrade("business", "monthly")} disabled={!canManageBilling}>
+                  Upgrade to Agency Pro
+                </Button>
+              </div>
+            </div>
+          ) : wlLoading ? (
+            <div className="text-sm text-[var(--color-text-secondary)]">Loading white-label settings…</div>
+          ) : (
+            <div className="space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="wl_brand_name">Brand name</Label>
+                  <Input
+                    id="wl_brand_name"
+                    value={wl.brand_name}
+                    onChange={(e) => setWl((v) => ({ ...v, brand_name: e.target.value }))}
+                    placeholder="Acme Agency"
+                  />
+                  <p className="text-xs text-[var(--color-text-muted)]">Displayed in the client portal header.</p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="wl_support_email">Support email</Label>
+                  <Input
+                    id="wl_support_email"
+                    type="email"
+                    value={wl.support_email}
+                    onChange={(e) => setWl((v) => ({ ...v, support_email: e.target.value }))}
+                    placeholder="hello@youragency.com"
+                  />
+                  <p className="text-xs text-[var(--color-text-muted)]">Shown on the client portal footer.</p>
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <Label htmlFor="wl_tagline">Portal tagline</Label>
+                  <Input
+                    id="wl_tagline"
+                    value={wl.portal_tagline}
+                    onChange={(e) => setWl((v) => ({ ...v, portal_tagline: e.target.value }))}
+                    placeholder="Let's get you onboarded. We're excited to work with you."
+                  />
+                  <p className="text-xs text-[var(--color-text-muted)]">Appears below the brand name on the client portal.</p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="wl_logo_url">Logo URL</Label>
+                  <Input
+                    id="wl_logo_url"
+                    value={wl.logo_url}
+                    onChange={(e) => setWl((v) => ({ ...v, logo_url: e.target.value }))}
+                    placeholder="https://youragency.com/logo.png"
+                  />
+                  <p className="text-xs text-[var(--color-text-muted)]">Must be a public HTTPS URL. Recommended: 200×60 px PNG.</p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="wl_accent">Accent colour</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="wl_accent"
+                      type="color"
+                      value={wl.accent_color || "#000000"}
+                      onChange={(e) => setWl((v) => ({ ...v, accent_color: e.target.value }))}
+                      className="h-10 w-14 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-1"
+                    />
+                    <Input
+                      value={wl.accent_color}
+                      onChange={(e) => setWl((v) => ({ ...v, accent_color: e.target.value }))}
+                      placeholder="#2563eb"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-[var(--color-text-muted)]">Hex colour for buttons and progress bars on the client portal.</p>
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <Label htmlFor="wl_domain">Custom domain</Label>
+                  <Input
+                    id="wl_domain"
+                    value={wl.custom_domain}
+                    onChange={(e) => setWl((v) => ({ ...v, custom_domain: e.target.value }))}
+                    placeholder="onboard.youragency.com"
+                  />
+                  <p className="text-xs text-[var(--color-text-muted)]">
+                    Add a CNAME record pointing to <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs">portals.clientenforce.com</code>, then enter your subdomain here.{" "}
+                    <a href="/dashboard/email/custom-domain-guide" className="text-[var(--color-accent)] hover:underline">Setup guide →</a>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3">
+                <input
+                  id="wl_remove_branding"
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer"
+                  checked={wl.remove_branding}
+                  onChange={(e) => setWl((v) => ({ ...v, remove_branding: e.target.checked }))}
+                />
+                <div>
+                  <label htmlFor="wl_remove_branding" className="cursor-pointer text-sm font-medium text-[var(--color-text-primary)]">
+                    Remove "Powered by ClientEnforce" branding
+                  </label>
+                  <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                    When checked, the ClientEnforce footer badge is hidden from all client portals in your organisation.
+                  </p>
+                </div>
+              </div>
+
+              {wl.logo_url ? (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                  <div className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Logo preview</div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={wl.logo_url} alt="Brand logo" className="max-h-12 max-w-[200px] object-contain" />
+                </div>
+              ) : null}
+
+              <div className="flex items-center gap-2 pt-2 border-t border-[var(--color-border)]">
+                <Button onClick={saveWhiteLabel} disabled={wlSaving}>
+                  {wlSaving ? "Saving…" : "Save white-label settings"}
+                </Button>
+                {wlLoaded ? (
+                  <Button variant="secondary" onClick={loadWhiteLabel} disabled={wlLoading}>
+                    Reload
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Invite */}
       <Card>
