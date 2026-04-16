@@ -366,7 +366,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function startUpgrade(plan: "pro" | "business", interval: "monthly" | "yearly" = "monthly") {
+  async function startUpgrade(plan: "pro" | "business" | "agency", interval: "monthly" | "yearly" = "monthly") {
     setPageError(null);
     setPageSuccess(null);
 
@@ -811,7 +811,7 @@ export default function SettingsPage() {
                     <>
                       <Button
                         className="w-full"
-                        onClick={() => startUpgrade("business", "monthly")}
+                        onClick={() => startUpgrade("agency", "monthly")}
                         disabled={!canManageBilling}
                       >
                         Subscribe monthly
@@ -819,14 +819,11 @@ export default function SettingsPage() {
                       <Button
                         className="w-full"
                         variant="secondary"
-                        onClick={() => startUpgrade("business", "yearly")}
+                        onClick={() => startUpgrade("agency", "yearly")}
                         disabled={!canManageBilling}
                       >
                         Subscribe yearly
                       </Button>
-                      <div className="text-xs text-[var(--color-text-muted)]">
-                        Contact us after subscribing to enable white-label features for your account.
-                      </div>
                     </>
                   )}
                 </div>
@@ -879,7 +876,7 @@ export default function SettingsPage() {
                     </div>
                   ))}
                 </div>
-                <Button className="mt-4" onClick={() => startUpgrade("business", "monthly")} disabled={!canManageBilling}>
+                <Button className="mt-4" onClick={() => startUpgrade("agency", "monthly")} disabled={!canManageBilling}>
                   Upgrade to Agency Pro
                 </Button>
               </div>

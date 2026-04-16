@@ -8,7 +8,7 @@ import { appOrigin } from "@/lib/app-url";
 
 export const runtime = "nodejs";
 
-const ALLOWED_TIERS = ["pro", "business"] as const;
+const ALLOWED_TIERS = ["pro", "business", "agency"] as const;
 const ALLOWED_INTERVALS = ["monthly", "yearly"] as const;
 
 type Tier = (typeof ALLOWED_TIERS)[number];
@@ -79,6 +79,10 @@ export async function POST(req: Request) {
     business: {
       monthly: process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
       yearly: process.env.STRIPE_PRICE_BUSINESS_YEARLY,
+    },
+    agency: {
+      monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY,
+      yearly: process.env.STRIPE_PRICE_AGENCY_YEARLY,
     },
   } as const;
 
