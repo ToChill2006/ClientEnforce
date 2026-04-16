@@ -49,10 +49,6 @@ function TrustBar({ config }: { config: UsVerticalConfig }) {
               {item}
             </span>
           ))}
-          {/* TODO: Replace placeholder with live G2/Capterra badge when reviews are collected */}
-          <span className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
-            ★★★★★ <span className="font-normal">4.8 on G2 · 50+ reviews</span>
-          </span>
         </div>
       </div>
     </div>
