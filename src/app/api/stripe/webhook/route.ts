@@ -2,8 +2,22 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-02-25.clover",
+// Lazy — avoid module-level throw when STRIPE_SECRET_KEY is absent at build time
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
+    _stripe = new Stripe(key, { apiVersion: "2026-02-25.clover" });
+  }
+  return _stripe;
+}
+const stripe = new Proxy({} as Stripe, {
+  get(_: Stripe, prop: string | symbol) {
+    const c = getStripe();
+    const val = Reflect.get(c, prop, c);
+    return typeof val === "function" ? val.bind(c) : val;
+  },
 });
 
 export const runtime = "nodejs";
@@ -41,11 +55,21 @@ function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   return null;
 }
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false, autoRefreshToken: false } }
-);
+// Lazy — avoids module-level throw when Supabase env vars are absent at build time
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url) throw new Error("NEXT_PUBLIC_SUPABASE_URL is required");
+  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required");
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+const supabaseAdmin = new Proxy({} as ReturnType<typeof getSupabaseAdmin>, {
+  get(_: any, prop: string | symbol) {
+    const c = getSupabaseAdmin();
+    const val = Reflect.get(c, prop, c);
+    return typeof val === "function" ? val.bind(c) : val;
+  },
+});
 
 function tierToSeatsLimit(tier: string | null | undefined) {
   const t = (tier ?? "free").toLowerCase();

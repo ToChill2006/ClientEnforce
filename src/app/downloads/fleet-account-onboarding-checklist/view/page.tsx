@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
 import { buildPageMetadata } from "@/lib/seo";
+import { PrintButton } from "./PrintButton";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Multi-Location Fleet Account Onboarding Checklist | ClientEnforce",
@@ -95,12 +96,7 @@ export default function FleetChecklistViewPage() {
                 30 required steps across 4 phases. Use this checklist to standardize fleet account setup across every location and every account manager — so nothing gets missed before the first service call.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <button
-                  onClick={() => typeof window !== "undefined" && window.print()}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)]"
-                >
-                  Print / Save as PDF
-                </button>
+                <PrintButton />
                 <Link
                   href="/auto-service"
                   className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"

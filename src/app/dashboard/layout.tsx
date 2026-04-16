@@ -3,6 +3,9 @@ import { supabaseServer } from "@/lib/supabase-server";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageTransition from "@/components/layout/PageTransition";
 
+// All dashboard routes are auth-gated — never pre-render statically.
+export const dynamic = "force-dynamic";
+
 function nameFromEmail(email?: string | null) {
   if (!email) return null;
   const local = email.split("@")[0] || "";

@@ -1,13 +1,25 @@
 import Stripe from "stripe";
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+// Lazy singleton — only instantiated on first method call inside a request handler,
+// not at module evaluation time. Prevents build failures when STRIPE_SECRET_KEY
+// is absent from the build environment.
+let _stripe: Stripe | null = null;
 
-if (!STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set");
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
+    _stripe = new Stripe(key, { apiVersion: "2026-02-25.clover" as Stripe.LatestApiVersion });
+  }
+  return _stripe;
 }
 
-export const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: "2026-02-25.clover" as Stripe.LatestApiVersion,
+export const stripe = new Proxy({} as Stripe, {
+  get(_: Stripe, prop: string | symbol) {
+    const client = getStripe();
+    const val = Reflect.get(client, prop, client);
+    return typeof val === "function" ? val.bind(client) : val;
+  },
 });
 
 export type Tier = "free" | "pro" | "business";
