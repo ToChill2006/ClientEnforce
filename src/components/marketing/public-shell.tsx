@@ -29,6 +29,8 @@ const solutionsWhoFor = [
 const solutionsCompare = [
   { href: "/dubsado-alternative", label: "vs Dubsado" },
   { href: "/honeybook-alternative", label: "vs HoneyBook" },
+  { href: "/copilot-alternative", label: "vs Copilot" },
+  { href: "/bonsai-alternative", label: "vs Bonsai" },
   { href: "/client-onboarding-software#why-software", label: "vs manual process" },
 ] as const;
 
@@ -140,6 +142,8 @@ const comparisonLinks = [
   { href: "/bonsai-alternative", label: "vs Bonsai" },
   { href: "/rocketlane-alternative", label: "vs Rocketlane" },
   { href: "/guidecx-alternative", label: "vs GUIDEcx" },
+  { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
+  { href: "/client-onboarding-software-for-agencies", label: "Onboarding software for agencies" },
   { href: "/best-client-onboarding-software", label: "Best onboarding software" },
 ] as const;
 

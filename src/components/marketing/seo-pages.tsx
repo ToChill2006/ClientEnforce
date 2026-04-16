@@ -558,6 +558,55 @@ export function BlogHubTemplate({
                 </div>
               </section>
 
+              <section className="mt-6 rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]">Essential guides</h2>
+                <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
+                  Deep-dive articles on the most common onboarding challenges — from root-cause analysis to software selection.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <Link
+                    href="/blog/what-is-client-onboarding"
+                    className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">What is client onboarding?</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
+                      A plain-language definition with workflow stages, ownership rules, and what good onboarding actually looks like.
+                    </p>
+                    <div className="mt-3 text-sm font-medium text-[var(--color-text-primary)]">Read the guide</div>
+                  </Link>
+                  <Link
+                    href="/blog/client-onboarding-guide"
+                    className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Complete client onboarding guide</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
+                      End-to-end onboarding guide covering intake, documents, follow-up, and handoff for agencies and service teams.
+                    </p>
+                    <div className="mt-3 text-sm font-medium text-[var(--color-text-primary)]">Read the guide</div>
+                  </Link>
+                  <Link
+                    href="/blog/how-to-stop-chasing-clients-during-onboarding"
+                    className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">How to stop chasing clients</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
+                      Practical strategies to automate follow-up and get clients to complete onboarding without manual chasing.
+                    </p>
+                    <div className="mt-3 text-sm font-medium text-[var(--color-text-primary)]">Read the guide</div>
+                  </Link>
+                  <Link
+                    href="/blog/honeybook-alternatives"
+                    className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">HoneyBook alternatives</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
+                      Honest comparison of HoneyBook alternatives for agencies and service businesses that need stronger onboarding control.
+                    </p>
+                    <div className="mt-3 text-sm font-medium text-[var(--color-text-primary)]">Read the comparison</div>
+                  </Link>
+                </div>
+              </section>
+
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post) => (
                   <Link

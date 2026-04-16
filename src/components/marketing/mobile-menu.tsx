@@ -15,9 +15,15 @@ const solutionsByUseCase = [
 ] as const;
 
 const solutionsWhoFor = [
-  { href: "/onboarding-for-agencies", label: "For agencies" },
-  { href: "/onboarding-for-accountants", label: "For accountants" },
-  { href: "/onboarding-for-consultants", label: "For consultants" },
+  { href: "/agencies", label: "Agencies" },
+  { href: "/consultants", label: "Consultants" },
+  { href: "/accountants", label: "Accountants" },
+  { href: "/ops-teams", label: "Ops teams" },
+  { href: "/auto-service", label: "Auto service" },
+  { href: "/dental-practices", label: "Dental practices" },
+  { href: "/health-wellness", label: "Health & wellness" },
+  { href: "/law-firm", label: "Law firms" },
+  { href: "/financial-advisors", label: "Financial advisors" },
 ] as const;
 
 const solutionsCompare = [
