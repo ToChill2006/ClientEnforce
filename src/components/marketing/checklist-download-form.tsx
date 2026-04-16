@@ -25,8 +25,8 @@ type Props = {
 
 export function ChecklistDownloadForm({
   asset = "client-onboarding-checklist",
-  viewHref = "/blog/client-onboarding-checklist-template",
-  viewLabel = "View the checklist guide →",
+  viewHref = "/downloads/client-onboarding-checklist/view",
+  viewLabel = "View the checklist →",
 }: Props) {
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
   const [submitted, setSubmitted] = useState(false);

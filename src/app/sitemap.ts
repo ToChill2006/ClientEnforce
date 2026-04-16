@@ -53,6 +53,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/dubsado-pricing-guide",
     "/dubsado-vs-honeybook",
     "/downloads/client-onboarding-checklist",
+    "/downloads/client-onboarding-checklist/view",
     "/blog/why-client-onboarding-fails",
     "/blog/client-onboarding-checklist-template",
     "/blog/best-client-onboarding-software-2026",

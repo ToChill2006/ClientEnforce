@@ -8,7 +8,7 @@ const NOTIFY_TO = process.env.LEAD_NOTIFY_EMAIL ?? "info@clientenforce.com";
 const FROM = "ClientEnforce <info@clientenforce.com>";
 
 const schema = z.object({
-  firstName: z.string().min(1).max(100),
+  firstName: z.string().max(100).optional().default(""),
   email: z.string().email().max(320),
   companyType: z.string().max(100).optional().default(""),
   asset: z.string().min(1).max(200),
@@ -20,7 +20,7 @@ const schema = z.object({
 const assetMeta: Record<string, { label: string; viewPath: string }> = {
   "client-onboarding-checklist": {
     label: "Free Client Onboarding Checklist Template",
-    viewPath: "/downloads/client-onboarding-checklist",
+    viewPath: "/downloads/client-onboarding-checklist/view",
   },
   "fleet-account-onboarding-checklist": {
     label: "The Multi-Location Fleet Account Onboarding Checklist",
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     const confirmTemplate = renderClientEnforceEmail({
       preheader: `Your ${assetLabel} is ready`,
       eyebrow: "Free resource",
-      title: `Here's your checklist, ${firstName}`,
+      title: firstName ? `Here's your checklist, ${firstName}` : "Your checklist is ready",
       subtitle: assetLabel,
       paragraphs: [
         "Click the button below to view and print your checklist. It opens in your browser — use Cmd/Ctrl + P to save as PDF.",
