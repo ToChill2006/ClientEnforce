@@ -34,6 +34,18 @@ const solutionsCompare = [
   { href: "/client-onboarding-software#why-software", label: "vs manual process" },
 ] as const;
 
+const industryLinks = [
+  { href: "/auto-service", label: "Auto service & fleet ops", desc: "Fleet accounts, commercial clients, multi-location rollouts" },
+  { href: "/agencies", label: "Marketing & creative agencies", desc: "Repeatable client onboarding at scale" },
+  { href: "/consultants", label: "Consultants", desc: "Intake and kickoff without email chaos" },
+  { href: "/accountants", label: "Accounting firms", desc: "Compliance-ready intake and audit trail" },
+  { href: "/dental-practices", label: "Dental practices & DSOs", desc: "Patient intake across every location" },
+  { href: "/health-wellness", label: "Health & wellness", desc: "New client forms and consent collection" },
+  { href: "/law-firm", label: "Law firms", desc: "Engagement intake and document collection" },
+  { href: "/financial-advisors", label: "Financial advisors", desc: "Onboarding that meets compliance standards" },
+  { href: "/ops-teams", label: "Ops teams", desc: "Standardize onboarding across locations and teams" },
+] as const;
+
 export function PublicHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-white/95 backdrop-blur-sm">
@@ -82,6 +94,40 @@ export function PublicHeader() {
                 {solutionsCompare.map((item) => (
                   <Link key={item.href} href={item.href} className="block rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]">
                     {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </details>
+
+          {/* Industries dropdown */}
+          <details className="group relative">
+            <summary className="inline-flex list-none cursor-pointer select-none items-center gap-1 rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text-primary)]">
+              Industries
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 transition group-open:rotate-180" aria-hidden="true">
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+              </svg>
+            </summary>
+            <div className="invisible absolute left-0 top-full z-50 mt-2 w-[480px] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 opacity-0 shadow-[var(--shadow-lg)] transition group-open:visible group-open:opacity-100">
+              {/* Featured: Auto Service */}
+              <Link
+                href="/auto-service"
+                className="mb-3 flex items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-3 py-3 transition hover:bg-blue-50"
+              >
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-white text-sm font-bold">
+                  ↗
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-accent)]">Auto service &amp; fleet operators</p>
+                  <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">Multi-location rollouts, fleet account setup, commercial client intake — built for US service chains.</p>
+                </div>
+              </Link>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">All industries</p>
+              <div className="grid grid-cols-2 gap-0.5">
+                {industryLinks.slice(1).map((item) => (
+                  <Link key={item.href} href={item.href} className="block rounded-[var(--radius-sm)] px-3 py-2 transition hover:bg-[var(--color-bg-subtle)]">
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">{item.label}</p>
+                    <p className="text-[11px] text-[var(--color-text-muted)]">{item.desc}</p>
                   </Link>
                 ))}
               </div>
@@ -298,6 +344,7 @@ export function CtaBand({
   primaryHref = "/signup",
   secondaryLabel,
   secondaryHref,
+  secondaryExternal = false,
 }: {
   heading: string;
   subtext?: string;
@@ -305,6 +352,7 @@ export function CtaBand({
   primaryHref?: string;
   secondaryLabel?: string;
   secondaryHref?: string;
+  secondaryExternal?: boolean;
 }) {
   return (
     <section className="relative overflow-hidden bg-[var(--color-accent)] py-24">
@@ -337,12 +385,23 @@ export function CtaBand({
             {primaryLabel}
           </Link>
           {secondaryLabel && secondaryHref && (
-            <Link
-              href={secondaryHref}
-              className="inline-flex w-full items-center justify-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/20 sm:w-auto"
-            >
-              {secondaryLabel}
-            </Link>
+            secondaryExternal ? (
+              <a
+                href={secondaryHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/20 sm:w-auto"
+              >
+                {secondaryLabel}
+              </a>
+            ) : (
+              <Link
+                href={secondaryHref}
+                className="inline-flex w-full items-center justify-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/20 sm:w-auto"
+              >
+                {secondaryLabel}
+              </Link>
+            )
           )}
         </div>
       </div>

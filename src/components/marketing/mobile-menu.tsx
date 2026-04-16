@@ -36,7 +36,20 @@ const solutionsCompare = [
 
 const sections = [
   { heading: "By use case", links: solutionsByUseCase },
-  { heading: "Who it\u2019s for", links: solutionsWhoFor },
+  {
+    heading: "Industries",
+    links: [
+      { href: "/auto-service", label: "Auto service & fleet ops" },
+      { href: "/agencies", label: "Agencies" },
+      { href: "/consultants", label: "Consultants" },
+      { href: "/accountants", label: "Accountants" },
+      { href: "/ops-teams", label: "Ops teams" },
+      { href: "/dental-practices", label: "Dental practices" },
+      { href: "/health-wellness", label: "Health & wellness" },
+      { href: "/law-firm", label: "Law firms" },
+      { href: "/financial-advisors", label: "Financial advisors" },
+    ] as const,
+  },
   { heading: "Compare", links: solutionsCompare },
   {
     heading: "Navigate",

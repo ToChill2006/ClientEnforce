@@ -34,6 +34,8 @@ export type UsVerticalConfig = {
   /** Health-wellness only */
   showUseCasesBlock: boolean;
   useCases?: UsVerticalUseCase[];
+  /** Auto-service only — stalled-account ROI calculator */
+  showRoiCalculator?: boolean;
   faqItems: UsVerticalFaq[];
   ctaHeading: string;
   ctaSubtext: string;
@@ -398,6 +400,7 @@ const autoService: UsVerticalConfig = {
   showWhiteLabel: false,
   showComplianceCallout: false,
   showUseCasesBlock: false,
+  showRoiCalculator: true,
   faqItems: [
     {
       question: "Can I have different templates for fleet vs. commercial accounts?",

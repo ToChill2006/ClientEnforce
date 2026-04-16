@@ -8,6 +8,7 @@ import { PublicHeader, PublicFooter, CtaBand } from "@/components/marketing/publ
 import { FadeUp } from "@/components/marketing/fade-up";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { PricingToggle } from "@/components/marketing/pricing-toggle";
+import { RoiCalculator } from "@/components/marketing/roi-calculator";
 import type { UsVerticalConfig } from "@/lib/us-landing-verticals";
 
 /* ─── Shared feature list (identical across all vertical pages) ──────────── */
@@ -81,12 +82,14 @@ function HeroSection({ config }: { config: UsVerticalConfig }) {
             >
               Start Your Free Trial
             </Link>
-            <Link
-              href="/contact"
+            <a
+              href="https://calendar.app.google/QfkFs4hWUoCbKupj7"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto"
             >
-              Book a 15-Min Demo
-            </Link>
+              Book a 20-min walkthrough
+            </a>
           </div>
           <p className="mt-4 text-xs text-[var(--color-text-muted)]">
             No credit card required · 30-day money-back guarantee · Cancel anytime
@@ -397,6 +400,7 @@ export function UsVerticalPage({ config }: { config: UsVerticalConfig }) {
         <TrustBar config={config} />
         <PainPointsSection config={config} />
         <HowItWorksSection config={config} />
+        {config.showRoiCalculator && <RoiCalculator />}
         <FeaturesSection config={config} />
         {config.showComplianceCallout && config.complianceCallout && (
           <ComplianceCallout text={config.complianceCallout} />
@@ -413,8 +417,9 @@ export function UsVerticalPage({ config }: { config: UsVerticalConfig }) {
           subtext={config.ctaSubtext}
           primaryLabel="Start Your Free Trial"
           primaryHref="/signup"
-          secondaryLabel="Book a 15-Min Demo →"
-          secondaryHref="/contact"
+          secondaryLabel="Book a 20-min walkthrough →"
+          secondaryHref="https://calendar.app.google/QfkFs4hWUoCbKupj7"
+          secondaryExternal
         />
       </main>
       <PublicFooter />

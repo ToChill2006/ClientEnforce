@@ -99,22 +99,24 @@ const commonCta: PageCta = {
 export const seoLandingPages: Record<string, SeoLandingPage> = {
   "client-onboarding-software": {
     path: "/client-onboarding-software",
-    title: "Client Onboarding Software Platform for Agencies and Service Businesses | ClientEnforce",
+    title: "Client Onboarding Software for Multi-Location Operators, Agencies & Service Teams | ClientEnforce",
     description:
-      "ClientEnforce is a client onboarding platform that helps agencies and service businesses automate client intake, document collection, checklist completion, and onboarding workflow software execution.",
+      "ClientEnforce is client onboarding software built for multi-location service operators, agencies, and service teams. Enforce required steps, automate follow-ups, and track every account from intake to kickoff — across every location, every team member, every time.",
     keywords: [
       "client onboarding software",
+      "client onboarding software for multi-location businesses",
       "best client onboarding software",
       "client onboarding platform",
       "automated client onboarding",
       "client onboarding workflow",
       "client onboarding system",
-      "client onboarding workflow software",
+      "multi-location onboarding software",
+      "service operator onboarding software",
     ],
     eyebrow: "Client onboarding software",
-    h1: "Client Onboarding Software for Agencies and Service Businesses",
+    h1: "Client Onboarding Software for Multi-Location Operators and Service Teams",
     intro:
-      "ClientEnforce is a client onboarding platform for agencies and service teams that need predictable onboarding execution. Standardize intake, collect documents and signatures, automate follow-ups, and track every onboarding workflow from one secure client onboarding system.",
+      "ClientEnforce is client onboarding software for multi-location service operators, agencies, and service teams running repeatable onboarding at scale. Whether you're rolling out a new location, onboarding fleet accounts, or managing 20 concurrent client setups — one structured system enforces every required step, automates follow-up, and keeps every onboarding on track from day one.",
     highlights: [
       "Client onboarding automation with reminder and escalation rules",
       "Template-based onboarding checklists for repeatable execution",

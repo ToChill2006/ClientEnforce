@@ -49,7 +49,7 @@ const whoItsFor = [
   { icon: <TrendingUp className="h-5 w-5" />, title: "Agencies", href: "/onboarding-for-agencies", pain: "Running 10 onboardings at once with no consistent process.", solution: "One repeatable template. Live status across every active account." },
   { icon: <PenLine className="h-5 w-5" />, title: "Consultants", href: "/onboarding-for-consultants", pain: "Discovery and intake details buried in email before kickoff.", solution: "Keep intake, documents, and approvals in one portal before work begins." },
   { icon: <ShieldCheck className="h-5 w-5" />, title: "Accountants", href: "/onboarding-for-accountants", pain: "Compliance docs must be traceable — inbox collection is not enough.", solution: "Enforce required submissions. Maintain an audit-ready timeline." },
-  { icon: <BarChart3 className="h-5 w-5" />, title: "Ops teams", href: "/client-onboarding-software", pain: "Onboarding quality depends on your most organized teammate.", solution: "Standardize workflows so quality stays high as volume increases." },
+  { icon: <Layers className="h-5 w-5" />, title: "Multi-location operators", href: "/auto-service", pain: "Running onboarding across 3+ locations? Every manager does it differently.", solution: "One enforced template across every location. Same process, every time, at scale." },
 ] as const;
 
 const homepageFaqItems = [
@@ -170,7 +170,7 @@ export default function MarketingPage() {
           <div className="relative mx-auto grid max-w-[1200px] gap-12 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
-                For US agencies · consultants · accountants
+                For US agencies · service operators · accountants
               </div>
               <h1
                 className="mt-6 text-4xl font-bold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-5xl lg:text-[64px]"
@@ -185,9 +185,14 @@ export default function MarketingPage() {
                 <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
                   Start Free Trial
                 </Link>
-                <Link href="#how-it-works" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
-                  See It in Action
-                </Link>
+                <a
+                  href="https://calendar.app.google/QfkFs4hWUoCbKupj7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto"
+                >
+                  Book a 20-min walkthrough
+                </a>
               </div>
               <p className="mt-4 text-xs text-[var(--color-text-muted)]">
                 No credit card required · Live in 20 minutes · Automated follow-ups included · 30-day money-back guarantee
@@ -203,10 +208,10 @@ export default function MarketingPage() {
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
           <div className="mx-auto max-w-[1200px] px-4 py-5 sm:px-6 lg:px-8">
             <p className="text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
-              Trusted by teams across the US in marketing, accounting, and consulting
+              Trusted by teams across the US in marketing, accounting, auto service, and consulting
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-6">
-              {["Marketing agencies", "Accounting firms", "Consulting practices", "Operations teams", "Legal services"].map((label) => (
+              {["Marketing agencies", "Accounting firms", "Consulting practices", "Auto service chains", "Multi-location operators"].map((label) => (
                 <span key={label} className="text-sm font-semibold text-[var(--color-border-strong)]">
                   {label}
                 </span>
@@ -447,8 +452,9 @@ export default function MarketingPage() {
           heading="Your next client deserves a better start"
           subtext="Launch your first onboarding template in under 20 minutes. No credit card required. 30-day money-back guarantee."
           primaryLabel="Start Free Trial"
-          secondaryLabel="Book a 15-min Demo →"
-          secondaryHref="/contact"
+          secondaryLabel="Book a 20-min walkthrough →"
+          secondaryHref="https://calendar.app.google/QfkFs4hWUoCbKupj7"
+          secondaryExternal
         />
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
