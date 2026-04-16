@@ -56,6 +56,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog/what-is-client-onboarding",
     "/resources/agency-onboarding-checklist",
     "/resources/consultant-intake-checklist",
+    "/downloads/fleet-account-onboarding-checklist",
+    "/downloads/fleet-account-onboarding-checklist/view",
     "/rocketlane-alternative",
     "/guidecx-alternative",
     // Industry / vertical pages

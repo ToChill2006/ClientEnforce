@@ -4,6 +4,7 @@ import { CheckSquare, Zap, ShieldCheck } from "lucide-react";
 
 import { PageContainer, PublicFooter, PublicHeader, CtaBand, JsonLd } from "@/components/marketing/public-shell";
 import { FadeUp } from "@/components/marketing/fade-up";
+import { LeadCaptureInline } from "@/components/marketing/lead-capture-inline";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -125,18 +126,18 @@ export default function ConsultantIntakeChecklistPage() {
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
               Most consulting engagements fail in the intake phase — not the delivery phase. Ambiguous scope, missing documents, and unconfirmed payment terms create disputes that are almost impossible to resolve cleanly six months in. This checklist closes those gaps before work starts.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/signup"
-                className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto"
-              >
-                Download the checklist — free
-              </Link>
+            <div className="mt-8 flex flex-col gap-4">
+              <LeadCaptureInline
+                asset="consultant-intake-checklist"
+                vertical="consultants"
+                buttonLabel="Get the free checklist"
+                placeholder="your@consultancy.com"
+              />
               <Link
                 href="#automate"
-                className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto"
+                className="inline-flex w-fit items-center text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]"
               >
-                Turn it into an enforced portal
+                Turn it into an enforced portal →
               </Link>
             </div>
           </PageContainer>
@@ -181,14 +182,15 @@ export default function ConsultantIntakeChecklistPage() {
                   Want the formatted PDF version and a ready-to-use template?
                 </p>
                 <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                  Sign up to ClientEnforce and get the PDF checklist plus a pre-built consultant intake template — ready to send to your next client in under 20 minutes.
+                  Enter your email and we&apos;ll send you the link. View online or print as PDF.
                 </p>
-                <Link
-                  href="/signup"
-                  className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
-                >
-                  Download the checklist PDF
-                </Link>
+                <div className="mt-4">
+                  <LeadCaptureInline
+                    asset="consultant-intake-checklist"
+                    vertical="consultants"
+                    buttonLabel="Send me the PDF"
+                  />
+                </div>
               </div>
             </FadeUp>
           </PageContainer>

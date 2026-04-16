@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   FileText, ShieldCheck, Bell, BarChart3, PenLine, Users,
-  CheckCircle2, ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 
 import { PublicHeader, PublicFooter, CtaBand } from "@/components/marketing/public-shell";
@@ -9,6 +9,7 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { PricingToggle } from "@/components/marketing/pricing-toggle";
 import { RoiCalculator } from "@/components/marketing/roi-calculator";
+import { LeadCaptureInline } from "@/components/marketing/lead-capture-inline";
 import type { UsVerticalConfig } from "@/lib/us-landing-verticals";
 
 /* ─── Shared feature list (identical across all vertical pages) ──────────── */
@@ -338,31 +339,43 @@ function PricingSection({ config }: { config: UsVerticalConfig }) {
   );
 }
 
-function LeadMagnetBanner({ title }: { title: string }) {
+/** Map a lead magnet title to its asset slug for /api/leads/capture */
+function titleToAssetSlug(title: string): string {
+  if (title.toLowerCase().includes("fleet") || title.toLowerCase().includes("auto service")) {
+    return "fleet-account-onboarding-checklist";
+  }
+  if (title.toLowerCase().includes("agency")) return "agency-onboarding-checklist";
+  if (title.toLowerCase().includes("consultant")) return "consultant-intake-checklist";
+  return "client-onboarding-checklist";
+}
+
+function LeadMagnetBanner({ config }: { config: UsVerticalConfig }) {
+  const asset = titleToAssetSlug(config.leadMagnetTitle);
   return (
     <section className="border-b border-[var(--color-border)] bg-white py-16">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <FadeUp>
-          <div className="flex flex-col items-start justify-between gap-6 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-8 py-7 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-6 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-8 py-7 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Free Download</p>
               <h3
                 className="mt-1 text-xl font-bold text-[var(--color-text-primary)]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                {title}
+                {config.leadMagnetTitle}
               </h3>
               <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                The exact steps top US {title.toLowerCase().includes("agency") ? "agencies" : "businesses"} use to onboard clients without chasing.
+                The exact steps top US {config.leadMagnetTitle.toLowerCase().includes("agency") ? "agencies" : "businesses"} use to onboard clients without chasing.
               </p>
             </div>
-            {/* TODO: Wire to email capture / gated download flow */}
-            <Link
-              href="/contact"
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--color-accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
-            >
-              Get the Free Checklist <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="shrink-0">
+              <LeadCaptureInline
+                asset={asset}
+                vertical={config.slug}
+                buttonLabel="Get the free checklist"
+              />
+              <p className="mt-2 text-xs text-[var(--color-text-muted)]">No spam. Unsubscribe any time.</p>
+            </div>
           </div>
         </FadeUp>
       </div>
@@ -410,7 +423,7 @@ export function UsVerticalPage({ config }: { config: UsVerticalConfig }) {
         )}
         {config.showWhiteLabel && <WhiteLabelCallout />}
         <PricingSection config={config} />
-        <LeadMagnetBanner title={config.leadMagnetTitle} />
+        <LeadMagnetBanner config={config} />
         <FaqSection config={config} />
         <CtaBand
           heading={config.ctaHeading}
