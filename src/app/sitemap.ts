@@ -7,10 +7,13 @@ import { absoluteUrl } from "@/lib/seo";
 const recentlyUpdatedPaths = new Set([
   "/dubsado-alternative",
   "/honeybook-alternative",
+  "/rocketlane-alternative",
+  "/dubsado-vs-honeybook",
   "/copilot-alternative",
   "/bonsai-alternative",
   "/client-portal-software",
   "/client-intake-software",
+  "/client-onboarding-software",
   "/client-onboarding-software-for-agencies",
   "/client-onboarding-automation",
   "/blog/best-client-onboarding-software",
@@ -28,6 +31,8 @@ const highPriorityPages = new Set([
   "/client-onboarding-automation",
   "/client-onboarding-checklist",
   "/client-onboarding-tools",
+  "/rocketlane-alternative",
+  "/dubsado-vs-honeybook",
   "/onboarding-for-agencies",
   "/onboarding-for-accountants",
 ]);

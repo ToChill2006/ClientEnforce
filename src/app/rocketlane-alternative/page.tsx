@@ -7,10 +7,10 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Rocketlane Alternative for Growing Teams | ClientEnforce",
-  description: "Need a Rocketlane alternative without the enterprise overhead? ClientEnforce enforces onboarding completion — required steps, document collection, automated reminders — live in 20 minutes. No credit card required.",
+  title: "Best Rocketlane Alternative for Agencies (2026) | ClientEnforce",
+  description: "Comparing Rocketlane alternatives for your agency or consultancy? ClientEnforce delivers enforced onboarding completion — required steps, document collection, automated reminders — at SMB price. Live in 20 minutes. No credit card required.",
   path: "/rocketlane-alternative",
-  keywords: ["Rocketlane alternative", "client onboarding software", "onboarding software for agencies", "client intake software"],
+  keywords: ["Rocketlane alternative", "Rocketlane alternatives", "best Rocketlane alternative", "client onboarding software", "onboarding software for agencies", "client intake software"],
   type: "website",
 });
 
@@ -34,6 +34,14 @@ const faqItems = [
   {
     question: "How long does it take to switch to ClientEnforce from Rocketlane?",
     answer: "Because ClientEnforce focuses only on onboarding (not ongoing project management), the setup is significantly simpler. Most teams build their first onboarding template and have a live client portal link within 20 minutes. There is no complex data migration — you build a fresh onboarding template for each service line, send the portal link to each new client, and the system handles reminders and tracking automatically.",
+  },
+  {
+    question: "What are the best Rocketlane alternatives in 2026?",
+    answer: "The best Rocketlane alternatives in 2026 depend on what you need to replace. If you need full post-onboarding customer success management, tools like Gainsight or Totango cover that scope. If your core need is enforced client intake and onboarding — required steps, document collection, automated follow-up, audit trail — ClientEnforce is the most purpose-built SMB alternative. It does not replace your project management tool, but it handles the onboarding phase that Rocketlane over-engineers for most agencies and consultancies.",
+  },
+  {
+    question: "Is ClientEnforce a good Rocketlane alternative for accountants and compliance-sensitive firms?",
+    answer: "Yes. ClientEnforce maintains a full timestamped audit trail of every step: every document received, every e-signature collected, every required task completed — exportable as a PDF evidence pack. For accounting firms, legal practices, and financial services businesses with AML, KYC, or regulatory intake requirements, this is exactly the compliance-grade record that Rocketlane's project-management-focused activity log does not provide.",
   },
 ];
 
@@ -93,10 +101,10 @@ export default function RocketlaneAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              Rocketlane alternative for teams that don&apos;t need enterprise complexity
+              Best Rocketlane alternative for agencies — ClientEnforce vs Rocketlane compared
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
-              Rocketlane is a powerful platform built for enterprise customer success teams. If you run a growing agency, consultancy, or accounting firm and need structured client onboarding — not enterprise project delivery — ClientEnforce gives you exactly that, live in 20 minutes.
+              Rocketlane is built for enterprise customer success teams. If you run an agency, consultancy, or accounting firm and need enforced client onboarding without enterprise complexity or cost — ClientEnforce is the purpose-built alternative. Live in 20 minutes.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
@@ -113,11 +121,12 @@ export default function RocketlaneAlternativePage() {
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-16">
           <PageContainer>
             <FadeUp>
-              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Rocketlane is built for enterprise customer success — not SMB onboarding</h2>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Why teams look for Rocketlane alternatives</h2>
               <div className="mt-5 max-w-3xl space-y-4 text-base leading-7 text-[var(--color-text-secondary)]">
-                <p>Rocketlane is a well-regarded platform for enterprise customer success teams. It handles complex project delivery, collaborative workspaces, Gantt-style timelines, resource planning, and multi-stakeholder coordination across large accounts. For SaaS companies with dedicated CS managers running complex implementations, it does the job well.</p>
-                <p>The problem comes when a 10-person agency or a boutique consultancy tries to adopt it. The configuration is complex. The pricing is built around enterprise contracts. And the platform does much more than most growing teams need — which means you are paying for features that will never get used while the specific thing you actually need (enforced client onboarding steps) is buried inside a much larger system.</p>
-                <p className="font-semibold text-[var(--color-text-primary)]">For agencies, consultants, and accountants who need structured, enforced client onboarding — not enterprise project delivery — the complexity is unnecessary overhead.</p>
+                <p>Rocketlane is a well-regarded platform for enterprise customer success teams. It handles complex project delivery, collaborative workspaces, Gantt-style timelines, resource planning, and multi-stakeholder coordination. For large SaaS companies with dedicated CS teams running complex implementations, it delivers real value.</p>
+                <p>The problem comes when a 10-person agency or boutique consultancy tries to adopt it. The configuration is complex, the pricing is built around enterprise contracts, and the platform does far more than most growing teams need. You end up paying for Gantt charts and resource planning while the specific thing you need — enforced client onboarding steps — is buried inside a system built for a different buyer entirely.</p>
+                <p>Most teams looking for Rocketlane alternatives are not searching for another enterprise platform. They need something that handles the intake and onboarding phase properly: required steps clients cannot skip, automated follow-up, and a clear audit trail — at SMB pricing, with a setup time measured in minutes.</p>
+                <p className="font-semibold text-[var(--color-text-primary)]">That is exactly what ClientEnforce is built for.</p>
               </div>
             </FadeUp>
           </PageContainer>

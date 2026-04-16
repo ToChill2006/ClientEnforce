@@ -3375,36 +3375,42 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
     ],
     sections: [
       {
-        heading: "Dubsado vs HoneyBook: onboarding comparison at a glance",
+        heading: "Dubsado vs HoneyBook: side-by-side onboarding comparison",
         paragraphs: [
-          "Both tools can support onboarding, but depth and workflow control can vary based on setup. Use this table to compare from an onboarding execution perspective.",
+          "Both tools are built as all-in-one business platforms for independent service providers — not as dedicated onboarding systems. Here is how they compare across the dimensions that matter most for structured client intake.",
         ],
         table: {
           headers: ["Comparison area", "Dubsado", "HoneyBook"],
           rows: [
-            ["Primary positioning", "Broader operations with flexible workflows", "All-in-one service-business operations"],
-            ["Onboarding workflow depth", "Depends on customization and process design", "Depends on pipeline design and setup"],
-            ["Automation behavior", "Rule-based automation across broad workflows", "Automation across client-ops workflows"],
-            ["Best-fit buyer", "Teams prioritizing flexible broad operations", "Teams preferring an all-in-one service stack"],
+            ["Primary focus", "Full business ops: proposals, invoicing, CRM, scheduling", "Full clientflow: leads, contracts, payments, projects"],
+            ["Best-fit buyer", "Solo freelancers who need flexible workflow customization", "Independent creatives who want an all-in-one system"],
+            ["Onboarding workflow depth", "Configurable but requires manual setup — no native enforcement", "Pipeline-based — onboarding depends on stage design"],
+            ["Required step enforcement", "Not enforced — clients can bypass steps with flexible workflows", "Not enforced — flexible pipelines allow skipped steps"],
+            ["Automated reminders", "Rule-based automation — requires manual configuration", "Available — triggers depend on workflow setup"],
+            ["Audit trail quality", "Activity log — not compliance-grade", "Activity log — not exportable as evidence pack"],
+            ["Multi-client dashboard", "Manageable for solo use — not built for team-wide visibility", "Project view per client — no cross-portfolio view"],
+            ["Setup complexity", "High — extensive customization required", "Medium — opinionated but requires configuration"],
+            ["Works well when onboarding volume is", "Low (1–5 clients/month, solo-managed)", "Low (1–5 clients/month, solo-managed)"],
           ],
         },
       },
       {
-        heading: "Common strengths and limitations",
+        heading: "Where Dubsado and HoneyBook fall short for growing teams",
         paragraphs: [
-          "Dubsado and HoneyBook both offer broad functionality. The tradeoff is that onboarding-specific controls may require extra configuration and governance.",
+          "Both Dubsado and HoneyBook were designed for solo operators managing clients one at a time. When a team grows beyond one person, several gaps become expensive.",
         ],
         bullets: [
-          "Strength: wide feature coverage across business operations",
-          "Strength: can support onboarding with thoughtful setup",
-          "Limitation: onboarding readiness controls can be less explicit",
-          "Limitation: teams may still need manual process governance",
+          "Neither tool enforces required steps — clients can skip documents or signatures",
+          "No cross-team dashboard showing which clients are onboarding-complete across account managers",
+          "Audit trails are activity logs, not compliance-grade timestamped evidence records",
+          "Automation requires manual configuration and does not run at the platform level",
+          "Setup complexity increases as team size grows — both tools slow down at scale",
         ],
       },
       {
-        heading: "When ClientEnforce is a better alternative",
+        heading: "When ClientEnforce is the better alternative to both",
         paragraphs: [
-          "If your core pain is onboarding execution quality, ClientEnforce can be the better alternative because it is optimized for required-step workflows, follow-up automation, and readiness handoff.",
+          "If your core problem is onboarding execution quality — clients skipping steps, delayed kickoffs, manual follow-up overhead — ClientEnforce is purpose-built for that job. It enforces required steps at the platform level, automates reminders until every task is complete, and maintains a compliance-grade audit trail per client.",
         ],
         links: [
           {
@@ -3451,24 +3457,24 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
     ],
     faq: [
       {
-        question: "Which is better for onboarding: Dubsado or HoneyBook?",
+        question: "Which is better for client onboarding: Dubsado or HoneyBook?",
         answer:
-          "It depends on your workflow and setup. Both can support onboarding, but teams with onboarding-specific bottlenecks often evaluate onboarding-first alternatives for stronger execution controls.",
+          "For solo freelancers, both tools can support onboarding when configured carefully. Dubsado offers more workflow flexibility; HoneyBook is more opinionated and easier to set up quickly. The honest answer is that neither was built specifically for client onboarding execution. Both require manual governance to enforce required steps — which is why agencies and growing teams often switch to a dedicated onboarding tool when client volume increases.",
       },
       {
-        question: "What are good alternatives to Dubsado and HoneyBook?",
+        question: "What are the main differences between Dubsado and HoneyBook?",
         answer:
-          "Teams often compare onboarding-focused options like ClientEnforce when they need stronger checklist enforcement, follow-up automation, and readiness visibility.",
+          "Dubsado is more flexible and customizable — better for users who want to build complex workflows. HoneyBook is more opinionated with a cleaner out-of-the-box experience for independent creatives. Dubsado covers more ground on workflow customization; HoneyBook has stronger client-experience design and AI features for lead capture. Both include proposals, contracts, invoicing, and scheduling. Neither enforces onboarding completion at the platform level.",
       },
       {
-        question: "How should I compare tools like Dubsado and HoneyBook?",
+        question: "What are good alternatives to Dubsado and HoneyBook for agencies?",
         answer:
-          "Compare completion speed, overdue-task rate, reminder workload, and kickoff-readiness quality rather than feature lists alone.",
+          "For agencies onboarding multiple clients per month, the most common alternative is a dedicated onboarding platform like ClientEnforce. It enforces required steps, automates follow-up reminders, maintains a compliance-grade audit trail, and gives operations teams cross-portfolio visibility — features neither Dubsado nor HoneyBook provide natively. Run ClientEnforce alongside your existing CRM or invoicing tool rather than as a full replacement.",
       },
       {
-        question: "Where can I see pricing and product fit for ClientEnforce?",
+        question: "Can I use both Dubsado and an onboarding tool like ClientEnforce?",
         answer:
-          "Use the ClientEnforce pricing and product pages to compare plan fit and onboarding implementation detail.",
+          "Yes — and many teams do. Dubsado or HoneyBook handles proposals, invoicing, and client relationship management. ClientEnforce handles the onboarding intake phase: required document collection, e-signatures, automated reminders, and kickoff readiness. The two systems serve different phases of the client lifecycle and complement each other well.",
       },
     ],
     relatedLinks: [

@@ -230,15 +230,15 @@ export default function ClientOnboardingSoftwarePage() {
                   className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
-                  FAQ
+                  Frequently asked questions about client onboarding software
                 </h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   {[
-                    ["What is client onboarding software?", "It is software that enforces onboarding completion before project kickoff by managing forms, documents, signatures, reminders, and progress in one workflow."],
-                    ["Is this just another CRM?", "No. ClientEnforce is focused specifically on onboarding execution, not broad CRM management."],
-                    ["Can agencies use this across multiple service lines?", "Yes. Most teams build one template per service line and run all clients through the right onboarding workflow."],
-                    ["How quickly can we launch?", "Most teams can launch their first template in under a day and improve it during the first month."],
-                    ["What should we read next?", "Review client onboarding automation, the client onboarding checklist guide, and the Dubsado alternative page before rollout."],
+                    ["What is client onboarding software?", "Client onboarding software is a platform that manages the structured process of getting a new client from signed agreement to active project. It replaces email follow-up with automated workflows: document collection, e-signatures, required step enforcement, automated reminders, and a full audit trail of everything submitted. Unlike a CRM, it focuses specifically on completion — making sure every required step is done before kickoff begins."],
+                    ["How is client onboarding software different from a CRM?", "A CRM manages the full client relationship — leads, deals, contacts, and ongoing communications. Client onboarding software handles one specific phase: intake. It enforces completion of required steps before a project begins, triggers automated reminders when clients are overdue, and maintains an auditable record of what was submitted and when. Most CRMs can track onboarding but not enforce it — that distinction matters at volume."],
+                    ["Can agencies use this across multiple service lines?", "Yes. Most agencies build one baseline onboarding template and then create service-specific variants — one for SEO, one for paid media, one for web development. Each service line can have its own required documents and tasks while sharing the same enforcement system. Account managers send the right template when a client signs, and operations teams see all active onboardings in one cross-portfolio dashboard."],
+                    ["How quickly can we go live?", "Most teams have their first onboarding template live in under 20 minutes. Map your required steps, define which items are mandatory, set reminder timing, and send the portal link when a new client signs. No developer support or custom integrations required. Most agencies fully standardize onboarding across all service lines within four to six weeks of the first live template."],
+                    ["What is the best client onboarding software for agencies?", "For agencies that onboard multiple clients per month and need a consistent, repeatable process, ClientEnforce is purpose-built for that use case. It handles document collection, e-signatures, automated reminders, required-step enforcement, and provides a full timestamped audit trail — without the overhead of a full CRM. Compare it against Dubsado and HoneyBook if you are currently using those tools for onboarding."],
                   ].map(([question, answer]) => (
                     <article key={question} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
                       <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{question}</h3>
