@@ -71,38 +71,32 @@ export async function POST(req: Request) {
     return json(500, { error: "STRIPE_SECRET_KEY missing" });
   }
 
-  const PRICE_IDS: Record<Tier, Record<BillingInterval, string | undefined>> = {
-    pro: {
-      monthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
-      yearly: process.env.STRIPE_PRICE_PRO_YEARLY,
-    },
-    business: {
-      monthly: process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
-      yearly: process.env.STRIPE_PRICE_BUSINESS_YEARLY,
-    },
-    agency: {
-      monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY,
-      yearly: process.env.STRIPE_PRICE_AGENCY_YEARLY,
-    },
+  const priceEnvMap: Record<string, string | undefined> = {
+    "pro:monthly": process.env.STRIPE_PRICE_PRO_MONTHLY,
+    "pro:yearly": process.env.STRIPE_PRICE_PRO_YEARLY,
+    "business:monthly": process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
+    "business:yearly": process.env.STRIPE_PRICE_BUSINESS_YEARLY,
+    "agency:monthly": process.env.STRIPE_PRICE_AGENCY_MONTHLY,
+    "agency:yearly": process.env.STRIPE_PRICE_AGENCY_YEARLY,
   };
 
   console.log("[stripe.checkout] config", {
     keyMode: process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_") ? "live" : process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ? "test" : "unknown",
     tier,
     interval,
-    proMonthly: PRICE_IDS.pro.monthly,
-    proYearly: PRICE_IDS.pro.yearly,
-    businessMonthly: PRICE_IDS.business.monthly,
-    businessYearly: PRICE_IDS.business.yearly,
-    agencyMonthly: PRICE_IDS.agency.monthly,
-    agencyYearly: PRICE_IDS.agency.yearly,
+    proMonthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
+    proYearly: process.env.STRIPE_PRICE_PRO_YEARLY,
+    businessMonthly: process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
+    businessYearly: process.env.STRIPE_PRICE_BUSINESS_YEARLY,
+    agencyMonthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY,
+    agencyYearly: process.env.STRIPE_PRICE_AGENCY_YEARLY,
   });
 
-  const priceId = PRICE_IDS[tier]?.[interval];
+  const priceId = priceEnvMap[`${tier}:${interval}`];
 
   if (!priceId) {
     return json(500, {
-      error: `Missing Stripe price for ${tier} ${interval}`,
+      error: `Missing Stripe price for ${tier} ${interval}. Check STRIPE_PRICE_${tier.toUpperCase()}_${interval.toUpperCase()} in environment variables.`,
     });
   }
 
@@ -152,13 +146,10 @@ export async function POST(req: Request) {
       .eq("id", org.id);
 
     if (upErr) {
-      // Customer was created but we failed to persist it. Return a clear error.
       return json(500, { error: `Failed to persist Stripe customer: ${upErr.message}` });
     }
   }
 
-  // If the org already has an active subscription, schedule it to cancel so we don't end up with two subscriptions.
-  // (We keep it until period end to avoid cutting access immediately.)
   const existingSubId = (org as any)?.stripe_subscription_id as string | null | undefined;
   const existingSubStatus = String((org as any)?.stripe_subscription_status ?? "").toLowerCase();
   const cancellableStatuses = new Set(["active", "trialing", "past_due", "incomplete"]);
@@ -167,11 +158,9 @@ export async function POST(req: Request) {
     try {
       await stripe.subscriptions.update(existingSubId, {
         cancel_at_period_end: true,
-        // keep proration simple; the new subscription will start immediately
         proration_behavior: "none",
       });
     } catch (e: any) {
-      // Don't block checkout if we can't cancel the old one; webhook can still reconcile.
       console.warn("Failed to set cancel_at_period_end on existing subscription", existingSubId, e?.message || e);
     }
   }
@@ -230,8 +219,6 @@ export async function POST(req: Request) {
       });
     }
 
-    return json(500, {
-      error: message,
-    });
+    return json(500, { error: message });
   }
 }
