@@ -58,6 +58,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/resources/consultant-intake-checklist",
     "/downloads/fleet-account-onboarding-checklist",
     "/downloads/fleet-account-onboarding-checklist/view",
+    "/assembly-alternative",
     "/rocketlane-alternative",
     "/guidecx-alternative",
     // Industry / vertical pages
