@@ -1766,7 +1766,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
     eyebrow: "Client onboarding software for agencies",
     h1: "Client Onboarding Software for Agencies",
     intro:
-      "Agency onboarding breaks when each account manager runs their own process. ClientEnforce enforces one onboarding workflow across every account — required steps clients cannot skip, automated reminders that chase for you, and a live dashboard that shows ops exactly where every onboarding stands.",
+      "Agency onboarding breaks down when each account manager runs their own process. ClientEnforce gives your team one consistent workflow. Required steps clients cannot skip. Automated reminders that follow up for you. A live dashboard showing ops exactly where every onboarding stands.",
     highlights: [
       "Standardized onboarding templates across services",
       "Fewer delayed projects from missing client inputs",
@@ -1777,7 +1777,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "Agency onboarding challenges",
         paragraphs: [
-          "Agencies juggle discovery forms, assets, agreements, and approvals across many accounts. Without a standardized workflow, kickoff timelines slip and delivery teams start under-informed.",
+          "Agencies manage discovery forms, assets, agreements, and approvals across many accounts. Without a standard workflow, kickoff timelines slip. Delivery teams start without the information they need.",
         ],
         bullets: [
           "Different managers using different onboarding methods",
@@ -1788,7 +1788,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "What agencies need from onboarding software",
         paragraphs: [
-          "Agency teams need clarity, not complexity. Software should make account onboarding consistent while preserving flexibility for service-specific requirements.",
+          "Agency teams need clarity, not complexity. The right software makes onboarding consistent across all accounts. It still allows flexibility for different service types.",
         ],
         bullets: [
           "Template-based onboarding by service type",
@@ -1799,9 +1799,9 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
       },
       {
-        heading: "How to evaluate agency onboarding software: five questions that matter",
+        heading: "Five questions to ask when evaluating agency onboarding software",
         paragraphs: [
-          "When agencies compare onboarding platforms, the deciding factor is execution quality at scale — not feature counts. These five questions cut through demo polish and predict real-world performance for agency teams.",
+          "When comparing onboarding platforms, focus on execution quality — not feature lists. These five questions cut through demo polish and show how a tool performs in practice.",
         ],
         bullets: [
           "Can every service line run a required-step onboarding template where clients cannot skip steps?",
@@ -1826,7 +1826,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "How ClientEnforce supports agency workflows",
         paragraphs: [
-          "ClientEnforce lets agencies define required onboarding steps once, then run every new account through the same structure. Teams get better quality starts without adding admin work.",
+          "ClientEnforce lets agencies define required onboarding steps once. Every new account runs through the same structure. Teams get consistent, high-quality starts without extra admin work.",
         ],
         steps: [
           {
@@ -1846,7 +1846,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "Client onboarding workflow software for agency teams",
         paragraphs: [
-          "Client onboarding workflow software gives agency teams a repeatable way to run intake, document collection, approvals, and readiness checks. This reduces process drift between account managers and protects delivery timelines.",
+          "Client onboarding workflow software gives agencies a repeatable process for intake, document collection, approvals, and readiness checks. It reduces inconsistency between account managers. It protects delivery timelines.",
         ],
         steps: [
           {
@@ -1882,8 +1882,8 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       {
         heading: "How to standardize onboarding across account managers",
         paragraphs: [
-          "Most agencies lose onboarding quality when each account manager improvises steps. Standardization means defining one required baseline while still allowing service-specific variants where needed.",
-          "ClientEnforce helps agencies keep that balance with reusable templates, required-step controls, and shared readiness criteria that apply across account teams.",
+          "Most agencies lose onboarding quality when account managers improvise their own steps. The fix is one required baseline everyone follows. Service-specific variants can still exist where needed.",
+          "ClientEnforce keeps that balance. Reusable templates set the standard. Required-step controls enforce it. Shared readiness criteria apply across every account team.",
         ],
         bullets: [
           "Use one baseline onboarding template for every new client",
@@ -1905,9 +1905,9 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
       },
       {
-        heading: "Agency use cases by service model",
+        heading: "Agency onboarding by service model",
         paragraphs: [
-          "Agency onboarding requirements differ by service line, but the operational pattern is similar: collect complete inputs quickly, validate readiness, and hand off with clean context.",
+          "Onboarding requirements differ by service line. But the pattern is the same: collect complete inputs quickly, confirm readiness, and hand off with full context.",
         ],
         table: {
           headers: ["Service model", "Common onboarding requirements", "Workflow priority"],
@@ -1936,9 +1936,9 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         },
       },
       {
-        heading: "Related comparison pages",
+        heading: "Compare agency onboarding software alternatives",
         paragraphs: [
-          "If you are evaluating alternatives, compare onboarding-first fit against broader business management platforms.",
+          "Evaluating other tools? Compare onboarding-first fit against broader CRM or business management platforms.",
         ],
         links: [
           {

@@ -12,6 +12,7 @@ const recentlyUpdatedPaths = new Set([
   "/client-portal-software",
   "/client-intake-software",
   "/client-onboarding-software-for-agencies",
+  "/client-onboarding-automation",
   "/blog/best-client-onboarding-software",
 ]);
 

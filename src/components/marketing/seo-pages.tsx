@@ -236,7 +236,7 @@ export function SeoLandingTemplate({
 
               {page.faq?.length ? (
                 <section className="rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
-                  <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]">FAQ</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]">Frequently asked questions</h2>
                   <div className="mt-5 grid gap-4 sm:grid-cols-2">
                     {page.faq.map((item) => (
                       <article key={item.question} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">

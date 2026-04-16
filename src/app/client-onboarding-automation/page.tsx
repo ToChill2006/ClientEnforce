@@ -5,15 +5,16 @@ import { CtaBand, JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/co
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Automation | Automate Follow-Ups and Intake | ClientEnforce",
+  title: "Client Onboarding Automation: How to Automate Client Onboarding | ClientEnforce",
   description:
-    "Automate your entire client onboarding workflow — reminders, document collection, e-signatures, and completion enforcement — without building custom integrations.",
+    "Automate your entire client onboarding workflow — reminders, document collection, e-signatures, and completion enforcement. Learn how to automate client onboarding and stop chasing clients manually.",
   path: "/client-onboarding-automation",
   keywords: [
     "client onboarding automation",
     "how to automate client onboarding",
     "automated client onboarding",
-    "client onboarding workflow software",
+    "automate client onboarding",
+    "client onboarding workflow automation",
     "client onboarding software",
   ],
   type: "website",
@@ -52,6 +53,42 @@ const howToSchema = {
       text: "Monitor completion status in real time. When all required steps are done, trigger the project kickoff with a full audit trail of what was submitted.",
     },
   ],
+};
+
+const faqItems = [
+  {
+    question: "What is client onboarding automation?",
+    answer: "Client onboarding automation is the use of software to handle the repetitive, manual parts of the onboarding process — sending reminders when clients are overdue, confirming document receipt, tracking completion status, and triggering kickoff when all required steps are done. Instead of your team manually following up with every client, automation handles the logistics so you can focus on the relationship.",
+  },
+  {
+    question: "How do you automate client onboarding?",
+    answer: "To automate client onboarding, start by mapping every step your team currently handles manually — the portal link send, overdue reminders, document confirmations, and kickoff notifications. Then move those steps into a client onboarding platform that enforces required completion and triggers automated nudges based on task status. The goal is to replace manual follow-up with system-driven reminders, so no client falls through the cracks.",
+  },
+  {
+    question: "What parts of client onboarding should be automated?",
+    answer: "The best parts of client onboarding to automate are the logistical and repetitive ones: sending the portal link when a client signs, triggering reminders when steps are overdue, confirming document receipt automatically, and alerting your team when a client is kickoff-ready. Do not automate expectation-setting conversations, bespoke scope questions, or escalation calls — those require human judgment.",
+  },
+  {
+    question: "What are the best client onboarding automation tools?",
+    answer: "The best client onboarding automation tools enforce required-step completion rather than just sending generic emails. ClientEnforce is purpose-built for this: it sends automated reminders tied to specific overdue tasks, not time-based sequences. Other tools like Dubsado and HoneyBook include basic automation, but are designed as general client management systems rather than onboarding-specific enforcement platforms.",
+  },
+  {
+    question: "How long does it take to set up automated client onboarding?",
+    answer: "With ClientEnforce, most teams have a first automated onboarding template live within 20 minutes. Map your required steps, define which items are mandatory, set your reminder timing, and send the portal link when a new client signs. You do not need developer support or custom integrations — the automation runs at the platform level.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
 };
 
 export default function ClientOnboardingAutomationPage() {
@@ -178,6 +215,23 @@ export default function ClientOnboardingAutomationPage() {
                 </div>
               </section>
 
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <h2
+                  className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Frequently asked questions about client onboarding automation
+                </h2>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {faqItems.map((item) => (
+                    <article key={item.question} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+                      <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{item.question}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{item.answer}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-accent)] p-6 text-white shadow-[var(--shadow-sm)] sm:p-8">
                 <h2
                   className="text-2xl font-semibold tracking-tight"
@@ -204,6 +258,7 @@ export default function ClientOnboardingAutomationPage() {
 
       <PublicFooter />
       <JsonLd data={howToSchema} />
+      <JsonLd data={faqSchema} />
     </div>
   );
 }

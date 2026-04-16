@@ -7,10 +7,10 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "HoneyBook Alternative for Agencies & Service Teams | ClientEnforce",
-  description: "Looking for a HoneyBook alternative built for teams? ClientEnforce enforces completion at every step — required-step intake, document collection, audit trail, automated reminders. No credit card required.",
+  title: "Best HoneyBook Alternatives for Agencies (2026) | ClientEnforce",
+  description: "Comparing HoneyBook alternatives for your agency or VA business? ClientEnforce enforces required onboarding steps, collects documents and signatures, and automates follow-up — live in 20 minutes. No credit card required.",
   path: "/honeybook-alternative",
-  keywords: ["HoneyBook alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist"],
+  keywords: ["HoneyBook alternative", "HoneyBook alternatives", "best HoneyBook alternative", "HoneyBook alternative for agencies", "client onboarding software", "client onboarding automation", "onboarding software for agencies"],
   type: "website",
   ogImage: "https://clientenforce.com/images/og/clientenforce-honeybook-alternative-og.png",
 });
@@ -35,6 +35,14 @@ const hbFaqItems = [
   {
     question: "How long does it take to switch from HoneyBook to ClientEnforce?",
     answer: "Most teams have a first onboarding template live within one working day. You do not migrate your HoneyBook data — you build a fresh onboarding workflow for each service line. The simplicity of setup is a deliberate design choice: ClientEnforce should take minutes to configure, not days.",
+  },
+  {
+    question: "What are the best HoneyBook alternatives in 2026?",
+    answer: "The best HoneyBook alternatives in 2026 depend on what you need to replace. If you need a full solo-business suite, Dubsado covers a similar scope. If your core problem is structured client onboarding — enforced required steps, document collection, automated reminders, a compliance-grade audit trail — ClientEnforce is the most purpose-built option. Agencies and VA businesses onboarding multiple clients per month consistently find a dedicated onboarding tool outperforms trying to force HoneyBook into a process it was not designed for.",
+  },
+  {
+    question: "Is ClientEnforce a good HoneyBook alternative for VA agencies?",
+    answer: "Yes. Virtual assistant agencies have a specific onboarding challenge: multiple clients, different requirements, and no time to manually chase documents across each one. ClientEnforce gives VA agencies a single onboarding portal per client, required-step enforcement so nothing gets skipped, and automated reminders that follow up until every task is complete — without the VA having to intervene manually.",
   },
 ];
 
@@ -94,10 +102,10 @@ export default function HoneyBookAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              HoneyBook alternative for teams that need enforcement, not flexibility
+              Best HoneyBook alternatives for agencies — ClientEnforce vs HoneyBook compared
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
-              HoneyBook works beautifully for independent creatives. But if you run a team, onboard multiple clients a month, and need structured intake with an audit trail — you need something built for that job specifically.
+              HoneyBook works for independent creatives. But if you run an agency, VA business, or service team and need structured, enforced client onboarding — you need a HoneyBook alternative built for that job.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
@@ -114,11 +122,12 @@ export default function HoneyBookAlternativePage() {
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-16">
           <PageContainer>
             <FadeUp>
-              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>HoneyBook is excellent — for independent business owners</h2>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Why agencies and VA businesses look for HoneyBook alternatives</h2>
               <div className="mt-5 max-w-3xl space-y-4 text-base leading-7 text-[var(--color-text-secondary)]">
-                <p>HoneyBook earned its loyal following by solving a real problem for solo creative professionals. Photographers, event planners, coaches, designers — people who need to manage inquiries, send proposals, collect contracts, take payments, and keep client comms organized, all without a dedicated ops person.</p>
-                <p>The challenge comes when a team tries to use it as a structured onboarding system. HoneyBook was not designed for an operations manager tracking eight active onboardings simultaneously. It does not enforce required completion. And there is no compliance-grade audit trail of what was submitted, when, and by whom.</p>
-                <p className="font-semibold text-[var(--color-text-primary)]">For agencies, consultancies, accounting firms, and ops-led service teams, those gaps matter.</p>
+                <p>HoneyBook earned its following by solving a real problem for solo creative professionals — photographers, event planners, coaches, designers. People who need proposals, contracts, payments, and client comms in one place without a dedicated ops team.</p>
+                <p>The challenge comes when agencies and virtual assistant businesses try to use HoneyBook as a structured onboarding system. It was not designed for an operations manager tracking eight active onboardings at once. It does not enforce required completion. There is no compliance-grade audit trail of what was submitted, when, and by whom.</p>
+                <p>Virtual assistant agencies face a specific version of this problem. VA businesses onboard multiple clients simultaneously, each with different requirements, and need a system that enforces consistent intake without the VA manually chasing every document.</p>
+                <p className="font-semibold text-[var(--color-text-primary)]">For agencies, VA businesses, consultancies, and accounting firms — those gaps matter. ClientEnforce is built to close them.</p>
               </div>
             </FadeUp>
           </PageContainer>

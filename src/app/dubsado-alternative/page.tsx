@@ -7,10 +7,10 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Dubsado Alternative for Agencies Running Multiple Onboardings | ClientEnforce",
-  description: "Need a Dubsado alternative built for agency scale? ClientEnforce enforces required steps, collects documents and signatures, and automates follow-ups — live in 20 minutes. No credit card required.",
+  title: "Best Dubsado Alternative for Agencies (2026) | ClientEnforce",
+  description: "Comparing Dubsado alternatives for your agency? ClientEnforce enforces required onboarding steps, collects documents and signatures, and automates follow-ups — live in 20 minutes. No credit card required.",
   path: "/dubsado-alternative",
-  keywords: ["Dubsado alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies", "client onboarding checklist"],
+  keywords: ["Dubsado alternative", "Dubsado alternatives", "best Dubsado alternative", "client onboarding software", "client onboarding automation", "onboarding software for agencies"],
   type: "website",
   ogImage: "https://clientenforce.com/images/og/clientenforce-dubsado-alternative-og.png",
 });
@@ -44,6 +44,10 @@ const faqItems = [
   {
     question: "Is ClientEnforce cheaper than Dubsado?",
     answer: "Pricing depends on your team size and plan. ClientEnforce is focused on onboarding execution, so you are not paying for features you do not use (invoicing, proposals, scheduling). Check the pricing page for current plan details.",
+  },
+  {
+    question: "What are the best Dubsado alternatives in 2026?",
+    answer: "The best Dubsado alternatives in 2026 depend on your primary need. If you need a full CRM replacement, tools like HoneyBook or 17hats cover a similar all-in-one scope. If your main problem is structured, repeatable client onboarding — enforced steps, document collection, automated follow-up, audit trail — ClientEnforce is the most purpose-built option. Most agency and service teams find that a dedicated onboarding tool outperforms a CRM workaround once they are managing three or more concurrent onboardings.",
   },
 ];
 
@@ -103,10 +107,10 @@ export default function DubsadoAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              Dubsado alternative built for agencies running multiple onboardings at once
+              Best Dubsado alternative for agencies — ClientEnforce vs Dubsado compared
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
-              Dubsado is a solid tool. But if you run an agency or service team and your main pain is chaotic client onboarding, you need something more focused.
+              Dubsado is a solid tool for solo freelancers. But if you run an agency with multiple concurrent onboardings, you need a Dubsado alternative built specifically for that job.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
@@ -123,11 +127,11 @@ export default function DubsadoAlternativePage() {
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-16">
           <PageContainer>
             <FadeUp>
-              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Dubsado is great — for the right person</h2>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Why teams look for Dubsado alternatives</h2>
               <div className="mt-5 max-w-3xl space-y-4 text-base leading-7 text-[var(--color-text-secondary)]">
-                <p>Dubsado built its reputation with solo freelancers and creative professionals. Photographers, designers, consultants running one-person businesses. For them, it works well: proposals, contracts, invoicing, scheduling, and basic client management all in one place.</p>
+                <p>Dubsado built its reputation with solo freelancers and creative professionals — photographers, designers, consultants running one-person businesses. For them, it works well: proposals, contracts, invoicing, scheduling, and basic client management all in one place.</p>
                 <p>The problem starts when teams try to use it for structured, repeatable onboarding at volume. Dubsado was not designed for an agency account manager running eight client onboardings simultaneously. The setup complexity becomes a bottleneck when ops needs a consistent process across every new client.</p>
-                <p className="font-semibold text-[var(--color-text-primary)]">That is the gap ClientEnforce fills.</p>
+                <p>Most teams searching for Dubsado alternatives are not looking to replace their entire CRM. They need something that handles the onboarding phase specifically — enforced required steps, document collection, automated reminders, and a real audit trail. That is exactly the gap ClientEnforce fills.</p>
               </div>
             </FadeUp>
           </PageContainer>
