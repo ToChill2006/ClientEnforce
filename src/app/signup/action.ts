@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
 import { appOrigin, buildAuthTokenLink, normalizeAuthEmailLink } from "@/lib/app-url";
 import { renderClientEnforceEmail } from "@/lib/email-template";
+import { buildNurtureSequence } from "@/lib/nurture-emails";
 
 export async function signupAction(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
@@ -113,6 +114,43 @@ export async function signupAction(formData: FormData) {
     const message = typeof send.error.message === "string" ? send.error.message : "Failed to send verification email.";
     redirect(`/signup?error=${encodeURIComponent(message)}`);
   }
+
+  // Internal signup notification to info@clientenforce.com
+  const internalNotification = renderClientEnforceEmail({
+    title: "New signup",
+    eyebrow: "New user",
+    subtitle: `${fullName || "(no name)"} · ${email}`,
+    paragraphs: [
+      `Email: ${email}`,
+      `Name: ${fullName || "(not provided)"}`,
+      `Signed up at: ${new Date().toUTCString()}`,
+    ],
+    footerNote: "Internal ClientEnforce signup notification.",
+  });
+
+  // Schedule nurture sequence
+  const firstName = fullName?.split(" ")[0] || "";
+  const nurtureEmails = buildNurtureSequence(firstName);
+
+  await Promise.allSettled([
+    resend.emails.send({
+      from: `${fromName} <${fromEmail}>`,
+      to: "info@clientenforce.com",
+      subject: `New signup: ${email}`,
+      html: internalNotification.html,
+      text: internalNotification.text,
+    }),
+    ...nurtureEmails.map((e) =>
+      resend.emails.send({
+        from: `${fromName} <${fromEmail}>`,
+        to: email,
+        subject: e.subject,
+        html: e.html,
+        text: e.text,
+        scheduledAt: e.scheduledAt,
+      })
+    ),
+  ]);
 
   redirect(`/login?message=${encodeURIComponent("Check your email for a verification link.")}&next=${encodeURIComponent(next)}`);
 }
