@@ -26,12 +26,6 @@ const softwareSchema = {
       "Client intake software that enforces completion — not just collects. Structured intake forms, document requests, e-signatures, and automated follow-ups.",
     path: "/client-intake-software",
   }),
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-    description: "Free trial available, no credit card required",
-  },
 };
 
 const faqSchema = buildFaqPageSchema([

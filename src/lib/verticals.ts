@@ -143,7 +143,7 @@ export const verticals: VerticalConfig[] = [
           "Yes. The dashboard gives your team a real-time view of every active onboarding — what is complete, what is outstanding, and which clients need a nudge — across your entire client roster.",
       },
     ],
-    metaTitle: "Client Onboarding Software for Agencies | ClientEnforce",
+    metaTitle: "Agency Client Onboarding Software | ClientEnforce",
     metaDescription:
       "Client onboarding software for agencies that enforces every step — asset collection, e-signatures, automated reminders, and a full audit trail. Start free.",
     heroSubheadline:
@@ -309,7 +309,7 @@ export const verticals: VerticalConfig[] = [
           "Most consultants have a complete onboarding template live in under 20 minutes. You map out the required steps — brief form, SOW signature, document uploads — and the system handles follow-up from there.",
       },
     ],
-    metaTitle: "Client Onboarding Software for Consultants | ClientEnforce",
+    metaTitle: "Consultant Client Onboarding Software | ClientEnforce",
     metaDescription:
       "Client onboarding software for consultants that enforces scope sign-off, document collection, and e-signatures before work begins. Start free.",
     heroSubheadline:

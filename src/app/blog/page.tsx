@@ -6,7 +6,7 @@ import { buildPageMetadata, buildBreadcrumbSchema } from "@/lib/seo";
 import { JsonLd } from "@/components/marketing/public-shell";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Blog | Guides, Templates & Automation Tips | ClientEnforce",
+  title: "Client Onboarding Blog | Guides & Templates | ClientEnforce",
   description:
     "Practical guides on client onboarding - what breaks, what to automate, and how to build a process that works without constant manual follow-up.",
   path: "/blog",

@@ -8,7 +8,7 @@ import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Accounting Client Onboarding Software — Compliant and Auditable | ClientEnforce",
+  title: "Accounting Client Onboarding Software | ClientEnforce",
   description: "Accounting client onboarding software for accountants and accounting firms. Collect documents, capture signatures, run AML checks, and maintain a full audit trail — all in one structured workflow.",
   path: "/onboarding-for-accountants",
   keywords: ["accounting client onboarding software", "client onboarding software for accountants", "onboarding software for accountants", "accounting client onboarding checklist", "client onboarding automation", "accounting firm client onboarding"],

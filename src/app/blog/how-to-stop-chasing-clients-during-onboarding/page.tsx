@@ -5,7 +5,7 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader, CtaBand } from "@/co
 import { buildBlogPostingSchema, buildBreadcrumbSchema, buildFaqPageSchema, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "How to Stop Chasing Clients During Onboarding (And What to Do Instead) | ClientEnforce",
+  title: "Stop Chasing Clients During Onboarding | ClientEnforce",
   description:
     "Client chasing during onboarding is a system problem, not a people problem. Here's why tracking tools don't solve it — and what enforcement-first onboarding looks like instead.",
   path: "/blog/how-to-stop-chasing-clients-during-onboarding",

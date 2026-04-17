@@ -140,7 +140,6 @@ const homepageSoftwareSchema = {
   operatingSystem: "Web",
   description: "Client onboarding software that replaces email chaos with structured workflows, document collection, e-signatures, automated reminders, and audit-ready tracking.",
   url: "https://clientenforce.com",
-  offers: { "@type": "AggregateOffer", priceCurrency: "USD", lowPrice: "0", offerCount: "4" },
 };
 
 const homepageFaqSchema = {

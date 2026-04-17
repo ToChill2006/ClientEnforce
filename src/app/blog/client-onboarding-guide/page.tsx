@@ -6,7 +6,7 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "The Complete Client Onboarding Guide: Process, Checklist & Automation | ClientEnforce",
+  title: "The Complete Client Onboarding Guide | ClientEnforce",
   description:
     "Everything you need to build a client onboarding process that actually works — steps, checklist, automation, tools, and common mistakes. The definitive guide for US agencies, consultants, and accountants.",
   path: "/blog/client-onboarding-guide",

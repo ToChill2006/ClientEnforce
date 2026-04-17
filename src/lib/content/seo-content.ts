@@ -99,7 +99,7 @@ const commonCta: PageCta = {
 export const seoLandingPages: Record<string, SeoLandingPage> = {
   "client-onboarding-software": {
     path: "/client-onboarding-software",
-    title: "Client Onboarding Software for Multi-Location Operators, Agencies & Service Teams | ClientEnforce",
+    title: "Client Onboarding Software | ClientEnforce",
     description:
       "ClientEnforce is client onboarding software built for multi-location service operators, agencies, and service teams. Enforce required steps, automate follow-ups, and track every account from intake to kickoff — across every location, every team member, every time.",
     keywords: [
@@ -1043,7 +1043,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "client-onboarding-automation": {
     path: "/client-onboarding-automation",
-    title: "Client Onboarding Automation Software for Agencies and Service Teams | ClientEnforce",
+    title: "Client Onboarding Automation Software | ClientEnforce",
     description:
       "Automate your client onboarding workflow with ClientEnforce. Manage automated client onboarding, collect documents, and streamline onboarding workflow software execution for agencies.",
     keywords: [
@@ -1328,7 +1328,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "dubsado-alternative": {
     path: "/dubsado-alternative",
-    title: "Dubsado Alternative for Agencies and Service Businesses | ClientEnforce",
+    title: "Dubsado Alternative for Agencies | ClientEnforce",
     description:
       "Looking for a Dubsado alternative? Compare ClientEnforce vs Dubsado for client onboarding software fit, onboarding automation, and agency workflow control.",
     keywords: [
@@ -2079,7 +2079,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "best-client-onboarding-software": {
     path: "/best-client-onboarding-software",
-    title: "Best Client Onboarding Software for Agencies and Service Teams | ClientEnforce",
+    title: "Best Client Onboarding Software for Agencies | ClientEnforce",
     description:
       "Compare the best client onboarding software options with practical buyer guidance for agencies, including client onboarding platform and workflow software criteria.",
     keywords: [
@@ -3387,7 +3387,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "dubsado-vs-honeybook": {
     path: "/dubsado-vs-honeybook",
-    title: "HoneyBook vs Dubsado for Client Onboarding (and a Better Alternative) | ClientEnforce",
+    title: "HoneyBook vs Dubsado: A Better Alternative | ClientEnforce",
     description:
       "HoneyBook vs Dubsado: compare both tools for client onboarding workflows, required-step enforcement, and audit trails — then see why onboarding-first teams choose ClientEnforce instead.",
     keywords: [
@@ -4650,7 +4650,7 @@ export const blogPosts: Record<string, BlogPost> = {
   "best-client-onboarding-software": {
     slug: "best-client-onboarding-software",
     path: "/blog/best-client-onboarding-software",
-    title: "Best Client Onboarding Software in 2026: Honest Buyer's Guide | ClientEnforce",
+    title: "Best Client Onboarding Software 2026: Buyer's Guide | ClientEnforce",
     description:
       "The best client onboarding software for agencies, consultants, and service teams in 2026 — evaluated by feature depth, enforcement capability, and real-world fit. Updated April 2026.",
     keywords: [
@@ -6554,7 +6554,7 @@ export const blogPosts: Record<string, BlogPost> = {
   "fleet-account-onboarding": {
     slug: "fleet-account-onboarding",
     path: "/blog/fleet-account-onboarding",
-    title: "Fleet Account Onboarding Software: How to Onboard Fleet Clients Without the Chaos | ClientEnforce",
+    title: "Fleet Account Onboarding Software | ClientEnforce",
     description:
       "Learn how fleet account onboarding software helps service businesses collect data, assign tasks, and complete fleet client setup faster — with fewer follow-ups and no dropped steps.",
     keywords: [

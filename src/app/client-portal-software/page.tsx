@@ -26,12 +26,6 @@ const softwareSchema = {
       "Client portal software built for completion — not just access. Structured intake, document collection, e-signatures, and automated reminders in one portal.",
     path: "/client-portal-software",
   }),
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-    description: "Free trial available, no credit card required",
-  },
 };
 
 const faqSchema = buildFaqPageSchema([

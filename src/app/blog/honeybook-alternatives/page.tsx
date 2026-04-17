@@ -6,7 +6,7 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "7 Best HoneyBook Alternatives in 2026 (Ranked for Agencies and Teams) | ClientEnforce",
+  title: "7 Best HoneyBook Alternatives in 2026 | ClientEnforce",
   description: "HoneyBook raised prices ~89% in 2025. Here are the 7 best HoneyBook alternatives in 2026 — ranked honestly for agencies, consultants, and service teams.",
   path: "/blog/honeybook-alternatives",
   keywords: ["honeybook alternatives", "best honeybook alternative", "honeybook competitors", "alternatives to honeybook 2026"],

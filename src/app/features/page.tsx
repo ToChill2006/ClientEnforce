@@ -24,12 +24,6 @@ const softwareSchema = {
       "Client onboarding software that enforces completion at every step. Document collection, e-signatures, automated reminders, and a full audit trail — built for agencies and service teams.",
     path: "/features",
   }),
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-    description: "Free trial available, no credit card required",
-  },
   featureList: [
     "Client onboarding templates",
     "Required step enforcement",

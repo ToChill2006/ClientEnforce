@@ -6,7 +6,7 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "What Is Client Onboarding? Definition, Steps, and How to Do It Right | ClientEnforce",
+  title: "What Is Client Onboarding? Definition and Steps | ClientEnforce",
   description: "Client onboarding is the structured process of transitioning a new client from signed agreement to active project. Learn what it includes, why it matters, and how to do it right.",
   path: "/blog/what-is-client-onboarding",
   keywords: ["what is client onboarding", "client onboarding definition", "client onboarding steps", "client onboarding process", "how to onboard a client"],

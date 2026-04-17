@@ -6,7 +6,7 @@ import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketin
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "The Multi-Location Fleet Account Onboarding Checklist (Free Download) | ClientEnforce",
+  title: "Fleet Account Onboarding Checklist (Free Download) | ClientEnforce",
   description:
     "Download the free fleet account onboarding checklist for multi-location auto service operators. Covers account setup, vehicle data, compliance docs, and kickoff readiness — 30+ required steps.",
   path: "/downloads/fleet-account-onboarding-checklist",

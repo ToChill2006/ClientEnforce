@@ -6,7 +6,7 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "HoneyBook Pricing 2026: What the Price Hike Means for Your Team | ClientEnforce",
+  title: "HoneyBook Pricing 2026: What the Price Hike Means | ClientEnforce",
   description: "HoneyBook raised prices ~89% in 2025. See the current HoneyBook pricing tiers, what you're actually paying for, and why teams focused on onboarding are switching to ClientEnforce — which starts free.",
   path: "/honeybook-pricing-guide",
   keywords: ["honeybook pricing", "honeybook price increase", "honeybook cost 2026", "honeybook alternative", "client onboarding software"],
