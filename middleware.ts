@@ -22,18 +22,18 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hostname = req.nextUrl.hostname;
 
-  // On a custom domain: only allow /c/[token] paths (the client portal).
-  // Redirect everything else to the root of the main app.
+  // On a custom domain: only serve the client portal and its required assets.
   if (isCustomDomain(hostname)) {
-    if (pathname === "/" || pathname === "") {
-      // Nothing meaningful to show at root on a custom domain
-      return new NextResponse("Not found", { status: 404 });
+    // Always allow Next.js static assets and image optimisation
+    if (
+      pathname.startsWith("/_next/") ||
+      pathname.startsWith("/favicon") ||
+      pathname.startsWith("/c/") ||
+      pathname.startsWith("/api/")
+    ) {
+      return NextResponse.next();
     }
-    // Let /c/[token] and API routes pass through — everything else block
-    if (!pathname.startsWith("/c/") && !pathname.startsWith("/api/")) {
-      return new NextResponse("Not found", { status: 404 });
-    }
-    return NextResponse.next();
+    return new NextResponse("Not found", { status: 404 });
   }
 
   // Only protect dashboard
