@@ -527,6 +527,18 @@ export async function GET(req: Request) {
     }
   }
 
+  // Fetch custom domain for portal link generation (best-effort)
+  let portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
+  try {
+    const { data: orgRow } = await supabase
+      .from("organizations")
+      .select("white_label_settings")
+      .eq("id", org_id)
+      .single();
+    const customDomain = (orgRow as any)?.white_label_settings?.custom_domain?.trim();
+    if (customDomain) portalBase = `https://${customDomain}`;
+  } catch { /* use default */ }
+
   // Owners: look up full_name for any owner_id values present on onboardings.
   const ownerIds = Array.from(new Set(rows.map((r: any) => r.owner_id).filter(Boolean)));
   let ownerNamesById: Record<string, string | null> = {};
@@ -554,19 +566,20 @@ export async function GET(req: Request) {
     const resolvedTemplateName = (template as any)?.name ?? null;
     const resolvedOwnerName = o.owner_id ? (ownerNamesById[o.owner_id] ?? null) : null;
 
+    const token = o.client_token ?? o.clientToken ?? o.token ?? null;
+    const clientLink = token ? `${portalBase}/c/${token}` : null;
+
     return {
       ...o,
       // UI-friendly fields
       client_email: resolvedClientEmail,
       client_name: resolvedClientName,
       client_full_name: resolvedClientName,
-
       template_name: resolvedTemplateName,
-
-      // Backward compatibility for older UI code
       template_title: resolvedTemplateName,
-
       owner_name: resolvedOwnerName,
+      // Always include a ready-to-use portal link with the correct domain
+      client_link: clientLink,
     };
   });
 
