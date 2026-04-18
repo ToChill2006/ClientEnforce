@@ -13,6 +13,8 @@ import {
   User,
   Users,
   Settings,
+  BarChart2,
+  LifeBuoy,
 } from "lucide-react";
 
 function isActive(currentPath: string, href: string) {
@@ -90,6 +92,8 @@ export default function SidebarNav({ onClose }: { onClose?: () => void }) {
       <SectionLabel>More</SectionLabel>
       <div className="flex flex-col gap-0.5">
         <NavItem href="/dashboard/audit" label="Activity & Timeline" icon={Clock} onClose={onClose} />
+        <NavItem href="/dashboard/reports" label="Reports" icon={BarChart2} onClose={onClose} />
+        <NavItem href="/dashboard/support" label="Help & Support" icon={LifeBuoy} onClose={onClose} />
       </div>
     </nav>
   );
