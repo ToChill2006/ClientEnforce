@@ -410,7 +410,7 @@ export default async function ClientTokenPage({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt={brandName || "Logo"} className="h-8 w-auto object-contain" />
               )}
-              {brandName && !logoUrl && (
+              {brandName && (
                 <span className="text-base font-bold tracking-tight text-[var(--color-text-primary)]">{brandName}</span>
               )}
             </div>
