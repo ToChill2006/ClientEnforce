@@ -7,6 +7,8 @@ function isCustomDomain(hostname: string) {
   if (MAIN_HOSTS.has(hostname)) return false;
   if (hostname.endsWith(".vercel.app")) return false;
   if (hostname.endsWith(".localhost")) return false;
+  // dashboard subdomain is internal, not a white-label portal
+  if (hostname === "dashboard.clientenforce.com") return false;
   return true;
 }
 
