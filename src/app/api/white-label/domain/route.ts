@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { permissionDenied, selectOrganizationTier } from "@/lib/plan-enforcement";
 import { roleHasPermission } from "@/lib/permissions";
-import { getDomainStatus } from "@/lib/vercel-domains";
+import { addDomainToVercel, getDomainStatus } from "@/lib/vercel-domains";
 
 export const runtime = "nodejs";
 
@@ -37,7 +37,14 @@ export async function GET() {
   if (!domain) return NextResponse.json({ error: "No custom domain configured." }, { status: 400 });
 
   try {
-    const status = await getDomainStatus(domain);
+    let status = await getDomainStatus(domain).catch(async (e: any) => {
+      // Domain not registered on this Vercel project yet — register it now then check
+      if (e?.message?.toLowerCase().includes("not found")) {
+        await addDomainToVercel(domain);
+        return getDomainStatus(domain);
+      }
+      throw e;
+    });
     return NextResponse.json({ domain, ...status });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message ?? "Failed to check domain status" }, { status: 500 });
