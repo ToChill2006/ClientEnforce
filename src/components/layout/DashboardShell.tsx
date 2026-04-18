@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu as MenuIcon, X, LogOut, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
 import SidebarNav from "./SidebarNav";
-import { CommandPaletteProvider, CommandPaletteTrigger } from "@/components/command-palette/CommandPalette";
+import { CommandPaletteProvider } from "@/components/command-palette/CommandPalette";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Menu, MenuItem, MenuDivider, MenuLabel } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
@@ -26,7 +26,7 @@ function Logo({ onClick }: { onClick?: () => void }) {
       className="flex items-center gap-2 rounded-[var(--radius-md)] px-1 py-1 text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-hover)]"
       aria-label="ClientEnforce"
     >
-      <span className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white">
+      <span className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)]">
         <Image src="/C.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" priority />
       </span>
       <span className="text-sm font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
@@ -148,7 +148,6 @@ export default function DashboardShell({ children, fullName, email, initials }: 
             </div>
           </div>
           <div className="flex flex-1 items-center justify-end gap-2">
-            <CommandPaletteTrigger className="w-full max-w-sm justify-between" />
             <ThemeToggle />
             <UserMenu fullName={fullName} email={email} initials={initials} />
           </div>

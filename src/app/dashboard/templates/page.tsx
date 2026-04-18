@@ -715,7 +715,7 @@ function RequirementEditor({
 
   return (
     <div className={`rounded-[var(--radius-md)] border flex flex-col gap-0 overflow-hidden ${
-      isHeading ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)]" : "border-[var(--color-border)] bg-white"
+      isHeading ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)]"
     }`}>
       {/* ── Main row ── */}
       <div className="flex items-center gap-2 px-3 py-2">
@@ -734,7 +734,7 @@ function RequirementEditor({
 
         {/* Type selector */}
         <select
-          className="shrink-0 rounded border border-[var(--color-border)] bg-white px-2 py-1.5 text-xs text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+          className="shrink-0 rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1.5 text-xs text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
           style={{ minWidth: 148 }}
           value={r.type}
           onChange={(e) => {
@@ -794,7 +794,7 @@ function RequirementEditor({
                     className={`rounded border px-2.5 py-0.5 text-xs font-medium transition ${
                       (r.file_mode ?? "upload") === mode
                         ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
-                        : "border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
+                        : "border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
                     }`}
                   >{mode === "upload" ? "Upload file" : "Paste link"}</button>
                 ))}
@@ -871,7 +871,7 @@ function RequirementEditor({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-[var(--color-text-muted)]">Only show if:</span>
                 <select
-                  className="rounded border border-[var(--color-border)] bg-white px-2 py-1 text-xs"
+                  className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs"
                   value={r.visible_if?.depends_on_label ?? ""}
                   onChange={(e) => {
                     const v = e.target.value;
@@ -897,7 +897,7 @@ function RequirementEditor({
                 {r.visible_if?.depends_on_label && (
                   <>
                     <select
-                      className="rounded border border-[var(--color-border)] bg-white px-2 py-1 text-xs"
+                      className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs"
                       value={r.visible_if.not_empty ? "not_empty" : "equals"}
                       onChange={(e) => {
                         const cond = e.target.value;

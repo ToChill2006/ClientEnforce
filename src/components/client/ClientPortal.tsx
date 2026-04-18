@@ -458,7 +458,7 @@ export function ClientPortal({
             type="button"
             onClick={() => setResumeDismissed(true)}
             aria-label="Dismiss"
-            className="shrink-0 rounded p-1 text-[var(--color-text-muted)] hover:bg-white/50 hover:text-[var(--color-text-primary)]"
+            className="shrink-0 rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-panel)]/50 hover:text-[var(--color-text-primary)]"
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -561,7 +561,7 @@ export function ClientPortal({
           <div
             key={r.id}
             id={`req-${r.id}`}
-            className="rounded-[var(--radius-lg)] border bg-white shadow-[var(--shadow-sm)] overflow-hidden transition-colors data-[focus-flash=1]:ring-2 data-[focus-flash=1]:ring-[var(--color-accent)]"
+            className="rounded-[var(--radius-lg)] border bg-[var(--color-panel)] shadow-[var(--shadow-sm)] overflow-hidden transition-colors data-[focus-flash=1]:ring-2 data-[focus-flash=1]:ring-[var(--color-accent)]"
             style={{ borderColor: completed ? "var(--color-success, #16a34a)" : "var(--color-border)" }}
           >
             {/* Card header */}
@@ -672,7 +672,7 @@ export function ClientPortal({
       {/* Submit */}
       <div className="pt-2">
         {isLocked ? (
-          <div className="flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-6 py-4 text-sm text-[var(--color-text-muted)] shadow-[var(--shadow-sm)]">
+          <div className="flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] px-6 py-4 text-sm text-[var(--color-text-muted)] shadow-[var(--shadow-sm)]">
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
               <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
               <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
@@ -807,7 +807,7 @@ function TextRequirement({
           onBlur={() => void doSave(value)}
           disabled={disabled}
           rows={4}
-          className="w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-base leading-6 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)] focus:outline-none disabled:opacity-50"
+          className="w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-base leading-6 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)] focus:outline-none disabled:opacity-50"
           style={{ fontSize: "16px", minHeight: "100px" }}
           placeholder="Type your answer…"
         />
@@ -894,7 +894,7 @@ function FileRequirement({
               href={linkUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)] bg-[var(--color-panel)] px-4 py-2 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
             >
               Open link ↗
             </a>
@@ -1065,7 +1065,7 @@ function MultipleChoiceRequirement({
                 <label
                   key={i}
                   className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
-                    isSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+                    isSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)] hover:bg-[var(--color-bg-subtle)]"
                   } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <input
@@ -1087,7 +1087,7 @@ function MultipleChoiceRequirement({
               <div className="flex flex-col gap-2">
                 <label
                   className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
-                    otherSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+                    otherSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)] hover:bg-[var(--color-bg-subtle)]"
                   } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <input
@@ -1167,7 +1167,7 @@ function MultipleChoiceRequirement({
             <label
               key={i}
               className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
-                isChecked ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+                isChecked ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)] hover:bg-[var(--color-bg-subtle)]"
               } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <input
@@ -1187,7 +1187,7 @@ function MultipleChoiceRequirement({
           <div className="flex flex-col gap-2">
             <label
               className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-4 py-3 cursor-pointer transition min-h-[48px] ${
-                otherSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-white hover:bg-[var(--color-bg-subtle)]"
+                otherSelected ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)] hover:bg-[var(--color-bg-subtle)]"
               } ${disabled || busy ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <input
@@ -1250,7 +1250,7 @@ function CheckboxRequirement({
   return (
     <label className={`flex items-center gap-3 ${disabled || busy ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
       <div className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 transition ${
-        checked ? "border-[var(--color-success,#16a34a)] bg-[var(--color-success,#16a34a)]" : "border-[var(--color-border-strong,#d1d5db)] bg-white"
+        checked ? "border-[var(--color-success,#16a34a)] bg-[var(--color-success,#16a34a)]" : "border-[var(--color-border-strong,#d1d5db)] bg-[var(--color-panel)]"
       }`}>
         {checked ? (
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -1324,7 +1324,7 @@ function SignatureRequirement({
         <div className="text-xs text-[var(--color-text-muted)]">{disabled ? "Locked" : busy ? "Saving…" : ""}</div>
       </div>
 
-      <div ref={containerRef} className="w-full min-h-[200px] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-2">
+      <div ref={containerRef} className="w-full min-h-[200px] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-2">
         <SignatureCanvas
           penColor="black"
           minWidth={1.6}

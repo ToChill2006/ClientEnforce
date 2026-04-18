@@ -78,7 +78,7 @@ function CredTable({ rows }: { rows: [string, React.ReactNode][] }) {
       <table className="w-full text-sm">
         <tbody className="divide-y divide-[var(--color-border)]">
           {rows.map(([field, value]) => (
-            <tr key={field} className="bg-white">
+            <tr key={field} className="bg-[var(--color-panel)]">
               <td className="w-44 px-4 py-2.5 font-medium text-[var(--color-text-primary)] whitespace-nowrap align-top">
                 {field}
               </td>

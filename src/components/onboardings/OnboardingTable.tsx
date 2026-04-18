@@ -69,7 +69,7 @@ export function OnboardingTable({ rows, appUrl, onSent }: { rows: Row[]; appUrl:
   }
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]">
       <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold">Onboardings</div>
       <div className="divide-y divide-[var(--color-border)]">
         {/* Desktop/table headers */}

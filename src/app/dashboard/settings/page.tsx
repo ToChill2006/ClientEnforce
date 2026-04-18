@@ -46,7 +46,7 @@ function fmtDate(s?: string | null) {
 }
 
 function pill() {
-  return "inline-flex items-center rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]";
+  return "inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]";
 }
 
 function inviteEmailOf(i: Invite) {
@@ -564,7 +564,7 @@ export default function SettingsPage() {
       ) : null}
 
       {syncingBilling ? (
-        <div className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-primary)]">
+        <div className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-text-primary)]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="font-medium">Updating subscription…</div>
@@ -588,17 +588,17 @@ export default function SettingsPage() {
           <CardDescription>Plan, seat usage, and subscription status.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4">
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
             <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Tier</div>
             <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">{org?.tier ?? "—"}</div>
           </div>
 
-          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4">
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
             <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Seats</div>
             <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">{seatsText}</div>
           </div>
 
-          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4">
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
             <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Subscription</div>
             <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">
               {org?.stripe_subscription_status ?? "—"}
@@ -622,7 +622,7 @@ export default function SettingsPage() {
           <CardDescription>Unlock more seats, automation, and advanced controls.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-3xl border border-[var(--color-border)] bg-white p-6 md:p-8">
+          <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-panel)] p-6 md:p-8">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
                 <h3 className="text-xl font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Plans</h3>
@@ -654,7 +654,7 @@ export default function SettingsPage() {
                   {currentTier === "free" ? (
                     <span className={pill()}>Current</span>
                   ) : (
-                    <span className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                    <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
                       Free
                     </span>
                   )}
@@ -674,7 +674,7 @@ export default function SettingsPage() {
                 <div className="mt-6 grid gap-2">
                   <button
                     type="button"
-                    className="inline-flex h-10 w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                    className="inline-flex h-10 w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
                     disabled={currentTier === "free"}
                     onClick={() => startDowngrade("free", "monthly")}
                   >
@@ -689,7 +689,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Pro */}
-              <div className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-white p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-[var(--color-panel)] p-5 shadow-[var(--shadow-sm)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-semibold text-[var(--color-text-primary)]">Pro</div>
@@ -776,7 +776,7 @@ export default function SettingsPage() {
                   {currentTier === "business" ? (
                     <span className={pill()}>Current</span>
                   ) : (
-                    <span className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                    <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
                       Scale
                     </span>
                   )}
@@ -816,7 +816,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Agency Pro */}
-              <div className="flex flex-col rounded-[var(--radius-lg)] border-2 border-[var(--color-accent)] bg-white p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex flex-col rounded-[var(--radius-lg)] border-2 border-[var(--color-accent)] bg-[var(--color-panel)] p-5 shadow-[var(--shadow-sm)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
@@ -899,7 +899,7 @@ export default function SettingsPage() {
         <CardContent>
           {currentTier !== "agency" ? (
             <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6 text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-lg">🏷️</div>
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] text-lg">🏷️</div>
               <div className="text-sm font-medium text-[var(--color-text-primary)]">White-label features are locked</div>
               <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
                 Upgrade to Agency Pro to apply your logo, brand colours, custom domain, and remove all ClientEnforce branding from every client portal.
@@ -1009,7 +1009,7 @@ export default function SettingsPage() {
                       type="color"
                       value={wl.accent_color || "#000000"}
                       onChange={(e) => setWl((v) => ({ ...v, accent_color: e.target.value }))}
-                      className="h-10 w-14 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-1"
+                      className="h-10 w-14 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-1"
                     />
                     <Input
                       value={wl.accent_color}
@@ -1041,7 +1041,7 @@ export default function SettingsPage() {
 
                       <div className="space-y-1">
                         <p className="text-xs text-[var(--color-text-muted)]">Add this CNAME record with your DNS provider:</p>
-                        <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white p-3 text-xs font-mono">
+                        <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] p-3 text-xs font-mono">
                           <span className="text-[var(--color-text-muted)]">Name</span>
                           <span className="text-[var(--color-text-primary)] break-all">{wl.custom_domain}</span>
                           <span className="text-[var(--color-text-muted)]">Type</span>
@@ -1056,7 +1056,7 @@ export default function SettingsPage() {
                       {domainStatus?.verificationRecord && (
                         <div className="space-y-1">
                           <p className="text-xs text-[var(--color-text-muted)]">Also add this TXT record to prove domain ownership:</p>
-                          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white p-3 text-xs font-mono">
+                          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] p-3 text-xs font-mono">
                             <span className="text-[var(--color-text-muted)]">Name</span>
                             <span className="text-[var(--color-text-primary)] break-all">{domainStatus.verificationRecord.domain}</span>
                             <span className="text-[var(--color-text-muted)]">Type</span>
@@ -1170,7 +1170,7 @@ export default function SettingsPage() {
             ) : null}
           </div>
 
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]">
             <table className="w-full min-w-[840px] text-sm">
               <thead className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>

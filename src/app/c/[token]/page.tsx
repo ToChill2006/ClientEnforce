@@ -35,7 +35,7 @@ function Shell({
 }
 
 function Panel({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">{children}</div>;
+  return <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-sm)]">{children}</div>;
 }
 
 function Hint({ title, message }: { title: string; message: string }) {
@@ -401,7 +401,7 @@ export default async function ClientTokenPage({
                     <img
                       src={logoUrl}
                       alt={brandName}
-                      className="h-9 w-9 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white object-contain"
+                      className="h-9 w-9 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] object-contain"
                     />
                   ) : null}
                   <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
@@ -430,7 +430,7 @@ export default async function ClientTokenPage({
 
           <div className="mt-8">
             {normalizedReqsWithIds.length === 0 && (
-              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-secondary)] shadow-[var(--shadow-sm)]">
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-text-secondary)] shadow-[var(--shadow-sm)]">
                 <div className="font-medium text-[var(--color-text-primary)]">No questions have been added yet.</div>
                 <div className="mt-1 text-[var(--color-text-secondary)]">Ask the sender to configure onboarding requirements.</div>
 
@@ -442,7 +442,7 @@ export default async function ClientTokenPage({
                     </div>
                     <ul className="mt-3 space-y-2">
                       {templatePreview.slice(0, 12).map((r: any, i: number) => (
-                        <li key={i} className="flex items-start justify-between gap-4 rounded-md bg-white px-3 py-2">
+                        <li key={i} className="flex items-start justify-between gap-4 rounded-md bg-[var(--color-panel)] px-3 py-2">
                           <div>
                             <div className="text-sm font-medium text-[var(--color-text-primary)]">{r.label || "Untitled question"}</div>
                             <div className="mt-0.5 text-xs text-[var(--color-text-secondary)]">Type: {String(r.type || "text")}</div>

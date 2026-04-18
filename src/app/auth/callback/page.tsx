@@ -97,7 +97,7 @@ export default function AuthCallbackPage() {
     <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
       <div className="mx-auto flex max-w-md flex-col px-6 py-16">
         <Link href="/" className="mb-8 flex w-fit items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)]">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
           <span className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>ClientEnforce</span>

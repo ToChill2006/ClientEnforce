@@ -217,7 +217,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               id="template"
               value={templateId}
               onChange={(e) => setTemplateId(e.target.value)}
-              className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none focus:border-[var(--color-accent)]"
+              className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none focus:border-[var(--color-accent)]"
               disabled={templatesLoading}
             >
               {templatesLoading ? <option value="">Loading templates…</option> : null}
@@ -240,7 +240,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               className={
                 "rounded-full border px-3 py-1.5 text-sm " +
                 (clientMode === "existing"
-                  ? "border-[var(--color-border-strong)] bg-white text-[var(--color-text-primary)]"
+                  ? "border-[var(--color-border-strong)] bg-[var(--color-panel)] text-[var(--color-text-primary)]"
                   : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]")
               }
             >
@@ -252,7 +252,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
               className={
                 "rounded-full border px-3 py-1.5 text-sm " +
                 (clientMode === "new"
-                  ? "border-[var(--color-border-strong)] bg-white text-[var(--color-text-primary)]"
+                  ? "border-[var(--color-border-strong)] bg-[var(--color-panel)] text-[var(--color-text-primary)]"
                   : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]")
               }
             >
@@ -269,7 +269,7 @@ export function CreateOnboardingCard({ onCreated }: { onCreated: () => void }) {
                 id="client"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none focus:border-[var(--color-accent)]"
+                className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] outline-none focus:border-[var(--color-accent)]"
                 disabled={clientsLoading}
               >
                 {clientsLoading ? <option value="">Loading clients…</option> : null}

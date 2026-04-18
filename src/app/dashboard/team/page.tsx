@@ -71,7 +71,7 @@ function priorityPillClass(p: Priority) {
     case "urgent": return `${base} border-red-200 bg-red-50 text-red-700`;
     case "high":   return `${base} border-orange-200 bg-orange-50 text-orange-700`;
     case "medium": return `${base} border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]`;
-    case "low":    return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-muted)]`;
+    case "low":    return `${base} border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text-muted)]`;
   }
 }
 
@@ -117,10 +117,10 @@ function getInitials(name: string | null, email: string | null) {
 function statusPill(status: Task["status"]) {
   const base = "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium";
   switch (status) {
-    case "open":        return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-secondary)]`;
+    case "open":        return `${base} border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text-secondary)]`;
     case "in_progress": return `${base} border-blue-200 bg-blue-50 text-blue-700`;
     case "done":        return `${base} border-green-200 bg-green-50 text-green-700`;
-    case "archived":    return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-muted)]`;
+    case "archived":    return `${base} border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text-muted)]`;
   }
 }
 
@@ -477,7 +477,7 @@ export default function TeamPage() {
             { label: "In progress", value: inProgressCount, alert: false },
             { label: "Overdue", value: overdueCount, alert: overdueCount > 0 },
           ].map((s) => (
-            <div key={s.label} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+            <div key={s.label} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
               <div className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{s.label}</div>
               <div className={`mt-1 text-2xl font-semibold tabular-nums ${s.alert ? "text-red-600" : "text-[var(--color-text-primary)]"}`}>
                 {s.value}
@@ -495,7 +495,7 @@ export default function TeamPage() {
             onClick={() => setTab(t)}
             className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] px-4 py-2 text-sm font-medium transition-colors ${
               tab === t
-                ? "bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                ? "bg-[var(--color-panel)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             }`}
           >
@@ -513,7 +513,7 @@ export default function TeamPage() {
           TAB: MEMBERS
           ══════════════════════════════════ */}
       {tab === "members" ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
           {/* Filters */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="flex-1">
@@ -547,7 +547,7 @@ export default function TeamPage() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="font-medium text-sm text-[var(--color-text-primary)]">{m.full_name ?? "—"}</span>
                       {isMe ? <span className="text-[10px] text-[var(--color-accent)] font-semibold uppercase tracking-wide">You</span> : null}
-                      <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{m.role}</span>
+                      <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{m.role}</span>
                     </div>
                     <div className="mt-0.5 text-xs text-[var(--color-text-secondary)] truncate">{m.email ?? "—"}</div>
                     {stats ? (
@@ -600,7 +600,7 @@ export default function TeamPage() {
                         </div>
                       </td>
                       <td className="py-3">
-                        <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{m.role}</span>
+                        <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{m.role}</span>
                       </td>
                       <td className="py-3 text-center text-[var(--color-text-secondary)]">{stats.open}</td>
                       <td className="py-3 text-center text-[var(--color-text-secondary)]">{stats.in_progress}</td>
@@ -631,7 +631,7 @@ export default function TeamPage() {
 
           {/* Quick templates — owner/admin only */}
           {canAssign ? (
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
               <div className="mb-3">
                 <div className="text-sm font-medium text-[var(--color-text-primary)]">Quick templates</div>
                 <div className="text-xs text-[var(--color-text-secondary)]">Click to pre-fill a common onboarding task.</div>
@@ -653,7 +653,7 @@ export default function TeamPage() {
 
           {/* Create task panel — collapsible */}
           {canAssign ? (
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
               <button
                 onClick={() => setShowCreate((v) => !v)}
                 className="flex w-full items-center justify-between text-left"
@@ -699,7 +699,7 @@ export default function TeamPage() {
                     <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Due date (optional)</label>
                     <input
                       type="datetime-local"
-                      className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+                      className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 text-sm text-[var(--color-text-primary)]"
                       value={taskDue}
                       onChange={(e) => setTaskDue(e.target.value)}
                     />
@@ -718,7 +718,7 @@ export default function TeamPage() {
                   <div className="space-y-1 md:col-span-2">
                     <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Description (optional)</label>
                     <textarea
-                      className="min-h-[72px] w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] resize-none"
+                      className="min-h-[72px] w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-text-primary)] resize-none"
                       value={taskDesc}
                       onChange={(e) => setTaskDesc(e.target.value)}
                       placeholder="Add helpful context for your teammate…"
@@ -746,7 +746,7 @@ export default function TeamPage() {
           )}
 
           {/* Filters */}
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
               <div className="flex-1">
                 <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Search</label>
@@ -811,7 +811,7 @@ export default function TeamPage() {
 
                 <div className="flex flex-col justify-end">
                   <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Filter</label>
-                  <label className="flex h-10 cursor-pointer items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]">
+                  <label className="flex h-10 cursor-pointer items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 text-sm text-[var(--color-text-primary)]">
                     <input type="checkbox" className="h-3.5 w-3.5" checked={overdueOnly} onChange={(e) => setOverdueOnly(e.target.checked)} />
                     <span className={overdueOnly ? "text-red-700 font-medium" : ""}>Overdue only</span>
                   </label>
@@ -825,7 +825,7 @@ export default function TeamPage() {
           </div>
 
           {/* Task list */}
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white overflow-hidden">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
             {/* Mobile cards */}
             <div className="sm:hidden divide-y divide-[var(--color-border)]">
               {loading ? (
@@ -864,7 +864,7 @@ export default function TeamPage() {
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {(["open", "in_progress", "done"] as Task["status"][]).map((s) => (
                         <button key={s}
-                          className="rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
+                          className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
                           onClick={() => setTaskStatus(t.id, s)}
                           disabled={rowBusy || !canUpdate || t.status === s}
                         >
@@ -873,7 +873,7 @@ export default function TeamPage() {
                       ))}
                       {canDelete ? (
                         <button
-                          className="rounded-full border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                          className="rounded-full border border-red-200 bg-[var(--color-panel)] px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
                           onClick={() => deleteTask(t.id)}
                           disabled={rowBusy}
                         >
@@ -945,7 +945,7 @@ export default function TeamPage() {
                           <div className="flex items-center justify-end gap-1.5">
                             {(["open", "in_progress", "done"] as Task["status"][]).map((s) => (
                               <button key={s}
-                                className="rounded-full border border-[var(--color-border)] bg-white px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
+                                className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
                                 onClick={() => setTaskStatus(t.id, s)}
                                 disabled={rowBusy || !canUpdate || t.status === s}
                               >
@@ -954,7 +954,7 @@ export default function TeamPage() {
                             ))}
                             {canDelete ? (
                               <button
-                                className="rounded-full border border-red-200 bg-white px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                                className="rounded-full border border-red-200 bg-[var(--color-panel)] px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
                                 onClick={() => deleteTask(t.id)}
                                 disabled={rowBusy}
                               >
@@ -977,7 +977,7 @@ export default function TeamPage() {
           TAB: WORKLOAD
           ══════════════════════════════════ */}
       {tab === "workload" ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
           <div className="mb-5">
             <div className="text-sm font-medium text-[var(--color-text-primary)]">Workload overview</div>
             <div className="text-xs text-[var(--color-text-secondary)]">Active task distribution across all team members.</div>

@@ -116,7 +116,7 @@ export default function InvitePage() {
     <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
       <div className="mx-auto flex max-w-md flex-col px-6 py-14">
         <Link href="/" className="mb-6 flex w-fit items-center gap-3 rounded-[var(--radius-md)]">
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)]">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
           </div>
           <div className="text-sm font-semibold">ClientEnforce</div>
