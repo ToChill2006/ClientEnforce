@@ -91,7 +91,7 @@ export default async function ClientTokenPage({
         runOne(
           admin
             .from("onboardings")
-            .select("id,title,status,locked_at,template_id,client_token")
+            .select("id,org_id,title,status,locked_at,template_id,client_token")
             .eq("client_token", token)
             .maybeSingle()
         ),
@@ -366,13 +366,60 @@ export default async function ClientTokenPage({
 
   const locked = Boolean(onboarding.locked_at) || onboarding.status === "locked";
 
+  // Fetch white label settings for the org that owns this onboarding
+  type WL = {
+    brand_name?: string | null;
+    logo_url?: string | null;
+    accent_color?: string | null;
+    portal_tagline?: string | null;
+    support_email?: string | null;
+    remove_branding?: boolean;
+  };
+  let wl: WL = {};
+  const orgId = onboarding.org_id ?? (onboarding as any).orgId ?? null;
+  if (orgId) {
+    try {
+      const { data: orgRow } = await admin
+        .from("organizations")
+        .select("white_label_settings")
+        .eq("id", orgId)
+        .single();
+      wl = (orgRow as any)?.white_label_settings ?? {};
+    } catch {
+      // white label not available — use defaults
+    }
+  }
+
+  const brandName = wl.brand_name?.trim() || null;
+  const logoUrl = wl.logo_url?.trim() || null;
+  const accentColor = wl.accent_color?.trim() || null;
+  const portalTagline = wl.portal_tagline?.trim() || null;
+  const supportEmail = wl.support_email?.trim() || null;
+  const removeBranding = wl.remove_branding ?? false;
+
   return (
     <Shell>
+      {accentColor && (
+        <style>{`:root { --color-accent: ${accentColor}; --color-accent-subtle: ${accentColor}1a; }`}</style>
+      )}
       <div className="mx-auto max-w-4xl">
         <div className="mb-10">
+          {(logoUrl || brandName) && (
+            <div className="mb-6 flex items-center gap-3">
+              {logoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt={brandName || "Logo"} className="h-8 w-auto object-contain" />
+              )}
+              {brandName && !logoUrl && (
+                <span className="text-base font-bold tracking-tight text-[var(--color-text-primary)]">{brandName}</span>
+              )}
+            </div>
+          )}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Client portal</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                {portalTagline || "Client portal"}
+              </div>
               <h1
                 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-3xl"
                 style={{ fontFamily: "var(--font-display)" }}
@@ -434,7 +481,14 @@ export default async function ClientTokenPage({
 
           <div className="mt-10 border-t border-[var(--color-border)] pt-8 text-xs text-[var(--color-text-muted)]">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>Powered by ClientEnforce</div>
+              <div>
+                {removeBranding
+                  ? supportEmail
+                    ? <>Need help? <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a></>
+                    : null
+                  : <>Powered by ClientEnforce{supportEmail && <> · <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a></>}</>
+                }
+              </div>
               <div className="tabular-nums">Token: {token.slice(0, 8)}…</div>
             </div>
           </div>

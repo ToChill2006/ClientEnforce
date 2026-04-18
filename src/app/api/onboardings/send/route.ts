@@ -56,23 +56,33 @@ export async function POST(req: Request) {
   const appUrl = appOrigin();
   const link = `${appUrl}/c/${onboarding.client_token}`;
 
-  // Load org email template settings (best-effort — fall back to defaults if columns missing)
+  // Load org email template + white label settings (best-effort — fall back to defaults if columns missing)
   let emailSettings: {
     email_subject_template?: string | null;
     email_heading?: string | null;
     email_body?: string | null;
     email_cta_label?: string | null;
+    white_label_settings?: Record<string, any> | null;
   } = {};
   try {
     const { data: orgEmail } = await admin
       .from("organizations")
-      .select("email_subject_template, email_heading, email_body, email_cta_label")
+      .select("email_subject_template, email_heading, email_body, email_cta_label, white_label_settings")
       .eq("id", orgId)
       .single();
     if (orgEmail) emailSettings = orgEmail;
   } catch {
     // Columns not yet migrated — use defaults
   }
+
+  const wl = (emailSettings.white_label_settings ?? {}) as Record<string, any>;
+  const branding = {
+    brand_name: wl.brand_name ?? null,
+    logo_url: wl.logo_url ?? null,
+    accent_color: wl.accent_color ?? null,
+    support_email: wl.support_email ?? null,
+    remove_branding: wl.remove_branding ?? false,
+  };
 
   function interpolate(template: string | null | undefined, title: string) {
     if (!template) return null;
@@ -93,14 +103,14 @@ export async function POST(req: Request) {
     intro: greeting,
     paragraphs: [
       emailSettings.email_body?.trim() ||
-        "Please complete your onboarding in ClientEnforce so your team can continue the next step.",
+        `Please complete your onboarding so your team can continue the next step.`,
       `If the button does not work, copy and paste this link into your browser:\n${link}`,
     ],
     primaryCta: {
       label: emailSettings.email_cta_label?.trim() || "Open onboarding",
       href: link,
     },
-    footerNote: "This is a transactional email from ClientEnforce.",
+    branding,
   });
 
   try {
