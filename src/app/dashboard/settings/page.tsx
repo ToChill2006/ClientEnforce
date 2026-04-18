@@ -102,6 +102,9 @@ export default function SettingsPage() {
   const [wlLoading, setWlLoading] = React.useState(false);
   const [wlSaving, setWlSaving] = React.useState(false);
   const [wlLoaded, setWlLoaded] = React.useState(false);
+  const [logoUploading, setLogoUploading] = React.useState(false);
+  const [logoError, setLogoError] = React.useState<string | null>(null);
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
 
   // Inline banners (no toast dependency)
   const [pageError, setPageError] = React.useState<string | null>(null);
@@ -176,6 +179,24 @@ export default function SettingsPage() {
       setPageError(e?.message ?? "Save failed");
     } finally {
       setWlSaving(false);
+    }
+  }
+
+  async function uploadLogo(file: File) {
+    setLogoUploading(true);
+    setLogoError(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/white-label/logo", { method: "POST", body: form });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Upload failed");
+      setWl((v) => ({ ...v, logo_url: json.logo_url }));
+      setPageSuccess("Logo uploaded.");
+    } catch (e: any) {
+      setLogoError(e?.message ?? "Upload failed");
+    } finally {
+      setLogoUploading(false);
     }
   }
 
@@ -920,15 +941,42 @@ export default function SettingsPage() {
                   <p className="text-xs text-[var(--color-text-muted)]">Appears below the brand name on the client portal.</p>
                 </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="wl_logo_url">Logo URL</Label>
-                  <Input
-                    id="wl_logo_url"
-                    value={wl.logo_url}
-                    onChange={(e) => setWl((v) => ({ ...v, logo_url: e.target.value }))}
-                    placeholder="https://youragency.com/logo.png"
-                  />
-                  <p className="text-xs text-[var(--color-text-muted)]">Must be a public HTTPS URL. Recommended: 200×60 px PNG.</p>
+                <div className="space-y-2">
+                  <Label>Logo</Label>
+                  {/* Upload button */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadLogo(file);
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={logoUploading}
+                      onClick={() => logoInputRef.current?.click()}
+                    >
+                      {logoUploading ? "Uploading…" : "Upload logo"}
+                    </Button>
+                    <span className="text-xs text-[var(--color-text-muted)]">PNG, JPEG, WebP, or SVG · max 2 MB</span>
+                  </div>
+                  {logoError && <p className="text-xs text-red-600">{logoError}</p>}
+                  {/* Manual URL fallback */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-[var(--color-text-muted)]">Or paste a public URL:</p>
+                    <Input
+                      id="wl_logo_url"
+                      value={wl.logo_url}
+                      onChange={(e) => setWl((v) => ({ ...v, logo_url: e.target.value }))}
+                      placeholder="https://youragency.com/logo.png"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1">
