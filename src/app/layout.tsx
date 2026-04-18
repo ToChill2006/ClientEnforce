@@ -8,6 +8,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { JsonLd } from "@/components/marketing/public-shell";
 import { canonicalSiteOrigin } from "@/lib/app-url";
 import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/seo";
+import { ThemeScript } from "@/components/theme/ThemeScript";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -69,8 +70,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`h-full ${plusJakartaSans.variable} ${inter.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen bg-white text-[#0F1117] antialiased overflow-x-hidden selection:bg-[#EBF2FF] selection:text-[#0D3D99]">
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)] antialiased overflow-x-hidden selection:bg-[var(--color-accent-subtle)] selection:text-[var(--color-accent)]">
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-Y1W99ZK32F" strategy="afterInteractive" />
         <Script id="gtag-init" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];

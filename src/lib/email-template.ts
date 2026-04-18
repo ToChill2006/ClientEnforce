@@ -10,6 +10,7 @@ export type EmailBranding = {
   logo_url?: string | null;
   accent_color?: string | null;
   support_email?: string | null;
+  custom_domain?: string | null;
   remove_branding?: boolean;
 };
 
@@ -27,10 +28,9 @@ export type ClientEnforceEmailOptions = {
   branding?: EmailBranding;
 };
 
-// Default colours — overridden per-org via EmailBranding
-const C = {
+// Default colour palette — accent is overridable via branding.accent_color.
+const DEFAULTS = {
   accent: "#1B6EF3",
-  accentHover: "#1558c0",
   white: "#ffffff",
   bgPage: "#f3f4f6",
   bgCard: "#ffffff",
@@ -41,6 +41,8 @@ const C = {
   textMuted: "#6b7280",
   textFooter: "#9ca3af",
 } as const;
+
+type ColorScheme = { [K in keyof typeof DEFAULTS]: string };
 
 function escapeHtml(value: string) {
   return String(value)
@@ -55,10 +57,10 @@ function paragraphHtml(value: string) {
   return escapeHtml(value).replace(/\r?\n/g, "<br/>");
 }
 
-function renderCta(cta: EmailCta, variant: "primary" | "secondary", accent: string = C.accent) {
-  const bg = variant === "primary" ? accent : C.white;
+function renderCta(cta: EmailCta, variant: "primary" | "secondary", C: ColorScheme) {
+  const bg = variant === "primary" ? C.accent : C.white;
   const fg = variant === "primary" ? C.white : C.textPrimary;
-  const border = variant === "primary" ? `1px solid ${accent}` : `1px solid ${C.border}`;
+  const border = variant === "primary" ? `1px solid ${C.accent}` : `1px solid ${C.border}`;
 
   return `<a
     href="${escapeHtml(cta.href)}"
@@ -79,7 +81,7 @@ function renderCta(cta: EmailCta, variant: "primary" | "secondary", accent: stri
   >${escapeHtml(cta.label)}</a>`;
 }
 
-function asPlainText(options: ClientEnforceEmailOptions) {
+function asPlainText(options: ClientEnforceEmailOptions, brandName: string) {
   const lines: string[] = [];
 
   lines.push(options.title);
@@ -103,19 +105,32 @@ function asPlainText(options: ClientEnforceEmailOptions) {
     lines.push(`${options.secondaryCta.label}: ${options.secondaryCta.href}`);
   }
 
-  lines.push(options.footerNote || "Sent by ClientEnforce");
+  lines.push(options.footerNote || `Sent by ${brandName}`);
 
   return lines.join("\n\n");
 }
 
 export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
   const origin = appOrigin().replace(/\/$/, "");
-  const b = options.branding ?? {};
-  const brandName = b.brand_name?.trim() || "ClientEnforce";
-  const logoUrl = b.logo_url?.trim() || `${origin}/C.png`;
-  const accentColor = b.accent_color?.trim() || C.accent;
-  const supportEmail = b.support_email?.trim() || "info@clientenforce.com";
-  const removeBranding = b.remove_branding ?? false;
+  const branding = options.branding ?? {};
+  const hasCustomBrand = Boolean(branding.brand_name?.trim());
+  const brandName = branding.brand_name?.trim() || "ClientEnforce";
+  const logoUrl = branding.logo_url?.trim() || `${origin}/C.png`;
+  const accent = branding.accent_color?.trim() || DEFAULTS.accent;
+  const customDomain = branding.custom_domain?.trim() || null;
+  const supportEmail = branding.support_email?.trim() || (hasCustomBrand ? null : "info@clientenforce.com");
+  const removeBranding = Boolean(branding.remove_branding);
+  const C: ColorScheme = { ...DEFAULTS, accent };
+
+  // Footer uses the agency's custom domain when configured, otherwise the
+  // ClientEnforce origin (unless white-label replaces brand — then no domain link).
+  const footerDomainLabel = customDomain
+    ? customDomain.replace(/^https?:\/\//i, "")
+    : (hasCustomBrand ? null : "clientenforce.com");
+  const footerHomeHref = customDomain
+    ? (customDomain.startsWith("http") ? customDomain : `https://${customDomain}`)
+    : origin;
+
   const preheader = options.preheader || options.subtitle || options.title;
   const paragraphs = (options.paragraphs ?? []).map((p) => p.trim()).filter(Boolean);
   const bullets = (options.bullets ?? []).map((b) => b.trim()).filter(Boolean);
@@ -176,7 +191,7 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
               <td style="padding:32px 32px 24px 32px;background:${C.bgCard};">
                 ${
                   options.eyebrow
-                    ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;font-weight:700;letter-spacing:0.08em;color:${accentColor};text-transform:uppercase;margin-bottom:10px;">${escapeHtml(options.eyebrow)}</div>`
+                    ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;font-weight:700;letter-spacing:0.08em;color:${C.accent};text-transform:uppercase;margin-bottom:10px;">${escapeHtml(options.eyebrow)}</div>`
                     : ""
                 }
                 <h1 style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.2;font-weight:800;color:${C.textPrimary};">
@@ -189,7 +204,7 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
                 }
                 ${
                   options.primaryCta
-                    ? `<div style="margin-top:24px;">${renderCta(options.primaryCta, "primary", accentColor)}</div>`
+                    ? `<div style="margin-top:24px;">${renderCta(options.primaryCta, "primary", C)}</div>`
                     : ""
                 }
               </td>
@@ -229,7 +244,7 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
                                 .map(
                                   (b) => `<tr>
                                     <td style="width:16px;vertical-align:top;padding:5px 10px 5px 0;">
-                                      <div style="width:6px;height:6px;border-radius:50%;background:${accentColor};margin-top:5px;"></div>
+                                      <div style="width:6px;height:6px;border-radius:50%;background:${C.accent};margin-top:5px;"></div>
                                     </td>
                                     <td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:${C.textSecondary};padding:4px 0;">
                                       ${paragraphHtml(b)}
@@ -242,7 +257,7 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
                       }
                       ${
                         options.secondaryCta
-                          ? `<div style="margin-top:12px;">${renderCta(options.secondaryCta, "secondary", accentColor)}</div>`
+                          ? `<div style="margin-top:12px;">${renderCta(options.secondaryCta, "secondary", C)}</div>`
                           : ""
                       }
                     </td>
@@ -251,22 +266,34 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
             }
 
             <!-- ── Footer ── -->
-            <tr>
+            ${
+              removeBranding
+                ? ""
+                : `<tr>
               <td style="padding:16px 24px;background:${C.bgFooter};border-top:1px solid ${C.border};border-radius:0 0 16px 16px;">
                 <p style="margin:0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:${C.textFooter};">
                   ${escapeHtml(options.footerNote || `You received this email from ${brandName}.`)}
                 </p>
-                ${removeBranding
-                  ? `<p style="margin:6px 0 0 0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:${C.textFooter};">
-                  <a href="mailto:${escapeHtml(supportEmail)}" style="color:${accentColor};text-decoration:none;">${escapeHtml(supportEmail)}</a>
+                ${
+                  footerDomainLabel || supportEmail
+                    ? `<p style="margin:6px 0 0 0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:${C.textFooter};">
+                  ${
+                    footerDomainLabel
+                      ? `<a href="${escapeHtml(footerHomeHref)}" style="color:${C.accent};text-decoration:none;">${escapeHtml(footerDomainLabel)}</a>`
+                      : ""
+                  }
+                  ${footerDomainLabel && supportEmail ? "&nbsp;&middot;&nbsp;" : ""}
+                  ${
+                    supportEmail
+                      ? `<a href="mailto:${escapeHtml(supportEmail)}" style="color:${C.accent};text-decoration:none;">${escapeHtml(supportEmail)}</a>`
+                      : ""
+                  }
                 </p>`
-                  : `<p style="margin:6px 0 0 0;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:${C.textFooter};">
-                  <a href="${escapeHtml(origin)}" style="color:${accentColor};text-decoration:none;">clientenforce.com</a>
-                  &nbsp;&middot;&nbsp;
-                  <a href="mailto:${escapeHtml(supportEmail)}" style="color:${accentColor};text-decoration:none;">${escapeHtml(supportEmail)}</a>
-                </p>`}
+                    : ""
+                }
               </td>
-            </tr>
+            </tr>`
+            }
 
           </table>
           <!-- /Card -->
@@ -280,6 +307,6 @@ export function renderClientEnforceEmail(options: ClientEnforceEmailOptions) {
 
   return {
     html,
-    text: asPlainText(options),
+    text: asPlainText(options, brandName),
   };
 }

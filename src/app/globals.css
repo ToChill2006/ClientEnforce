@@ -1,68 +1,139 @@
 @import "tailwindcss";
 
-/* ─── Design tokens ─────────────────────────────────────────────────────── */
+/* ─── Design tokens ─ Linear-inspired, light default, dark via [data-theme=dark] ── */
 :root {
-  /* Base */
+  /* Surfaces */
   --color-bg:             #FFFFFF;
-  --color-bg-subtle:      #F8F9FB;
-  --color-bg-muted:       #F1F3F7;
-  --color-border:         #E4E7EE;
-  --color-border-strong:  #C9CDD8;
+  --color-bg-subtle:      #FAFAFB;
+  --color-bg-muted:       #F4F4F6;
+  --color-bg-hover:       #F4F4F6;
+  --color-panel:          #FFFFFF;
+  --color-overlay:        rgba(17, 18, 23, 0.40);
+
+  /* Borders */
+  --color-border:         #E6E7EB;
+  --color-border-strong:  #D1D2D8;
 
   /* Text */
-  --color-text-primary:   #0F1117;
-  --color-text-secondary: #4A5066;
-  --color-text-muted:     #8B91A6;
+  --color-text-primary:   #0E1012;
+  --color-text-secondary: #4B5060;
+  --color-text-muted:     #8A8F9E;
   --color-text-inverse:   #FFFFFF;
 
   /* Brand */
-  --color-accent:         #1B6EF3;
-  --color-accent-hover:   #1559D4;
-  --color-accent-subtle:  #EBF2FF;
-  --color-accent-dark:    #0D3D99;
+  --color-accent:         #5E6AD2;   /* Linear-ish indigo */
+  --color-accent-hover:   #4C57C1;
+  --color-accent-subtle:  #EEF0FB;
+  --color-accent-strong:  #3A46B0;
 
-  /* Status */
+  /* Status (semantic) */
   --color-success:        #16A34A;
   --color-success-subtle: #F0FDF4;
-  --color-warning:        #D97706;
-  --color-warning-subtle: #FFFBEB;
+  --color-warning:        #CA8A04;
+  --color-warning-subtle: #FEFCE8;
   --color-danger:         #DC2626;
   --color-danger-subtle:  #FEF2F2;
   --color-info:           #0891B2;
   --color-info-subtle:    #ECFEFF;
 
-  /* Progress / completion */
-  --color-complete:       #16A34A;
-  --color-in-progress:    #1B6EF3;
-  --color-pending:        #D97706;
-  --color-blocked:        #DC2626;
+  /* Progress aliases */
+  --color-complete:       var(--color-success);
+  --color-in-progress:    var(--color-accent);
+  --color-pending:        var(--color-warning);
+  --color-blocked:        var(--color-danger);
 
-  /* Elevation shadows */
-  --shadow-xs:  0 1px 2px rgba(15,17,23,0.06);
-  --shadow-sm:  0 1px 3px rgba(15,17,23,0.08), 0 1px 2px rgba(15,17,23,0.04);
-  --shadow-md:  0 4px 6px rgba(15,17,23,0.06), 0 2px 4px rgba(15,17,23,0.04);
-  --shadow-lg:  0 10px 24px rgba(15,17,23,0.08), 0 4px 8px rgba(15,17,23,0.04);
-  --shadow-xl:  0 20px 48px rgba(15,17,23,0.10), 0 8px 16px rgba(15,17,23,0.06);
+  /* Elevation — low, borders carry most of the hierarchy */
+  --shadow-xs:  0 1px 1px rgba(15,17,23,0.04);
+  --shadow-sm:  0 1px 2px rgba(15,17,23,0.06);
+  --shadow-md:  0 4px 12px rgba(15,17,23,0.06), 0 1px 2px rgba(15,17,23,0.04);
+  --shadow-lg:  0 12px 32px rgba(15,17,23,0.10), 0 2px 4px rgba(15,17,23,0.04);
+  --shadow-xl:  0 24px 56px rgba(15,17,23,0.14), 0 4px 8px rgba(15,17,23,0.06);
 
-  /* Border radius */
+  /* Radius */
+  --radius-xs:   4px;
   --radius-sm:   6px;
-  --radius-md:   10px;
-  --radius-lg:   16px;
-  --radius-xl:   24px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
   --radius-full: 9999px;
+
+  /* Spacing scale (use as var(--space-4) etc. where helpful) */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 260ms;
 
   /* Fonts */
   --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-sans:    "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  color-scheme: light;
 }
 
 /* Bridge Next.js font CSS vars → design-token vars */
 :root {
   --font-display: var(--font-plus-jakarta-sans, "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif);
   --font-sans:    var(--font-inter, "Inter", ui-sans-serif, system-ui, sans-serif);
-  color-scheme: light;
 }
+
+/* ─── Dark mode (opt-in) ─────────────────────────────────────────────────── */
+html[data-theme="dark"] {
+  --color-bg:             #0B0C0E;
+  --color-bg-subtle:      #111214;
+  --color-bg-muted:       #17181B;
+  --color-bg-hover:       #1B1D20;
+  --color-panel:          #121316;
+  --color-overlay:        rgba(0, 0, 0, 0.60);
+
+  --color-border:         #24262B;
+  --color-border-strong:  #34373E;
+
+  --color-text-primary:   #F4F5F7;
+  --color-text-secondary: #B4B7C0;
+  --color-text-muted:     #7A7E8A;
+  --color-text-inverse:   #0E1012;
+
+  --color-accent:         #7B86F0;
+  --color-accent-hover:   #8A94F5;
+  --color-accent-subtle:  #1E2038;
+  --color-accent-strong:  #A4ADF8;
+
+  --color-success:        #22C55E;
+  --color-success-subtle: #0A2218;
+  --color-warning:        #EAB308;
+  --color-warning-subtle: #231E0A;
+  --color-danger:         #EF4444;
+  --color-danger-subtle:  #2A1414;
+  --color-info:           #22D3EE;
+  --color-info-subtle:    #0A1F23;
+
+  --shadow-xs:  0 1px 1px rgba(0,0,0,0.30);
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.40);
+  --shadow-md:  0 4px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.30);
+  --shadow-lg:  0 16px 40px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.40);
+  --shadow-xl:  0 28px 64px rgba(0,0,0,0.60), 0 4px 10px rgba(0,0,0,0.40);
+
+  color-scheme: dark;
+}
+
+/* Prevent theme-flash: set before React hydrates */
+html { background: var(--color-bg); }
 
 html, body { height: 100%; }
 
@@ -70,66 +141,118 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* ─── Typography ─────────────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.015em;
+  color: var(--color-text-primary);
 }
 
-/* ─── Scroll animations ──────────────────────────────────────────────────── */
+/* ─── Marketing page opt-out (keep light fixed on public pages if needed) ── */
+.theme-locked-light { color-scheme: light; }
+
+/* ─── Scroll animations (marketing pages) ────────────────────────────────── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-
-.fade-up-visible {
-  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
+.fade-up-visible { animation: fade-up 0.5s var(--ease-emphasized) both; }
 
 /* ─── Interactive utilities ──────────────────────────────────────────────── */
 .card-lift {
-  transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+  transition: box-shadow var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard);
 }
 .card-lift:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   border-color: var(--color-border-strong);
 }
+
+/* Subtle row-hover utility used by lists/tables */
+.row-hover {
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+.row-hover:hover { background: var(--color-bg-subtle); }
 
 /* ─── Scrollbars ─────────────────────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border-strong) transparent;
 }
-*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-thumb {
   background: var(--color-border-strong);
   border-radius: var(--radius-full);
 }
 *::-webkit-scrollbar-track { background: transparent; }
 
-/* ─── Focus ring ─────────────────────────────────────────────────────────── */
+/* ─── Focus ring (single source of truth) ────────────────────────────────── */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-accent), 0 0 0 4px rgba(27,110,243,0.18);
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+  border-radius: 4px;
+}
+/* Elements with their own rounded corners handle the ring inside-style */
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible,
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  border-radius: inherit;
 }
 
 /* ─── Tables ─────────────────────────────────────────────────────────────── */
 table { border-collapse: separate; border-spacing: 0; }
 
+/* ─── Kbd ─────────────────────────────────────────────────────────────────── */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  line-height: 1;
+}
+
+/* ─── Animations used by the new UI primitives ──────────────────────────── */
+@keyframes overlay-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes drawer-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.animate-overlay-in { animation: overlay-in var(--dur-base) var(--ease-standard) both; }
+.animate-dialog-in { animation: dialog-in var(--dur-base) var(--ease-emphasized) both; }
+.animate-drawer-in-right { animation: drawer-in-right var(--dur-slow) var(--ease-emphasized) both; }
+.animate-spin-slow { animation: spin 1s linear infinite; }
+
 /* ─── Reduced motion ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
   .card-lift:hover { transform: none; }
   .fade-up-visible { animation: none; }
 }

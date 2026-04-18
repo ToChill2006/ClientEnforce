@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/modal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +19,11 @@ type RequirementMetadata = {
   allow_multi_select?: boolean;    // Feature 2
   include_other?: boolean;         // Feature 3
   multiline?: boolean;             // Feature 5
+  visible_if?: {
+    depends_on_label: string;
+    equals?: string;
+    not_empty?: boolean;
+  } | null;
 } | null;
 
 type Requirement = {
@@ -111,12 +117,95 @@ export function ClientPortal({
     required_completed: number;
   }>({ percent: 0, required_total: 0, required_completed: 0 });
 
+  const [reviewOpen, setReviewOpen] = React.useState(false);
+  const [resumeDismissed, setResumeDismissed] = React.useState(false);
+  const initialProgressSnapshot = React.useRef<{ completed: number; total: number } | null>(null);
+
+  // Phase 5.3 — evaluate `visible_if` against current answers (label-keyed lookup).
+  const isVisible = React.useCallback(
+    (r: Requirement): boolean => {
+      const cond = r.metadata?.visible_if;
+      if (!cond || !cond.depends_on_label) return true;
+      const src = reqs.find((x) => x.label === cond.depends_on_label);
+      if (!src) return true; // dependency missing — don't hide
+      const raw = src.value_text ?? "";
+      // Multi-select answers are stored as JSON arrays. Flatten to compare.
+      const answers = (() => {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed.map(String);
+        } catch {
+          // fall through
+        }
+        return raw ? [raw] : [];
+      })();
+      if (cond.not_empty) {
+        if (src.type === "checkbox") return raw === "true";
+        return answers.length > 0 && answers.some((a) => a.trim() !== "");
+      }
+      if (typeof cond.equals === "string") {
+        if (src.type === "checkbox") {
+          return (raw === "true") === (cond.equals === "true");
+        }
+        return answers.includes(cond.equals);
+      }
+      return true;
+    },
+    [reqs]
+  );
+
+  // Section grouping: split flat requirements into sections using "heading" items as breaks.
+  // Each section carries its own required-count progress for the segmented stepper.
+  const sections = React.useMemo(() => {
+    const out: Array<{ title: string | null; items: Requirement[] }> = [];
+    let current: { title: string | null; items: Requirement[] } = { title: null, items: [] };
+    for (const r of reqs) {
+      if (r.type === "heading") {
+        if (current.items.length > 0 || current.title !== null) out.push(current);
+        current = { title: r.label, items: [] };
+      } else {
+        if (isVisible(r)) current.items.push(r);
+      }
+    }
+    if (current.items.length > 0 || current.title !== null) out.push(current);
+    return out;
+  }, [reqs, isVisible]);
+
+  const sectionStats = React.useMemo(
+    () =>
+      sections.map((s) => {
+        const required = s.items.filter((i) => i.is_required);
+        const requiredDone = required.filter((i) => !!i.completed_at).length;
+        const requiredTotal = required.length;
+        return {
+          title: s.title,
+          requiredTotal,
+          requiredDone,
+          fraction: requiredTotal === 0 ? (s.items.length > 0 && s.items.every((i) => !!i.completed_at) ? 1 : 0) : requiredDone / requiredTotal,
+        };
+      }),
+    [sections]
+  );
+
+  // Flat list of non-heading requirements in display order — used for review modal and scroll-to-first-incomplete.
+  const flatItems = React.useMemo(
+    () => reqs.filter((r) => r.type !== "heading" && isVisible(r)),
+    [reqs, isVisible]
+  );
+
   async function refreshProgress() {
     try {
       const res = await fetch(`/api/onboardings/client/progress?token=${encodeURIComponent(token)}`, { cache: "no-store" });
       const json = await res.json().catch(() => null);
       if (res.ok && json) {
         setProgress({ percent: json.percent, required_total: json.required_total, required_completed: json.required_completed });
+        // Capture the very first progress snapshot for the resume banner decision.
+        if (initialProgressSnapshot.current === null) {
+          initialProgressSnapshot.current = {
+            completed: Number(json.required_completed) || 0,
+            total: Number(json.required_total) || 0,
+          };
+        }
       }
     } catch {
       // ignore
@@ -286,13 +375,101 @@ export function ClientPortal({
 
   const allRequiredDone = progress.required_total > 0 && progress.required_completed >= progress.required_total;
 
+  const showResumeBanner =
+    !isLocked &&
+    !resumeDismissed &&
+    initialProgressSnapshot.current !== null &&
+    initialProgressSnapshot.current.completed > 0 &&
+    initialProgressSnapshot.current.total > 0 &&
+    initialProgressSnapshot.current.completed < initialProgressSnapshot.current.total;
+
+  function scrollToFirstIncomplete() {
+    const first = flatItems.find((r) => r.is_required && !r.completed_at) ?? flatItems.find((r) => !r.completed_at);
+    if (!first) return;
+    const el = document.getElementById(`req-${first.id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Brief focus ring via data attribute
+      el.setAttribute("data-focus-flash", "1");
+      window.setTimeout(() => el.removeAttribute("data-focus-flash"), 1600);
+    }
+  }
+
+  function renderReviewValue(r: Requirement): React.ReactNode {
+    if (!r.completed_at) {
+      return <span className="text-[var(--color-text-muted)] italic">Not answered</span>;
+    }
+    if (r.type === "text") {
+      const v = r.value_text || "";
+      const truncated = v.length > 120 ? v.slice(0, 120) + "…" : v;
+      return <span className="whitespace-pre-wrap break-words">{truncated || "—"}</span>;
+    }
+    if (r.type === "file") {
+      const count = (r.file_paths ?? (r.file_path ? [r.file_path] : [])).length;
+      return <span>{count} file{count === 1 ? "" : "s"}</span>;
+    }
+    if (r.type === "signature") {
+      return <span className="text-[var(--color-success)]">Signed ✓</span>;
+    }
+    if (r.type === "multiple_choice") {
+      const arr = parseMultiSelectValue(r.value_text);
+      if (arr.length === 0) return <span className="text-[var(--color-text-muted)] italic">—</span>;
+      return <span className="break-words">{arr.join(", ")}</span>;
+    }
+    if (r.type === "checkbox") {
+      return <span>{r.value_text === "true" ? "Confirmed" : "Not confirmed"}</span>;
+    }
+    return <span>—</span>;
+  }
+
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col gap-5 px-4 py-6 sm:px-6 sm:py-10">
+      {/* Resume banner (initial mount, dismissible) */}
+      {showResumeBanner ? (
+        <div
+          className="flex items-start gap-3 rounded-[var(--radius-lg)] border px-4 py-3 text-sm shadow-[var(--shadow-sm)]"
+          style={{
+            background: "var(--color-accent-subtle)",
+            borderColor: "color-mix(in oklab, var(--color-accent) 25%, transparent)",
+          }}
+        >
+          <div className="mt-0.5 shrink-0 text-[var(--color-accent)]" aria-hidden>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+              <path d="M8 4.5V8l2.2 1.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold text-[var(--color-text-primary)]">Welcome back</div>
+            <div className="mt-0.5 text-[var(--color-text-secondary)]">
+              You&apos;ve completed {initialProgressSnapshot.current!.completed} of {initialProgressSnapshot.current!.total} steps.{" "}
+              <button
+                type="button"
+                onClick={scrollToFirstIncomplete}
+                className="font-medium text-[var(--color-accent)] underline-offset-2 hover:underline"
+              >
+                Pick up where you left off →
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setResumeDismissed(true)}
+            aria-label="Dismiss"
+            className="shrink-0 rounded p-1 text-[var(--color-text-muted)] hover:bg-white/50 hover:text-[var(--color-text-primary)]"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+      ) : null}
+
       {/* Progress header */}
       <div className="sticky top-0 z-10 pb-2 pt-1" style={{ background: "var(--color-bg-subtle)" }}>
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4 shadow-[var(--shadow-sm)]">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{onboardingTitle}</div>
@@ -302,21 +479,46 @@ export function ClientPortal({
             </div>
             <div
               className="shrink-0 text-2xl font-bold tabular-nums"
-              style={{ color: allRequiredDone ? "var(--color-success, #16a34a)" : "var(--color-accent)" }}
+              style={{ color: allRequiredDone ? "var(--color-success)" : "var(--color-accent)" }}
             >
               {progress.percent}%
             </div>
           </div>
           <div className="mt-3">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${progress.percent}%`,
-                  background: allRequiredDone ? "var(--color-success, #16a34a)" : "var(--color-accent)",
-                }}
-              />
-            </div>
+            {sectionStats.length >= 2 ? (
+              <div className="flex items-stretch gap-1.5" role="list" aria-label="Section progress">
+                {sectionStats.map((s, i) => {
+                  const pct = Math.round(Math.min(1, Math.max(0, s.fraction)) * 100);
+                  const done = pct >= 100;
+                  return (
+                    <div
+                      key={i}
+                      role="listitem"
+                      title={s.title ? `${s.title}: ${s.requiredDone}/${s.requiredTotal}` : `Section ${i + 1}: ${s.requiredDone}/${s.requiredTotal}`}
+                      className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--color-bg-subtle)] border border-[var(--color-border)]"
+                    >
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${pct}%`,
+                          background: done ? "var(--color-success)" : "var(--color-accent)",
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${progress.percent}%`,
+                    background: allRequiredDone ? "var(--color-success)" : "var(--color-accent)",
+                  }}
+                />
+              </div>
+            )}
           </div>
           {isLocked ? (
             <div className="mt-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
@@ -333,6 +535,11 @@ export function ClientPortal({
       {/* Requirement cards */}
       {reqs.map((r) => {
         // Feature 7: section headings render as a visual separator, not an interactive card
+        if (r.type === "heading") {
+          // fallthrough
+        } else if (!isVisible(r)) {
+          return null;
+        }
         if (r.type === "heading") {
           return (
             <div key={r.id} className="flex items-center gap-4 pt-2">
@@ -353,7 +560,8 @@ export function ClientPortal({
         return (
           <div
             key={r.id}
-            className="rounded-[var(--radius-lg)] border bg-white shadow-[var(--shadow-sm)] overflow-hidden transition-colors"
+            id={`req-${r.id}`}
+            className="rounded-[var(--radius-lg)] border bg-white shadow-[var(--shadow-sm)] overflow-hidden transition-colors data-[focus-flash=1]:ring-2 data-[focus-flash=1]:ring-[var(--color-accent)]"
             style={{ borderColor: completed ? "var(--color-success, #16a34a)" : "var(--color-border)" }}
           >
             {/* Card header */}
@@ -474,15 +682,57 @@ export function ClientPortal({
         ) : (
           <button
             type="button"
-            onClick={submit}
-            disabled={submitting || anyBusy}
+            onClick={() => {
+              if (submitting || anyBusy) return;
+              if (allRequiredDone) setReviewOpen(true);
+            }}
+            disabled={submitting || anyBusy || !allRequiredDone}
             className="w-full rounded-[var(--radius-lg)] px-6 py-4 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition-all disabled:cursor-not-allowed disabled:opacity-60"
             style={{ background: "var(--color-accent)", minHeight: "52px" }}
           >
-            {submitting ? "Submitting…" : anyBusy ? "Saving…" : allRequiredDone ? "Submit onboarding ✓" : "Submit onboarding"}
+            {submitting ? "Submitting…" : anyBusy ? "Saving…" : allRequiredDone ? "Review and submit →" : "Submit onboarding"}
           </button>
         )}
       </div>
+
+      {/* Review-before-submit modal */}
+      <Modal
+        open={reviewOpen}
+        onClose={() => { if (!submitting) setReviewOpen(false); }}
+        size="xl"
+        title="Review your answers"
+        description="Take one last look before sending — you won't be able to edit after submitting."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setReviewOpen(false)} disabled={submitting}>
+              Back to edit
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => { void submit(); }}
+              loading={submitting}
+            >
+              Confirm submission
+            </Button>
+          </>
+        }
+      >
+        <ul className="flex max-h-[60vh] flex-col divide-y divide-[var(--color-border)] overflow-y-auto">
+          {flatItems.map((r) => (
+            <li key={r.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:gap-4">
+              <div className="shrink-0 sm:w-1/3">
+                <div className="text-xs font-semibold text-[var(--color-text-primary)]">{r.label}</div>
+                {r.is_required ? (
+                  <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Required</div>
+                ) : null}
+              </div>
+              <div className="min-w-0 flex-1 text-sm text-[var(--color-text-secondary)]">
+                {renderReviewValue(r)}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Modal>
     </div>
   );
 }

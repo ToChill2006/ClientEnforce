@@ -3,9 +3,10 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
+import { PageHeader } from "@/components/ui/page-header";
 
 type Org = {
   tier?: string | null;
@@ -520,20 +521,15 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div>
-          <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Settings</h1>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            Organization settings, billing, and team invites.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" className="w-full sm:w-auto" onClick={logout} disabled={loggingOut}>
+      <PageHeader
+        title="Settings"
+        description="Organization settings, billing, and team invites."
+        actions={
+          <Button variant="outline" size="sm" onClick={logout} disabled={loggingOut}>
             {loggingOut ? "Logging out…" : "Log out"}
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {pageError ? (
         <RejectionBanner
@@ -1154,16 +1150,15 @@ export default function SettingsPage() {
 
             <div className="space-y-1">
               <Label htmlFor="inviteRole">Role</Label>
-              <select
+              <Select
                 id="inviteRole"
-                className="h-10 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
                 value={inviteRole}
                 disabled={!canInviteMembers}
                 onChange={(e) => setInviteRole(e.target.value as any)}
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -1214,12 +1209,9 @@ export default function SettingsPage() {
                       <td className="px-4 py-3 text-[var(--color-text-secondary)]">{i.accepted_at ? "Accepted" : "Pending"}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
-                          <button
-                            className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
-                            onClick={() => copyInviteLink(i.token)}
-                          >
+                          <Button size="xs" variant="secondary" onClick={() => copyInviteLink(i.token)}>
                             Copy link
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>

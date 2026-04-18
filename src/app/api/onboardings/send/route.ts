@@ -12,6 +12,7 @@ import {
 } from "@/lib/plan-enforcement";
 import { appOrigin } from "@/lib/app-url";
 import { renderClientEnforceEmail } from "@/lib/email-template";
+import { loadWhiteLabelForOrg, emailBrandingFromWhiteLabel } from "@/lib/white-label";
 
 export async function POST(req: Request) {
   const supabase = await supabaseServer();
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
   // Load onboarding + client
   const { data: onboarding, error: onboardingErr } = await admin
     .from("onboardings")
-    .select("id, org_id, client_id, title, client_token, status")
+    .select("id, org_id, client_id, title, client_token, status, metadata")
     .eq("id", parsed.data.onboarding_id)
     .single();
 
@@ -71,30 +72,17 @@ export async function POST(req: Request) {
     // Columns not yet migrated — use defaults
   }
 
-  // Load white label settings separately so a schema error on email columns doesn't hide it
-  let wl: Record<string, any> = {};
-  try {
-    const { data: orgWl } = await admin
-      .from("organizations")
-      .select("white_label_settings")
-      .eq("id", orgId)
-      .single();
-    wl = (orgWl as any)?.white_label_settings ?? {};
-  } catch {
-    // white_label_settings column not yet migrated — use defaults
-  }
+  // Load white-label settings (tier-gated to Agency Pro). Returns an empty
+  // object for non-agency orgs, so custom_domain / brand customisation only
+  // apply when the org is actually entitled to them.
+  const whiteLabel = await loadWhiteLabelForOrg(orgId);
+  const branding = emailBrandingFromWhiteLabel(whiteLabel);
+  const brandName = branding.brand_name || "ClientEnforce";
 
   // Use custom domain for portal link if configured, otherwise fall back to app origin
-  const customDomain = (wl.custom_domain as string | null | undefined)?.trim() || null;
+  const customDomain = whiteLabel.custom_domain?.trim() || null;
   const baseUrl = customDomain ? `https://${customDomain}` : appOrigin();
   const link = `${baseUrl}/c/${onboarding.client_token}`;
-  const branding = {
-    brand_name: wl.brand_name ?? null,
-    logo_url: wl.logo_url ?? null,
-    accent_color: wl.accent_color ?? null,
-    support_email: wl.support_email ?? null,
-    remove_branding: wl.remove_branding ?? false,
-  };
 
   function interpolate(template: string | null | undefined, title: string) {
     if (!template) return null;
@@ -115,13 +103,14 @@ export async function POST(req: Request) {
     intro: greeting,
     paragraphs: [
       emailSettings.email_body?.trim() ||
-        `Please complete your onboarding so your team can continue the next step.`,
+        `Please complete your onboarding in ${brandName} so your team can continue the next step.`,
       `If the button does not work, copy and paste this link into your browser:\n${link}`,
     ],
     primaryCta: {
       label: emailSettings.email_cta_label?.trim() || "Open onboarding",
       href: link,
     },
+    footerNote: `This is a transactional email from ${brandName}.`,
     branding,
   });
 
@@ -159,9 +148,21 @@ export async function POST(req: Request) {
         .single();
 
       // Defaults if org does not have settings yet
-      const delayDays = Math.max(1, Number(orgSettings?.followup_delay_days ?? 1));
-      const maxCount = Math.max(0, Number(orgSettings?.followup_max_count ?? 1));
+      let delayDays = Math.max(1, Number(orgSettings?.followup_delay_days ?? 1));
+      let maxCount = Math.max(0, Number(orgSettings?.followup_max_count ?? 1));
       const sendHour = Math.min(23, Math.max(0, Number(orgSettings?.followup_send_hour ?? 9)));
+
+      // Per-onboarding override — stored in onboardings.metadata.reminders
+      const meta = (onboarding as any).metadata;
+      const override = meta && typeof meta === "object" ? (meta as any).reminders : null;
+      if (override && typeof override === "object" && override.enabled) {
+        if (typeof override.days_between === "number" && override.days_between >= 1) {
+          delayDays = Math.max(1, Math.min(90, Math.floor(override.days_between)));
+        }
+        if (typeof override.max_reminders === "number" && override.max_reminders >= 0) {
+          maxCount = Math.max(0, Math.min(20, Math.floor(override.max_reminders)));
+        }
+      }
 
       if (orgSettingsErr) {
         // If the table/columns aren't present yet, skip quietly.

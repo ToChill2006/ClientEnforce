@@ -1,6 +1,7 @@
 import * as React from "react";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ClientPortal } from "@/components/client/ClientPortal";
+import { loadWhiteLabelForOrg } from "@/lib/white-label";
 
 function StatusPill({ status, locked }: { status?: string | null; locked: boolean }) {
   const s = (status || "draft").toLowerCase();
@@ -19,9 +20,15 @@ function StatusPill({ status, locked }: { status?: string | null; locked: boolea
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) {
   return (
-    <div className="min-h-screen bg-[var(--color-bg-subtle)]">
+    <div className="min-h-screen bg-[var(--color-bg-subtle)]" style={style}>
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">{children}</div>
     </div>
   );
@@ -91,7 +98,7 @@ export default async function ClientTokenPage({
         runOne(
           admin
             .from("onboardings")
-            .select("id,org_id,title,status,locked_at,template_id,client_token")
+            .select("id,title,status,locked_at,template_id,client_token,org_id")
             .eq("client_token", token)
             .maybeSingle()
         ),
@@ -100,7 +107,7 @@ export default async function ClientTokenPage({
         runOne(
           admin
             .from("onboardings")
-            .select("id,title,status,locked_at,template_id")
+            .select("id,title,status,locked_at,template_id,org_id")
             .eq("clientToken", token as any)
             .maybeSingle()
         ),
@@ -108,7 +115,7 @@ export default async function ClientTokenPage({
         runOne(
           admin
             .from("onboardings")
-            .select("id,title,status,locked_at,template_id")
+            .select("id,title,status,locked_at,template_id,org_id")
             .eq("token", token as any)
             .maybeSingle()
         ),
@@ -117,7 +124,7 @@ export default async function ClientTokenPage({
         runOne(
           admin
             .from("onboardings")
-            .select("id,title,status,locked_at,template_id,templateId,template")
+            .select("id,title,status,locked_at,template_id,templateId,template,org_id")
             .eq("client_token", token)
             .maybeSingle()
         ),
@@ -366,75 +373,57 @@ export default async function ClientTokenPage({
 
   const locked = Boolean(onboarding.locked_at) || onboarding.status === "locked";
 
-  // Fetch white label settings for the org that owns this onboarding
-  type WL = {
-    brand_name?: string | null;
-    logo_url?: string | null;
-    accent_color?: string | null;
-    portal_tagline?: string | null;
-    support_email?: string | null;
-    remove_branding?: boolean;
-  };
-  let wl: WL = {};
-  const orgId = onboarding.org_id ?? (onboarding as any).orgId ?? null;
-  if (orgId) {
-    try {
-      const { data: orgRow } = await admin
-        .from("organizations")
-        .select("white_label_settings")
-        .eq("id", orgId)
-        .single();
-      wl = (orgRow as any)?.white_label_settings ?? {};
-    } catch {
-      // white label not available — use defaults
-    }
-  }
+  const orgId = (onboarding as any).org_id ?? (onboarding as any).orgId ?? null;
+  const whiteLabel = orgId ? await loadWhiteLabelForOrg(String(orgId)) : null;
+  const brandName = whiteLabel?.brand_name?.trim() || "ClientEnforce";
+  const portalTagline = whiteLabel?.portal_tagline?.trim() || "Client portal";
+  const logoUrl = whiteLabel?.logo_url?.trim() || null;
+  const accentColor = whiteLabel?.accent_color?.trim() || null;
+  const supportEmail = whiteLabel?.support_email?.trim() || null;
+  const removeBranding = Boolean(whiteLabel?.remove_branding);
 
-  const brandName = wl.brand_name?.trim() || null;
-  const logoUrl = wl.logo_url?.trim() || null;
-  const accentColor = wl.accent_color?.trim() || null;
-  const portalTagline = wl.portal_tagline?.trim() || null;
-  const supportEmail = wl.support_email?.trim() || null;
-  const removeBranding = wl.remove_branding ?? false;
+  const shellStyle: React.CSSProperties | undefined = accentColor
+    ? ({
+        ["--color-accent" as any]: accentColor,
+      } as React.CSSProperties)
+    : undefined;
 
   return (
-    <Shell>
-      {accentColor && (
-        <style>{`:root { --color-accent: ${accentColor}; --color-accent-subtle: ${accentColor}1a; }`}</style>
-      )}
+    <Shell style={shellStyle}>
       <div className="mx-auto max-w-4xl">
         <div className="mb-10">
-          {(logoUrl || brandName) && (
-            <div className="mb-6 flex items-center gap-3">
-              {logoUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt={brandName || "Logo"} className="h-8 w-auto object-contain" />
-              )}
-              {brandName && (
-                <span className="text-base font-bold tracking-tight text-[var(--color-text-primary)]">{brandName}</span>
-              )}
-            </div>
-          )}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-                {portalTagline || "Client portal"}
-              </div>
-              <h1
-                className="mt-2 text-2xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-3xl"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {onboarding.title || "Onboarding"}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <StatusPill status={onboarding.status} locked={locked} />
-                <div className="text-sm text-[var(--color-text-secondary)]">Progress updates live below.</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white px-3 py-2 text-xs text-[var(--color-text-secondary)] shadow-[var(--shadow-sm)]">
-                Secure link • Do not share
+          <div className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] px-5 py-5 shadow-[var(--shadow-sm)] sm:px-7 sm:py-6">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-3">
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logoUrl}
+                      alt={brandName}
+                      className="h-9 w-9 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white object-contain"
+                    />
+                  ) : null}
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                    {portalTagline}
+                  </div>
+                </div>
+                <h1
+                  className="mt-3 truncate text-2xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-[28px]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  {onboarding.title || "Onboarding"}
+                </h1>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <StatusPill status={onboarding.status} locked={locked} />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
+                      <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+                      <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
+                    Secure link
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -482,12 +471,23 @@ export default async function ClientTokenPage({
           <div className="mt-10 border-t border-[var(--color-border)] pt-8 text-xs text-[var(--color-text-muted)]">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                {removeBranding
-                  ? supportEmail
-                    ? <>Need help? <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a></>
-                    : null
-                  : <>Powered by ClientEnforce{supportEmail && <> · <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a></>}</>
-                }
+                {removeBranding ? (
+                  supportEmail ? (
+                    <>Need help? <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a></>
+                  ) : (
+                    brandName
+                  )
+                ) : (
+                  <>
+                    Powered by {brandName}
+                    {supportEmail && (
+                      <>
+                        {" · "}
+                        <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
               <div className="tabular-nums">Token: {token.slice(0, 8)}…</div>
             </div>

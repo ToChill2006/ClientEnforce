@@ -5,6 +5,7 @@ import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendOrgEmail } from "@/lib/send-email";
 import { renderClientEnforceEmail } from "@/lib/email-template";
+import { loadWhiteLabelForOrg, emailBrandingFromWhiteLabel, type WhiteLabel } from "@/lib/white-label";
 import {
   followupsEnabledForTier,
   followupsUnavailableMessage,
@@ -103,7 +104,7 @@ export async function POST(req: Request) {
 
   const orgIds = Array.from(new Set((jobs ?? []).map((job) => String(job.org_id)).filter(Boolean)));
   const tierByOrg = new Map<string, "free" | "pro" | "business" | "agency">();
-  const brandingByOrg = new Map<string, Record<string, any>>();
+  const whiteLabelByOrg = new Map<string, WhiteLabel>();
 
   await Promise.all(
     orgIds.map(async (orgId) => {
@@ -114,14 +115,9 @@ export async function POST(req: Request) {
         tierByOrg.set(orgId, "free");
       }
       try {
-        const { data: orgRow } = await admin
-          .from("organizations")
-          .select("white_label_settings")
-          .eq("id", orgId)
-          .single();
-        brandingByOrg.set(orgId, (orgRow as any)?.white_label_settings ?? {});
+        whiteLabelByOrg.set(orgId, await loadWhiteLabelForOrg(orgId));
       } catch {
-        brandingByOrg.set(orgId, {});
+        // ignore — renderer falls back to defaults
       }
     })
   );
@@ -189,15 +185,9 @@ export async function POST(req: Request) {
         .map((line) => line.trim())
         .filter(Boolean);
       const ctaUrl = firstHttpUrl(job.body);
-      const wl = brandingByOrg.get(String(job.org_id)) ?? {};
-      const branding = {
-        brand_name: wl.brand_name ?? null,
-        logo_url: wl.logo_url ?? null,
-        accent_color: wl.accent_color ?? null,
-        support_email: wl.support_email ?? null,
-        remove_branding: wl.remove_branding ?? false,
-      };
-      const brandName = branding.brand_name || "ClientEnforce";
+      const wl = whiteLabelByOrg.get(String(job.org_id));
+      const branding = wl ? emailBrandingFromWhiteLabel(wl) : undefined;
+      const brandName = branding?.brand_name || "ClientEnforce";
       const emailTemplate = renderClientEnforceEmail({
         preheader: job.subject,
         eyebrow: "Follow-up reminder",
@@ -206,7 +196,7 @@ export async function POST(req: Request) {
         paragraphs:
           paragraphs.length > 0
             ? paragraphs
-            : ["Please complete your onboarding."],
+            : [`Please complete your onboarding in ${brandName}.`],
         primaryCta: ctaUrl
           ? {
               label: "Open onboarding",

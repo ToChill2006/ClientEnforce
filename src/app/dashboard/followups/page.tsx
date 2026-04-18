@@ -1,11 +1,16 @@
 "use client";
 
 import * as React from "react";
+import { RefreshCw, Play, Search, Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Input, Select } from "@/components/ui/input";
+import { FormField, FormGrid } from "@/components/ui/form-field";
+import { DataTable, type Column } from "@/components/ui/data-table";
+import { Tag } from "@/components/ui/status-badge";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
+import { PageHeader } from "@/components/ui/page-header";
+import type { StatusTone } from "@/lib/status";
 
 type Settings = {
   id: string;
@@ -35,13 +40,13 @@ function fmt(s?: string | null) {
   }
 }
 
-function statusPill(status: string) {
-  const base = "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium";
+function statusTone(status: string): StatusTone {
   const s = (status || "").toLowerCase();
-  if (s === "sent") return `${base} border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]`;
-  if (s === "failed") return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-secondary)]`;
-  if (s === "cancelled") return `${base} border-[var(--color-border)] bg-white text-[var(--color-text-muted)]`;
-  return `${base} border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]`;
+  if (s === "sent") return "success";
+  if (s === "failed") return "danger";
+  if (s === "cancelled") return "neutral";
+  if (s === "pending" || s === "queued") return "info";
+  return "neutral";
 }
 
 export default function FollowupsPage() {
@@ -49,9 +54,14 @@ export default function FollowupsPage() {
   const [jobs, setJobs] = React.useState<Job[]>([]);
   const [loading, setLoading] = React.useState(true);
 
-  const [alert, setAlert] = React.useState<null | { variant: "success" | "error" | "info"; title: string; description?: string }>(null);
+  const [alert, setAlert] = React.useState<null | {
+    variant: "success" | "error" | "info";
+    title: string;
+    description?: string;
+  }>(null);
 
   const [q, setQ] = React.useState("");
+  const [debouncedQ, setDebouncedQ] = React.useState("");
 
   const [delayDays, setDelayDays] = React.useState("3");
   const [maxCount, setMaxCount] = React.useState("3");
@@ -67,6 +77,11 @@ export default function FollowupsPage() {
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q), 200);
+    return () => clearTimeout(t);
+  }, [q]);
 
   const [timezones, setTimezones] = React.useState<string[]>([
     "UTC",
@@ -109,13 +124,12 @@ export default function FollowupsPage() {
       const dt = new Date();
       dt.setSeconds(0, 0);
       dt.setHours(hour, 0, 0, 0);
-      const formatted = new Intl.DateTimeFormat(undefined, {
+      return new Intl.DateTimeFormat(undefined, {
         hour: "2-digit",
         minute: "2-digit",
         timeZone: tz || "UTC",
         timeZoneName: "short",
       }).format(dt);
-      return formatted;
     } catch {
       return null;
     }
@@ -179,7 +193,11 @@ export default function FollowupsPage() {
       if (!res.ok) {
         if (res.status === 403) {
           setCanEditSettings(false);
-          setAlert({ variant: "info", title: "Permission required", description: "You do not have permission to change follow-up settings." });
+          setAlert({
+            variant: "info",
+            title: "Permission required",
+            description: "You do not have permission to change follow-up settings.",
+          });
           return;
         }
         throw new Error(json?.error || "Save failed");
@@ -203,7 +221,11 @@ export default function FollowupsPage() {
       if (!res.ok) {
         if (res.status === 403) {
           setCanRunCron(false);
-          setAlert({ variant: "info", title: "Permission required", description: "You do not have permission to run follow-ups manually." });
+          setAlert({
+            variant: "info",
+            title: "Permission required",
+            description: "You do not have permission to run follow-ups manually.",
+          });
           return;
         }
         throw new Error(json?.error ?? "Failed");
@@ -228,15 +250,7 @@ export default function FollowupsPage() {
 
     setMarkingJobId(job.id);
     setJobs((prev) =>
-      prev.map((x) =>
-        x.id === job.id
-          ? {
-              ...x,
-              status: "sent",
-              last_error: null,
-            }
-          : x
-      )
+      prev.map((x) => (x.id === job.id ? { ...x, status: "sent", last_error: null } : x))
     );
 
     try {
@@ -256,100 +270,193 @@ export default function FollowupsPage() {
     }
   }
 
-  const filtered = jobs.filter((j) => {
-    const term = q.trim().toLowerCase();
-    if (!term) return true;
-    return (
-      (j.to_email || "").toLowerCase().includes(term) ||
-      (j.subject || "").toLowerCase().includes(term) ||
-      (j.status || "").toLowerCase().includes(term)
+  const filtered = React.useMemo(() => {
+    const term = debouncedQ.trim().toLowerCase();
+    if (!term) return jobs;
+    return jobs.filter(
+      (j) =>
+        (j.to_email || "").toLowerCase().includes(term) ||
+        (j.subject || "").toLowerCase().includes(term) ||
+        (j.status || "").toLowerCase().includes(term)
     );
-  });
+  }, [jobs, debouncedQ]);
+
+  const columns: Column<Job>[] = [
+    {
+      key: "to",
+      header: "To",
+      sortValue: (r) => r.to_email,
+      render: (r) => (
+        <div className="min-w-0">
+          <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{r.to_email}</div>
+          <div className="truncate font-mono text-[11px] text-[var(--color-text-muted)]">{r.onboarding_id}</div>
+        </div>
+      ),
+    },
+    {
+      key: "subject",
+      header: "Subject",
+      hideOnMobile: true,
+      sortValue: (r) => r.subject,
+      render: (r) => <span className="truncate text-sm text-[var(--color-text-secondary)]">{r.subject}</span>,
+    },
+    {
+      key: "due",
+      header: "Due",
+      hideOnMobile: true,
+      width: "180px",
+      sortValue: (r) => new Date(r.due_at).getTime(),
+      render: (r) => <span className="text-xs tabular-nums text-[var(--color-text-muted)]">{fmt(r.due_at)}</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      width: "110px",
+      sortValue: (r) => r.status,
+      render: (r) => <Tag tone={statusTone(r.status)}>{r.status}</Tag>,
+    },
+    {
+      key: "error",
+      header: "Last error",
+      hideOnMobile: true,
+      render: (r) => (
+        <span className="truncate text-xs text-[var(--color-text-muted)]">{r.last_error ?? "—"}</span>
+      ),
+    },
+  ];
+
+  const rowActions = (j: Job) => {
+    if (j.status === "sent" || j.status === "cancelled") return null;
+    return (
+      <Button
+        size="xs"
+        variant="ghost"
+        onClick={() => markDone(j)}
+        disabled={markingJobId === j.id}
+        iconLeft={<Check className="h-3 w-3" />}
+      >
+        {markingJobId === j.id ? "Marking…" : "Mark done"}
+      </Button>
+    );
+  };
+
+  const toolbar = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="relative flex-1">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by email, subject, status…"
+          className="pl-9"
+        />
+      </div>
+      <div className="text-xs text-[var(--color-text-muted)] sm:ml-2">
+        {loading ? "Loading…" : `${filtered.length} job${filtered.length === 1 ? "" : "s"}`}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="flex flex-col gap-6 px-4 sm:px-6">
-      <div>
-        <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Follow-ups</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Configure timing and monitor scheduled reminder emails.</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Follow-ups"
+        description="Configure timing and monitor scheduled reminder emails."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              iconLeft={<RefreshCw className="h-3.5 w-3.5" />}
+              onClick={loadAll}
+              disabled={loading}
+            >
+              Refresh
+            </Button>
+            <Button
+              size="sm"
+              iconLeft={<Play className="h-3.5 w-3.5" />}
+              onClick={runCronNow}
+              disabled={!canRunCron || runningCron}
+              loading={runningCron}
+            >
+              Run cron now
+            </Button>
+          </>
+        }
+      />
 
-      {alert ? (
-        alert.variant === "success" ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="font-medium">{alert.title}</div>
-                {alert.description ? <div className="mt-0.5 text-sm opacity-90">{alert.description}</div> : null}
-              </div>
-              <button
-                type="button"
-                className="text-xs opacity-70 hover:opacity-100"
-                onClick={() => setAlert(null)}
-                aria-label="Dismiss"
-              >
-                ✕
-              </button>
-            </div>
+      {alert?.variant === "success" ? (
+        <div className="flex items-start justify-between gap-3 rounded-[var(--radius-md)] border border-[color-mix(in_oklab,var(--color-success)_25%,transparent)] bg-[var(--color-success-subtle)] px-3 py-2 text-sm text-[var(--color-success)]">
+          <div>
+            <div className="font-medium">{alert.title}</div>
+            {alert.description && <div className="mt-0.5 text-xs opacity-90">{alert.description}</div>}
           </div>
-        ) : (
-          <RejectionBanner
-            kind={
-              /plan|upgrade/i.test(`${alert.title} ${alert.description ?? ""}`)
-                ? "plan"
-                : /permission/i.test(alert.title)
-                  ? "permission"
-                  : "error"
-            }
-            message={alert.description ? `${alert.title}: ${alert.description}` : alert.title}
-            onDismiss={() => setAlert(null)}
-          />
-        )
+          <button
+            type="button"
+            className="text-xs opacity-70 hover:opacity-100"
+            onClick={() => setAlert(null)}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      ) : alert ? (
+        <RejectionBanner
+          kind={
+            /plan|upgrade/i.test(`${alert.title} ${alert.description ?? ""}`)
+              ? "plan"
+              : /permission/i.test(alert.title)
+              ? "permission"
+              : "error"
+          }
+          message={alert.description ? `${alert.title}: ${alert.description}` : alert.title}
+          onDismiss={() => setAlert(null)}
+        />
       ) : null}
 
       <Card>
         <CardHeader>
-          <CardTitle>Timing</CardTitle>
-          <CardDescription>
-            {canEditSettings
-              ? "These settings apply when new follow-up jobs are scheduled."
-              : "You can view follow-up timing, but only admins and owners can change it."}
-          </CardDescription>
+          <div>
+            <CardTitle>Timing</CardTitle>
+            <CardDescription>
+              {canEditSettings
+                ? "These settings apply when new follow-up jobs are scheduled."
+                : "You can view follow-up timing, but only admins and owners can change it."}
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="grid gap-3 md:grid-cols-4">
-            <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Delay (days)</div>
-              <Input value={delayDays} disabled={!canEditSettings} onChange={(e) => setDelayDays(e.target.value)} />
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Max follow-ups</div>
-              <Input value={maxCount} disabled={!canEditSettings} onChange={(e) => setMaxCount(e.target.value)} />
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Send hour</div>
-              <select
-                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+        <CardContent className="space-y-4">
+          <FormGrid className="sm:grid-cols-2 lg:grid-cols-4">
+            <FormField label="Delay (days)">
+              <Input
+                value={delayDays}
+                disabled={!canEditSettings}
+                onChange={(e) => setDelayDays(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Max follow-ups">
+              <Input
+                value={maxCount}
+                disabled={!canEditSettings}
+                onChange={(e) => setMaxCount(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Send hour">
+              <Select
                 value={sendHour}
                 disabled={!canEditSettings}
                 onChange={(e) => setSendHour(e.target.value)}
               >
-                {Array.from({ length: 24 }).map((_, h) => {
-                  const label = `${String(h).padStart(2, "0")}:00`;
-                  return (
-                    <option key={h} value={String(h)}>
-                      {label}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Timezone</div>
-              <select
-                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+                {Array.from({ length: 24 }).map((_, h) => (
+                  <option key={h} value={String(h)}>
+                    {String(h).padStart(2, "0")}:00
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="Timezone">
+              <Select
                 value={tz}
                 disabled={!canEditSettings}
                 onChange={(e) => setTz(e.target.value)}
@@ -359,162 +466,61 @@ export default function FollowupsPage() {
                     {z}
                   </option>
                 ))}
-              </select>
-            </div>
-          </div>
+              </Select>
+            </FormField>
+          </FormGrid>
 
-          {sendPreview ? (
+          {sendPreview && (
             <div className="text-xs text-[var(--color-text-muted)]">
-              Preview: sends at about <span className="font-medium text-[var(--color-text-secondary)]">{sendPreview}</span> in <span className="font-medium text-[var(--color-text-secondary)]">{tz}</span>
+              Preview: sends at about{" "}
+              <span className="font-medium text-[var(--color-text-secondary)]">{sendPreview}</span> in{" "}
+              <span className="font-medium text-[var(--color-text-secondary)]">{tz}</span>
             </div>
-          ) : null}
+          )}
 
           <div className="flex flex-wrap gap-2">
-            <Button className="w-full sm:w-auto" onClick={saveTiming} disabled={saving || !canEditSettings}>
-              {saving ? "Saving..." : canEditSettings ? "Save timing" : "Admins can change timing"}
-            </Button>
-            <Button className="w-full sm:w-auto" variant="secondary" onClick={loadAll}>
-              Refresh
-            </Button>
-            <Button className="w-full sm:w-auto" variant="secondary" onClick={runCronNow} disabled={!canRunCron || runningCron}>
-              {runningCron ? "Running..." : canRunCron ? "Run cron now" : "Admins can run cron"}
+            <Button onClick={saveTiming} loading={saving} disabled={saving || !canEditSettings}>
+              {canEditSettings ? "Save timing" : "Admins can change timing"}
             </Button>
           </div>
 
-          {settings ? (
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-primary)]">
-              Current: {settings.followup_max_count} follow-ups, every {settings.followup_delay_days} day(s), send hour {settings.followup_send_hour} ({settings.followup_timezone})
-              {!canEditSettings || !canRunCron ? (
-                <div className="mt-2 text-xs text-[var(--color-text-muted)]">
+          {settings && (
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+              Current: {settings.followup_max_count} follow-ups, every {settings.followup_delay_days} day(s), send
+              hour {settings.followup_send_hour} ({settings.followup_timezone})
+              {(!canEditSettings || !canRunCron) && (
+                <div className="mt-1 text-[var(--color-text-muted)]">
                   {!canEditSettings ? "Only admins and owners can change follow-up timing. " : ""}
                   {!canRunCron ? "Only admins and owners can run follow-ups manually." : ""}
                 </div>
-              ) : null}
+              )}
             </div>
-          ) : null}
+          )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Upcoming jobs</CardTitle>
-          <CardDescription>Queued reminder emails and their due times.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <div className="w-full md:max-w-sm">
-              <Input className="w-full" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by email, subject, status..." />
-            </div>
-            <div className="text-xs text-[var(--color-text-muted)]">{loading ? "Loading..." : `${filtered.length} job(s)`}</div>
+          <div>
+            <CardTitle>Upcoming jobs</CardTitle>
+            <CardDescription>Queued reminder emails and their due times.</CardDescription>
           </div>
-
-          {/* Mobile card list — visible below sm */}
-          <div className="flex flex-col gap-3 sm:hidden">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
-                  <Skeleton className="h-4 w-3/4 mb-2" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              ))
-            ) : filtered.length === 0 ? (
-              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 text-sm text-[var(--color-text-secondary)]">
+        </CardHeader>
+        <CardContent>
+          <DataTable<Job>
+            columns={columns}
+            data={filtered}
+            getRowId={(r) => r.id}
+            loading={loading}
+            toolbar={toolbar}
+            rowActions={rowActions}
+            defaultSort={{ key: "due", dir: "asc" }}
+            empty={
+              <div className="py-10 text-center text-sm text-[var(--color-text-secondary)]">
                 No follow-up jobs found.
               </div>
-            ) : (
-              filtered.map((j) => (
-                <div key={j.id} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{j.to_email}</div>
-                      <div className="mt-0.5 truncate text-sm text-[var(--color-text-secondary)]">{j.subject}</div>
-                    </div>
-                    <span className={statusPill(j.status)}>{j.status}</span>
-                  </div>
-                  <div className="mt-2 text-xs text-[var(--color-text-muted)]">Due: {fmt(j.due_at)}</div>
-                  {j.status !== "sent" && j.status !== "cancelled" ? (
-                    <button
-                      type="button"
-                      onClick={() => markDone(j)}
-                      className="mt-3 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
-                      disabled={markingJobId === j.id}
-                    >
-                      {markingJobId === j.id ? "Marking..." : "Mark done"}
-                    </button>
-                  ) : null}
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Desktop table — hidden below sm */}
-          <div className="hidden sm:block overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white">
-            <table className="w-full min-w-[900px] text-sm">
-              <thead className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                <tr>
-                  <th className="px-4 py-2 text-left">To</th>
-                  <th className="px-4 py-2 text-left">Subject</th>
-                  <th className="px-4 py-2 text-left">Due</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Last error</th>
-                  <th className="px-4 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--color-border)]">
-                {loading ? (
-                  Array.from({ length: 6 }).map((_, i) => (
-                    <tr key={i}>
-                      <td className="px-4 py-3" colSpan={6}>
-                        <div className="grid grid-cols-12 gap-3">
-                          <Skeleton className="col-span-3 h-4 w-full" />
-                          <Skeleton className="col-span-3 h-4 w-full" />
-                          <Skeleton className="col-span-2 h-4 w-full" />
-                          <Skeleton className="col-span-1 h-4 w-full" />
-                          <Skeleton className="col-span-2 h-4 w-full" />
-                          <Skeleton className="col-span-1 h-4 w-full" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : filtered.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-3 text-[var(--color-text-secondary)]" colSpan={6}>
-                      No follow-up jobs found.
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((j) => (
-                    <tr key={j.id} className="transition-colors duration-150 hover:bg-[var(--color-bg-subtle)]">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-[var(--color-text-primary)]">{j.to_email}</div>
-                        <div className="font-mono text-xs text-[var(--color-text-muted)]">{j.onboarding_id}</div>
-                      </td>
-                      <td className="px-4 py-3 text-[var(--color-text-primary)]">{j.subject}</td>
-                      <td className="px-4 py-3 text-[var(--color-text-secondary)]">{fmt(j.due_at)}</td>
-                      <td className="px-4 py-3">
-                        <span className={statusPill(j.status)}>{j.status}</span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-[var(--color-text-secondary)]">{j.last_error ?? "—"}</td>
-                      <td className="px-4 py-3 text-right">
-                        {j.status !== "sent" && j.status !== "cancelled" ? (
-                          <button
-                            type="button"
-                            onClick={() => markDone(j)}
-                            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
-                            disabled={markingJobId === j.id}
-                          >
-                            {markingJobId === j.id ? "Marking..." : "Mark done"}
-                          </button>
-                        ) : (
-                          <span className="text-xs text-[var(--color-text-muted)]">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+            }
+          />
         </CardContent>
       </Card>
     </div>

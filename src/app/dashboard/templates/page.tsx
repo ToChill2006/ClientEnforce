@@ -4,9 +4,12 @@ import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
+import { PageHeader } from "@/components/ui/page-header";
+import { Plus } from "lucide-react";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -38,6 +41,12 @@ type Requirement = {
   include_other?: boolean;
   // Feature 5: multi-line textarea instead of single-line input
   multiline?: boolean;
+  // Phase 5.3: conditional visibility. Hidden when condition not met.
+  visible_if?: {
+    depends_on_label: string;
+    equals?: string;
+    not_empty?: boolean;
+  } | null;
 };
 
 type TemplateRow = {
@@ -109,6 +118,15 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
         }
         if (type === "text") {
           base.multiline = Boolean(r?.multiline);
+        }
+
+        // Conditional visibility (opt-in)
+        if (r?.visible_if && typeof r.visible_if.depends_on_label === "string" && r.visible_if.depends_on_label) {
+          base.visible_if = {
+            depends_on_label: String(r.visible_if.depends_on_label),
+            equals: typeof r.visible_if.equals === "string" ? r.visible_if.equals : undefined,
+            not_empty: r.visible_if.not_empty === true ? true : undefined,
+          };
         }
 
         return base;
@@ -450,63 +468,86 @@ export default function TemplatesPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="space-y-6">
+      <PageHeader
+        title="Templates"
+        description="Define requirements that will be snapshotted into each onboarding."
+      />
+
+      {upgradeMessage && <RejectionBanner kind="plan" message={upgradeMessage} />}
+
       {/* ── Create template ── */}
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontFamily: "var(--font-display)" }}>Templates</CardTitle>
-          <CardDescription>Define requirements that will be snapshotted into each onboarding.</CardDescription>
+          <div>
+            <CardTitle>New template</CardTitle>
+            <CardDescription>Start a new template from scratch.</CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">New template name</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Standard onboarding" />
-            </div>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <FormField label="Template name" className="flex-1">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Standard onboarding"
+              />
+            </FormField>
             <Button
               onClick={create}
+              loading={creating}
               disabled={creating}
-              className="w-full sm:w-auto rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+              iconLeft={<Plus className="h-3.5 w-3.5" />}
             >
-              {creating ? "Creating..." : "Create"}
+              Create
             </Button>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)]">
-            {upgradeMessage ? (
-              <RejectionBanner kind="plan" message={upgradeMessage} className="rounded-none border-x-0 border-t-0" />
-            ) : null}
-            <div className="border-b border-[var(--color-border)] px-4 py-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-              {loading ? "Loading..." : `${items.length} templates`}
-            </div>
-            <div className="divide-y divide-[var(--color-border)]">
-              {loading ? (
-                <div className="space-y-2 p-3">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ) : (
-                <>
-                  {items.map((t) => (
-                    <button
-                      key={t.id}
-                      className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
-                      onClick={() => openTemplate(t.id)}
-                      disabled={openingId === t.id}
-                    >
-                      <div className="text-sm font-medium text-[var(--color-text-primary)]">{t.name}</div>
-                      <div className="text-xs text-[var(--color-text-muted)]">
-                        {openingId === t.id ? "Opening..." : new Date(t.updated_at).toLocaleString()}
-                      </div>
-                    </button>
-                  ))}
-                  {!items.length ? (
-                    <div className="px-4 py-4 text-sm text-[var(--color-text-secondary)]">No templates yet.</div>
-                  ) : null}
-                </>
-              )}
-            </div>
+      {/* ── Template list ── */}
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Templates</CardTitle>
+            <CardDescription>
+              {loading ? "Loading…" : `${items.length} template${items.length === 1 ? "" : "s"}`}
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-[var(--color-border)]">
+            {loading ? (
+              <div className="space-y-2 p-5">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : items.length === 0 ? (
+              <div className="px-5 py-8 text-center text-sm text-[var(--color-text-secondary)]">
+                No templates yet.
+              </div>
+            ) : (
+              items.map((t) => (
+                <button
+                  key={t.id}
+                  className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
+                  onClick={() => openTemplate(t.id)}
+                  disabled={openingId === t.id}
+                >
+                  <div className="text-sm font-medium text-[var(--color-text-primary)]">{t.name}</div>
+                  <div className="text-xs tabular-nums text-[var(--color-text-muted)]">
+                    {openingId === t.id
+                      ? "Opening…"
+                      : new Date(t.updated_at).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "2-digit",
+                        })}
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
@@ -515,17 +556,18 @@ export default function TemplatesPage() {
       {selected ? (
         <Card>
           <CardHeader>
-            <CardTitle style={{ fontFamily: "var(--font-display)" }}>Edit template</CardTitle>
-            <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
+            <div>
+              <CardTitle>Edit template</CardTitle>
+              <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Name</label>
+          <CardContent className="space-y-4">
+            <FormField label="Name">
               <Input
                 value={selected.name}
                 onChange={(e) => setSelected({ ...selected, name: e.target.value })}
               />
-            </div>
+            </FormField>
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] p-3">
               <div className="text-sm font-semibold">Requirements</div>
@@ -558,21 +600,17 @@ export default function TemplatesPage() {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={saveSelected}
-                disabled={saving || deleting}
-                className="w-full sm:w-auto rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
-              >
-                {saving ? "Saving..." : "Save"}
+            <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-4">
+              <Button onClick={saveSelected} loading={saving} disabled={saving || deleting}>
+                Save
               </Button>
               <Button
                 variant="secondary"
                 onClick={deleteSelected}
+                loading={deleting}
                 disabled={saving || deleting}
-                className="w-full sm:w-auto rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
               >
-                {deleting ? "Deleting..." : "Delete"}
+                Delete
               </Button>
             </div>
           </CardContent>
@@ -634,6 +672,7 @@ function RequirementList({
           <RequirementEditor
             idx={idx}
             r={r}
+            priorReqs={sorted.slice(0, idx)}
             uploadingIdx={uploadingIdx}
             onUpdate={(patch) => onUpdate(idx, patch)}
             onDelete={() => onDelete(idx)}
@@ -650,6 +689,7 @@ function RequirementList({
 function RequirementEditor({
   idx,
   r,
+  priorReqs,
   uploadingIdx,
   onUpdate,
   onDelete,
@@ -657,12 +697,17 @@ function RequirementEditor({
 }: {
   idx: number;
   r: Requirement;
+  priorReqs: Requirement[];
   uploadingIdx: Record<number, boolean>;
   onUpdate: (patch: Partial<Requirement>) => void;
   onDelete: () => void;
   onUploadAttachment: (file: File) => void;
 }) {
   const isHeading = r.type === "heading";
+  const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const priorCandidates = priorReqs.filter(
+    (p) => p.type !== "heading" && p.label && p.label.trim()
+  );
 
   // Shared small toggle class
   const toggleCls = "flex items-center gap-1.5 cursor-pointer select-none";
@@ -810,6 +855,99 @@ function RequirementEditor({
 
         </div>
       ) : null}
+
+      {/* ── Advanced: conditional visibility ── */}
+      {!isHeading && (
+        <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced((v) => !v)}
+            className="text-[11px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+          >
+            {showAdvanced ? "▾" : "▸"} Advanced {r.visible_if ? "(conditional)" : ""}
+          </button>
+          {showAdvanced && (
+            <div className="mt-2 flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-[var(--color-text-muted)]">Only show if:</span>
+                <select
+                  className="rounded border border-[var(--color-border)] bg-white px-2 py-1 text-xs"
+                  value={r.visible_if?.depends_on_label ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (!v) onUpdate({ visible_if: null });
+                    else
+                      onUpdate({
+                        visible_if: {
+                          depends_on_label: v,
+                          equals: r.visible_if?.equals,
+                          not_empty: r.visible_if?.not_empty,
+                        },
+                      });
+                  }}
+                  disabled={priorCandidates.length === 0}
+                >
+                  <option value="">— Always show —</option>
+                  {priorCandidates.map((p, i) => (
+                    <option key={i} value={p.label}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+                {r.visible_if?.depends_on_label && (
+                  <>
+                    <select
+                      className="rounded border border-[var(--color-border)] bg-white px-2 py-1 text-xs"
+                      value={r.visible_if.not_empty ? "not_empty" : "equals"}
+                      onChange={(e) => {
+                        const cond = e.target.value;
+                        if (cond === "not_empty") {
+                          onUpdate({
+                            visible_if: {
+                              depends_on_label: r.visible_if!.depends_on_label,
+                              not_empty: true,
+                            },
+                          });
+                        } else {
+                          onUpdate({
+                            visible_if: {
+                              depends_on_label: r.visible_if!.depends_on_label,
+                              equals: r.visible_if?.equals ?? "",
+                            },
+                          });
+                        }
+                      }}
+                    >
+                      <option value="equals">equals</option>
+                      <option value="not_empty">has any answer</option>
+                    </select>
+                    {!r.visible_if.not_empty && (
+                      <Input
+                        value={r.visible_if.equals ?? ""}
+                        onChange={(e) =>
+                          onUpdate({
+                            visible_if: {
+                              depends_on_label: r.visible_if!.depends_on_label,
+                              equals: e.target.value,
+                            },
+                          })
+                        }
+                        placeholder="Expected value"
+                        className="flex-1 text-xs py-1"
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+              {priorCandidates.length === 0 && (
+                <div className="text-[10px] text-[var(--color-text-muted)]">
+                  Add a requirement above this one to use as a condition.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

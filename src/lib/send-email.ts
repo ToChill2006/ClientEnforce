@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { resend } from "@/lib/resend";
 import nodemailer from "nodemailer";
+import { loadWhiteLabelForOrg } from "@/lib/white-label";
 
 export type SendOrgEmailOpts = {
   to: string;
@@ -101,13 +102,20 @@ export async function sendOrgEmail(orgId: string, opts: SendOrgEmailOpts): Promi
     return;
   }
 
-  // Default: ClientEnforce via Resend
+  // Default: ClientEnforce via Resend — but honour Agency Pro white-label reply-to
+  // so clients see the agency's support address rather than info@clientenforce.com.
   if (!process.env.RESEND_API_KEY) {
     throw new Error("RESEND_API_KEY is not set");
   }
 
+  const wl = await loadWhiteLabelForOrg(orgId);
+  const brandName = wl.brand_name?.trim() || "ClientEnforce";
+  const from = `${brandName} <info@clientenforce.com>`;
+  const replyTo = wl.support_email?.trim() || undefined;
+
   const { error: emailErr } = await resend.emails.send({
-    from: "ClientEnforce <info@clientenforce.com>",
+    from,
+    replyTo,
     to: [opts.to],
     subject: opts.subject,
     html: opts.html,

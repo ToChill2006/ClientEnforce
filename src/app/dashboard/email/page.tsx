@@ -4,9 +4,11 @@ import * as React from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Select, Textarea, Checkbox } from "@/components/ui/input";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
+import { PageHeader } from "@/components/ui/page-header";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,8 +52,73 @@ const DEFAULT_SMTP: SmtpSettings = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+// Merge-tag rendering helpers
+const KNOWN_TAGS: Record<string, string> = {
+  "client.name": "Jane Doe",
+  "client.email": "jane@acmecorp.com",
+  "onboarding.title": "Acme Corp kickoff",
+  "title": "Acme Corp kickoff",
+  "link": "https://app.clientenforce.com/c/sample-token",
+  "org.name": "Your Agency",
+};
+
+function renderMergeTags(src: string, sample: Record<string, string>): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const re = /\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let i = 0;
+  while ((m = re.exec(src)) !== null) {
+    if (m.index > last) parts.push(<span key={`t${i++}`}>{src.slice(last, m.index)}</span>);
+    const key = m[1];
+    const val = sample[key];
+    if (val !== undefined) {
+      parts.push(
+        <span key={`v${i++}`} className="rounded bg-[var(--color-accent-subtle)] px-1 text-[var(--color-accent)]">
+          {val}
+        </span>
+      );
+    } else {
+      parts.push(
+        <span key={`u${i++}`} className="rounded bg-[var(--color-danger-subtle)] px-1 font-mono text-[var(--color-danger)]" title={`Unresolved tag: ${m[0]}`}>
+          {m[0]}
+        </span>
+      );
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < src.length) parts.push(<span key={`t${i++}`}>{src.slice(last)}</span>);
+  return parts;
+}
+
 export default function EmailPage() {
   const { toast: notify } = useToast();
+  const [previewTab, setPreviewTab] = React.useState<"edit" | "preview">("edit");
+  const [sampleData, setSampleData] = React.useState<Record<string, string>>(KNOWN_TAGS);
+
+  // Try to fetch a sample onboarding for more realistic preview
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/onboardings?limit=1", { cache: "no-store" });
+        if (!res.ok) return;
+        const j = await res.json().catch(() => null);
+        const row = Array.isArray(j?.onboardings) ? j.onboardings[0] : Array.isArray(j?.rows) ? j.rows[0] : null;
+        if (row) {
+          setSampleData((prev) => ({
+            ...prev,
+            "client.name": row.client_name || prev["client.name"],
+            "client.email": row.client_email || prev["client.email"],
+            "onboarding.title": row.title || prev["onboarding.title"],
+            "title": row.title || prev["title"],
+            "link": row.client_link || prev["link"],
+          }));
+        }
+      } catch {
+        // non-fatal, keep defaults
+      }
+    })();
+  }, []);
 
   const [emailSettings, setEmailSettings] = React.useState<EmailSettings>(DEFAULT_EMAIL);
   const [emailLoading, setEmailLoading] = React.useState(true);
@@ -103,7 +170,7 @@ export default function EmailPage() {
             smtp_port: String(s.smtp_port ?? "587"),
             smtp_secure: s.smtp_secure ?? false,
             smtp_username: s.smtp_username ?? "",
-            smtp_password: "", // never pre-fill — leave blank to keep existing
+            smtp_password: "",
             smtp_from_email: s.smtp_from_email ?? "",
             smtp_from_name: s.smtp_from_name ?? "",
           });
@@ -189,107 +256,124 @@ export default function EmailPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="space-y-6">
+      <PageHeader
+        title="Email"
+        description="Customise client-facing email templates and configure your email provider."
+      />
+
       {/* ── Email template ── */}
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontFamily: "var(--font-display)" }}>Email template</CardTitle>
-          <CardDescription>
-            Customise the email sent to clients when an onboarding is dispatched. Use{" "}
-            <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs font-mono">{"{{title}}"}</code>{" "}
-            in the subject line to insert the onboarding name.
-          </CardDescription>
+          <div>
+            <CardTitle>Email template</CardTitle>
+            <CardDescription>
+              Customise the email sent to clients when an onboarding is dispatched. Use{" "}
+              <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs font-mono">{"{{title}}"}</code>{" "}
+              in the subject line to insert the onboarding name.
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6">
+        <CardContent>
           {emailLoading ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Skeleton className="h-9 w-full" />
               <Skeleton className="h-9 w-full" />
               <Skeleton className="h-20 w-full" />
               <Skeleton className="h-9 w-full" />
             </div>
           ) : (
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-8">
-              {/* Fields */}
-              <div className="flex flex-1 flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Subject line</label>
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+              <div className="flex gap-1 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setPreviewTab("edit")}
+                  className={`rounded-[var(--radius-md)] px-3 py-1.5 text-xs font-medium ${previewTab === "edit" ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewTab("preview")}
+                  className={`rounded-[var(--radius-md)] px-3 py-1.5 text-xs font-medium ${previewTab === "preview" ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}
+                >
+                  Preview
+                </button>
+              </div>
+              <div className={`flex flex-1 flex-col gap-4 ${previewTab === "preview" ? "hidden lg:flex" : "flex"}`}>
+                <FormField label="Subject line" hint={`Use {{title}} to include the onboarding name.`}>
                   <Input
                     value={emailSettings.email_subject_template}
                     onChange={(e) => setEmailSettings({ ...emailSettings, email_subject_template: e.target.value })}
                     placeholder="Action required: {{title}}"
                   />
-                  <p className="text-xs text-[var(--color-text-muted)]">
-                    Use {"{{title}}"} to include the onboarding name.
-                  </p>
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Email heading</label>
+                <FormField label="Email heading">
                   <Input
                     value={emailSettings.email_heading}
                     onChange={(e) => setEmailSettings({ ...emailSettings, email_heading: e.target.value })}
                     placeholder="Complete your onboarding"
                   />
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Message body</label>
-                  <textarea
+                <FormField label="Message body">
+                  <Textarea
                     rows={3}
                     value={emailSettings.email_body}
                     onChange={(e) => setEmailSettings({ ...emailSettings, email_body: e.target.value })}
                     placeholder="Please complete your onboarding in ClientEnforce so your team can continue the next step."
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none resize-none"
                   />
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Button label</label>
+                <FormField label="Button label">
                   <Input
                     value={emailSettings.email_cta_label}
                     onChange={(e) => setEmailSettings({ ...emailSettings, email_cta_label: e.target.value })}
                     placeholder="Open onboarding"
                   />
-                </div>
+                </FormField>
 
-                <Button
-                  onClick={saveEmailSettings}
-                  disabled={emailSaving}
-                  className="w-full sm:w-auto self-start rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
-                >
-                  {emailSaving ? "Saving..." : "Save email template"}
-                </Button>
+                <div>
+                  <Button onClick={saveEmailSettings} loading={emailSaving} disabled={emailSaving}>
+                    Save email template
+                  </Button>
+                </div>
               </div>
 
               {/* Preview */}
-              <div className="w-full lg:w-80 shrink-0">
-                <div className="text-xs font-semibold text-[var(--color-text-secondary)] mb-2 uppercase tracking-wide">Preview</div>
-                <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white overflow-hidden text-sm">
+              <div className={`w-full lg:w-80 shrink-0 ${previewTab === "edit" ? "hidden lg:block" : "block"}`}>
+                <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">Preview</div>
+                <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]">
                   <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2.5">
                     <span className="text-xs text-[var(--color-text-muted)]">Subject: </span>
                     <span className="text-xs font-medium text-[var(--color-text-primary)]">
-                      {emailSettings.email_subject_template.replace(/\{\{title\}\}/gi, "Your onboarding title") || "—"}
+                      {renderMergeTags(emailSettings.email_subject_template || "—", sampleData)}
                     </span>
                   </div>
-                  <div className="px-5 py-5 flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 px-5 py-5">
                     <div className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">Client onboarding</div>
-                    <div className="text-base font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
-                      {emailSettings.email_heading || "Complete your onboarding"}
+                    <div className="text-base font-semibold text-[var(--color-text-primary)]">
+                      {renderMergeTags(emailSettings.email_heading || "Complete your onboarding", sampleData)}
                     </div>
-                    <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed">Hi [Client name],</div>
-                    <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                      {emailSettings.email_body || "Please complete your onboarding in ClientEnforce so your team can continue the next step."}
+                    <div className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
+                      Hi {renderMergeTags("{{client.name}}", sampleData)},
+                    </div>
+                    <div className="whitespace-pre-wrap text-xs leading-relaxed text-[var(--color-text-secondary)]">
+                      {renderMergeTags(emailSettings.email_body || DEFAULT_EMAIL.email_body, sampleData)}
                     </div>
                     <div className="pt-1">
-                      <div className="inline-block rounded-full bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-white">
-                        {emailSettings.email_cta_label || "Open onboarding"}
+                      <div className="inline-block rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-white">
+                        {renderMergeTags(emailSettings.email_cta_label || "Open onboarding", sampleData)}
                       </div>
                     </div>
                     <div className="pt-2 text-[10px] text-[var(--color-text-muted)]">
                       This is a transactional email from ClientEnforce.
                     </div>
                   </div>
+                </div>
+                <div className="mt-2 text-[10px] text-[var(--color-text-muted)]">
+                  Merge tags highlighted in <span className="text-[var(--color-accent)]">blue</span>. Unresolved tags show in <span className="text-[var(--color-danger)]">red</span>. Available: {"{{client.name}}"}, {"{{onboarding.title}}"}, {"{{title}}"}, {"{{link}}"}, {"{{org.name}}"}.
                 </div>
               </div>
             </div>
@@ -300,24 +384,32 @@ export default function EmailPage() {
       {/* ── Email provider ── */}
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontFamily: "var(--font-display)" }}>Email provider</CardTitle>
-          <CardDescription>
-            Choose how client-facing emails (onboarding dispatches and follow-up reminders) are sent.
-            Internal emails such as team invites and password resets always use ClientEnforce.
-          </CardDescription>
+          <div>
+            <CardTitle>Email provider</CardTitle>
+            <CardDescription>
+              Choose how client-facing emails (onboarding dispatches and follow-up reminders) are sent.
+              Internal emails such as team invites and password resets always use ClientEnforce.
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6">
+        <CardContent>
           {smtpLoading ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Skeleton className="h-9 w-full max-w-xs" />
               <Skeleton className="h-9 w-2/3" />
             </div>
           ) : (
-            <>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">Provider</label>
-                <select
-                  className="h-9 w-full max-w-xs rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+            <div className="space-y-5">
+              <FormField
+                label="Provider"
+                description={
+                  smtpSettings.email_provider === "smtp"
+                    ? "Emails will be sent using your SMTP credentials below."
+                    : 'Emails are sent by ClientEnforce from "ClientEnforce <info@clientenforce.com>".'
+                }
+              >
+                <Select
+                  className="max-w-xs"
                   value={smtpSettings.email_provider}
                   onChange={(e) =>
                     setSmtpSettings({ ...smtpSettings, email_provider: e.target.value as "clientenforce" | "smtp" })
@@ -325,126 +417,104 @@ export default function EmailPage() {
                 >
                   <option value="clientenforce">ClientEnforce (default)</option>
                   <option value="smtp">Custom SMTP</option>
-                </select>
-                <p className="text-xs text-[var(--color-text-muted)]">
-                  {smtpSettings.email_provider === "smtp"
-                    ? "Emails will be sent using your SMTP credentials below."
-                    : 'Emails are sent by ClientEnforce from "ClientEnforce <info@clientenforce.com>".'}
-                </p>
-                <Link
-                  href="/dashboard/email/custom-domain-guide"
-                  className="inline-flex items-center gap-1 text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
-                >
-                  How do I set this up? →
-                </Link>
-              </div>
+                </Select>
+              </FormField>
+
+              <Link
+                href="/dashboard/email/custom-domain-guide"
+                className="inline-flex items-center gap-1 text-xs text-[var(--color-accent)] hover:underline"
+              >
+                How do I set this up? →
+              </Link>
 
               {smtpSettings.email_provider === "smtp" && (
-                <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
+                  <div className="mb-4 text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
                     SMTP credentials
-                  </p>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium">Host</label>
-                      <Input
-                        value={smtpSettings.smtp_host}
-                        onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_host: e.target.value })}
-                        placeholder="smtp.gmail.com"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium">Port</label>
-                      <Input
-                        type="number"
-                        value={smtpSettings.smtp_port}
-                        onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_port: e.target.value })}
-                        placeholder="587"
-                      />
-                      <p className="text-xs text-[var(--color-text-muted)]">
-                        587 (STARTTLS) · 465 (SSL/TLS) · 25 (unencrypted)
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium">Username</label>
-                      <Input
-                        value={smtpSettings.smtp_username}
-                        onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_username: e.target.value })}
-                        placeholder="you@gmail.com"
-                        autoComplete="off"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium">Password / App password</label>
-                      <Input
-                        type="password"
-                        value={smtpSettings.smtp_password}
-                        onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_password: e.target.value })}
-                        placeholder="Leave blank to keep existing"
-                        autoComplete="new-password"
-                      />
-                      {hasExistingPassword && !smtpSettings.smtp_password && (
-                        <p className="text-xs text-[var(--color-success)]">
-                          App password saved — leave blank to keep existing.
-                        </p>
-                      )}
-                      <p className="text-xs text-[var(--color-text-muted)]">
-                        Gmail: use an App Password, not your Google account password.
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium">From email</label>
-                      <Input
-                        type="email"
-                        value={smtpSettings.smtp_from_email}
-                        onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_from_email: e.target.value })}
-                        placeholder="noreply@yourcompany.com"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium">From name</label>
-                      <Input
-                        value={smtpSettings.smtp_from_name}
-                        onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_from_name: e.target.value })}
-                        placeholder="Your Company"
-                      />
-                    </div>
                   </div>
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded accent-[var(--color-accent)]"
-                      checked={smtpSettings.smtp_secure}
-                      onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_secure: e.target.checked })}
-                    />
-                    <span className="text-sm text-[var(--color-text-secondary)]">
-                      Use TLS — enable for port 465, leave off for STARTTLS on 587
-                    </span>
-                  </label>
+                  <div className="space-y-4">
+                    <FormGrid>
+                      <FormField label="Host">
+                        <Input
+                          value={smtpSettings.smtp_host}
+                          onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_host: e.target.value })}
+                          placeholder="smtp.gmail.com"
+                        />
+                      </FormField>
+                      <FormField label="Port" hint="587 (STARTTLS) · 465 (SSL/TLS) · 25 (unencrypted)">
+                        <Input
+                          type="number"
+                          value={smtpSettings.smtp_port}
+                          onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_port: e.target.value })}
+                          placeholder="587"
+                        />
+                      </FormField>
+                      <FormField label="Username">
+                        <Input
+                          value={smtpSettings.smtp_username}
+                          onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_username: e.target.value })}
+                          placeholder="you@gmail.com"
+                          autoComplete="off"
+                        />
+                      </FormField>
+                      <FormField
+                        label="Password / App password"
+                        hint={
+                          hasExistingPassword && !smtpSettings.smtp_password
+                            ? "Saved — leave blank to keep existing. Gmail: use an App Password."
+                            : "Gmail: use an App Password, not your Google account password."
+                        }
+                      >
+                        <Input
+                          type="password"
+                          value={smtpSettings.smtp_password}
+                          onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_password: e.target.value })}
+                          placeholder={hasExistingPassword ? "Leave blank to keep existing" : "Password"}
+                          autoComplete="new-password"
+                        />
+                      </FormField>
+                      <FormField label="From email">
+                        <Input
+                          type="email"
+                          value={smtpSettings.smtp_from_email}
+                          onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_from_email: e.target.value })}
+                          placeholder="noreply@yourcompany.com"
+                        />
+                      </FormField>
+                      <FormField label="From name">
+                        <Input
+                          value={smtpSettings.smtp_from_name}
+                          onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_from_name: e.target.value })}
+                          placeholder="Your Company"
+                        />
+                      </FormField>
+                    </FormGrid>
+
+                    <label className="flex cursor-pointer items-center gap-2">
+                      <Checkbox
+                        checked={smtpSettings.smtp_secure}
+                        onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_secure: e.target.checked })}
+                      />
+                      <span className="text-xs text-[var(--color-text-secondary)]">
+                        Use TLS — enable for port 465, leave off for STARTTLS on 587
+                      </span>
+                    </label>
+                  </div>
                 </div>
               )}
 
               <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  onClick={saveSmtpSettings}
-                  disabled={smtpSaving}
-                  className="rounded-full bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
-                >
-                  {smtpSaving ? "Saving..." : "Save provider settings"}
+                <Button onClick={saveSmtpSettings} loading={smtpSaving} disabled={smtpSaving}>
+                  Save provider settings
                 </Button>
-                <Button
-                  variant="secondary"
-                  onClick={testSmtpSettings}
-                  disabled={smtpTesting}
-                  className="rounded-full border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]"
-                >
-                  {smtpTesting ? "Sending..." : "Send test email"}
+                <Button variant="secondary" onClick={testSmtpSettings} loading={smtpTesting} disabled={smtpTesting}>
+                  Send test email
                 </Button>
               </div>
               <p className="text-xs text-[var(--color-text-muted)]">
-                "Send test email" sends a test message to your own account email using the current settings.
+                &quot;Send test email&quot; sends a test message to your own account email using the current settings.
               </p>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>

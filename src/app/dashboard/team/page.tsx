@@ -3,8 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
+import { PageHeader } from "@/components/ui/page-header";
+import { RefreshCw, UserPlus } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -435,26 +437,28 @@ export default function TeamPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-5">
 
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div>
-          <h1 className="text-lg font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Team</h1>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            Manage team members, assign onboarding tasks, and track workload.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" className="w-full sm:w-auto" onClick={loadAll} disabled={loading}>
-            {loading ? "Loading…" : "Refresh"}
-          </Button>
-          <Link
-            className="w-full sm:w-auto rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]"
-            href="/dashboard/settings"
-          >
-            Invite members
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Team"
+        description="Manage team members, assign onboarding tasks, and track workload."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              iconLeft={<RefreshCw className="h-3.5 w-3.5" />}
+              onClick={loadAll}
+              disabled={loading}
+            >
+              Refresh
+            </Button>
+            <Link href="/dashboard/settings">
+              <Button size="sm" iconLeft={<UserPlus className="h-3.5 w-3.5" />}>
+                Invite members
+              </Button>
+            </Link>
+          </>
+        }
+      />
 
       {err ? (
         <RejectionBanner
@@ -515,8 +519,8 @@ export default function TeamPage() {
             <div className="flex-1">
               <Input value={memberSearch} onChange={(e) => setMemberSearch(e.target.value)} placeholder="Search by name or email…" />
             </div>
-            <select
-              className="h-10 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+            <Select
+              className="sm:w-40"
               value={memberRoleFilter}
               onChange={(e) => setMemberRoleFilter(e.target.value as Member["role"] | "")}
             >
@@ -524,7 +528,7 @@ export default function TeamPage() {
               <option value="owner">Owner</option>
               <option value="admin">Admin</option>
               <option value="member">Member</option>
-            </select>
+            </Select>
           </div>
 
           {/* Mobile cards */}
@@ -665,8 +669,7 @@ export default function TeamPage() {
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="space-y-1">
                     <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Assign to</label>
-                    <select
-                      className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+                    <Select
                       value={assignedTo}
                       onChange={(e) => setAssignedTo(e.target.value)}
                     >
@@ -676,13 +679,12 @@ export default function TeamPage() {
                           {(m.full_name ?? "Member").trim()}{m.email ? ` — ${m.email}` : ""}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1">
                     <label className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Priority</label>
-                    <select
-                      className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+                    <Select
                       value={taskPriority}
                       onChange={(e) => setTaskPriority(e.target.value as Priority)}
                     >
@@ -690,7 +692,7 @@ export default function TeamPage() {
                       <option value="medium">Medium</option>
                       <option value="high">High</option>
                       <option value="urgent">Urgent</option>
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1">
@@ -753,8 +755,7 @@ export default function TeamPage() {
               <div className="flex flex-wrap gap-2">
                 <div>
                   <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Status</label>
-                  <select
-                    className="h-10 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+                  <Select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as Task["status"] | "")}
                   >
@@ -763,13 +764,12 @@ export default function TeamPage() {
                     <option value="in_progress">In progress</option>
                     <option value="done">Done</option>
                     <option value="archived">Archived</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Priority</label>
-                  <select
-                    className="h-10 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+                  <Select
                     value={priorityFilter}
                     onChange={(e) => setPriorityFilter(e.target.value as Priority | "")}
                   >
@@ -778,13 +778,12 @@ export default function TeamPage() {
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
                     <option value="low">Low</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Assignee</label>
-                  <select
-                    className="h-10 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+                  <Select
                     value={assigneeFilter}
                     onChange={(e) => setAssigneeFilter(e.target.value)}
                   >
@@ -794,20 +793,19 @@ export default function TeamPage() {
                         {m.full_name ?? m.email ?? m.user_id}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {role !== "member" ? (
                   <div>
                     <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Scope</label>
-                    <select
-                      className="h-10 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm text-[var(--color-text-primary)]"
+                    <Select
                       value={scope}
                       onChange={(e) => setScope(e.target.value as "all" | "mine")}
                     >
                       <option value="all">All tasks</option>
                       <option value="mine">Assigned to me</option>
-                    </select>
+                    </Select>
                   </div>
                 ) : null}
 

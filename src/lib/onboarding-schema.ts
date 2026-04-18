@@ -35,6 +35,15 @@ export const TemplateRequirementSchema = z.object({
 
   // Feature 5: multi-line textarea instead of single-line input for text type
   multiline: z.boolean().optional(),
+
+  // Phase 5.3: conditional visibility — opt-in, stored in metadata downstream
+  visible_if: z
+    .object({
+      depends_on_label: z.string().min(1),
+      equals: z.string().optional(),
+      not_empty: z.boolean().optional(),
+    })
+    .nullish(),
 });
 
 export const TemplateDefinitionSchema = z.object({

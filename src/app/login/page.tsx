@@ -3,7 +3,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { loginAction } from "./actions";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/form-field";
+import { Card, CardContent } from "@/components/ui/card";
+import { AuthSubmitButton } from "@/components/auth/submit-button";
 import LoginToasts from "./toasts";
 import { buildNoindexMetadata } from "@/lib/seo";
 
@@ -42,9 +44,9 @@ export default async function LoginPage({
   const next = sp?.next && sp.next.startsWith("/") ? sp.next : "/dashboard";
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
+    <main className="flex min-h-screen flex-col bg-[var(--color-bg)] text-[var(--color-text-primary)]">
       <LoginToasts verified={verified} reset={reset} />
-      <div className="mx-auto flex max-w-md flex-col px-4 py-8 sm:px-6 sm:py-16">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-6 sm:py-16">
         <Link href="/" className="mb-8 mx-auto flex w-fit items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white">
             <Image src="/C.png" alt="ClientEnforce logo" width={24} height={24} className="h-6 w-6 object-contain" />
@@ -54,24 +56,17 @@ export default async function LoginPage({
           </span>
         </Link>
 
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
             Log in to ClientEnforce
           </h1>
           <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
-            New to ClientEnforce?{" "}
-            <Link
-              href={next === "/dashboard" ? "/signup" : `/signup?next=${encodeURIComponent(next)}`}
-              className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
-            >
-              Create your account
-            </Link>
-            {" "}to get started.
+            Manage your client onboarding workspace.
           </p>
         </div>
 
-        <div className="bg-transparent sm:bg-white sm:rounded-[var(--radius-lg)] sm:border sm:border-[var(--color-border)] sm:shadow-[var(--shadow-sm)] p-0 sm:p-6">
-          <div className="flex flex-col gap-4">
+        <Card className="shadow-[var(--shadow-sm)]">
+          <CardContent className="flex flex-col gap-4 p-5 sm:p-6">
             {created ? (
               <div className="rounded-[var(--radius-md)] border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
                 Account created. Please log in.
@@ -85,25 +80,37 @@ export default async function LoginPage({
             ) : null}
 
             {error ? (
-              <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
                 {error}
               </div>
             ) : null}
 
             <form action={loginAction} className="flex flex-col gap-4">
               <input type="hidden" name="next" value={next} />
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" autoComplete="email" required className="text-base" style={{ fontSize: "16px" }} />
-              </div>
+              <FormField label="Email" htmlFor="email" required>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  className="text-base"
+                  style={{ fontSize: "16px" }}
+                />
+              </FormField>
 
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between gap-3">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="/forgot-password" className="text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                    Forgot password?
-                  </Link>
-                </div>
+              <FormField
+                label={
+                  <div className="flex w-full items-center justify-between gap-3">
+                    <span>Password</span>
+                    <Link href="/forgot-password" className="text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                      Forgot password?
+                    </Link>
+                  </div>
+                }
+                htmlFor="password"
+                required
+              >
                 <Input
                   id="password"
                   name="password"
@@ -113,30 +120,22 @@ export default async function LoginPage({
                   className="text-base"
                   style={{ fontSize: "16px" }}
                 />
-              </div>
+              </FormField>
 
-              <button
-                type="submit"
-                className="inline-flex w-full min-h-[48px] items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
-              >
-                Log in
-              </button>
+              <AuthSubmitButton>Log in</AuthSubmitButton>
             </form>
+          </CardContent>
+        </Card>
 
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-[var(--color-border)]" />
-              <span className="text-xs text-[var(--color-text-muted)]">or</span>
-              <div className="h-px flex-1 bg-[var(--color-border)]" />
-            </div>
-
-            <Link
-              href={`/signup?next=${encodeURIComponent(next)}`}
-              className="inline-flex w-full min-h-[48px] items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)]"
-            >
-              Create an account
-            </Link>
-          </div>
-        </div>
+        <p className="mt-5 text-center text-sm text-[var(--color-text-secondary)]">
+          New to ClientEnforce?{" "}
+          <Link
+            href={next === "/dashboard" ? "/signup" : `/signup?next=${encodeURIComponent(next)}`}
+            className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+          >
+            Create your account
+          </Link>
+        </p>
       </div>
     </main>
   );

@@ -35,9 +35,18 @@ async function getOrgIdForUser(supabase: Awaited<ReturnType<typeof supabaseServe
   return { user, org_id: profile.org_id as string };
 }
 
-const PatchSchema = z.object({
-  status: z.enum(["archived"]),
-});
+const PatchSchema = z.union([
+  z.object({ status: z.enum(["archived"]) }),
+  z.object({
+    reminder_override: z
+      .object({
+        enabled: z.boolean(),
+        days_between: z.number().int().min(1).max(90).optional(),
+        max_reminders: z.number().int().min(0).max(20).optional(),
+      })
+      .nullable(),
+  }),
+]);
 
 type ResponseError = { message?: string | null };
 type PatchItem = { id: string; status?: string | null; updated_at?: string | null };
@@ -61,6 +70,46 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!parsed.success) return jsonError(400, "Invalid payload");
 
   const now = new Date().toISOString();
+
+  // Branch: reminder_override update — store in `metadata.reminders` JSONB if present.
+  if ("reminder_override" in parsed.data) {
+    const override = parsed.data.reminder_override;
+    // Read existing metadata, patch `reminders`, write back.
+    const { data: existing, error: readErr } = (await supabase
+      .from("onboardings")
+      .select("id, metadata")
+      .eq("org_id", org_id)
+      .eq("id", id)
+      .maybeSingle()) as { data: { id: string; metadata: any } | null; error: ResponseError | null };
+    if (readErr && !isMissingColumnError(readErr, "metadata")) {
+      return jsonError(400, readErr.message || "Failed to load onboarding");
+    }
+    if (!existing) return jsonError(404, "Onboarding not found");
+    const currentMeta = (existing.metadata && typeof existing.metadata === "object") ? existing.metadata : {};
+    const nextMeta = { ...currentMeta, reminders: override };
+    let upd = await supabase
+      .from("onboardings")
+      .update({ metadata: nextMeta, updated_at: now })
+      .eq("org_id", org_id)
+      .eq("id", id)
+      .select("id, metadata, updated_at")
+      .maybeSingle();
+    if (upd.error && isMissingColumnError(upd.error, "metadata")) {
+      return jsonError(400, "metadata column is not available on this database");
+    }
+    if (upd.error && isMissingColumnError(upd.error, "updated_at")) {
+      upd = await supabase
+        .from("onboardings")
+        .update({ metadata: nextMeta })
+        .eq("org_id", org_id)
+        .eq("id", id)
+        .select("id, metadata")
+        .maybeSingle();
+    }
+    if (upd.error) return jsonError(400, upd.error.message || "Failed to save reminders override");
+    return NextResponse.json({ ok: true, item: upd.data });
+  }
+
   let update = (await supabase
     .from("onboardings")
     .update({ status: parsed.data.status, updated_at: now })

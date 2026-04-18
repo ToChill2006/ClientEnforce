@@ -1,14 +1,21 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
+import { RefreshCw, Search, Eye, Download, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
+import { Input, Select } from "@/components/ui/input";
+import { DataTable, type Column } from "@/components/ui/data-table";
+import { Tag } from "@/components/ui/status-badge";
+import { Modal, ConfirmModal } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 
 type Item = {
   id: string;
   onboarding_id?: string | null;
   onboarding_title?: string | null;
-  // API may return either a normalized `type`/`path`/`name` shape,
-  // or the legacy `file_path`/`signature_path` shape.
-  type?: string | null; // e.g. "file" | "signature"
+  type?: string | null;
   bucket?: string | null;
   path?: string | null;
   name?: string | null;
@@ -20,7 +27,6 @@ type Item = {
 };
 
 function getOnboardingTitle(it: any): string | null {
-  // Support multiple API shapes: onboarding_title, onboardingTitle, onboarding: { title }
   const t = it?.onboarding_title ?? it?.onboardingTitle ?? it?.onboarding?.title ?? null;
   return typeof t === "string" && t.trim().length > 0 ? t : null;
 }
@@ -29,7 +35,12 @@ function normalizeItem(raw: any): Item {
   return {
     ...raw,
     onboarding_title: getOnboardingTitle(raw),
-    onboarding_id: raw?.onboarding_id ?? raw?.onboardingId ?? raw?.onboarding?.id ?? raw?.onboarding?.onboarding_id ?? null,
+    onboarding_id:
+      raw?.onboarding_id ??
+      raw?.onboardingId ??
+      raw?.onboarding?.id ??
+      raw?.onboarding?.onboarding_id ??
+      null,
     created_at: raw?.created_at ?? raw?.createdAt ?? null,
     uploaded_at: raw?.uploaded_at ?? raw?.uploadedAt ?? null,
     file_path: raw?.file_path ?? raw?.filePath ?? null,
@@ -45,12 +56,10 @@ function baseName(path?: string | null) {
   if (!path) return "—";
   const p = path.split("?")[0];
   const parts = p.split("/").filter(Boolean);
-  // Prefer the last segment that does NOT look like a date (sometimes folders are YYYY-MM-DD)
   for (let i = parts.length - 1; i >= 0; i--) {
     const seg = parts[i];
     if (!/^\d{4}-\d{2}-\d{2}(?:[T\s].*)?$/.test(seg)) return seg;
   }
-  // Fallback to the last segment
   return parts[parts.length - 1] || p;
 }
 
@@ -59,42 +68,50 @@ function looksLikeISODate(s?: string | null) {
 }
 
 function pickCreatedAt(it: Item): string | null {
-  // Prefer explicit timestamps.
   return (it.created_at ?? it.created ?? it.uploaded_at) || null;
 }
 
 function formatCreated(it: Item): string {
   const createdAt = pickCreatedAt(it);
   if (!createdAt) return "—";
-  // If it's just a date (YYYY-MM-DD), show it as-is.
   if (looksLikeISODate(createdAt) && createdAt.length <= 10) return createdAt.slice(0, 10);
   const d = new Date(createdAt);
-  return Number.isNaN(d.getTime()) ? String(createdAt) : d.toLocaleString();
+  return Number.isNaN(d.getTime()) ? String(createdAt) : d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
 }
 
 function inferName(it: Item, path: string | null): string {
-  // The API sometimes accidentally returns a date string in `name`.
-  // If so, prefer the filename inferred from the storage path.
   const candidate = it.name ?? null;
   const fromPath = baseName(path);
+  if (looksLikeISODate(candidate)) return fromPath;
+  return candidate && candidate.trim().length > 0 ? candidate : fromPath;
+}
 
-  // If name looks like a date, always try to derive a real filename from the path.
-  if (looksLikeISODate(candidate)) {
-    return fromPath;
-  }
+function itemPath(it: Item): string | null {
+  return (it.path ?? it.file_path ?? it.signature_path) || null;
+}
 
-  // Otherwise, prefer explicit name, falling back to path-derived.
-  return (candidate && candidate.trim().length > 0) ? candidate : fromPath;
+function itemKind(it: Item): "file" | "signature" {
+  const typeRaw = (it.type ?? "").toLowerCase();
+  return typeRaw === "signature" || (!!it.signature_path && !it.file_path) ? "signature" : "file";
 }
 
 export default function StoragePage() {
+  const { toast } = useToast();
   const [items, setItems] = React.useState<Item[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [err, setErr] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
+  const [debouncedQuery, setDebouncedQuery] = React.useState("");
+  const [typeFilter, setTypeFilter] = React.useState<"all" | "file" | "signature">("all");
   const [previewingPath, setPreviewingPath] = React.useState<string | null>(null);
   const [downloadingPath, setDownloadingPath] = React.useState<string | null>(null);
   const [deletingItemId, setDeletingItemId] = React.useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState<Item | null>(null);
+
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [previewName, setPreviewName] = React.useState<string>("File preview");
@@ -102,6 +119,11 @@ export default function StoragePage() {
   const [previewError, setPreviewError] = React.useState<string | null>(null);
   const [previewIsImage, setPreviewIsImage] = React.useState(false);
   const [previewImageReady, setPreviewImageReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 200);
+    return () => clearTimeout(t);
+  }, [query]);
 
   async function load() {
     setLoading(true);
@@ -119,7 +141,9 @@ export default function StoragePage() {
     }
   }
 
-  React.useEffect(() => { load(); }, []);
+  React.useEffect(() => {
+    load();
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -184,26 +208,18 @@ export default function StoragePage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e: any) {
-      setErr(e?.message || "Download failed");
+      toast({ title: "Download failed", description: e?.message, variant: "error" });
     } finally {
       setDownloadingPath(null);
     }
   }
 
   async function deleteItem(it: Item) {
-    const path = (it.path ?? it.file_path ?? it.signature_path) || null;
+    const path = itemPath(it);
     if (!path) return;
 
-    const typeRaw = (it.type ?? "").toLowerCase();
-    const isSignature = typeRaw === "signature" || (!!it.signature_path && !it.file_path);
-    const kind = isSignature ? "signature" : "file";
-    const name = inferName(it, path);
-
-    const confirmed = window.confirm(`Delete this ${kind}?\n\n${name}\n\nThis cannot be undone.`);
-    if (!confirmed) return;
-
+    const kind = itemKind(it);
     setDeletingItemId(it.id);
-    setErr(null);
 
     try {
       const res = await fetch("/api/storage/delete", {
@@ -220,31 +236,27 @@ export default function StoragePage() {
       if (!res.ok) throw new Error(json?.error || "Delete failed");
 
       setItems((prev) => prev.filter((row) => row.id !== it.id));
-      if (previewOpen) {
-        closePreview();
-      }
+      toast({ title: `${kind === "signature" ? "Signature" : "File"} deleted`, variant: "success" });
+      if (previewOpen) closePreview();
     } catch (e: any) {
-      setErr(e?.message || "Delete failed");
+      toast({ title: "Delete failed", description: e?.message, variant: "error" });
     } finally {
       setDeletingItemId(null);
+      setConfirmDelete(null);
     }
   }
 
   const filteredItems = React.useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return items;
-
+    const q = debouncedQuery.trim().toLowerCase();
     return items.filter((it) => {
-      const path = (it.path ?? it.file_path ?? it.signature_path) || "";
-      const typeRaw = (it.type ?? "").toLowerCase();
-      const isSignature = typeRaw === "signature" || (!!it.signature_path && !it.file_path);
-      const kind = isSignature ? "signature" : "file";
-
+      const kind = itemKind(it);
+      if (typeFilter !== "all" && kind !== typeFilter) return false;
+      if (!q) return true;
+      const path = itemPath(it) || "";
       const title = (getOnboardingTitle(it) ?? "").toLowerCase();
       const name = inferName(it, path).toLowerCase();
       const onboardingId = (it.onboarding_id ?? "").toLowerCase();
       const filename = baseName(path).toLowerCase();
-
       return (
         name.includes(q) ||
         filename.includes(q) ||
@@ -253,311 +265,247 @@ export default function StoragePage() {
         kind.includes(q)
       );
     });
-  }, [items, query]);
+  }, [items, debouncedQuery, typeFilter]);
+
+  const columns: Column<Item>[] = [
+    {
+      key: "type",
+      header: "Type",
+      width: "100px",
+      sortValue: (r) => itemKind(r),
+      render: (r) => {
+        const kind = itemKind(r);
+        return <Tag tone={kind === "signature" ? "accent" : "info"}>{kind === "signature" ? "Signature" : "File"}</Tag>;
+      },
+    },
+    {
+      key: "name",
+      header: "Name",
+      sortValue: (r) => inferName(r, itemPath(r)).toLowerCase(),
+      render: (r) => {
+        const path = itemPath(r);
+        const name = inferName(r, path);
+        const title = getOnboardingTitle(r);
+        return (
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{name}</div>
+            {title && <div className="truncate text-xs text-[var(--color-text-muted)]">{title}</div>}
+          </div>
+        );
+      },
+    },
+    {
+      key: "onboarding",
+      header: "Onboarding",
+      hideOnMobile: true,
+      render: (r) => {
+        const title = getOnboardingTitle(r);
+        if (!r.onboarding_id) return <span className="text-xs text-[var(--color-text-muted)]">—</span>;
+        return (
+          <Link
+            href={`/dashboard/onboardings/${r.onboarding_id}`}
+            className="truncate text-sm text-[var(--color-accent)] hover:underline"
+            title={title ?? r.onboarding_id}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {title ? title : "View onboarding"}
+          </Link>
+        );
+      },
+    },
+    {
+      key: "created",
+      header: "Created",
+      hideOnMobile: true,
+      width: "130px",
+      align: "right",
+      sortValue: (r) => {
+        const v = pickCreatedAt(r);
+        return v ? new Date(v).getTime() : 0;
+      },
+      render: (r) => (
+        <span className="text-xs tabular-nums text-[var(--color-text-muted)]">{formatCreated(r)}</span>
+      ),
+    },
+  ];
+
+  const rowActions = (it: Item) => {
+    const path = itemPath(it);
+    if (!path) return <span className="text-xs text-[var(--color-text-muted)]">—</span>;
+    const name = inferName(it, path);
+    const previewBusy = previewingPath === path;
+    const downloadBusy = downloadingPath === path;
+    const deleteBusy = deletingItemId === it.id;
+    const busy = previewBusy || downloadBusy || deleteBusy;
+    return (
+      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={() => openPreview(path, name)}
+          disabled={busy}
+          title="Preview"
+        >
+          <Eye className="h-3 w-3" />
+        </Button>
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={() => downloadFile(path, name)}
+          disabled={busy}
+          title="Download"
+        >
+          <Download className="h-3 w-3" />
+        </Button>
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={() => setConfirmDelete(it)}
+          disabled={busy}
+          title="Delete"
+          className="text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+    );
+  };
+
+  const toolbar = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="relative flex-1">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search files, signatures, onboardings…"
+          className="pl-9"
+        />
+      </div>
+      <Select
+        value={typeFilter}
+        onChange={(e) => setTypeFilter(e.target.value as any)}
+        className="sm:w-40"
+      >
+        <option value="all">All types</option>
+        <option value="file">Files</option>
+        <option value="signature">Signatures</option>
+      </Select>
+      <div className="text-xs text-[var(--color-text-muted)] sm:ml-2">
+        {loading ? "Loading…" : `${filteredItems.length} item${filteredItems.length === 1 ? "" : "s"}`}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-5 px-4 sm:px-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Files & signatures</h1>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">A library of uploaded files and saved signatures.</p>
-        </div>
-
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <div className="relative w-full sm:w-[320px]">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search files, signatures, onboarding…"
-              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]"
-            />
-            {query ? (
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                aria-label="Clear search"
-                title="Clear"
-              >
-                ×
-              </button>
-            ) : null}
-          </div>
-
-          <button
+    <div className="space-y-6">
+      <PageHeader
+        title="Files & signatures"
+        description="A library of uploaded files and saved signatures."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            iconLeft={<RefreshCw className="h-3.5 w-3.5" />}
             onClick={load}
-            className="w-full rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60 sm:w-auto"
             disabled={loading}
           >
-            {loading ? "Refreshing..." : "Refresh"}
-          </button>
-        </div>
-      </div>
+            Refresh
+          </Button>
+        }
+      />
 
-      {err ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
-          <div className="text-sm font-medium text-[var(--color-text-primary)]">Could not load</div>
-          <div className="mt-1 text-sm text-[var(--color-text-muted)]">{err}</div>
+      {err && (
+        <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-sm text-[var(--color-danger)]">
+          {err}
         </div>
-      ) : null}
+      )}
 
-      {/* Mobile card list — visible below sm */}
-      <div className="flex flex-col gap-3 sm:hidden">
-        {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
-              <Skeleton className="h-4 w-3/4 mb-2" />
-              <Skeleton className="h-3 w-1/2" />
+      <DataTable<Item>
+        columns={columns}
+        data={filteredItems}
+        getRowId={(r) => `${r.id}-${itemPath(r) ?? ""}`}
+        loading={loading}
+        toolbar={toolbar}
+        rowActions={rowActions}
+        defaultSort={{ key: "created", dir: "desc" }}
+        empty={
+          <div className="py-12 text-center">
+            <div className="text-sm font-semibold text-[var(--color-text-primary)]">
+              {items.length === 0 ? "No files yet" : "No matches"}
             </div>
-          ))
-        ) : filteredItems.length === 0 ? (
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
-            {items.length === 0 ? (
-              <>
-                <div className="text-sm font-medium text-[var(--color-text-primary)]">No files yet</div>
-                <div className="mt-1 text-sm text-[var(--color-text-muted)]">Uploads and signatures will appear here automatically.</div>
-              </>
-            ) : (
-              <>
-                <div className="text-sm font-medium text-[var(--color-text-primary)]">No matches</div>
-                <div className="mt-1 text-sm text-[var(--color-text-muted)]">Try a different search term.</div>
-              </>
-            )}
+            <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+              {items.length === 0
+                ? "Uploads and signatures will appear here automatically."
+                : "Try a different search term."}
+            </div>
           </div>
-        ) : (
-          filteredItems.map((it, idx) => {
-            const path = (it.path ?? it.file_path ?? it.signature_path) || null;
-            const typeRaw = (it.type ?? "").toLowerCase();
-            const isSignature = typeRaw === "signature" || (!!it.signature_path && !it.file_path);
-            const kind = isSignature ? "Signature" : "File";
-            const name = inferName(it, path);
-            const created = formatCreated(it);
-            const rowKey = `${it.id || ""}|${path ?? ""}|${it.onboarding_id ?? ""}|${pickCreatedAt(it) ?? ""}|${idx}`;
-            const previewBusy = !!path && previewingPath === path;
-            const downloadBusy = !!path && downloadingPath === path;
-            const deleteBusy = deletingItemId === it.id;
+        }
+      />
 
-            return (
-              <div key={rowKey} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)]">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{name}</div>
-                    <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{created}</div>
-                  </div>
-                  <span className="shrink-0 inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]">
-                    {kind}
-                  </span>
-                </div>
-                {path ? (
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
-                      onClick={() => openPreview(path, name)}
-                      disabled={previewBusy || downloadBusy || deleteBusy}
-                    >
-                      {previewBusy ? "Previewing..." : "Preview"}
-                    </button>
-                    <button
-                      type="button"
-                      className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white py-2 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
-                      onClick={() => downloadFile(path, name)}
-                      disabled={previewBusy || downloadBusy || deleteBusy}
-                    >
-                      {downloadBusy ? "Downloading..." : "Download"}
-                    </button>
-                    <button
-                      type="button"
-                      className="flex-1 rounded-[var(--radius-md)] border border-red-200 bg-white py-2 text-xs font-medium text-red-600 shadow-[var(--shadow-sm)] hover:bg-red-50 disabled:opacity-60"
-                      onClick={() => void deleteItem(it)}
-                      disabled={previewBusy || downloadBusy || deleteBusy}
-                    >
-                      {deleteBusy ? "Deleting..." : "Delete"}
-                    </button>
-                  </div>
-                ) : null}
+      <Modal
+        open={previewOpen}
+        onClose={closePreview}
+        title={previewName}
+        size="xl"
+        footer={
+          <Button variant="secondary" onClick={closePreview}>
+            Close
+          </Button>
+        }
+      >
+        <div className="max-h-[70vh] overflow-auto">
+          {previewLoading ? (
+            <Skeleton className="h-80 w-full" />
+          ) : previewError ? (
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
+              {previewError}
+            </div>
+          ) : previewUrl ? (
+            previewIsImage ? (
+              <div className="relative min-h-[320px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+                {!previewImageReady && <Skeleton className="absolute inset-0 h-full w-full" />}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt={previewName}
+                  onLoad={() => setPreviewImageReady(true)}
+                  className={`max-h-[65vh] w-full object-contain transition-opacity ${
+                    previewImageReady ? "opacity-100" : "opacity-0"
+                  }`}
+                />
               </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* Desktop table — hidden below sm */}
-      <div className="hidden sm:block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-[1000px] w-full">
-            <thead className="bg-[var(--color-bg-subtle)]">
-              <tr className="border-b border-[var(--color-border)]">
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Type</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Name</th>
-                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Onboarding</th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Created</th>
-                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--color-border)]">
-              {loading ? (
-                Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={5} className="px-4 py-3">
-                      <div className="grid grid-cols-12 gap-3">
-                        <Skeleton className="col-span-1 h-4 w-full" />
-                        <Skeleton className="col-span-4 h-4 w-full" />
-                        <Skeleton className="col-span-3 h-4 w-full" />
-                        <Skeleton className="col-span-2 h-4 w-full" />
-                        <Skeleton className="col-span-2 h-4 w-full" />
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : filteredItems.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-10">
-                    {items.length === 0 ? (
-                      <>
-                        <div className="text-sm font-medium text-[var(--color-text-primary)]">No files yet</div>
-                        <div className="mt-1 text-sm text-[var(--color-text-muted)]">Uploads and signatures will appear here automatically.</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-sm font-medium text-[var(--color-text-primary)]">No matches</div>
-                        <div className="mt-1 text-sm text-[var(--color-text-muted)]">Try a different search term.</div>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ) : (
-                filteredItems.map((it, idx) => {
-                  const path = (it.path ?? it.file_path ?? it.signature_path) || null;
-
-                  const typeRaw = (it.type ?? "").toLowerCase();
-                  const isSignature =
-                    typeRaw === "signature" || (!!it.signature_path && !it.file_path);
-                  const kind = isSignature ? "Signature" : "File";
-
-                  const onboardingTitle = getOnboardingTitle(it);
-                  const name = inferName(it, path);
-                  const created = formatCreated(it);
-
-                  // Use stable unique key when possible.
-                  const rowKey = `${it.id || ""}|${path ?? ""}|${it.onboarding_id ?? ""}|${pickCreatedAt(it) ?? ""}|${idx}`;
-                  const previewBusy = !!path && previewingPath === path;
-                  const downloadBusy = !!path && downloadingPath === path;
-                  const deleteBusy = deletingItemId === it.id;
-
-                  return (
-                    <tr key={rowKey} className="transition-colors duration-150 hover:bg-[var(--color-bg-subtle)]">
-                      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{kind}</td>
-                      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)]">
-                        <div className="flex flex-col">
-                          <span className="font-medium">{name}</span>
-                          {onboardingTitle ? (
-                            <span className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{onboardingTitle}</span>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                        {it.onboarding_id ? (
-                          <div className="flex flex-col">
-                            <a
-                              className="underline underline-offset-2"
-                              href={`/dashboard/onboardings/${it.onboarding_id}`}
-                              title={onboardingTitle ?? it.onboarding_id}
-                            >
-                              {onboardingTitle ? onboardingTitle : "View onboarding"}
-                            </a>
-                            <span className="mt-0.5 text-[11px] text-[var(--color-text-muted)] tabular-nums">
-                              {it.onboarding_id}
-                            </span>
-                          </div>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm text-[var(--color-text-muted)] tabular-nums">{created}</td>
-                      <td className="px-4 py-3 text-right">
-                        {path ? (
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              type="button"
-                              className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
-                              onClick={() => openPreview(path, name)}
-                              disabled={previewBusy || downloadBusy || deleteBusy}
-                            >
-                              {previewBusy ? "Previewing..." : "Preview"}
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-60"
-                              onClick={() => downloadFile(path, name)}
-                              disabled={previewBusy || downloadBusy || deleteBusy}
-                            >
-                              {downloadBusy ? "Downloading..." : "Download"}
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded-[var(--radius-md)] border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 shadow-[var(--shadow-sm)] hover:bg-red-50 disabled:opacity-60"
-                              onClick={() => void deleteItem(it)}
-                              disabled={previewBusy || downloadBusy || deleteBusy}
-                            >
-                              {deleteBusy ? "Deleting..." : "Delete"}
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-[var(--color-text-muted)]">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+            ) : (
+              <iframe
+                src={previewUrl}
+                title={previewName}
+                className="h-[65vh] w-full rounded-[var(--radius-md)] border border-[var(--color-border)]"
+              />
+            )
+          ) : (
+            <div className="text-sm text-[var(--color-text-secondary)]">No preview available.</div>
+          )}
         </div>
-      </div>
+      </Modal>
 
-      {previewOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-lg)]">
-            <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
-              <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{previewName}</div>
-              <button
-                type="button"
-                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-2 py-1 text-xs font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]"
-                onClick={closePreview}
-              >
-                Close
-              </button>
-            </div>
-            <div className="max-h-[75vh] overflow-auto p-4">
-              {previewLoading ? (
-                <Skeleton className="h-80 w-full" />
-              ) : previewError ? (
-                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text-secondary)]">
-                  {previewError}
-                </div>
-              ) : previewUrl ? (
-                previewIsImage ? (
-                  <div className="relative min-h-[320px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
-                    {!previewImageReady ? <Skeleton className="absolute inset-0 h-full w-full" /> : null}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={previewUrl}
-                      alt={previewName}
-                      onLoad={() => setPreviewImageReady(true)}
-                      className={`max-h-[70vh] w-full object-contain transition-opacity ${previewImageReady ? "opacity-100" : "opacity-0"}`}
-                    />
-                  </div>
-                ) : (
-                  <iframe src={previewUrl} title={previewName} className="h-[70vh] w-full rounded-[var(--radius-md)] border border-[var(--color-border)]" />
-                )
-              ) : (
-                <div className="text-sm text-[var(--color-text-secondary)]">No preview available.</div>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmModal
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={async () => {
+          if (confirmDelete) await deleteItem(confirmDelete);
+        }}
+        title={`Delete ${confirmDelete ? itemKind(confirmDelete) : "item"}?`}
+        description={
+          confirmDelete ? (
+            <>
+              This permanently deletes <b>{inferName(confirmDelete, itemPath(confirmDelete))}</b> and cannot be
+              undone.
+            </>
+          ) : null
+        }
+        confirmLabel="Delete"
+        destructive
+      />
     </div>
   );
 }
