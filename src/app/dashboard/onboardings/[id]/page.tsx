@@ -324,6 +324,17 @@ export default function OnboardingDetailAdminPage() {
   const [previewError, setPreviewError] = React.useState<string | null>(null);
   const [previewIsImage, setPreviewIsImage] = React.useState(false);
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
+  const [portalOrigin, setPortalOrigin] = React.useState<string>("");
+
+  React.useEffect(() => {
+    fetch("/api/white-label", { cache: "no-store" })
+      .then((r) => r.json().catch(() => null))
+      .then((json) => {
+        const domain = json?.settings?.custom_domain?.trim();
+        setPortalOrigin(domain ? `https://${domain}` : window.location.origin);
+      })
+      .catch(() => setPortalOrigin(window.location.origin));
+  }, []);
 
   // Revoke blob URL when preview closes or component unmounts
   React.useEffect(() => {
@@ -682,11 +693,13 @@ export default function OnboardingDetailAdminPage() {
               Back
             </button>
 
-            {ob?.client_link ? (
+            {(ob?.client_link || ob?.token) ? (
               <button
                 onClick={async () => {
                   try {
-                    await copyToClipboard(ob.client_link!);
+                    const origin = portalOrigin || window.location.origin;
+                    const link = ob.token ? `${origin}/c/${ob.token}` : ob.client_link!;
+                    await copyToClipboard(link);
                     setBanner({ kind: "success", msg: "Client link copied." });
                   } catch {
                     setBanner({ kind: "error", msg: "Could not copy client link." });

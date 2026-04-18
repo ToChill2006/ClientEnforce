@@ -219,6 +219,7 @@ export default function OnboardingsPage() {
   const [rowBusy, setRowBusy] = React.useState<Record<string, boolean>>({});
   const [rowAction, setRowAction] = React.useState<Record<string, "copy" | "send" | "lock" | "delete" | null>>({});
   const [banner, setBanner] = React.useState<{ kind: "success" | "error"; msg: string } | null>(null);
+  const [portalOrigin, setPortalOrigin] = React.useState<string>("");
 
   async function load() {
     try {
@@ -317,6 +318,14 @@ export default function OnboardingsPage() {
 
   React.useEffect(() => {
     load();
+    // Fetch white label custom domain to build correct portal links
+    fetch("/api/white-label", { cache: "no-store" })
+      .then((r) => r.json().catch(() => null))
+      .then((json) => {
+        const domain = json?.settings?.custom_domain?.trim();
+        setPortalOrigin(domain ? `https://${domain}` : window.location.origin);
+      })
+      .catch(() => setPortalOrigin(window.location.origin));
   }, []);
 
   React.useEffect(() => {
@@ -501,10 +510,11 @@ export default function OnboardingsPage() {
     }
   }
 
-  async function getClientLink(row: OnboardingRow): Promise<string | null> {
+  function getClientLink(row: OnboardingRow): string | null {
+    const origin = portalOrigin || window.location.origin;
+    if (row.client_token) return `${origin}/c/${row.client_token}`;
+    if (row.token) return `${origin}/c/${row.token}`;
     if (row.client_link) return row.client_link;
-    if (row.client_token) return `${window.location.origin}/c/${row.client_token}`;
-    if (row.token) return `${window.location.origin}/c/${row.token}`;
     return null;
   }
 
