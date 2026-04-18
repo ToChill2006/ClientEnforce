@@ -140,6 +140,14 @@ const homepageSoftwareSchema = {
   operatingSystem: "Web",
   description: "Client onboarding software that replaces email chaos with structured workflows, document collection, e-signatures, automated reminders, and audit-ready tracking.",
   url: "https://clientenforce.com",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    description: "Free trial available. Paid plans from $49/month.",
+    availability: "https://schema.org/InStock",
+    url: "https://clientenforce.com/pricing",
+  },
 };
 
 const homepageFaqSchema = {
@@ -305,7 +313,7 @@ export default function MarketingPage() {
                     <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-white text-[var(--color-accent)] shadow-[var(--shadow-xs)]">
                       {f.icon}
                     </div>
-                    <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-primary)]">{f.name}</p>
+                    <h3 className="mt-3 text-[13px] font-semibold text-[var(--color-text-primary)]">{f.name}</h3>
                     <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{f.desc}</p>
                   </div>
                 </FadeUp>

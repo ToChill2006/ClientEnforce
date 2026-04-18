@@ -157,6 +157,14 @@ export function buildSoftwareApplicationSchema(input: SoftwareApplicationSchemaI
     operatingSystem: "Web",
     url: absoluteUrl(input.path),
     description: input.description,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      description: "Free trial available. Paid plans from $49/month.",
+      availability: "https://schema.org/InStock",
+      url: absoluteUrl("/pricing"),
+    },
   };
 }
 

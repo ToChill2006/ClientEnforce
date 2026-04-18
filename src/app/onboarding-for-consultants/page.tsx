@@ -5,7 +5,7 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Software for Consultants | ClientEnforce",
+  title: "Consultant Client Onboarding Software — Intake & Docs | ClientEnforce",
   description:
     "Client onboarding software built for consultants. Collect discovery documents, capture engagement agreements, and start every project with complete intake - without chasing clients over email.",
   path: "/onboarding-for-consultants",

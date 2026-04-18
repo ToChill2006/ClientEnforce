@@ -1030,6 +1030,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Review plans based on onboarding volume and team size.",
       },
       {
+        href: "/blog/agency-client-onboarding-checklist",
+        label: "Agency client onboarding checklist",
+        description: "See the agency-specific checklist for repeatable account launches.",
+      },
+      {
+        href: "/blog/customer-onboarding-checklist",
+        label: "Customer onboarding checklist",
+        description: "Apply checklist governance across your full customer onboarding workflow.",
+      },
+      {
         href: "/blog",
         label: "Client onboarding blog",
         description: "Browse practical onboarding guides, templates, and playbooks.",
@@ -1774,6 +1784,11 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Use this process guide to improve outcomes before and after switching.",
       },
       {
+        href: "/blog/honeybook-alternatives",
+        label: "7 best HoneyBook alternatives",
+        description: "Compare all major HoneyBook alternatives ranked for agencies and service teams.",
+      },
+      {
         href: "/blog",
         label: "Resources",
         description: "Browse practical guides for onboarding workflows and automation.",
@@ -1787,7 +1802,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "client-onboarding-software-for-agencies": {
     path: "/client-onboarding-software-for-agencies",
-    title: "Client Onboarding Software for Agencies | ClientEnforce",
+    title: "Agency Client Onboarding Platform | Enforce Every Step | ClientEnforce",
     description:
       "Client onboarding software built for agencies running multiple clients at once. Enforce required steps, collect documents and signatures, automate follow-ups, and give ops teams live visibility across every active onboarding.",
     keywords: [
@@ -2380,6 +2395,11 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         href: "/blog/best-client-onboarding-software",
         label: "Best client onboarding software guide",
         description: "Read the supporting informational buyer guide.",
+      },
+      {
+        href: "/blog/best-client-onboarding-software-2026",
+        label: "Best client onboarding software 2026 — honest ranking",
+        description: "See the 2026 honest ranking of top onboarding software options.",
       },
     ],
     cta: commonCta,
