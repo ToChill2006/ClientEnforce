@@ -53,9 +53,6 @@ export async function POST(req: Request) {
 
   if (clientErr) return NextResponse.json({ error: clientErr.message }, { status: 400 });
 
-  const appUrl = appOrigin();
-  const link = `${appUrl}/c/${onboarding.client_token}`;
-
   // Load org email template + white label settings (best-effort — fall back to defaults if columns missing)
   let emailSettings: {
     email_subject_template?: string | null;
@@ -76,6 +73,11 @@ export async function POST(req: Request) {
   }
 
   const wl = (emailSettings.white_label_settings ?? {}) as Record<string, any>;
+
+  // Use custom domain for portal link if configured, otherwise fall back to app origin
+  const customDomain = wl.custom_domain?.trim() || null;
+  const baseUrl = customDomain ? `https://${customDomain}` : appOrigin();
+  const link = `${baseUrl}/c/${onboarding.client_token}`;
   const branding = {
     brand_name: wl.brand_name ?? null,
     logo_url: wl.logo_url ?? null,
