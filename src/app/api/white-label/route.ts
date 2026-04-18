@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied, selectOrganizationTier } from "@/lib/plan-enforcement";
+import { addDomainToVercel, removeDomainFromVercel } from "@/lib/vercel-domains";
 
 export const runtime = "nodejs";
 
@@ -108,9 +109,13 @@ export async function PATCH(req: Request) {
 
   if (readErr) return NextResponse.json({ error: readErr.message }, { status: 400 });
 
-  const merged: WhiteLabelSettings = {
+  const oldSettings: WhiteLabelSettings = {
     ...DEFAULT_SETTINGS,
     ...((existing as any)?.white_label_settings ?? {}),
+  };
+
+  const merged: WhiteLabelSettings = {
+    ...oldSettings,
     ...patch,
   };
 
@@ -120,6 +125,20 @@ export async function PATCH(req: Request) {
     .eq("id", profile.org_id);
 
   if (writeErr) return NextResponse.json({ error: writeErr.message }, { status: 400 });
+
+  // Sync custom domain with Vercel when it changes
+  const oldDomain = oldSettings.custom_domain?.trim().toLowerCase() || null;
+  const newDomain = merged.custom_domain?.trim().toLowerCase() || null;
+
+  if (oldDomain !== newDomain) {
+    try {
+      if (oldDomain) await removeDomainFromVercel(oldDomain);
+      if (newDomain) await addDomainToVercel(newDomain);
+    } catch (e: any) {
+      // Don't fail the save — return a warning so the UI can surface it
+      return NextResponse.json({ ok: true, settings: merged, domainWarning: e?.message });
+    }
+  }
 
   return NextResponse.json({ ok: true, settings: merged });
 }

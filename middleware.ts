@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+const MAIN_HOSTS = new Set(["clientenforce.com", "www.clientenforce.com", "localhost"]);
+
+function isCustomDomain(hostname: string) {
+  if (MAIN_HOSTS.has(hostname)) return false;
+  if (hostname.endsWith(".vercel.app")) return false;
+  if (hostname.endsWith(".localhost")) return false;
+  return true;
+}
+
 export async function middleware(req: NextRequest) {
   const redirectUrl = req.nextUrl.clone();
   if (redirectUrl.hostname === "www.clientenforce.com") {
@@ -9,6 +18,21 @@ export async function middleware(req: NextRequest) {
   }
 
   const { pathname } = req.nextUrl;
+  const hostname = req.nextUrl.hostname;
+
+  // On a custom domain: only allow /c/[token] paths (the client portal).
+  // Redirect everything else to the root of the main app.
+  if (isCustomDomain(hostname)) {
+    if (pathname === "/" || pathname === "") {
+      // Nothing meaningful to show at root on a custom domain
+      return new NextResponse("Not found", { status: 404 });
+    }
+    // Let /c/[token] and API routes pass through — everything else block
+    if (!pathname.startsWith("/c/") && !pathname.startsWith("/api/")) {
+      return new NextResponse("Not found", { status: 404 });
+    }
+    return NextResponse.next();
+  }
 
   // Only protect dashboard
   if (!pathname.startsWith("/dashboard")) return NextResponse.next();

@@ -105,6 +105,13 @@ export default function SettingsPage() {
   const [logoUploading, setLogoUploading] = React.useState(false);
   const [logoError, setLogoError] = React.useState<string | null>(null);
   const logoInputRef = React.useRef<HTMLInputElement>(null);
+  const [domainStatus, setDomainStatus] = React.useState<{
+    verified: boolean;
+    cname: string | null;
+    verificationRecord: { type: string; domain: string; value: string } | null;
+  } | null>(null);
+  const [domainChecking, setDomainChecking] = React.useState(false);
+  const [domainCheckError, setDomainCheckError] = React.useState<string | null>(null);
 
   // Inline banners (no toast dependency)
   const [pageError, setPageError] = React.useState<string | null>(null);
@@ -174,7 +181,10 @@ export default function SettingsPage() {
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Failed to save white-label settings");
-      setPageSuccess("White-label settings saved.");
+      setDomainStatus(null); // reset so they re-verify after domain change
+      setPageSuccess(json?.domainWarning
+        ? `Settings saved. Domain warning: ${json.domainWarning}`
+        : "White-label settings saved.");
     } catch (e: any) {
       setPageError(e?.message ?? "Save failed");
     } finally {
@@ -197,6 +207,22 @@ export default function SettingsPage() {
       setLogoError(e?.message ?? "Upload failed");
     } finally {
       setLogoUploading(false);
+    }
+  }
+
+  async function checkDomain() {
+    setDomainChecking(true);
+    setDomainCheckError(null);
+    setDomainStatus(null);
+    try {
+      const res = await fetch("/api/white-label/domain");
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to check domain");
+      setDomainStatus({ verified: json.verified, cname: json.cname, verificationRecord: json.verificationRecord });
+    } catch (e: any) {
+      setDomainCheckError(e?.message ?? "Check failed");
+    } finally {
+      setDomainChecking(false);
     }
   }
 
@@ -999,18 +1025,65 @@ export default function SettingsPage() {
                   <p className="text-xs text-[var(--color-text-muted)]">Hex colour for buttons and progress bars on the client portal.</p>
                 </div>
 
-                <div className="space-y-1 sm:col-span-2">
-                  <Label htmlFor="wl_domain">Custom domain</Label>
-                  <Input
-                    id="wl_domain"
-                    value={wl.custom_domain}
-                    onChange={(e) => setWl((v) => ({ ...v, custom_domain: e.target.value }))}
-                    placeholder="onboard.youragency.com"
-                  />
-                  <p className="text-xs text-[var(--color-text-muted)]">
-                    Add a CNAME record pointing to <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs">portals.clientenforce.com</code>, then enter your subdomain here.{" "}
-                    <a href="/dashboard/email/custom-domain-guide" className="text-[var(--color-accent)] hover:underline">Setup guide →</a>
-                  </p>
+                <div className="space-y-3 sm:col-span-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="wl_domain">Custom domain</Label>
+                    <Input
+                      id="wl_domain"
+                      value={wl.custom_domain}
+                      onChange={(e) => { setWl((v) => ({ ...v, custom_domain: e.target.value })); setDomainStatus(null); }}
+                      placeholder="onboard.youragency.com"
+                    />
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      Enter your subdomain, save settings, then follow the DNS instructions below.
+                    </p>
+                  </div>
+
+                  {wl.custom_domain && wlLoaded && (
+                    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 space-y-3">
+                      <div className="text-sm font-medium text-[var(--color-text-primary)]">DNS setup</div>
+
+                      <div className="space-y-1">
+                        <p className="text-xs text-[var(--color-text-muted)]">Add this CNAME record with your DNS provider:</p>
+                        <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white p-3 text-xs font-mono">
+                          <span className="text-[var(--color-text-muted)]">Name</span>
+                          <span className="text-[var(--color-text-primary)] break-all">{wl.custom_domain}</span>
+                          <span className="text-[var(--color-text-muted)]">Type</span>
+                          <span className="text-[var(--color-text-primary)]">CNAME</span>
+                          <span className="text-[var(--color-text-muted)]">Value</span>
+                          <span className="text-[var(--color-text-primary)]">cname.vercel-dns.com</span>
+                          <span className="text-[var(--color-text-muted)]">TTL</span>
+                          <span className="text-[var(--color-text-primary)]">Auto</span>
+                        </div>
+                      </div>
+
+                      {domainStatus?.verificationRecord && (
+                        <div className="space-y-1">
+                          <p className="text-xs text-[var(--color-text-muted)]">Also add this TXT record to prove domain ownership:</p>
+                          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white p-3 text-xs font-mono">
+                            <span className="text-[var(--color-text-muted)]">Name</span>
+                            <span className="text-[var(--color-text-primary)] break-all">{domainStatus.verificationRecord.domain}</span>
+                            <span className="text-[var(--color-text-muted)]">Type</span>
+                            <span className="text-[var(--color-text-primary)]">TXT</span>
+                            <span className="text-[var(--color-text-muted)]">Value</span>
+                            <span className="text-[var(--color-text-primary)] break-all">{domainStatus.verificationRecord.value}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3">
+                        <Button type="button" variant="secondary" onClick={checkDomain} disabled={domainChecking}>
+                          {domainChecking ? "Checking…" : "Verify domain"}
+                        </Button>
+                        {domainStatus && (
+                          domainStatus.verified
+                            ? <span className="text-xs font-medium text-green-600">✓ Verified — domain is live</span>
+                            : <span className="text-xs text-[var(--color-text-muted)]">Not verified yet — DNS changes can take up to 48 hours.</span>
+                        )}
+                        {domainCheckError && <span className="text-xs text-red-600">{domainCheckError}</span>}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
