@@ -53,18 +53,17 @@ export async function POST(req: Request) {
 
   if (clientErr) return NextResponse.json({ error: clientErr.message }, { status: 400 });
 
-  // Load org email template + white label settings (best-effort — fall back to defaults if columns missing)
+  // Load org email template settings (best-effort)
   let emailSettings: {
     email_subject_template?: string | null;
     email_heading?: string | null;
     email_body?: string | null;
     email_cta_label?: string | null;
-    white_label_settings?: Record<string, any> | null;
   } = {};
   try {
     const { data: orgEmail } = await admin
       .from("organizations")
-      .select("email_subject_template, email_heading, email_body, email_cta_label, white_label_settings")
+      .select("email_subject_template, email_heading, email_body, email_cta_label")
       .eq("id", orgId)
       .single();
     if (orgEmail) emailSettings = orgEmail;
@@ -72,10 +71,21 @@ export async function POST(req: Request) {
     // Columns not yet migrated — use defaults
   }
 
-  const wl = (emailSettings.white_label_settings ?? {}) as Record<string, any>;
+  // Load white label settings separately so a schema error on email columns doesn't hide it
+  let wl: Record<string, any> = {};
+  try {
+    const { data: orgWl } = await admin
+      .from("organizations")
+      .select("white_label_settings")
+      .eq("id", orgId)
+      .single();
+    wl = (orgWl as any)?.white_label_settings ?? {};
+  } catch {
+    // white_label_settings column not yet migrated — use defaults
+  }
 
   // Use custom domain for portal link if configured, otherwise fall back to app origin
-  const customDomain = wl.custom_domain?.trim() || null;
+  const customDomain = (wl.custom_domain as string | null | undefined)?.trim() || null;
   const baseUrl = customDomain ? `https://${customDomain}` : appOrigin();
   const link = `${baseUrl}/c/${onboarding.client_token}`;
   const branding = {
