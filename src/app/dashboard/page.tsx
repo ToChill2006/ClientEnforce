@@ -13,7 +13,6 @@ import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { useToast } from "@/components/ui/toast";
-import { useRegisterCommands } from "@/components/command-palette/CommandPalette";
 import { normalizeStatus, type OnboardingStatus } from "@/lib/status";
 import { cn } from "@/lib/cn";
 
@@ -207,53 +206,6 @@ export default function DashboardPage() {
       cancelled = true;
     };
   }, []);
-
-  // Register cmd+K actions for this page
-  useRegisterCommands("dashboard:home", [
-    {
-      id: "new-onboarding",
-      label: "New onboarding",
-      group: "Create",
-      href: "/dashboard/onboardings?new=1",
-      keywords: ["create", "add", "start"],
-      icon: <Plus className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "go-onboardings",
-      label: "Go to onboardings",
-      group: "Navigate",
-      href: "/dashboard/onboardings",
-      icon: <ClipboardList className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "go-clients",
-      label: "Go to clients",
-      group: "Navigate",
-      href: "/dashboard/clients",
-      icon: <Users className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "go-templates",
-      label: "Go to templates",
-      group: "Navigate",
-      href: "/dashboard/templates",
-      icon: <LayoutTemplate className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "go-followups",
-      label: "Go to follow-ups",
-      group: "Navigate",
-      href: "/dashboard/followups",
-      icon: <Bell className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "go-settings",
-      label: "Settings",
-      group: "Navigate",
-      href: "/dashboard/settings",
-      icon: <SettingsIcon className="h-3.5 w-3.5" />,
-    },
-  ]);
 
   async function submitFeedback(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

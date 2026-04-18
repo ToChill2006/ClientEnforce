@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu as MenuIcon, X, LogOut, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
 import SidebarNav from "./SidebarNav";
-import { CommandPaletteProvider } from "@/components/command-palette/CommandPalette";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Menu, MenuItem, MenuDivider, MenuLabel } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
@@ -97,8 +96,7 @@ export default function DashboardShell({ children, fullName, email, initials }: 
   }, [sidebarOpen]);
 
   return (
-    <CommandPaletteProvider>
-      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
         {/* Desktop sidebar */}
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-[220px] flex-col border-r border-[var(--color-border)] bg-[var(--color-panel)] lg:flex">
           <SidebarContent />
@@ -160,6 +158,5 @@ export default function DashboardShell({ children, fullName, email, initials }: 
           </main>
         </div>
       </div>
-    </CommandPaletteProvider>
   );
 }

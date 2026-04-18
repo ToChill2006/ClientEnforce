@@ -12,7 +12,6 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/toast";
-import { useRegisterCommands } from "@/components/command-palette/CommandPalette";
 import { normalizeStatus, type OnboardingStatus } from "@/lib/status";
 import { cn } from "@/lib/cn";
 
@@ -254,24 +253,6 @@ export default function OnboardingsPage() {
       return statusOk && ownerOk && hay.includes(q);
     });
   }, [rows, debouncedQuery, statusFilter, ownerFilter]);
-
-  // Cmd+K registrations
-  useRegisterCommands("onboardings:list", [
-    {
-      id: "new-onboarding",
-      label: "New onboarding",
-      group: "Create",
-      onSelect: () => setCreateOpen(true),
-      icon: <Plus className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "refresh-onboardings",
-      label: "Refresh onboardings",
-      group: "Actions",
-      onSelect: () => load(),
-      icon: <RefreshCw className="h-3.5 w-3.5" />,
-    },
-  ]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();

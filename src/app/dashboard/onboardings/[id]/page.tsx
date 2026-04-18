@@ -23,7 +23,6 @@ import { Modal, ConfirmModal } from "@/components/ui/modal";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
-import { useRegisterCommands } from "@/components/command-palette/CommandPalette";
 import { normalizeStatus, type OnboardingStatus } from "@/lib/status";
 import { cn } from "@/lib/cn";
 
@@ -580,30 +579,6 @@ export default function OnboardingDetailAdminPage() {
       setRemindersSaving(false);
     }
   }
-
-  useRegisterCommands("onboarding:detail", [
-    {
-      id: "back-to-onboardings",
-      label: "Back to onboardings",
-      group: "Navigate",
-      href: "/dashboard/onboardings",
-      icon: <ArrowLeft className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "copy-client-link",
-      label: "Copy client link",
-      group: "Actions",
-      onSelect: copyClientLink,
-      icon: <Copy className="h-3.5 w-3.5" />,
-    },
-    {
-      id: "download-pdf",
-      label: "Download PDF",
-      group: "Actions",
-      onSelect: downloadPdf,
-      icon: <Download className="h-3.5 w-3.5" />,
-    },
-  ]);
 
   const ob = payload?.onboarding;
   const reqs = payload?.requirements ?? [];
