@@ -61,7 +61,7 @@ function Cell({ val }: { val: boolean | string }) {
 
 export default async function PricingPage() {
   const headersList = await headers();
-  const country = headersList.get("x-vercel-ip-country") ?? "GB";
+  const country = headersList.get("x-vercel-ip-country") ?? "US";
   const currency = country === "US" ? "USD" : "GBP";
 
   return (
