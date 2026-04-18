@@ -19,6 +19,10 @@ const recentlyUpdatedPaths = new Set([
   "/client-onboarding-checklist",
   "/onboarding-for-accountants",
   "/blog/best-client-onboarding-software",
+  "/fleet-account-onboarding",
+  "/multi-location-client-onboarding",
+  "/franchise-onboarding-software",
+  "/commercial-client-intake",
 ]);
 
 // High-priority comparison and landing pages beyond the main money page
@@ -37,6 +41,10 @@ const highPriorityPages = new Set([
   "/dubsado-vs-honeybook",
   "/onboarding-for-agencies",
   "/onboarding-for-accountants",
+  "/fleet-account-onboarding",
+  "/multi-location-client-onboarding",
+  "/franchise-onboarding-software",
+  "/commercial-client-intake",
 ]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -69,6 +77,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/downloads/fleet-account-onboarding-checklist/view",
     "/rocketlane-alternative",
     "/guidecx-alternative",
+    // New keyword pages (April 2026)
+    "/fleet-account-onboarding",
+    "/multi-location-client-onboarding",
+    "/franchise-onboarding-software",
+    "/commercial-client-intake",
     // Industry / vertical pages
     "/agencies",
     "/consultants",

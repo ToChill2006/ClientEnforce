@@ -3560,6 +3560,546 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       { name: "Dubsado vs HoneyBook", path: "/dubsado-vs-honeybook" },
     ],
   },
+
+  "fleet-account-onboarding": {
+    path: "/fleet-account-onboarding",
+    title: "Fleet Account Onboarding Software | ClientEnforce",
+    description:
+      "Fleet account onboarding software for auto service shops, dealerships, and commercial fleet operators. Collect signed agreements, insurance certs, and vehicle data before the first service — automatically, without chasing accounts over email.",
+    keywords: [
+      "fleet account onboarding software",
+      "fleet account onboarding",
+      "onboard fleet accounts",
+      "fleet client onboarding",
+      "commercial fleet account intake",
+      "fleet management onboarding system",
+      "auto service account onboarding",
+    ],
+    eyebrow: "Fleet account onboarding software",
+    h1: "Fleet Account Onboarding Software — Start Every Account with Complete Intake",
+    intro:
+      "ClientEnforce gives auto service operators, dealerships, and commercial fleet managers a structured fleet account onboarding process that collects signed agreements, insurance certificates, and vehicle rosters before the first service appointment — with automated follow-up so nothing falls through.",
+    highlights: [
+      "Collect signed fleet agreements, certificates of insurance, and vehicle rosters in one portal",
+      "Automated reminders chase accounts until every required document is on file",
+      "Live dashboard showing intake status across every active fleet account",
+      "Required-step enforcement — accounts cannot proceed until mandatory items are complete",
+      "Full timestamped audit trail per account, exportable as a PDF evidence pack",
+    ],
+    sections: [
+      {
+        heading: "Why fleet account onboarding breaks down in email",
+        paragraphs: [
+          "Most auto service shops and fleet operators manage new account intake over email — sending PDF agreements, waiting for signatures, chasing insurance certificates, and manually following up on missing vehicle lists. When you are managing five or more fleet accounts at once, something always falls through.",
+          "Missing insurance certificates create liability exposure. Unsigned fleet service agreements leave billing disputes unresolved. Vehicle lists that arrive incomplete mean your team is guessing which drivers are authorized. ClientEnforce replaces that inbox chaos with a structured intake portal where every required item is locked behind enforcement gates — a fleet contact cannot advance until all required submissions are complete.",
+        ],
+        bullets: [
+          "Fleet accounts managed over email consistently miss required documents before first service",
+          "Signed agreements and insurance certs arrive late, creating compliance and liability exposure",
+          "No centralized view of which accounts are intake-complete and which are still pending",
+          "Account managers spend hours each week manually following up on missing items",
+          "Inconsistent intake across locations or team members creates coverage and audit gaps",
+        ],
+      },
+      {
+        heading: "How fleet account onboarding works in ClientEnforce",
+        paragraphs: [
+          "Set up your fleet account intake template once — define required documents, signatures, vehicle data fields, and any compliance questions specific to your operation. Then send every new fleet account a single portal link. ClientEnforce handles reminders, enforcement, and status tracking automatically.",
+        ],
+        steps: [
+          {
+            title: "Build your fleet intake template once",
+            description: "Define required documents (signed fleet agreement, certificate of insurance, driver authorization list, vehicle VINs), required signatures, and intake questions. Build once — reuse for every new fleet account.",
+          },
+          {
+            title: "Send one portal link on account approval",
+            description: "Fleet contacts receive one link. No login required. No PDF attachments back and forth. They see exactly what is needed and submit documents directly in the secure portal.",
+          },
+          {
+            title: "Automated follow-up handles the chasing",
+            description: "If a fleet contact does not complete required items within your defined window, ClientEnforce sends follow-up reminders automatically on your schedule — no manual nudging from your team.",
+          },
+          {
+            title: "Track all accounts from one dashboard",
+            description: "Your operations team sees the intake status of every fleet account in real time — complete, in-progress, or blocked — without checking individual email threads or spreadsheet logs.",
+          },
+        ],
+      },
+      {
+        heading: "What to collect during fleet account onboarding",
+        paragraphs: [
+          "Structured fleet account intake ensures every account is fully documented before service begins. ClientEnforce lets you require any combination of the following as mandatory intake items — accounts cannot be activated until all required submissions are received.",
+        ],
+        bullets: [
+          "Signed fleet service agreement with billing terms and rate schedule",
+          "Certificate of insurance naming your business as additional insured",
+          "Driver authorization list with licensed driver names and IDs",
+          "Vehicle roster with make, model, year, VIN, and license plate number",
+          "Fuel and maintenance policy acknowledgment",
+          "Primary contact and after-hours emergency contact information",
+          "Preferred billing method and net terms agreement",
+          "Service authorization limits per driver or vehicle class",
+        ],
+      },
+      {
+        heading: "Fleet account onboarding across multiple service locations",
+        paragraphs: [
+          "If you operate multiple service locations, consistent fleet account intake is critical. ClientEnforce lets you run one fleet onboarding template across all locations — every manager follows the same process, every account gets the same required documents, and your central operations team can see intake completion across every location from one dashboard.",
+          "This matters especially for commercial fleet agreements that span multiple service locations. A single consistent onboarding process protects you when a fleet account disputes what they agreed to — because the agreement, signatures, and timestamps are all on file, per account, per location.",
+        ],
+      },
+    ],
+    relatedLinks: [
+      {
+        href: "/auto-service",
+        label: "Auto service client onboarding",
+        description: "See the full auto service onboarding platform built for shop operators.",
+      },
+      {
+        href: "/multi-location-client-onboarding",
+        label: "Multi-location client onboarding",
+        description: "Run consistent fleet account intake across every service location.",
+      },
+      {
+        href: "/client-intake-software",
+        label: "Client intake software",
+        description: "Collect structured account data from the first fleet contact.",
+      },
+      {
+        href: "/client-portal-software",
+        label: "Client portal software",
+        description: "Give fleet accounts a secure portal for document submission and status updates.",
+      },
+      {
+        href: "/client-onboarding-automation",
+        label: "Client onboarding automation",
+        description: "Automate fleet follow-up reminders and account kickoff alerts.",
+      },
+      {
+        href: "/client-onboarding-software",
+        label: "Client onboarding software",
+        description: "Review the core platform powering fleet account intake workflows.",
+      },
+      {
+        href: "/blog/fleet-account-onboarding-checklist",
+        label: "Fleet account onboarding checklist",
+        description: "Use this checklist to standardize every new fleet account intake.",
+      },
+      {
+        href: "/pricing",
+        label: "Client onboarding pricing",
+        description: "Choose a plan for your fleet account volume and team size.",
+      },
+    ],
+    cta: commonCta,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Fleet account onboarding", path: "/fleet-account-onboarding" },
+    ],
+  },
+
+  "multi-location-client-onboarding": {
+    path: "/multi-location-client-onboarding",
+    title: "Multi-Location Client Onboarding Software | ClientEnforce",
+    description:
+      "Multi-location client onboarding software that enforces one consistent process across every location, team, and manager. Stop inconsistent intake — run the same workflow at every site with live visibility from a central dashboard.",
+    keywords: [
+      "multi-location client onboarding",
+      "multi-location onboarding software",
+      "multi-location business onboarding",
+      "client onboarding across locations",
+      "franchise client onboarding",
+      "multi-site onboarding workflow",
+      "onboarding software for multi-location businesses",
+    ],
+    eyebrow: "Multi-location client onboarding",
+    h1: "Multi-Location Client Onboarding — One Process Across Every Location, Every Time",
+    intro:
+      "Multi-location client onboarding software from ClientEnforce gives operators running two or more service locations a single enforced onboarding workflow. Every location follows the same required steps, every client gets the same structured intake, and your central ops team has live visibility across every active onboarding — without chasing individual managers for updates.",
+    highlights: [
+      "One onboarding template applied consistently across every location",
+      "Required-step enforcement — clients and accounts cannot skip mandatory items",
+      "Central dashboard showing completion status across all locations in real time",
+      "Automated follow-up reminders replace manual manager chasing",
+      "Audit trail per client and per location — timestamped and exportable",
+    ],
+    sections: [
+      {
+        heading: "The problem with onboarding across multiple locations",
+        paragraphs: [
+          "When every location runs onboarding differently, your operation has as many onboarding processes as it has managers. One uses email, one uses a paper form, one asks for documents at the first appointment. The result is inconsistent intake, missing compliance documents, and no visibility from the top.",
+          "Multi-location operators running ClientEnforce build one onboarding template — with required fields, required documents, and required signatures — and apply it across every location. Managers cannot skip steps. Clients cannot advance until mandatory items are submitted. And central ops sees the status of every active onboarding from one dashboard, in real time.",
+        ],
+        bullets: [
+          "Inconsistent intake processes across locations create compliance and coverage gaps",
+          "Central operations teams have no visibility into individual location onboarding status",
+          "Managers spend time manually chasing clients for missing documents instead of running operations",
+          "New staff at any location have no documented process to follow, so onboarding varies by person",
+          "Disputes about agreed terms are harder to resolve without a centralized signed record",
+        ],
+      },
+      {
+        heading: "How multi-location onboarding works in ClientEnforce",
+        paragraphs: [
+          "Build one onboarding template per service line — define required documents, signatures, questions, and intake fields. Apply that same template at every location. Every new client or account gets the same structured portal, the same follow-up sequence, and their completion status appears on your central dashboard alongside every other active onboarding.",
+        ],
+        steps: [
+          {
+            title: "Build one template per service type",
+            description: "Define required steps once: documents, signatures, intake questions, and data fields. This template is the standard across all locations — no customization per manager.",
+          },
+          {
+            title: "Send the portal link at each location",
+            description: "Each location sends clients the same portal link. Clients see a consistent intake experience regardless of which location they work with.",
+          },
+          {
+            title: "Automated reminders run without manager input",
+            description: "ClientEnforce follows up with overdue clients automatically — on a schedule you set. Location managers are not responsible for manual follow-up.",
+          },
+          {
+            title: "Central ops sees everything",
+            description: "One dashboard shows completion status across every active onboarding, every location, and every active account — in real time, without requesting updates from managers.",
+          },
+        ],
+      },
+      {
+        heading: "Who uses multi-location onboarding software",
+        paragraphs: [
+          "Multi-location client onboarding software is used by any service operator running structured intake across two or more sites with different teams. Common use cases include:",
+        ],
+        bullets: [
+          "Auto service chains and dealership groups onboarding fleet accounts across locations",
+          "Marketing and consulting agencies with multiple regional offices or practice areas",
+          "Healthcare groups and dental practices standardizing patient intake across clinics",
+          "Franchise systems ensuring consistent franchisee onboarding at every new location",
+          "Commercial real estate and property management groups onboarding tenants and vendors",
+          "Legal and financial advisory firms running client intake across multiple offices",
+        ],
+      },
+      {
+        heading: "Compliance and audit requirements for multi-location operators",
+        paragraphs: [
+          "Multi-location operators often face compliance requirements that demand consistent, documented intake. ClientEnforce maintains a timestamped audit trail per client and per location — every document submitted, every signature captured, every step completed is recorded and exportable as a PDF evidence pack.",
+          "This matters for franchise disclosure compliance, insurance liability documentation, AML identity verification for financial services, and HIPAA-adjacent intake documentation for healthcare groups. One system with centralized records is significantly easier to manage than location-by-location email archives.",
+        ],
+      },
+    ],
+    relatedLinks: [
+      {
+        href: "/client-onboarding-software",
+        label: "Client onboarding software",
+        description: "Review the core platform powering multi-location onboarding workflows.",
+      },
+      {
+        href: "/franchise-onboarding-software",
+        label: "Franchise onboarding software",
+        description: "Standardize franchisee onboarding across every new location launch.",
+      },
+      {
+        href: "/fleet-account-onboarding",
+        label: "Fleet account onboarding",
+        description: "Onboard fleet accounts consistently across every service location.",
+      },
+      {
+        href: "/auto-service",
+        label: "Auto service client onboarding",
+        description: "See the auto service and fleet operator onboarding platform.",
+      },
+      {
+        href: "/client-portal-software",
+        label: "Client portal software",
+        description: "Give clients a consistent intake portal experience at every location.",
+      },
+      {
+        href: "/client-onboarding-automation",
+        label: "Client onboarding automation",
+        description: "Automate reminders and kickoff alerts across every location.",
+      },
+      {
+        href: "/agencies",
+        label: "Agency client onboarding",
+        description: "See the agency-specific onboarding workflow and template system.",
+      },
+      {
+        href: "/pricing",
+        label: "Client onboarding pricing",
+        description: "Choose a plan for your multi-location team and onboarding volume.",
+      },
+    ],
+    cta: commonCta,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Multi-location client onboarding", path: "/multi-location-client-onboarding" },
+    ],
+  },
+
+  "franchise-onboarding-software": {
+    path: "/franchise-onboarding-software",
+    title: "Franchise Onboarding Software | ClientEnforce",
+    description:
+      "Franchise onboarding software that standardizes how every new franchisee completes their pre-launch checklist. Collect signed agreements, training acknowledgments, and compliance documents — enforced, tracked, and audit-ready.",
+    keywords: [
+      "franchise onboarding software",
+      "franchisee onboarding software",
+      "franchise client onboarding",
+      "franchise new location onboarding",
+      "franchise compliance onboarding",
+      "franchisor onboarding platform",
+      "franchise intake software",
+    ],
+    eyebrow: "Franchise onboarding software",
+    h1: "Franchise Onboarding Software — Standardize Every Franchisee Launch from Day One",
+    intro:
+      "Franchise onboarding software from ClientEnforce gives franchisors and franchise development teams a structured, enforced onboarding workflow for every new franchisee. Collect signed franchise disclosure acknowledgments, training completions, insurance requirements, and pre-launch compliance documents — with automated follow-up and a full audit trail per franchisee.",
+    highlights: [
+      "One enforced onboarding template applied to every new franchisee launch",
+      "Collect FDD acknowledgments, signed agreements, insurance certs, and training records",
+      "Automated reminders chase franchisees until every required item is complete",
+      "Central dashboard showing pre-launch status across every active franchisee onboarding",
+      "Timestamped audit trail per franchisee — exportable for compliance and legal review",
+    ],
+    sections: [
+      {
+        heading: "Why franchise onboarding consistency matters",
+        paragraphs: [
+          "Every new franchisee launch creates legal and operational risk if onboarding is incomplete. A franchisee who opens without confirming FDD receipt, completing required training, or submitting proof of insurance creates liability for the entire franchise system. And when every franchisee development manager runs a different onboarding process, gaps are inevitable.",
+          "Franchise onboarding software from ClientEnforce enforces a single pre-launch process across every new franchisee. Required documents cannot be skipped. Required training acknowledgments must be confirmed before the next stage unlocks. And your central franchise development team has live visibility into every franchisee's pre-launch progress — without chasing individual managers.",
+        ],
+        bullets: [
+          "Inconsistent franchisee onboarding creates FDD compliance and disclosure risk",
+          "Missing insurance certificates and signed agreements create system-wide liability exposure",
+          "No centralized visibility into which franchisees are launch-ready and which are not",
+          "Franchise development managers spend hours manually chasing pre-launch requirements",
+          "New franchisee disputes are harder to resolve without documented, signed acknowledgment records",
+        ],
+      },
+      {
+        heading: "What franchise onboarding software covers",
+        paragraphs: [
+          "ClientEnforce handles the structured intake and compliance documentation phase of franchisee onboarding — from signed agreements through pre-launch readiness. Define what every new franchisee must complete, enforce completion, and maintain a full audit trail.",
+        ],
+        bullets: [
+          "Franchise Disclosure Document (FDD) receipt and acknowledgment",
+          "Signed franchise agreement and territory confirmation",
+          "Certificate of insurance — general liability, property, workers compensation",
+          "Required training program completion acknowledgments",
+          "Brand standards and operations manual receipt confirmation",
+          "Technology system setup and access credentials",
+          "Pre-opening inspection and compliance checklist sign-off",
+          "Grand opening readiness confirmation from franchise development team",
+        ],
+      },
+      {
+        heading: "How franchisee onboarding works in ClientEnforce",
+        paragraphs: [
+          "Build one pre-launch onboarding template — define required documents, training confirmations, and compliance steps. Send every new franchisee a single portal link when their agreement is signed. ClientEnforce enforces completion, automates reminders, and gives your development team one dashboard to track every active franchisee launch.",
+        ],
+        steps: [
+          {
+            title: "Build the pre-launch template once",
+            description: "Define every required step: FDD acknowledgment, signed agreements, insurance proofs, training completions. This becomes the standard for every new franchisee, applied consistently.",
+          },
+          {
+            title: "Send the portal link at agreement signing",
+            description: "New franchisees receive one secure link. They see a clear list of everything required before launch — no email attachments, no scattered instructions, no ambiguity.",
+          },
+          {
+            title: "Enforcement gates block advancement",
+            description: "Franchisees cannot advance past required steps or mark items complete without actually completing them. Your legal and compliance requirements are structurally enforced, not just requested.",
+          },
+          {
+            title: "Automated reminders handle the follow-up",
+            description: "If a franchisee misses a deadline on a required item, ClientEnforce sends follow-up reminders automatically. Your development team focuses on quality — not chasing paperwork.",
+          },
+          {
+            title: "Launch readiness confirmed from one dashboard",
+            description: "Your central team sees the pre-launch status of every new franchisee — complete, in-progress, or blocked — without calling every development manager for an update.",
+          },
+        ],
+      },
+      {
+        heading: "Franchise onboarding compliance and audit trail",
+        paragraphs: [
+          "Franchise systems operate under significant regulatory and legal compliance requirements. ClientEnforce maintains a full timestamped audit trail per franchisee — every document submitted, every acknowledgment confirmed, every step completed is recorded with date and time.",
+          "This documentation is critical for FTC franchise disclosure compliance, state-specific franchise registration requirements, and internal franchise audit processes. When a franchisee later disputes what they received or agreed to, your record is on file — not in someone's email archive.",
+        ],
+      },
+    ],
+    relatedLinks: [
+      {
+        href: "/multi-location-client-onboarding",
+        label: "Multi-location client onboarding",
+        description: "Run consistent onboarding across every franchise location.",
+      },
+      {
+        href: "/client-onboarding-software",
+        label: "Client onboarding software",
+        description: "Review the core platform powering franchise onboarding workflows.",
+      },
+      {
+        href: "/client-intake-software",
+        label: "Client intake software",
+        description: "Collect structured franchisee data from the first touchpoint.",
+      },
+      {
+        href: "/client-onboarding-automation",
+        label: "Client onboarding automation",
+        description: "Automate pre-launch reminders and franchisee follow-up sequences.",
+      },
+      {
+        href: "/client-portal-software",
+        label: "Client portal software",
+        description: "Give franchisees a branded pre-launch portal for document submission.",
+      },
+      {
+        href: "/commercial-client-intake",
+        label: "Commercial client intake software",
+        description: "Structured intake for commercial and B2B client relationships.",
+      },
+      {
+        href: "/agencies",
+        label: "Agency client onboarding",
+        description: "See how agencies use structured onboarding for multi-client operations.",
+      },
+      {
+        href: "/pricing",
+        label: "Franchise onboarding pricing",
+        description: "Choose a plan for your franchisee volume and development team size.",
+      },
+    ],
+    cta: commonCta,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Franchise onboarding software", path: "/franchise-onboarding-software" },
+    ],
+  },
+
+  "commercial-client-intake": {
+    path: "/commercial-client-intake",
+    title: "Commercial Client Intake Software | ClientEnforce",
+    description:
+      "Commercial client intake software for service businesses. Collect signed agreements, compliance documents, and business data from new commercial accounts — structured, enforced, and audit-ready from the first touchpoint.",
+    keywords: [
+      "commercial client intake software",
+      "commercial client intake",
+      "business client intake software",
+      "b2b client intake",
+      "commercial onboarding software",
+      "commercial account intake",
+      "client intake for service businesses",
+    ],
+    eyebrow: "Commercial client intake software",
+    h1: "Commercial Client Intake Software — Structured Intake for Every New Business Account",
+    intro:
+      "Commercial client intake software from ClientEnforce replaces scattered email intake with a structured, enforced process for collecting signed agreements, compliance documents, and business data from new commercial accounts. Every required item is tracked, every submission is timestamped, and your team has live visibility into every active intake — without manual follow-up.",
+    highlights: [
+      "Structured intake for commercial accounts — agreements, compliance docs, and business data",
+      "Required-step enforcement prevents incomplete intake from advancing to delivery",
+      "Automated reminders chase commercial contacts until every item is on file",
+      "Central dashboard showing intake status across every active commercial account",
+      "Audit-ready record per account — exportable for legal, compliance, and finance review",
+    ],
+    sections: [
+      {
+        heading: "Why commercial client intake requires more structure than individual intake",
+        paragraphs: [
+          "Commercial accounts have more stakeholders, more required documentation, and more compliance dependencies than individual clients. A new commercial account may require a signed master service agreement, insurance certificates, W-9 or tax documentation, authorized signatory verification, and a defined billing contact — none of which appear in a standard CRM intake form.",
+          "Most service businesses collect commercial intake over email — sending agreements back and forth, waiting on signatures, following up manually on missing certificates. ClientEnforce structures commercial intake into an enforced workflow where every required item must be submitted before the account is activated, and automated reminders handle follow-up without team intervention.",
+        ],
+        bullets: [
+          "Commercial accounts have more required documentation than individual clients — signed agreements, insurance certs, tax forms, and authorized signatories",
+          "Email-based commercial intake creates gaps, lost documents, and no audit trail",
+          "Missing required compliance documents create liability exposure before service begins",
+          "Multiple stakeholders on the commercial side slow intake without a single structured submission point",
+          "No visibility into which commercial accounts are intake-complete and which are pending",
+        ],
+      },
+      {
+        heading: "What commercial client intake typically covers",
+        paragraphs: [
+          "ClientEnforce lets you define the exact intake requirements for your commercial accounts. Common required items for commercial intake include:",
+        ],
+        bullets: [
+          "Signed master service agreement or statement of work with authorized signatory",
+          "Certificate of insurance — general liability, workers compensation, or industry-specific coverage",
+          "W-9 or equivalent tax documentation for billing and compliance",
+          "Accounts payable contact and preferred billing method",
+          "Authorized contact list — who can request services and approve charges",
+          "Company credit application and trade reference submission",
+          "Data processing agreement or NDA if handling sensitive business data",
+          "Purchase order or contract number for billing reference",
+        ],
+      },
+      {
+        heading: "Commercial intake across service types",
+        paragraphs: [
+          "Commercial client intake requirements vary by industry but share the same structural problem — too much required documentation to manage over email. ClientEnforce handles commercial intake for a wide range of service business types.",
+        ],
+        bullets: [
+          "Marketing and creative agencies — signed scope, NDA, brand asset access, and billing setup",
+          "Accounting firms — engagement letter, AML identity verification, and beneficial ownership documentation",
+          "Law firms — conflict check clearance, engagement agreement, and retainer confirmation",
+          "IT and MSP teams — master service agreement, system access authorization, and liability acknowledgment",
+          "Auto service and fleet operators — fleet agreement, insurance certificate, and driver authorization list",
+          "Commercial cleaning and facilities services — site access agreement, insurance, and scope confirmation",
+        ],
+      },
+      {
+        heading: "Commercial intake compliance and audit requirements",
+        paragraphs: [
+          "Many industries require documented, timestamped commercial intake records for compliance, insurance, and legal purposes. ClientEnforce maintains a full audit trail per commercial account — every document submitted, every signature captured, and every required step completed is recorded with a timestamp and exportable as a PDF evidence pack.",
+          "This matters for accounting firms facing AML compliance requirements, law firms subject to conflict-of-interest documentation standards, IT service providers requiring signed data processing agreements under GDPR or state privacy laws, and any service business that needs to demonstrate due diligence in commercial account onboarding.",
+        ],
+      },
+    ],
+    relatedLinks: [
+      {
+        href: "/client-intake-software",
+        label: "Client intake software",
+        description: "Review the full client intake platform for service businesses.",
+      },
+      {
+        href: "/client-onboarding-software",
+        label: "Client onboarding software",
+        description: "See the complete onboarding workflow platform powering commercial intake.",
+      },
+      {
+        href: "/client-intake-and-onboarding-software",
+        label: "Client intake and onboarding software",
+        description: "Combine structured intake with full onboarding workflow management.",
+      },
+      {
+        href: "/franchise-onboarding-software",
+        label: "Franchise onboarding software",
+        description: "Standardize commercial franchisee intake across every new location.",
+      },
+      {
+        href: "/multi-location-client-onboarding",
+        label: "Multi-location client onboarding",
+        description: "Run consistent commercial account intake across every location.",
+      },
+      {
+        href: "/accountants",
+        label: "Accounting client onboarding",
+        description: "See the accounting-specific intake workflow with AML compliance support.",
+      },
+      {
+        href: "/law-firm",
+        label: "Law firm client onboarding",
+        description: "See the legal-specific intake workflow with conflict check and engagement letter.",
+      },
+      {
+        href: "/pricing",
+        label: "Commercial intake pricing",
+        description: "Choose a plan for your commercial account volume and team size.",
+      },
+    ],
+    cta: commonCta,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Commercial client intake", path: "/commercial-client-intake" },
+    ],
+  },
 };
 
 export const blogPosts: Record<string, BlogPost> = {
