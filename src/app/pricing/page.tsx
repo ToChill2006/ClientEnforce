@@ -10,7 +10,7 @@ import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "ClientEnforce Pricing | Onboarding Software Plans for US Teams",
-  description: "Simple, transparent pricing for US agencies, consultants, and accountants. Start free — no credit card required. Plans from $0 to $149/month.",
+  description: "Simple, transparent pricing for agencies, consultants, and accountants. Start free — no credit card required. Plans from £0 to £149/month.",
   path: "/pricing",
   keywords: ["client onboarding software pricing", "client portal software pricing US", "onboarding automation for agencies pricing"],
   type: "website",
@@ -61,7 +61,7 @@ function Cell({ val }: { val: boolean | string }) {
 
 export default async function PricingPage() {
   const headersList = await headers();
-  const country = headersList.get("x-vercel-ip-country") ?? "US";
+  const country = headersList.get("x-vercel-ip-country") ?? "GB";
   const currency = country === "US" ? "USD" : "GBP";
 
   return (

@@ -58,7 +58,7 @@ const plans = [
   },
   {
     name: "Agency Pro",
-    GBP: { monthly: "£119", annual: "£99" },
+    GBP: { monthly: "£149", annual: "£124" },
     USD: { monthly: "$149", annual: "$124" },
     cadence: "/month",
     tagline: "White-label portals + unlimited onboardings for agencies that sell the experience.",
