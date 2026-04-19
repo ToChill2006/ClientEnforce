@@ -27,25 +27,35 @@ export async function requireUser() {
   return data.user;
 }
 
-async function seedStarterTemplate(admin: ReturnType<typeof supabaseAdmin>, orgId: string) {
-  const definition = {
-    requirements: [
-      { type: "heading",         label: "Welcome",                            is_required: false, sort_order: 0 },
-      { type: "signature",       label: "Client Agreement",                   is_required: true,  sort_order: 1 },
-      { type: "file",            label: "Proof of ID",                        is_required: true,  sort_order: 2 },
-      { type: "text",            label: "Business Name",                      is_required: true,  sort_order: 3 },
-      { type: "text",            label: "Contact Phone Number",               is_required: true,  sort_order: 4 },
-      { type: "multiple_choice", label: "How did you hear about us?",         is_required: false, sort_order: 5, options: ["Google", "Referral", "Social media", "Other"] },
-      { type: "checkbox",        label: "I agree to the terms and conditions",is_required: true,  sort_order: 6 },
-    ],
-  };
+async function seedStarterTemplateIfEmpty(admin: ReturnType<typeof supabaseAdmin>, orgId: string) {
   try {
+    // Only seed if the org truly has no templates yet
+    const { count } = await admin.from("templates").select("id", { count: "exact", head: true }).eq("org_id", orgId);
+    if ((count ?? 0) > 0) return;
+
+    const definition = {
+      requirements: [
+        { type: "heading",         label: "Welcome",                             is_required: false, sort_order: 0 },
+        { type: "signature",       label: "Client Agreement",                    is_required: true,  sort_order: 1 },
+        { type: "file",            label: "Proof of ID",                         is_required: true,  sort_order: 2 },
+        { type: "text",            label: "Business Name",                        is_required: true,  sort_order: 3 },
+        { type: "text",            label: "Contact Phone Number",                is_required: true,  sort_order: 4 },
+        { type: "multiple_choice", label: "How did you hear about us?",          is_required: false, sort_order: 5, options: ["Google", "Referral", "Social media", "Other"] },
+        { type: "checkbox",        label: "I agree to the terms and conditions", is_required: true,  sort_order: 6 },
+      ],
+    };
+
     const { error } = await admin.from("templates").insert({ org_id: orgId, name: "Standard Client Onboarding", definition });
-    if (error && /column .*definition.* does not exist/i.test(error.message)) {
-      await admin.from("templates").insert({ org_id: orgId, name: "Standard Client Onboarding", definition_json: definition });
+    if (error) {
+      if (/column .*definition.* does not exist/i.test(error.message)) {
+        const { error: err2 } = await admin.from("templates").insert({ org_id: orgId, name: "Standard Client Onboarding", definition_json: definition });
+        if (err2) console.error("[seed] starter template insert (definition_json) failed", err2);
+      } else {
+        console.error("[seed] starter template insert failed", error);
+      }
     }
-  } catch {
-    // Non-fatal — don't block account creation if template seeding fails
+  } catch (e) {
+    console.error("[seed] starter template error", e);
   }
 }
 
@@ -63,6 +73,7 @@ async function createOrgIfMissing(userId: string, fallbackName: string) {
 
   if (memErr) throw new Error(memErr.message);
   if (existingMembership?.org_id) {
+    await seedStarterTemplateIfEmpty(admin, existingMembership.org_id);
     return { orgId: existingMembership.org_id, role: existingMembership.role as MemberRole };
   }
 
@@ -86,7 +97,7 @@ async function createOrgIfMissing(userId: string, fallbackName: string) {
 
   if (ownerErr) throw new Error(ownerErr.message);
 
-  await seedStarterTemplate(admin, org.id);
+  await seedStarterTemplateIfEmpty(admin, org.id);
 
   return { orgId: org.id, role: "owner" as MemberRole };
 }
