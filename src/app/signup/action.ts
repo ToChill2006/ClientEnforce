@@ -132,7 +132,7 @@ export async function signupAction(formData: FormData) {
   const firstName = fullName?.split(" ")[0] || "";
   const nurtureEmails = buildNurtureSequence(firstName);
 
-  await Promise.allSettled([
+  const [internalResult, ...nurtureResults] = await Promise.allSettled([
     resend.emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: "info@clientenforce.com",
@@ -151,6 +151,19 @@ export async function signupAction(formData: FormData) {
       })
     ),
   ]);
+
+  if (internalResult.status === "rejected") {
+    console.error("[signup] internal notification failed", internalResult.reason);
+  }
+  nurtureResults.forEach((r, i) => {
+    if (r.status === "rejected") {
+      console.error(`[signup] nurture email ${i + 1} failed (rejected)`, r.reason);
+    } else if (r.value && "error" in r.value && r.value.error) {
+      console.error(`[signup] nurture email ${i + 1} failed (resend error)`, r.value.error);
+    } else {
+      console.log(`[signup] nurture email ${i + 1} scheduled`, (r.value as any)?.data?.id);
+    }
+  });
 
   redirect(`/login?message=${encodeURIComponent("Check your email for a verification link.")}&next=${encodeURIComponent(next)}`);
 }
