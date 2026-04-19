@@ -27,6 +27,28 @@ export async function requireUser() {
   return data.user;
 }
 
+async function seedStarterTemplate(admin: ReturnType<typeof supabaseAdmin>, orgId: string) {
+  try {
+    await admin.from("templates").insert({
+      org_id: orgId,
+      name: "Standard Client Onboarding",
+      definition: {
+        requirements: [
+          { type: "heading",          label: "Welcome",                   is_required: false, sort_order: 0 },
+          { type: "signature",        label: "Client Agreement",          is_required: true,  sort_order: 1 },
+          { type: "file",             label: "Proof of ID",               is_required: true,  sort_order: 2 },
+          { type: "text",             label: "Business Name",             is_required: true,  sort_order: 3 },
+          { type: "text",             label: "Contact Phone Number",      is_required: true,  sort_order: 4, multiline: false },
+          { type: "multiple_choice",  label: "How did you hear about us?", is_required: false, sort_order: 5, options: ["Google", "Referral", "Social media", "Other"] },
+          { type: "checkbox",         label: "I agree to the terms and conditions", is_required: true, sort_order: 6 },
+        ],
+      },
+    });
+  } catch {
+    // Non-fatal — don't block account creation if template seeding fails
+  }
+}
+
 async function createOrgIfMissing(userId: string, fallbackName: string) {
   const admin = supabaseAdmin();
 
@@ -63,6 +85,8 @@ async function createOrgIfMissing(userId: string, fallbackName: string) {
   });
 
   if (ownerErr) throw new Error(ownerErr.message);
+
+  await seedStarterTemplate(admin, org.id);
 
   return { orgId: org.id, role: "owner" as MemberRole };
 }

@@ -404,8 +404,15 @@ export default async function ClientTokenPage({
                       className="h-9 w-9 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] object-contain"
                     />
                   ) : null}
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
-                    {portalTagline}
+                  <div>
+                    {whiteLabel?.brand_name?.trim() ? (
+                      <div className="text-sm font-semibold text-[var(--color-text-primary)]">
+                        {brandName}
+                      </div>
+                    ) : null}
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                      {portalTagline}
+                    </div>
                   </div>
                 </div>
                 <h1
