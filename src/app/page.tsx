@@ -143,8 +143,8 @@ const homepageSoftwareSchema = {
   offers: {
     "@type": "Offer",
     price: "0",
-    priceCurrency: "USD",
-    description: "Free trial available. Paid plans from $49/month.",
+    priceCurrency: "GBP",
+    description: "Free trial available. Paid plans from £29/month.",
     availability: "https://schema.org/InStock",
     url: "https://clientenforce.com/pricing",
   },
