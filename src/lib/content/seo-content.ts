@@ -99,11 +99,12 @@ const commonCta: PageCta = {
 export const seoLandingPages: Record<string, SeoLandingPage> = {
   "client-onboarding-software": {
     path: "/client-onboarding-software",
-    title: "Client Onboarding Software | ClientEnforce",
+    title: "Client Onboarding Software (2026): Automate Intake for Service Teams | ClientEnforce",
     description:
-      "ClientEnforce is client onboarding software built for multi-location service operators, agencies, and service teams. Enforce required steps, automate follow-ups, and track every account from intake to kickoff — across every location, every team member, every time.",
+      "Client onboarding software built for agencies, multi-location service operators, and service teams in 2026. Enforce required steps, automate follow-ups, and track every account from intake to kickoff — without spreadsheets or email chasing.",
     keywords: [
       "client onboarding software",
+      "client onboarding software 2026",
       "client onboarding software for multi-location businesses",
       "best client onboarding software",
       "client onboarding platform",
@@ -114,7 +115,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       "service operator onboarding software",
     ],
     eyebrow: "Client onboarding software",
-    h1: "Client Onboarding Software for Multi-Location Operators and Service Teams",
+    h1: "Client Onboarding Software for Service Teams (2026)",
     intro:
       "ClientEnforce is client onboarding software for multi-location service operators, agencies, and service teams running repeatable onboarding at scale. Whether you're rolling out a new location, onboarding fleet accounts, or managing 20 concurrent client setups — one structured system enforces every required step, automates follow-up, and keeps every onboarding on track from day one.",
     highlights: [
@@ -415,6 +416,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         question: "What is client onboarding workflow software?",
         answer:
           "Client onboarding workflow software is software that runs required onboarding steps in sequence, automates reminders, and provides stage-level progress visibility before kickoff.",
+      },
+      {
+        question: "What should I look for in client onboarding software in 2026?",
+        answer:
+          "The 2026 evaluation criteria that matter most are: (1) required-step enforcement at the platform level, not just workflow templates; (2) native e-signature so clients don't bounce to a third-party tool; (3) an audit trail that exports as a compliance-grade evidence pack; (4) a cross-portfolio dashboard that shows onboarding status across every active client; and (5) a pricing model that does not charge per client. Teams that ignored these criteria in 2024 and 2025 typically migrated again within 12 months.",
+      },
+      {
+        question: "How much should client onboarding software cost in 2026?",
+        answer:
+          "Most modern client onboarding platforms price per seat rather than per client, landing between $39 and $129 per user per month in 2026. Watch for plans that tier document storage, audit trail retention, and automation count — those limits are where 'entry tier' plans stop scaling. Avoid any platform that charges per client onboarded; that pricing model penalizes growth and is uncommon in 2026.",
       },
     ],
     relatedLinks: [
@@ -781,11 +792,13 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "client-onboarding-checklist": {
     path: "/client-onboarding-checklist",
-    title: "Client Onboarding Checklist — New Client Checklist Template | ClientEnforce",
+    title: "Client Onboarding Checklist Template (Free, 2026) | ClientEnforce",
     description:
-      "Free client onboarding checklist for new clients — standardize intake, collect documents, set expectations, and launch every client faster. Used by agencies, consultants, and accounting firms.",
+      "Free 2026 client onboarding checklist template — standardize intake, collect documents, set expectations, and launch every new client faster. Used by agencies, consultants, accounting firms, and service teams.",
     keywords: [
       "client onboarding checklist",
+      "client onboarding checklist template",
+      "client onboarding checklist 2026",
       "new client checklist",
       "onboarding checklist for new clients",
       "onboarding new clients checklist",
@@ -794,7 +807,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       "new client to do checklist",
     ],
     eyebrow: "Client onboarding checklist",
-    h1: "Client Onboarding Checklist — New Client Checklist Template",
+    h1: "Client Onboarding Checklist Template (Free, 2026)",
     intro:
       "A structured client onboarding checklist helps agencies, consultants, and service teams onboard new clients without delays or missing requirements. Use this checklist template to standardize every new client from welcome email to kickoff readiness.",
     highlights: [
@@ -1001,6 +1014,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         question: "Can a checklist become an automated client onboarding system?",
         answer:
           "Yes. Once required checklist tasks are standardized, teams can automate reminders, escalations, and readiness notifications to run onboarding as a reliable system.",
+      },
+      {
+        question: "What should a 2026 client onboarding checklist include?",
+        answer:
+          "A modern 2026 client onboarding checklist covers: a welcome email with portal link, signed services agreement, signed DPA or data-sharing agreement (now required by most enterprise buyers), W-9 or vendor form, technical access (SSO, integrations, billing details), kickoff scheduling, success metric definition, and an internal handoff to delivery. The new addition for 2026 versus prior years is explicit data-handling consent — privacy reviews now appear on most enterprise procurement checklists.",
+      },
+      {
+        question: "How long should client onboarding take in 2026?",
+        answer:
+          "Benchmark for 2026: most agencies and service teams complete client onboarding within 5 to 10 business days from contract signature. Teams using a structured checklist plus required-step enforcement and automated reminders cut that to 3 to 7 business days. Teams running onboarding through email and ad-hoc spreadsheets average 14 to 21 days. Cycle time is the single best leading indicator of an onboarding system that works.",
       },
     ],
     relatedLinks: [
@@ -2094,11 +2117,12 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "best-client-onboarding-software": {
     path: "/best-client-onboarding-software",
-    title: "Best Client Onboarding Software for Agencies | ClientEnforce",
+    title: "The 9 Best Client Onboarding Software Tools for Agencies (2026) | ClientEnforce",
     description:
-      "Compare the best client onboarding software options with practical buyer guidance for agencies, including client onboarding platform and workflow software criteria.",
+      "Side-by-side comparison of the best client onboarding software for 2026 — buyer criteria, pricing tiers, and fit-by-team-size for agencies, consultants, and service teams. Pick the right platform without the marketing fluff.",
     keywords: [
       "best client onboarding software",
+      "best client onboarding software 2026",
       "client onboarding software",
       "client onboarding platform",
       "client onboarding tools",
@@ -2106,7 +2130,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       "client onboarding workflow software",
     ],
     eyebrow: "Best client onboarding software",
-    h1: "Best client onboarding software: a practical commercial comparison for agencies and service teams",
+    h1: "The 9 Best Client Onboarding Software Tools for Agencies (2026)",
     intro:
       "This page is built for buyers evaluating client onboarding software with real implementation criteria. Use it to compare options fairly, identify fit by use case, and choose a platform that improves completion speed and kickoff readiness.",
     highlights: [
@@ -2359,6 +2383,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         answer:
           "A client onboarding platform is software that manages intake, checklist tasks, documents, approvals, reminders, and readiness handoff in one workflow.",
       },
+      {
+        question: "Which client onboarding platforms are best for agencies in 2026?",
+        answer:
+          "In 2026, the most commonly evaluated client onboarding platforms for agencies are ClientEnforce (onboarding-first, required-step enforcement), HoneyBook (all-in-one clientflow for creatives), Dubsado (flexible solo workflows), Moxie (freelancer-oriented), SuiteDash (broad portal with CRM), and GuideCX (enterprise onboarding). Fit depends on team size, number of concurrent onboardings, and whether onboarding execution quality or broader client-ops coverage is the priority.",
+      },
+      {
+        question: "What changed in client onboarding software between 2024 and 2026?",
+        answer:
+          "Three shifts: (1) required-step enforcement moved from 'nice to have' to a baseline expectation — agencies stopped accepting workflows that let clients skip tasks; (2) audit trail export became a standard enterprise procurement requirement, driven by SOC 2 and DPA reviews; and (3) pricing shifted decisively away from per-client pricing toward per-seat, because agencies refused to pay a growth tax on client count. Any shortlist you build in 2026 should prioritize those three attributes.",
+      },
     ],
     relatedLinks: [
       {
@@ -2410,11 +2444,13 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "client-onboarding-process": {
     path: "/client-onboarding-process",
-    title: "Client Onboarding Process for Agencies and Service Teams | ClientEnforce",
+    title: "The Client Onboarding Process (2026): Steps, Workflow & Template | ClientEnforce",
     description:
-      "Learn how to build a reliable client onboarding process with clear workflow steps, ownership, automation, and client onboarding workflow software governance.",
+      "A complete client onboarding process for agencies and service teams in 2026: workflow steps, owner assignments, automation, and a checklist template you can copy. Cut kickoff delays without losing the high-touch feel.",
     keywords: [
       "client onboarding process",
+      "client onboarding process steps",
+      "client onboarding process 2026",
       "client onboarding workflow",
       "client onboarding software",
       "client onboarding automation",
@@ -2422,7 +2458,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       "client onboarding workflow software",
     ],
     eyebrow: "Client onboarding process",
-    h1: "Client onboarding process for agencies and service businesses",
+    h1: "The Client Onboarding Process (2026): A Practical, Step-by-Step Playbook",
     intro:
       "A strong client onboarding process helps teams start delivery with complete inputs, clear expectations, and fewer delays. This page gives you a practical operating model you can implement immediately.",
     highlights: [
@@ -2611,6 +2647,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         question: "What is client onboarding workflow software?",
         answer:
           "Client onboarding workflow software is software that runs onboarding stages in sequence, automates follow-ups, and gives teams shared visibility into completion and readiness status.",
+      },
+      {
+        question: "What does the client onboarding process look like in 2026?",
+        answer:
+          "The 2026 onboarding process typically runs in five stages: (1) welcome and portal access inside 24 hours of signature; (2) structured intake — services agreement, DPA, W-9, technical prerequisites; (3) kickoff scheduling once all required items clear; (4) internal handoff from sales to delivery with a shared readiness packet; and (5) a 30-day retro to measure cycle time and completion rate. Teams that treat stages 4 and 5 as optional almost always underperform on retention.",
+      },
+      {
+        question: "What are the most common client onboarding process mistakes in 2026?",
+        answer:
+          "Four mistakes come up repeatedly: (1) treating onboarding as email coordination instead of a tracked workflow; (2) no single owner per stage — accountability diffuses and work slips; (3) missing an explicit readiness gate between onboarding and delivery, which creates silent handoff failures; and (4) no measurement of cycle time, so leadership cannot see whether the process is improving. Fixing those four issues typically cuts cycle time by 30 to 50 percent within one quarter.",
       },
     ],
     relatedLinks: [
@@ -3407,19 +3453,21 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
   },
   "dubsado-vs-honeybook": {
     path: "/dubsado-vs-honeybook",
-    title: "HoneyBook vs Dubsado: A Better Alternative | ClientEnforce",
+    title: "Dubsado vs HoneyBook (2026): Which Wins for Client Onboarding? | ClientEnforce",
     description:
-      "HoneyBook vs Dubsado: compare both tools for client onboarding workflows, required-step enforcement, and audit trails — then see why onboarding-first teams choose ClientEnforce instead.",
+      "Dubsado vs HoneyBook in 2026 — side-by-side comparison for client onboarding workflows, required-step enforcement, audit trails, and pricing. See which tool fits your team and when an onboarding-first alternative wins.",
     keywords: [
-      "honeybook vs dubsado",
       "dubsado vs honeybook",
+      "dubsado vs honeybook 2026",
+      "honeybook vs dubsado",
+      "dubsado or honeybook",
       "honeybook competitors",
       "best honeybook alternatives",
       "best dubsado alternatives",
       "tools like dubsado",
     ],
-    eyebrow: "HoneyBook vs Dubsado",
-    h1: "HoneyBook vs Dubsado for Client Onboarding: Which Actually Enforces Completion?",
+    eyebrow: "Dubsado vs HoneyBook",
+    h1: "Dubsado vs HoneyBook (2026): Which Actually Wins for Client Onboarding?",
     intro:
       "Dubsado and HoneyBook are both broad client-operations platforms. This page compares them through an onboarding lens and shows when onboarding-first software like ClientEnforce is the better fit.",
     highlights: [
@@ -3531,6 +3579,16 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         answer:
           "Yes — and many teams do. Dubsado or HoneyBook handles proposals, invoicing, and client relationship management. ClientEnforce handles the onboarding intake phase: required document collection, e-signatures, automated reminders, and kickoff readiness. The two systems serve different phases of the client lifecycle and complement each other well.",
       },
+      {
+        question: "How do Dubsado and HoneyBook compare on pricing in 2026?",
+        answer:
+          "As of 2026, both tools price per user with annual discounts. Dubsado lists a single Premier plan around $40/month (or $400/year), with a free trial covering your first three clients. HoneyBook publishes Starter, Essentials, and Premium tiers from roughly $19 to $79/month, with the most-used features (automations, multi-user access) on the higher tiers. Always check each vendor's pricing page for the current published rate — both have changed plans multiple times in the past 18 months.",
+      },
+      {
+        question: "Is Dubsado or HoneyBook better for agencies with multiple team members?",
+        answer:
+          "HoneyBook supports more team-friendly workflows on its Premium plan (multi-user access, role permissions). Dubsado allows multiple users on Premier but its workflow logic was originally designed for solo operators. Neither tool gives operations leaders a cross-portfolio dashboard showing onboarding completion across every client, which is why agencies running 10+ active onboardings per month often pair them with a dedicated onboarding platform like ClientEnforce.",
+      },
     ],
     relatedLinks: [
       {
@@ -3557,7 +3615,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
     cta: commonCta,
     breadcrumbs: [
       { name: "Home", path: "/" },
-      { name: "Dubsado vs HoneyBook", path: "/dubsado-vs-honeybook" },
+      { name: "Dubsado vs HoneyBook (2026)", path: "/dubsado-vs-honeybook" },
     ],
   },
 

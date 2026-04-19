@@ -6,15 +6,18 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema, buildSoftwareApplicationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Intake Software for Agencies & Service Teams | ClientEnforce",
+  title: "Client Intake Software for Agencies & Service Teams (2026) | ClientEnforce",
   description:
-    "ClientEnforce is client intake software that enforces completion — not just collects. Structured intake forms, document requests, e-signatures, and automated follow-ups. Start free.",
+    "Client intake software that enforces completion — not just collects. Structured intake forms, document requests, e-signatures, and automated follow-ups for 2026. Free to start.",
   path: "/client-intake-software",
   keywords: [
     "client intake software",
+    "client intake software 2026",
+    "best client intake software",
     "client intake process software",
     "new client intake software",
     "client intake automation",
+    "client intake form software",
   ],
   type: "website",
   ogImage: "https://clientenforce.com/images/og/clientenforce-client-intake-software-og.png",

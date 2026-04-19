@@ -6,13 +6,16 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Copilot Alternative for Agencies & Service Teams | ClientEnforce",
+  title: "The Best Copilot Alternative for Client Onboarding (2026) | ClientEnforce",
   description:
-    "Outgrown Copilot (now Assembly) for client onboarding? ClientEnforce enforces every step — document collection, e-signatures, automated reminders, and a full audit trail. Start free.",
+    "Outgrown Copilot (now Assembly) for client onboarding? Compare ClientEnforce in 2026 — required-step enforcement, document collection, e-signatures, automated reminders, and a full audit trail. Start free.",
   path: "/copilot-alternative",
   keywords: [
     "Copilot alternative",
+    "Copilot alternative 2026",
+    "best Copilot alternative",
     "Assembly alternative",
+    "Copilot.com alternative",
     "client onboarding software",
     "client onboarding automation",
     "onboarding software for agencies",

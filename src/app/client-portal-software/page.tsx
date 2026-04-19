@@ -6,12 +6,14 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema, buildSoftwareApplicationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Portal Software for Agencies & Service Teams | ClientEnforce",
+  title: "Client Portal Software for Agencies & Service Teams (2026) | ClientEnforce",
   description:
-    "ClientEnforce is client portal software built for completion — not just access. Structured intake, document collection, e-signatures, and automated reminders in one portal. Start free.",
+    "Client portal software built for completion — not just access. Secure intake, document collection, e-signatures, and automated reminders in one onboarding portal. Free to start in 2026.",
   path: "/client-portal-software",
   keywords: [
     "client portal software",
+    "client portal software 2026",
+    "best client portal software",
     "client onboarding portal",
     "client portal for agencies",
     "secure client portal",
