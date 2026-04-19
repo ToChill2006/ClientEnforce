@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   // Load onboarding + client
   const { data: onboarding, error: onboardingErr } = await admin
     .from("onboardings")
-    .select("id, org_id, client_id, title, client_token, status, metadata")
+    .select("id, org_id, client_id, title, client_token, status")
     .eq("id", parsed.data.onboarding_id)
     .single();
 

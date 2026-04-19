@@ -60,15 +60,15 @@ function UserMenu({ fullName, email, initials }: { fullName: string; email: stri
         Team
       </MenuItem>
       <MenuDivider />
-      <form action="/dashboard/logout" method="post">
-        <button
-          type="submit"
-          className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-left text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          Sign out
-        </button>
-      </form>
+      <MenuItem
+        iconLeft={<LogOut className="h-3.5 w-3.5" />}
+        onSelect={async () => {
+          await fetch("/dashboard/logout", { method: "POST" }).catch(() => {});
+          window.location.href = "/login";
+        }}
+      >
+        Sign out
+      </MenuItem>
     </Menu>
   );
 }
