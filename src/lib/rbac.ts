@@ -28,22 +28,22 @@ export async function requireUser() {
 }
 
 async function seedStarterTemplate(admin: ReturnType<typeof supabaseAdmin>, orgId: string) {
+  const definition = {
+    requirements: [
+      { type: "heading",         label: "Welcome",                            is_required: false, sort_order: 0 },
+      { type: "signature",       label: "Client Agreement",                   is_required: true,  sort_order: 1 },
+      { type: "file",            label: "Proof of ID",                        is_required: true,  sort_order: 2 },
+      { type: "text",            label: "Business Name",                      is_required: true,  sort_order: 3 },
+      { type: "text",            label: "Contact Phone Number",               is_required: true,  sort_order: 4 },
+      { type: "multiple_choice", label: "How did you hear about us?",         is_required: false, sort_order: 5, options: ["Google", "Referral", "Social media", "Other"] },
+      { type: "checkbox",        label: "I agree to the terms and conditions",is_required: true,  sort_order: 6 },
+    ],
+  };
   try {
-    await admin.from("templates").insert({
-      org_id: orgId,
-      name: "Standard Client Onboarding",
-      definition: {
-        requirements: [
-          { type: "heading",          label: "Welcome",                   is_required: false, sort_order: 0 },
-          { type: "signature",        label: "Client Agreement",          is_required: true,  sort_order: 1 },
-          { type: "file",             label: "Proof of ID",               is_required: true,  sort_order: 2 },
-          { type: "text",             label: "Business Name",             is_required: true,  sort_order: 3 },
-          { type: "text",             label: "Contact Phone Number",      is_required: true,  sort_order: 4, multiline: false },
-          { type: "multiple_choice",  label: "How did you hear about us?", is_required: false, sort_order: 5, options: ["Google", "Referral", "Social media", "Other"] },
-          { type: "checkbox",         label: "I agree to the terms and conditions", is_required: true, sort_order: 6 },
-        ],
-      },
-    });
+    const { error } = await admin.from("templates").insert({ org_id: orgId, name: "Standard Client Onboarding", definition });
+    if (error && /column .*definition.* does not exist/i.test(error.message)) {
+      await admin.from("templates").insert({ org_id: orgId, name: "Standard Client Onboarding", definition_json: definition });
+    }
   } catch {
     // Non-fatal — don't block account creation if template seeding fails
   }
@@ -106,13 +106,13 @@ export async function requireProfile() {
 
   if (error) throw new Error(error.message);
 
-  // If profile exists, return it (stable return shape).
-  if (data) {
+  // If profile exists with a valid org, return it immediately.
+  if (data && (data as any).org_id) {
     const { created_at: _createdAt, ...profile } = data as ProfileRow;
     return profile as { user_id: string; org_id: string; email: string; full_name: string | null };
   }
 
-  // Self-heal: bootstrap missing profile + (if needed) org + membership.
+  // Self-heal: profile missing or org_id is null (new signup flow sets org_id: null).
   const email = (user.email ?? "").toLowerCase();
   const fullName =
     (user.user_metadata?.full_name as string | undefined) ||
