@@ -147,7 +147,7 @@ export async function signupAction(formData: FormData) {
         subject: e.subject,
         html: e.html,
         text: e.text,
-        scheduledAt: e.scheduledAt,
+        ...(e.scheduledAt ? { scheduledAt: e.scheduledAt } : {}),
       })
     ),
   ]);

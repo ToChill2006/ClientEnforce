@@ -5,7 +5,7 @@ export type NurtureEmail = {
   subject: string;
   html: string;
   text: string;
-  scheduledAt: string;
+  scheduledAt?: string;
 };
 
 function daysFromNow(days: number): string {
@@ -106,9 +106,9 @@ export function buildNurtureSequence(firstName: string): NurtureEmail[] {
   });
 
   return [
-    { subject: "Set up your first ClientEnforce template (3 steps)", ...email1, scheduledAt: daysFromNow(1) },
-    { subject: "The most common mistake in week one (and how to avoid it)", ...email2, scheduledAt: daysFromNow(3) },
-    { subject: "Is your first client through yet?", ...email3, scheduledAt: daysFromNow(7) },
-    { subject: "Still chasing clients over email?", ...email4, scheduledAt: daysFromNow(14) },
+    { subject: "Set up your first ClientEnforce template (3 steps)", ...email1 },
+    { subject: "The most common mistake in week one (and how to avoid it)", ...email2, scheduledAt: daysFromNow(2) },
+    { subject: "Is your first client through yet?", ...email3, scheduledAt: daysFromNow(6) },
+    { subject: "Still chasing clients over email?", ...email4, scheduledAt: daysFromNow(13) },
   ];
 }
