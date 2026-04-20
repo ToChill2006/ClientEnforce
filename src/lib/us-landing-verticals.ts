@@ -635,15 +635,17 @@ const lawFirm: UsVerticalConfig = {
   slug: "law-firm",
   vertical: "Law Firms",
   badge: "For US Law Firms & Solo Attorneys",
-  metaTitle: "Law Firm Client Intake Software | ClientEnforce",
+  metaTitle: "Law Firm Client Onboarding Software & Intake | ClientEnforce (2026)",
   metaDescription:
-    "Law firm client intake software that enforces document collection before the engagement opens. Retainer agreements, KYC checks, and engagement letters — required, timestamped, and audit-trailed.",
+    "Law firm client onboarding software that enforces retainer agreements, KYC checks, and engagement letters before any billable work begins. Required steps, timestamped audit trail, and automated follow-up for solicitors and attorneys.",
   keywords: [
+    "law firm client onboarding software",
     "law firm client intake software",
-    "law firm client intake forms",
+    "law firm onboarding software",
     "attorney client onboarding",
     "law firm intake software",
     "client intake for law firms",
+    "solicitor client onboarding",
   ],
   heroHeadline: "Law firm client intake software that closes every file before the engagement opens.",
   heroSubheadline:
