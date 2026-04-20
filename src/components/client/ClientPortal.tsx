@@ -545,7 +545,7 @@ export function ClientPortal({
             <div key={r.id} className="flex items-center gap-4 pt-2">
               <div className="h-px flex-1 bg-[var(--color-border)]" />
               <span
-                className="shrink-0 text-base font-semibold tracking-tight text-[var(--color-text-primary)]"
+                className="shrink-0 text-base font-semibold tracking-tight text-[var(--color-accent)]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {r.label}
