@@ -379,12 +379,14 @@ export default async function ClientTokenPage({
   const portalTagline = whiteLabel?.portal_tagline?.trim() || "Client portal";
   const logoUrl = whiteLabel?.logo_url?.trim() || null;
   const accentColor = whiteLabel?.accent_color?.trim() || null;
+  const headingColor = whiteLabel?.heading_color?.trim() || null;
   const supportEmail = whiteLabel?.support_email?.trim() || null;
   const removeBranding = Boolean(whiteLabel?.remove_branding);
 
-  const shellStyle: React.CSSProperties | undefined = accentColor
+  const shellStyle: React.CSSProperties | undefined = (accentColor || headingColor)
     ? ({
-        ["--color-accent" as any]: accentColor,
+        ...(accentColor ? { ["--color-accent" as any]: accentColor } : {}),
+        ...(headingColor ? { ["--color-portal-heading" as any]: headingColor } : {}),
       } as React.CSSProperties)
     : undefined;
 

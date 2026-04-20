@@ -6,6 +6,7 @@ export type WhiteLabel = {
   support_email: string | null;
   portal_tagline: string | null;
   accent_color: string | null;
+  heading_color: string | null;
   logo_url: string | null;
   remove_branding: boolean;
   custom_domain: string | null;
@@ -16,6 +17,7 @@ export const EMPTY_WHITE_LABEL: WhiteLabel = {
   support_email: null,
   portal_tagline: null,
   accent_color: null,
+  heading_color: null,
   logo_url: null,
   remove_branding: false,
   custom_domain: null,

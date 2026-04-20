@@ -542,10 +542,17 @@ export function ClientPortal({
         }
         if (r.type === "heading") {
           return (
-            <div key={r.id} className="mt-2 rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-2.5 text-center">
+            <div
+              key={r.id}
+              className="mt-2 rounded-[var(--radius-md)] px-4 py-2.5 text-center"
+              style={{
+                background: "color-mix(in oklab, var(--color-portal-heading, var(--color-accent)) 12%, transparent)",
+                border: "1px solid color-mix(in oklab, var(--color-portal-heading, var(--color-accent)) 35%, transparent)",
+              }}
+            >
               <span
-                className="text-sm font-semibold tracking-tight text-[var(--color-accent)]"
-                style={{ fontFamily: "var(--font-display)" }}
+                className="text-sm font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-display)", color: "var(--color-portal-heading, var(--color-accent))" }}
               >
                 {r.label}
               </span>

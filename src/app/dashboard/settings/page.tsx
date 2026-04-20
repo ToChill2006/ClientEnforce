@@ -67,6 +67,7 @@ type WhiteLabelSettings = {
   support_email: string;
   portal_tagline: string;
   accent_color: string;
+  heading_color: string;
   logo_url: string;
   remove_branding: boolean;
   custom_domain: string;
@@ -98,7 +99,7 @@ export default function SettingsPage() {
   // White-label state
   const [wl, setWl] = React.useState<WhiteLabelSettings>({
     brand_name: "", support_email: "", portal_tagline: "",
-    accent_color: "", logo_url: "", remove_branding: false, custom_domain: "",
+    accent_color: "", heading_color: "", logo_url: "", remove_branding: false, custom_domain: "",
   });
   const [wlLoading, setWlLoading] = React.useState(false);
   const [wlSaving, setWlSaving] = React.useState(false);
@@ -159,6 +160,7 @@ export default function SettingsPage() {
           support_email: json.settings.support_email ?? "",
           portal_tagline: json.settings.portal_tagline ?? "",
           accent_color: json.settings.accent_color ?? "",
+          heading_color: json.settings.heading_color ?? "",
           logo_url: json.settings.logo_url ?? "",
           remove_branding: Boolean(json.settings.remove_branding),
           custom_domain: json.settings.custom_domain ?? "",
@@ -1019,6 +1021,26 @@ export default function SettingsPage() {
                     />
                   </div>
                   <p className="text-xs text-[var(--color-text-muted)]">Hex colour for buttons and progress bars on the client portal.</p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="wl_heading">Section heading colour</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="wl_heading"
+                      type="color"
+                      value={wl.heading_color || "#000000"}
+                      onChange={(e) => setWl((v) => ({ ...v, heading_color: e.target.value }))}
+                      className="h-10 w-14 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-1"
+                    />
+                    <Input
+                      value={wl.heading_color}
+                      onChange={(e) => setWl((v) => ({ ...v, heading_color: e.target.value }))}
+                      placeholder="Defaults to accent colour"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-[var(--color-text-muted)]">Colour for section heading banners in the client portal. Leave blank to use the accent colour.</p>
                 </div>
 
                 <div className="space-y-3 sm:col-span-2">

@@ -13,6 +13,7 @@ export type WhiteLabelSettings = {
   support_email: string | null;
   portal_tagline: string | null;
   accent_color: string | null;
+  heading_color: string | null;
   logo_url: string | null;
   remove_branding: boolean;
   custom_domain: string | null;
@@ -23,6 +24,7 @@ const DEFAULT_SETTINGS: WhiteLabelSettings = {
   support_email: null,
   portal_tagline: null,
   accent_color: null,
+  heading_color: null,
   logo_url: null,
   remove_branding: false,
   custom_domain: null,
@@ -98,6 +100,10 @@ export async function PATCH(req: Request) {
   if ("accent_color" in body) {
     const c = typeof body.accent_color === "string" ? body.accent_color.trim() : "";
     patch.accent_color = /^#[0-9a-f]{3,6}$/i.test(c) ? c : null;
+  }
+  if ("heading_color" in body) {
+    const c = typeof body.heading_color === "string" ? body.heading_color.trim() : "";
+    patch.heading_color = /^#[0-9a-f]{3,6}$/i.test(c) ? c : null;
   }
 
   // Read existing, merge, and write back
