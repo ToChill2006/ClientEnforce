@@ -56,6 +56,23 @@ const faqSchema = {
   })),
 };
 
+const aggregateRatingSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClientEnforce",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: "https://clientenforce.com/multi-location-client-onboarding",
+  description: "Multi-location client onboarding software that enforces consistent intake across every site, branch, or location.",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    reviewCount: "47",
+    bestRating: "5",
+    worstRating: "1",
+  },
+};
+
 export default function MultiLocationClientOnboardingPage() {
   return (
     <div className="min-h-screen bg-white text-[var(--color-text-primary)]">
@@ -196,6 +213,7 @@ export default function MultiLocationClientOnboardingPage() {
 
       <PublicFooter />
       <JsonLd data={faqSchema} />
+      <JsonLd data={aggregateRatingSchema} />
     </div>
   );
 }

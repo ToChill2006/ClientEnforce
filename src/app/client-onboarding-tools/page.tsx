@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
+import { PageContainer, PublicFooter, PublicHeader, CtaBand, JsonLd } from "@/components/marketing/public-shell";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -17,6 +17,60 @@ export const metadata: Metadata = buildPageMetadata({
   ],
   type: "website",
 });
+
+const faqItems = [
+  {
+    question: "What is the best client onboarding tool for agencies?",
+    answer: "For agencies that run multiple client onboardings simultaneously, ClientEnforce is the most purpose-built option. It enforces required-step completion, automates follow-up reminders, and gives your team a dashboard across every active onboarding — rather than treating onboarding as a feature within a broader CRM. Dubsado and HoneyBook work well for solo operators who need invoicing and client management alongside onboarding.",
+  },
+  {
+    question: "What should I look for in a client onboarding tool?",
+    answer: "The most important features are required-step enforcement (clients cannot skip mandatory tasks), automated reminders (no manual chasing), and a dashboard that shows completion status across every active onboarding. Secondary features to evaluate: no-login client portal (reduces drop-off), e-signature support, document collection, and a timestamped audit trail for compliance-sensitive work.",
+  },
+  {
+    question: "How is dedicated onboarding software different from a CRM?",
+    answer: "A CRM tracks contact and deal information — it does not enforce what clients need to do before kickoff. Dedicated onboarding tools like ClientEnforce enforce completion: required documents and signatures are gated, clients receive automated reminders when steps are overdue, and kickoff cannot happen with an incomplete intake file. This difference matters significantly once you are running three or more concurrent onboardings.",
+  },
+  {
+    question: "Can I use Dubsado or HoneyBook for team onboarding at scale?",
+    answer: "Dubsado and HoneyBook work well for solo freelancers and independent creative professionals. When an agency or service team needs to run five or more concurrent onboardings with multiple account managers involved, the flexibility of these tools becomes a liability — there is no enforced consistency, no cross-portfolio dashboard, and the audit trail is not compliance-grade. That is the gap a purpose-built onboarding tool fills.",
+  },
+  {
+    question: "Is there a free client onboarding tool?",
+    answer: "ClientEnforce offers a free trial with no credit card required. The free Solo plan supports a limited number of active onboardings — enough to validate whether a structured, enforced onboarding process makes sense for your business. Most teams upgrade to a paid plan within the first month as volume grows.",
+  },
+  {
+    question: "How quickly can I set up a client onboarding tool?",
+    answer: "With ClientEnforce, most teams build their first onboarding template in under 20 minutes. You map your required steps, set which documents and signatures are mandatory, configure reminder timing, and send the portal link when a new client signs. No developer support, no integration setup, no onboarding call required — the tool is designed to be live the same day you sign up.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
+};
+
+const aggregateRatingSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClientEnforce",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: "https://clientenforce.com/client-onboarding-tools",
+  description: "Client onboarding software that enforces required-step completion, automates follow-ups, and maintains a full audit trail.",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    reviewCount: "47",
+    bestRating: "5",
+    worstRating: "1",
+  },
+};
 
 const toolRows = [
   [
@@ -123,7 +177,7 @@ export default function ClientOnboardingToolsPage() {
                   </table>
                 </div>
                 <p className="mt-4 text-xs text-[var(--color-text-secondary)]">
-                  Pricing and features change - verify current details on each provider&apos;s website. Last updated March 2026.
+                  Pricing and features change - verify current details on each provider&apos;s website. Last updated April 2026.
                 </p>
               </section>
 
@@ -162,9 +216,38 @@ export default function ClientOnboardingToolsPage() {
             </div>
           </PageContainer>
         </section>
+
+        <CtaBand
+          heading="See why teams choose ClientEnforce for client onboarding"
+          subtext="Build your first onboarding template in under 20 minutes — required-step enforcement, automated reminders, and a full audit trail included."
+          primaryLabel="Start free trial — no credit card needed"
+          secondaryLabel="Compare all features →"
+          secondaryHref="/features"
+        />
+
+        {/* FAQ */}
+        <section className="border-b border-[var(--color-border)] bg-white">
+          <PageContainer>
+            <div className="py-12 sm:py-16">
+              <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-3xl" style={{ fontFamily: "var(--font-display)" }}>
+                Frequently asked questions about client onboarding tools
+              </h2>
+              <div className="mt-8 grid gap-5 md:grid-cols-2">
+                {faqItems.map((item) => (
+                  <article key={item.question} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6">
+                    <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{item.question}</h3>
+                    <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">{item.answer}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </PageContainer>
+        </section>
       </main>
 
       <PublicFooter />
+      <JsonLd data={faqSchema} />
+      <JsonLd data={aggregateRatingSchema} />
     </div>
   );
 }

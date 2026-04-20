@@ -47,7 +47,7 @@ export type UsVerticalConfig = {
 const agencies: UsVerticalConfig = {
   slug: "agencies",
   vertical: "Agencies",
-  badge: "For US Marketing & Creative Agencies",
+  badge: "For Marketing & Creative Agencies",
   metaTitle: "Client Onboarding Software for Agencies | ClientEnforce",
   metaDescription:
     "Stop rebuilding onboarding from scratch for every client. ClientEnforce gives agencies repeatable templates, branded portals, and required-step enforcement — live in 20 minutes.",
@@ -123,7 +123,7 @@ const agencies: UsVerticalConfig = {
 const consultants: UsVerticalConfig = {
   slug: "consultants",
   vertical: "Consultants",
-  badge: "For US Consultants & Consulting Firms",
+  badge: "For Consultants & Consulting Firms",
   metaTitle: "Client Onboarding Software for Consultants | ClientEnforce",
   metaDescription:
     "Stop starting engagements with missing information. ClientEnforce gives consultants a structured intake portal — documents, signatures, and answers collected before the first call.",
@@ -199,7 +199,7 @@ const consultants: UsVerticalConfig = {
 const accountants: UsVerticalConfig = {
   slug: "accountants",
   vertical: "Accountants",
-  badge: "For US Accounting Firms, CPAs & Bookkeepers",
+  badge: "For Accounting Firms, CPAs & Bookkeepers",
   metaTitle: "Accounting Client Onboarding Software | ClientEnforce",
   metaDescription:
     "Collect every client document before the deadline — not after. ClientEnforce helps accounting firms enforce document collection, track completion, and maintain an audit-ready timeline.",
@@ -736,7 +736,7 @@ const lawFirm: UsVerticalConfig = {
 const financialAdvisors: UsVerticalConfig = {
   slug: "financial-advisors",
   vertical: "Financial Advisors",
-  badge: "For US RIAs & Independent Financial Advisors",
+  badge: "For RIAs & Independent Financial Advisors",
   metaTitle: "Financial Advisor Client Onboarding Software | ClientEnforce",
   metaDescription:
     "Financial advisor client onboarding software with built-in KYC enforcement. Collect CIP documentation, suitability forms, and signed disclosures before any account is opened — with a full audit trail.",

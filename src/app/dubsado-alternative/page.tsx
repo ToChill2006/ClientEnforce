@@ -72,6 +72,13 @@ const productSchema = {
   operatingSystem: "Web",
   url: "https://clientenforce.com/dubsado-alternative",
   description: "Client onboarding software for agencies and service teams. Enforces required-step completion, collects documents and signatures, automates follow-ups, and maintains a full audit trail.",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    reviewCount: "47",
+    bestRating: "5",
+    worstRating: "1",
+  },
 };
 
 const comparisonRows = [
