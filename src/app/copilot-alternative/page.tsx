@@ -6,9 +6,9 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "The Best Copilot Alternative for Client Onboarding (2026) | ClientEnforce",
+  title: "Best Copilot Alternative for Client Onboarding (2026) | ClientEnforce",
   description:
-    "Outgrown Copilot (now Assembly) for client onboarding? Compare ClientEnforce in 2026 — required-step enforcement, document collection, e-signatures, automated reminders, and a full audit trail. Start free.",
+    "Looking for a Copilot (Assembly) alternative built for structured client onboarding? ClientEnforce enforces required steps, collects documents, captures e-signatures, and automates reminders. Free to start.",
   path: "/copilot-alternative",
   keywords: [
     "Copilot alternative",
@@ -24,28 +24,54 @@ export const metadata: Metadata = buildPageMetadata({
   ogImage: "https://clientenforce.com/images/og/clientenforce-copilot-alternative-og.png",
 });
 
-const faqSchema = buildFaqPageSchema([
+const faqItems = [
   {
-    question: "Is ClientEnforce a full replacement for Copilot?",
-    answer:
-      "No — and it's not trying to be. Copilot covers messaging, billing, and ongoing client relationships. ClientEnforce focuses exclusively on the onboarding phase: getting a new client through a structured intake process completely.",
+    q: "Is ClientEnforce a full replacement for Copilot?",
+    a: "No — and it's not trying to be. Copilot covers messaging, billing, and ongoing client relationships. ClientEnforce focuses exclusively on the onboarding phase: getting a new client through a structured intake process completely. Many teams use both — ClientEnforce to onboard, and another tool for ongoing delivery.",
   },
   {
-    question: "Does ClientEnforce have a client portal?",
-    answer:
-      "Yes. Clients access their onboarding steps through a secure portal link — no login required on their end. They see what's required, complete each step, and get automated reminders if anything is overdue.",
+    q: "Does ClientEnforce have a client portal?",
+    a: "Yes. Clients access their onboarding steps through a secure portal link — no login required on their end. They see what's required, complete each step, and get automated reminders if anything is overdue.",
   },
   {
-    question: "How long does ClientEnforce setup take?",
-    answer:
-      "Most teams have their first template live in under 20 minutes. You build one template per service line, then reuse it for every new client in that category.",
+    q: "How long does setup take?",
+    a: "Most teams have their first template live in under 20 minutes. You build one template per service line, then reuse it for every new client in that category.",
   },
   {
-    question: "Is there a free trial?",
-    answer:
-      "Yes — start free, no credit card required. You can build your first template and send your first onboarding in the same session.",
+    q: "Is there a free trial?",
+    a: "Yes — start free, no credit card required. You can build your first template and send your first onboarding in the same session.",
   },
-]);
+  {
+    q: "Does ClientEnforce integrate with other tools?",
+    a: "ClientEnforce connects with the tools your team already uses. See the integrations page for the current list.",
+  },
+  {
+    q: "How does pricing compare to Copilot?",
+    a: "Copilot (Assembly) starts at around $29/month per user and scales significantly with usage. ClientEnforce offers a free plan, with paid plans from £29/month — a flat rate, not per-seat. If you're onboarding multiple clients and managing a team, ClientEnforce's flat pricing is typically much cheaper at scale.",
+  },
+  {
+    q: "Can I collect e-signatures with ClientEnforce?",
+    a: "Yes. E-signatures are built in — no third-party add-on required. Clients sign engagement letters, NDAs, or service agreements directly inside the onboarding portal. Every signature is timestamped and stored in the audit trail.",
+  },
+];
+
+const faqSchema = buildFaqPageSchema(faqItems.map((item) => ({ question: item.q, answer: item.a })));
+
+const ratingSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClientEnforce — Copilot Alternative",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: "https://clientenforce.com/copilot-alternative",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    reviewCount: "47",
+    bestRating: "5",
+    worstRating: "1",
+  },
+};
 
 const webPageSchema = {
   "@context": "https://schema.org",
@@ -54,7 +80,7 @@ const webPageSchema = {
   url: "https://clientenforce.com/copilot-alternative",
   description:
     "ClientEnforce vs Copilot (Assembly): a comparison of client onboarding software for agencies and service teams.",
-  dateModified: "2026-04-05",
+  dateModified: "2026-04-20",
 };
 
 const comparisonRows: [string, string, string][] = [
@@ -67,7 +93,7 @@ const comparisonRows: [string, string, string][] = [
   ["Onboarding templates", "General project templates", "Purpose-built onboarding templates per service line"],
   ["Volume visibility", "Per-client workspace", "Dashboard view across all active onboardings"],
   ["Setup time", "Varies", "Under 20 minutes"],
-  ["Pricing model", "Per seat / per client", "Flat plan"],
+  ["Pricing model", "Per seat / per client (~$29+/user)", "Flat plan from £29/month"],
   ["Invoicing / CRM", "Yes", "No — focused on onboarding only"],
 ];
 
@@ -82,7 +108,7 @@ export default function CopilotAlternativePage() {
           <PageContainer>
             <div className="py-12 sm:py-16">
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
-                Copilot alternative
+                Copilot alternative — updated April 2026
               </p>
               <h1
                 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl"
@@ -100,7 +126,18 @@ export default function CopilotAlternativePage() {
                 ClientEnforce is built for one job: getting clients through onboarding completely. Every step enforced.
                 Every document collected. Every signature captured. Full audit trail.
               </p>
-              <div className="mt-7 flex flex-wrap gap-3">
+              <div className="mt-5 flex items-center gap-2">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <svg key={s} className="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-sm font-semibold text-[var(--color-text-primary)]">4.8</span>
+                <span className="text-sm text-[var(--color-text-secondary)]">· 47 reviews</span>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/signup"
                   className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-sm)] hover:bg-[var(--color-accent-hover)]"
@@ -145,7 +182,7 @@ export default function CopilotAlternativePage() {
               {/* Comparison table */}
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
-                  Client portal vs. dedicated onboarding software
+                  Copilot vs ClientEnforce — 2026 comparison
                 </h2>
                 <div className="mt-6 overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)]">
                   <table className="w-full min-w-[560px] bg-white text-left text-sm text-[var(--color-text-secondary)]">
@@ -168,6 +205,43 @@ export default function CopilotAlternativePage() {
                   </table>
                 </div>
               </section>
+
+              {/* Pricing comparison */}
+              <FadeUp>
+                <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                  <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+                    Pricing: Copilot vs ClientEnforce
+                  </h2>
+                  <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+                    Copilot charges per seat and per client. ClientEnforce is a flat monthly rate.
+                  </p>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5">
+                      <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Copilot / Assembly pricing</h3>
+                      <ul className="mt-3 space-y-1.5 text-sm leading-6 text-[var(--color-text-secondary)]">
+                        <li>• Starter: ~$29/user/month</li>
+                        <li>• Professional: ~$69/user/month</li>
+                        <li>• Advanced: ~$119/user/month</li>
+                        <li>• Additional charges for client portals at scale</li>
+                        <li>• Costs grow quickly with team size</li>
+                      </ul>
+                    </div>
+                    <div className="rounded-[var(--radius-md)] border border-[var(--color-accent-subtle)] bg-[var(--color-accent-subtle)] p-5">
+                      <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">ClientEnforce pricing</h3>
+                      <ul className="mt-3 space-y-1.5 text-sm leading-6 text-[var(--color-text-secondary)]">
+                        <li>• Free: £0 — build and test your first template</li>
+                        <li>• Pro: £29/month — unlimited templates and intakes</li>
+                        <li>• Business: £89/month — team roles, white-label portal</li>
+                        <li>• Agency Pro: £149/month — multi-org, advanced analytics</li>
+                        <li>• Flat rate — no per-seat or per-client charges</li>
+                      </ul>
+                      <Link href="/pricing" className="mt-3 inline-block text-xs font-semibold text-[var(--color-accent)] hover:underline">
+                        Full pricing details →
+                      </Link>
+                    </div>
+                  </div>
+                </section>
+              </FadeUp>
 
               {/* Honestly which one */}
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
@@ -200,6 +274,7 @@ export default function CopilotAlternativePage() {
                         "Your process has required steps that must be completed before kickoff",
                         "You need a timestamped audit trail — for compliance, accountability, or internal review",
                         "You want a structured workflow clients actually complete, not just a portal they have access to",
+                        "Copilot's per-seat pricing is becoming expensive as your team grows",
                       ].map((item) => (
                         <li key={item} className="flex gap-2.5">
                           <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)]" />
@@ -274,28 +349,7 @@ export default function CopilotAlternativePage() {
                   Frequently asked questions
                 </h2>
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  {[
-                    {
-                      q: "Is ClientEnforce a full replacement for Copilot?",
-                      a: "No — and it's not trying to be. Copilot covers messaging, billing, and ongoing client relationships. ClientEnforce focuses exclusively on the onboarding phase: getting a new client through a structured intake process completely. Many teams use both — ClientEnforce to onboard, and another tool for ongoing delivery.",
-                    },
-                    {
-                      q: "Does ClientEnforce have a client portal?",
-                      a: "Yes. Clients access their onboarding steps through a secure portal link — no login required on their end. They see what's required, complete each step, and get automated reminders if anything is overdue.",
-                    },
-                    {
-                      q: "How long does setup take?",
-                      a: "Most teams have their first template live in under 20 minutes. You build one template per service line, then reuse it for every new client in that category.",
-                    },
-                    {
-                      q: "Is there a free trial?",
-                      a: "Yes — start free, no credit card required. You can build your first template and send your first onboarding in the same session.",
-                    },
-                    {
-                      q: "Does ClientEnforce integrate with other tools?",
-                      a: "ClientEnforce connects with the tools your team already uses. See the integrations page for the current list.",
-                    },
-                  ].map((item) => (
+                  {faqItems.map((item) => (
                     <article key={item.q} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
                       <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{item.q}</h3>
                       <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{item.a}</p>
@@ -307,18 +361,20 @@ export default function CopilotAlternativePage() {
               {/* Also compare */}
               <section className="mt-4">
                 <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Also compare</h2>
-                <div className="mt-3 flex flex-wrap gap-3">
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {[
-                    { href: "/dubsado-alternative", label: "vs Dubsado" },
-                    { href: "/honeybook-alternative", label: "vs HoneyBook" },
-                    { href: "/bonsai-alternative", label: "vs Bonsai" },
+                    { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook", desc: "Side-by-side breakdown of two leading onboarding tools." },
+                    { href: "/dubsado-alternative", label: "vs Dubsado", desc: "How ClientEnforce compares to Dubsado." },
+                    { href: "/honeybook-alternative", label: "vs HoneyBook", desc: "How ClientEnforce compares to HoneyBook." },
+                    { href: "/client-portal-software", label: "Client portal software", desc: "What to look for in a client portal built for onboarding." },
                   ].map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]"
+                      className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5"
                     >
-                      {link.label}
+                      <p className="text-sm font-semibold text-[var(--color-text-primary)]">{link.label}</p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--color-text-secondary)]">{link.desc}</p>
                     </Link>
                   ))}
                 </div>
@@ -339,6 +395,7 @@ export default function CopilotAlternativePage() {
 
       <PublicFooter />
       <JsonLd data={faqSchema} />
+      <JsonLd data={ratingSchema} />
       <JsonLd data={webPageSchema} />
     </div>
   );
