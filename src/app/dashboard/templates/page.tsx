@@ -641,8 +641,36 @@ function RequirementList({
 }) {
   const [dragIdx, setDragIdx] = React.useState<number | null>(null);
   const [overIdx, setOverIdx] = React.useState<number | null>(null);
+  const rafRef = React.useRef<number | null>(null);
 
   const sorted = requirements.slice().sort((a, b) => a.sort_order - b.sort_order);
+
+  // Auto-scroll while dragging near the viewport edges.
+  React.useEffect(() => {
+    if (dragIdx === null) return;
+
+    function onDocDragOver(e: DragEvent) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      const ZONE = 80;
+      const y = e.clientY;
+      const vh = window.innerHeight;
+      if (y < ZONE) {
+        const speed = ((ZONE - y) / ZONE) * 14;
+        const tick = () => { window.scrollBy(0, -speed); rafRef.current = requestAnimationFrame(tick); };
+        rafRef.current = requestAnimationFrame(tick);
+      } else if (y > vh - ZONE) {
+        const speed = ((y - (vh - ZONE)) / ZONE) * 14;
+        const tick = () => { window.scrollBy(0, speed); rafRef.current = requestAnimationFrame(tick); };
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    }
+
+    document.addEventListener("dragover", onDocDragOver);
+    return () => {
+      document.removeEventListener("dragover", onDocDragOver);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [dragIdx]);
 
   function handleDrop(targetIdx: number) {
     if (dragIdx === null || dragIdx === targetIdx) return;
@@ -661,7 +689,7 @@ function RequirementList({
           key={idx}
           draggable
           onDragStart={(e) => { setDragIdx(idx); e.dataTransfer.effectAllowed = "move"; }}
-          onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
+          onDragEnd={() => { setDragIdx(null); setOverIdx(null); if (rafRef.current) cancelAnimationFrame(rafRef.current); }}
           onDragOver={(e) => { e.preventDefault(); setOverIdx(idx); }}
           onDragLeave={() => setOverIdx((prev) => (prev === idx ? null : prev))}
           onDrop={(e) => { e.preventDefault(); handleDrop(idx); }}
@@ -715,7 +743,7 @@ function RequirementEditor({
 
   return (
     <div className={`rounded-[var(--radius-md)] border flex flex-col gap-0 overflow-hidden ${
-      isHeading ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)]"
+      isHeading ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)]"
     }`}>
       {/* ── Main row ── */}
       <div className="flex items-center gap-2 px-3 py-2">
@@ -759,7 +787,7 @@ function RequirementEditor({
           value={r.label}
           onChange={(e) => onUpdate({ label: e.target.value })}
           placeholder={isHeading ? "Section heading text" : "Label"}
-          className="flex-1 text-sm"
+          className={`flex-1 text-sm ${isHeading ? "font-semibold" : ""}`}
         />
 
         {/* Required toggle or heading hint */}
