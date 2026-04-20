@@ -542,15 +542,13 @@ export function ClientPortal({
         }
         if (r.type === "heading") {
           return (
-            <div key={r.id} className="flex items-center gap-4 pt-2">
-              <div className="h-px flex-1 bg-[var(--color-border)]" />
+            <div key={r.id} className="mt-2 rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-2.5">
               <span
-                className="shrink-0 text-base font-semibold tracking-tight text-[var(--color-accent)]"
+                className="text-sm font-semibold tracking-tight text-[var(--color-accent)]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {r.label}
               </span>
-              <div className="h-px flex-1 bg-[var(--color-border)]" />
             </div>
           );
         }
