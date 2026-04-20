@@ -11,16 +11,16 @@ import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Software for US Agencies & Consultants | ClientEnforce",
+  title: "Client Onboarding Software for Agencies & Consultants (2026) | ClientEnforce",
   description:
-    "ClientEnforce is onboarding enforcement software that locks down required steps, automates follow-ups, and gives your team one dashboard to track every client — not just tracks it. Built for US agencies, consultants, and accountants. Live in 20 minutes. Start free.",
+    "ClientEnforce enforces every onboarding step — required documents, e-signatures, automated reminders, and a full audit trail. Built for agencies, consultants, and accountants. Free to start. Live in 20 minutes.",
   path: "/",
   keywords: [
     "client onboarding software",
     "client onboarding automation",
     "onboarding automation for agencies",
-    "client portal software US",
-    "best client onboarding tools",
+    "client portal software",
+    "best client onboarding software 2026",
   ],
   type: "website",
   ogImage: "https://clientenforce.com/images/og/clientenforce-homepage-og.png",
@@ -55,7 +55,7 @@ const whoItsFor = [
 const homepageFaqItems = [
   { question: "What is client onboarding software?", answer: "Client onboarding software is a structured system that moves a new client from signed agreement to active delivery — with trackable steps, document collection, e-signatures, and automated reminders. It replaces the back-and-forth that typically happens over email." },
   { question: "How is ClientEnforce different from tools like Dubsado or HoneyBook?", answer: "ClientEnforce focuses specifically on onboarding execution. Unlike broad CRM or proposal tools, it is built to enforce completion from contract signed to kickoff-ready — with required-step gates, a full audit trail, and automated follow-ups. It's built for teams, not just solopreneurs." },
-  { question: "Who is ClientEnforce built for?", answer: "ClientEnforce is built for US-based agencies, independent consultants, accounting firms, and operations-led service teams that onboard clients repeatedly and need a fast, reliable, repeatable process." },
+  { question: "Who is ClientEnforce built for?", answer: "ClientEnforce is built for agencies, independent consultants, accounting firms, and operations-led service teams that onboard clients repeatedly and need a fast, reliable, repeatable process." },
   { question: "How long does it take to get started?", answer: "Most teams launch their first onboarding template in under 20 minutes. You don't need IT support or a lengthy setup process — just build your template, copy the portal link, and send it." },
   { question: "Does ClientEnforce replace my project management tool?", answer: "No — and it's not trying to. ClientEnforce handles the intake phase: from signed agreement to kickoff-ready. Your project management tool handles delivery after that. They work alongside each other." },
 ] as const;
@@ -177,7 +177,7 @@ export default function MarketingPage() {
           <div className="relative mx-auto grid max-w-[1200px] gap-12 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
-                For US agencies · service operators · accountants
+                For agencies · consultants · accountants · service teams
               </div>
               <h1
                 className="mt-6 text-4xl font-bold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-5xl lg:text-[64px]"
@@ -186,7 +186,7 @@ export default function MarketingPage() {
                 Stop chasing clients. Start enforcing completion.
               </h1>
               <p className="mt-5 text-lg leading-7 text-[var(--color-text-secondary)]">
-                ClientEnforce automates follow-ups, locks down required docs, and gives your team one dashboard to track every onboarding — without lifting a finger. Built for US agencies, consultants, and accountants who onboard clients repeatedly.
+                ClientEnforce automates follow-ups, locks down required docs, and gives your team one dashboard to track every onboarding — without lifting a finger. Built for agencies, consultants, and accountants who onboard clients repeatedly.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
@@ -215,7 +215,7 @@ export default function MarketingPage() {
         <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
           <div className="mx-auto max-w-[1200px] px-4 py-5 sm:px-6 lg:px-8">
             <p className="text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
-              Trusted by teams across the US in marketing, accounting, auto service, and consulting
+              Trusted by marketing agencies, accounting firms, consultants, and service operators
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-6">
               {["Marketing agencies", "Accounting firms", "Consulting practices", "Auto service chains", "Multi-location operators"].map((label) => (
@@ -235,7 +235,7 @@ export default function MarketingPage() {
                 Sound familiar?
               </h2>
               <p className="mt-3 max-w-xl text-lg text-[var(--color-text-secondary)]">
-                If you run a service business in the US, at least one of these hits home.
+                If you run a service business, at least one of these hits home.
               </p>
             </FadeUp>
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -429,7 +429,7 @@ export default function MarketingPage() {
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[44px]" style={{ fontFamily: "var(--font-display)" }}>
-                Built for US teams who onboard clients repeatedly
+                Built for teams who onboard clients repeatedly
               </h2>
             </FadeUp>
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
