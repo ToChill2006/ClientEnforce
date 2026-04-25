@@ -6,9 +6,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Dubsado vs HoneyBook (2026): Full Comparison for Client Onboarding | ClientEnforce",
-  description:
-    "Dubsado vs HoneyBook 2026 — honest side-by-side comparison of pricing, onboarding features, required-step enforcement, and audit trails. Find out which wins for your team, and when an onboarding-first alternative is the better fit.",
+  title: "Dubsado vs HoneyBook: Which Is Better in 2026?",
+  description: "Dubsado vs HoneyBook 2026 — honest side-by-side on pricing, features, and onboarding enforcement. Includes a third option for agencies who need more.",
   path: "/dubsado-vs-honeybook",
   keywords: [
     "dubsado vs honeybook",
@@ -53,12 +52,12 @@ const faqSchema = buildFaqPageSchema([
   {
     question: "What does Dubsado cost in 2026?",
     answer:
-      "Dubsado pricing in 2026 starts at around $20/month (monthly) or $200/year (annual). There is a free trial limited to 3 clients. No per-seat pricing.",
+      "Dubsado pricing in 2026: $20/month (monthly billing) or $200/year ($16.67/mo annual). Free trial limited to 3 clients. No per-seat pricing — unlimited clients on all paid plans.",
   },
   {
     question: "What does HoneyBook cost in 2026?",
     answer:
-      "HoneyBook pricing: Starter ~$16/mo · Essentials ~$32/mo · Premium ~$66/mo (all annual). Monthly billing adds approximately 25%. A free trial is available before billing begins.",
+      "HoneyBook pricing in 2026: Starter $36/mo · Essentials $59/mo · Premium $129/mo (monthly billing). Annual billing saves approximately 20%: $29 / $49 / $109 per month. Free trial available.",
   },
 ]);
 
@@ -72,7 +71,7 @@ const comparisonRows = [
   ["Audit trail", "Activity log — not exportable", "Activity log — not exportable", "✓ Timestamped, exportable PDF"],
   ["Cross-team dashboard", "Solo-oriented", "Solo-oriented", "✓ Full team visibility"],
   ["White-label portal", "✗", "✗", "✓ Agency Pro"],
-  ["Starting price", "~£15/mo", "~£13/mo", "Free / £29/mo"],
+  ["Starting price", "From $20/mo", "From $36/mo", "Free / $37/mo"],
 ];
 
 const whenToChoose = [
@@ -115,9 +114,9 @@ export default function DubsadoVsHoneyBookPage() {
                 Dubsado and HoneyBook are the two most popular all-in-one tools for freelancers and independent service providers. This page compares them honestly across pricing, features, onboarding enforcement, and where each one breaks down — so you can choose the right tool in 2026.
               </p>
               <div className="mt-5 flex flex-wrap gap-2 text-xs font-medium text-[var(--color-text-secondary)]">
-                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1">Dubsado ~£15/mo</span>
-                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1">HoneyBook ~£13/mo</span>
-                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1">ClientEnforce free / £29/mo</span>
+                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1">Dubsado from $20/mo</span>
+                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1">HoneyBook from $36/mo</span>
+                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1">ClientEnforce free / $37/mo</span>
               </div>
             </div>
           </PageContainer>
@@ -175,7 +174,7 @@ export default function DubsadoVsHoneyBookPage() {
                       </tbody>
                     </table>
                   </div>
-                  <p className="mt-3 text-xs text-[var(--color-text-muted)]">Pricing and features accurate as of April 2026. GBP approximate based on USD pricing.</p>
+                  <p className="mt-3 text-xs text-[var(--color-text-muted)]">Pricing and features accurate as of April 2026. Always verify on provider websites before purchasing.</p>
                 </section>
               </FadeUp>
 

@@ -7,8 +7,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Rocketlane Alternative for Agencies (2026) | ClientEnforce",
-  description: "Comparing Rocketlane alternatives for your agency or consultancy? ClientEnforce delivers enforced onboarding completion — required steps, document collection, automated reminders — at SMB price. Live in 20 minutes. No credit card required.",
+  title: "Rocketlane Alternative: ClientEnforce vs Rocketlane (2026)",
+  description: "ClientEnforce is the SMB-friendly Rocketlane alternative. Enforced onboarding steps, document collection, automated reminders — live in 20 min. Free trial.",
   path: "/rocketlane-alternative",
   keywords: ["Rocketlane alternative", "Rocketlane alternatives", "best Rocketlane alternative", "client onboarding software", "onboarding software for agencies", "client intake software"],
   type: "website",
@@ -108,7 +108,7 @@ export default function RocketlaneAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              Best Rocketlane alternative for agencies — ClientEnforce vs Rocketlane compared
+              Rocketlane Alternative for agencies: ClientEnforce vs Rocketlane compared (2026)
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
               Rocketlane is built for enterprise customer success teams. If you run an agency, consultancy, or accounting firm and need enforced client onboarding without enterprise complexity or cost — ClientEnforce is the purpose-built alternative. Live in 20 minutes.
@@ -301,7 +301,7 @@ export default function RocketlaneAlternativePage() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {[
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
-                { href: "/client-onboarding-automation", label: "Onboarding automation" },
+                { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
                 { href: "/dubsado-alternative", label: "Dubsado alternative" },
                 { href: "/honeybook-alternative", label: "HoneyBook alternative" },
                 { href: "/client-onboarding-checklist", label: "Onboarding checklist" },

@@ -6,9 +6,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema, buildSoftwareApplicationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Client Portal Software (2026): Features, Pricing & Comparison | ClientEnforce",
-  description:
-    "The best client portal software for agencies and service teams in 2026. Secure intake, document collection, e-signatures, and automated follow-up in one portal. Compare ClientEnforce vs Copilot, HoneyBook, and Clinked. Free to start.",
+  title: "Best Client Portal Software 2026: Features & Pricing",
+  description: "The best client portal software for agencies in 2026. Enforce required steps, collect docs, capture e-signatures, and automate reminders. Free to start.",
   path: "/client-portal-software",
   keywords: [
     "client portal software",

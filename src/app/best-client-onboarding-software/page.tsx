@@ -6,9 +6,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Client Onboarding Software 2026 — Compared | ClientEnforce",
-  description:
-    "The best client onboarding software for agencies, consultants, and accountants in 2026. Honest comparison of ClientEnforce vs Dubsado vs HoneyBook vs Copilot — with a clear recommendation for each use case.",
+  title: "Best Client Onboarding Software 2026 | ClientEnforce",
+  description: "Best client onboarding software in 2026. Honest comparison: ClientEnforce vs Dubsado vs HoneyBook vs Copilot, with a clear verdict for each use case.",
   path: "/best-client-onboarding-software",
   keywords: [
     "best client onboarding software",
@@ -37,8 +36,8 @@ const ratingSchema = {
   offers: {
     "@type": "Offer",
     price: "0",
-    priceCurrency: "GBP",
-    description: "Free plan available. Paid plans from £29/month.",
+    priceCurrency: "USD",
+    description: "Free plan available. Paid plans from $37/month.",
   },
 };
 
@@ -57,7 +56,7 @@ const faqItems = [
   },
   {
     question: "How much does client onboarding software cost?",
-    answer: "Pricing varies significantly by tool and use case. ClientEnforce starts free and scales from £29/month. Dubsado starts from around £15/month (monthly billing) or £130/year. HoneyBook starts from around £13/month. Copilot (Assembly) starts from around $29/user/month. Rocketlane and GUIDEcx are enterprise-priced with custom contracts.",
+    answer: "Pricing varies significantly by tool and use case. ClientEnforce starts free and scales from $37/month. Dubsado starts from $20/month (monthly) or $200/year. HoneyBook starts from $36/month (Starter) up to $129/month (Premium). Copilot (Assembly) starts from around $29/user/month. Rocketlane and GUIDEcx are enterprise-priced with custom contracts.",
   },
   {
     question: "Do I need client onboarding software or is a checklist enough?",
@@ -82,7 +81,7 @@ const comparisonRows: [string, string, string, string, string, string][] = [
   ["Client login required", "No", "Yes", "Yes", "No", "No"],
   ["Invoicing / CRM", "No", "Yes", "Yes", "Yes", "Yes"],
   ["Setup time", "Under 20 minutes", "Hours to days", "30–60 minutes", "Varies", "Weeks"],
-  ["Pricing", "Free–£149/mo", "£15–£130/yr", "£13–£66/mo", "~$29+/user/mo", "Custom/enterprise"],
+  ["Pricing", "Free–$149/mo", "$20/mo–$200/yr", "$36–$129/mo", "~$29+/user/mo", "Custom/enterprise"],
 ];
 
 const tools = [
@@ -278,10 +277,10 @@ export default function BestClientOnboardingSoftwarePage() {
                   </h2>
                   <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {[
-                      { plan: "Free", price: "£0", desc: "1 template. Up to 3 client intakes/month. Core intake features." },
-                      { plan: "Pro", price: "£29/mo", desc: "Unlimited templates and active intakes. Automated reminders. Audit trail." },
-                      { plan: "Business", price: "£89/mo", desc: "Team roles. White-label portal. Priority support." },
-                      { plan: "Agency Pro", price: "£149/mo", desc: "Multi-organisation. Advanced analytics. Everything in Business." },
+                      { plan: "Free", price: "$0", desc: "1 template, 5 active onboardings, client portal, docs, e-signatures." },
+                      { plan: "Team", price: "$37/mo", desc: "Up to 5 users, 10 templates, automated reminders, audit trail, 50 onboardings." },
+                      { plan: "Scale", price: "$99/mo", desc: "Up to 15 users, unlimited templates, advanced reporting, 200 onboardings." },
+                      { plan: "Agency Pro", price: "$149/mo", desc: "White-label portals, custom domain, unlimited onboardings, dedicated support." },
                     ].map((tier) => (
                       <div key={tier.plan} className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">{tier.plan}</p>

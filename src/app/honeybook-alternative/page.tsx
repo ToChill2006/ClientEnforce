@@ -7,8 +7,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best HoneyBook Alternatives for Agencies (2026) | ClientEnforce",
-  description: "Comparing HoneyBook alternatives for your agency or VA business? ClientEnforce enforces required onboarding steps, collects documents and signatures, and automates follow-up — live in 20 minutes. No credit card required.",
+  title: "HoneyBook Alternative: ClientEnforce vs HoneyBook (2026)",
+  description: "ClientEnforce is the HoneyBook alternative for agencies. Enforce required steps, collect docs, automate reminders — live in 20 min. Free trial.",
   path: "/honeybook-alternative",
   keywords: ["HoneyBook alternative", "HoneyBook alternatives", "best HoneyBook alternative", "HoneyBook alternative for agencies", "client onboarding software", "client onboarding automation", "onboarding software for agencies"],
   type: "website",
@@ -44,6 +44,18 @@ const hbFaqItems = [
     question: "Is ClientEnforce a good HoneyBook alternative for VA agencies?",
     answer: "Yes. Virtual assistant agencies have a specific onboarding challenge: multiple clients, different requirements, and no time to manually chase documents across each one. ClientEnforce gives VA agencies a single onboarding portal per client, required-step enforcement so nothing gets skipped, and automated reminders that follow up until every task is complete — without the VA having to intervene manually.",
   },
+  {
+    question: "How does ClientEnforce compare to HoneyBook on pricing?",
+    answer: "HoneyBook's Starter plan is $36/month, Essentials is $59/month, and Premium is $129/month. ClientEnforce starts free, with the Team plan at $37/month and Scale at $99/month. The key difference is what you get: HoneyBook's cost covers a full solo-business suite (proposals, invoicing, scheduling). ClientEnforce's cost covers purpose-built onboarding infrastructure — required-step enforcement, audit trails, and automated reminders that HoneyBook does not provide at any tier.",
+  },
+  {
+    question: "Can I migrate from HoneyBook to ClientEnforce?",
+    answer: "There is no data migration required. ClientEnforce is not a CRM replacement — you keep HoneyBook for proposals and invoicing if you use it for those, or move to a separate billing tool. In ClientEnforce, you build fresh onboarding templates for each of your service lines. Most teams have their first template live within one working day. You do not need to export or import client data to get started.",
+  },
+  {
+    question: "Is ClientEnforce a better HoneyBook alternative for consultants?",
+    answer: "For independent consultants managing a small number of clients, HoneyBook may still be sufficient. For consulting firms with multiple team members handling onboarding simultaneously, ClientEnforce is the stronger choice. The key triggers: you need more than one person to manage onboardings, clients regularly start work before their intake is complete, or you need a formal audit trail of what was collected and when. Those are the gaps HoneyBook does not close regardless of plan.",
+  },
 ];
 
 const hbFaqSchema = {
@@ -77,6 +89,7 @@ const hbProductSchema = {
 };
 
 const comparisonRows = [
+  ["Pricing (monthly)", "Starter $36 · Essentials $59 · Premium $129", "Free · Team $37 · Scale $99 · Agency Pro $149"],
   ["Primary focus", "Full clientflow — leads, proposals, contracts, payments, projects", "Client onboarding execution only"],
   ["Best for", "Solo creative professionals and independent business owners", "Agencies, consultants, accountants — teams of 5–50"],
   ["Onboarding depth", "Part of broader client management flow", "Entire product built around onboarding completion"],
@@ -109,7 +122,7 @@ export default function HoneyBookAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              Best HoneyBook alternatives for agencies — ClientEnforce vs HoneyBook compared
+              HoneyBook Alternative for agencies: ClientEnforce vs HoneyBook compared (2026)
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
               HoneyBook works for independent creatives. But if you run an agency, VA business, or service team and need structured, enforced client onboarding — you need a HoneyBook alternative built for that job.
@@ -289,9 +302,9 @@ export default function HoneyBookAlternativePage() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {[
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
-                { href: "/client-onboarding-automation", label: "Onboarding automation" },
-                { href: "/onboarding-for-accountants", label: "For accountants" },
+                { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
                 { href: "/dubsado-alternative", label: "Dubsado alternative" },
+                { href: "/onboarding-for-accountants", label: "For accountants" },
                 { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">

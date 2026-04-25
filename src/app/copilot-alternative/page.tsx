@@ -6,9 +6,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Copilot Alternative for Client Onboarding (2026) | ClientEnforce",
-  description:
-    "Looking for a Copilot (Assembly) alternative built for structured client onboarding? ClientEnforce enforces required steps, collects documents, captures e-signatures, and automates reminders. Free to start.",
+  title: "Copilot Alternative: ClientEnforce vs Copilot (2026)",
+  description: "ClientEnforce is the Copilot alternative built for client onboarding. Enforce required steps, collect docs, capture e-signatures, automate reminders. Free.",
   path: "/copilot-alternative",
   keywords: [
     "Copilot alternative",
@@ -114,7 +113,7 @@ export default function CopilotAlternativePage() {
                 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                The Copilot alternative built for client onboarding — not a general service portal
+                Copilot Alternative built for client onboarding — not a general service portal (2026)
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 Copilot was a solid client portal. Since rebranding to Assembly, it&apos;s grown into a broader service
@@ -229,10 +228,10 @@ export default function CopilotAlternativePage() {
                     <div className="rounded-[var(--radius-md)] border border-[var(--color-accent-subtle)] bg-[var(--color-accent-subtle)] p-5">
                       <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">ClientEnforce pricing</h3>
                       <ul className="mt-3 space-y-1.5 text-sm leading-6 text-[var(--color-text-secondary)]">
-                        <li>• Free: £0 — build and test your first template</li>
-                        <li>• Pro: £29/month — unlimited templates and intakes</li>
-                        <li>• Business: £89/month — team roles, white-label portal</li>
-                        <li>• Agency Pro: £149/month — multi-org, advanced analytics</li>
+                        <li>• Free: $0 — build and test your first template</li>
+                        <li>• Team: $37/month — automated reminders, audit trail</li>
+                        <li>• Scale: $99/month — up to 15 users, advanced reporting</li>
+                        <li>• Agency Pro: $149/month — white-label portals, unlimited onboardings</li>
                         <li>• Flat rate — no per-seat or per-client charges</li>
                       </ul>
                       <Link href="/pricing" className="mt-3 inline-block text-xs font-semibold text-[var(--color-accent)] hover:underline">

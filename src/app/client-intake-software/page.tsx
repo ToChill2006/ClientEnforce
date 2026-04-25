@@ -6,9 +6,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema, buildSoftwareApplicationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Intake Software — Enforce Completion, Not Just Collection (2026) | ClientEnforce",
-  description:
-    "Client intake software that enforces required steps, documents, and signatures before a client goes active. Automated reminders, full audit trail, and a dashboard across all active intakes. Free to start.",
+  title: "Client Intake Software: Enforce Completion, Not Collection",
+  description: "Client intake software that enforces required steps, docs, and signatures before a client goes active. Automated reminders, full audit trail. Free trial.",
   path: "/client-intake-software",
   keywords: [
     "client intake software",

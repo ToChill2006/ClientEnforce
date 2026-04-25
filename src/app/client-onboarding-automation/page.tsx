@@ -5,9 +5,8 @@ import { CtaBand, JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/co
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Automation: How to Automate Client Onboarding | ClientEnforce",
-  description:
-    "Automate your entire client onboarding workflow — reminders, document collection, e-signatures, and completion enforcement. Learn how to automate client onboarding and stop chasing clients manually.",
+  title: "Client Onboarding Automation Software | ClientEnforce",
+  description: "Automate client onboarding — enforced required steps, automated reminders, document collection, e-signatures. Stop chasing clients manually. Free trial.",
   path: "/client-onboarding-automation",
   keywords: [
     "client onboarding automation",

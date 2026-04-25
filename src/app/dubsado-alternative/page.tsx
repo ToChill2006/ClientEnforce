@@ -7,8 +7,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Dubsado Alternative for Agencies (2026) | ClientEnforce",
-  description: "Comparing Dubsado alternatives for your agency? ClientEnforce enforces required onboarding steps, collects documents and signatures, and automates follow-ups — live in 20 minutes. No credit card required.",
+  title: "Dubsado Alternative: ClientEnforce vs Dubsado (2026)",
+  description: "ClientEnforce is the purpose-built Dubsado alternative for agencies. Enforce required steps, collect docs, automate reminders — live in 20 min. Free trial.",
   path: "/dubsado-alternative",
   keywords: ["Dubsado alternative", "Dubsado alternatives", "best Dubsado alternative", "Dubsado competitors", "Dubsado competitor", "client onboarding software", "client onboarding automation", "onboarding software for agencies"],
   type: "website",
@@ -43,7 +43,7 @@ const faqItems = [
   },
   {
     question: "Is ClientEnforce cheaper than Dubsado?",
-    answer: "Pricing depends on your team size and plan. ClientEnforce is focused on onboarding execution, so you are not paying for features you do not use (invoicing, proposals, scheduling). Check the pricing page for current plan details.",
+    answer: "Dubsado starts at $20/month (monthly) or $200/year. ClientEnforce starts free, with the Team plan at $37/month and Scale at $99/month. Because ClientEnforce focuses exclusively on onboarding, you are not paying for invoicing, proposals, or scheduling features you do not use. For teams managing multiple concurrent onboardings, ClientEnforce's flat rate is typically lower than the equivalent Dubsado setup once you factor in the configuration time required.",
   },
   {
     question: "What are the best Dubsado alternatives in 2026?",
@@ -114,7 +114,7 @@ export default function DubsadoAlternativePage() {
               Honest comparison
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              Best Dubsado alternative for agencies — ClientEnforce vs Dubsado compared
+              Dubsado Alternative for agencies: ClientEnforce vs Dubsado compared (2026)
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)]">
               Dubsado is a solid tool for solo freelancers. But if you run an agency with multiple concurrent onboardings, you need a Dubsado alternative built specifically for that job.
@@ -296,9 +296,9 @@ export default function DubsadoAlternativePage() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {[
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
-                { href: "/client-onboarding-automation", label: "Onboarding automation" },
-                { href: "/onboarding-for-agencies", label: "For agencies" },
+                { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
                 { href: "/honeybook-alternative", label: "HoneyBook alternative" },
+                { href: "/onboarding-for-agencies", label: "For agencies" },
                 { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">

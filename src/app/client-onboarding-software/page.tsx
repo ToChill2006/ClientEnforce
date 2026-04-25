@@ -6,9 +6,8 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema, buildSoftwareApplicationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Best Client Onboarding Software (2026): Features, Pricing & Reviews | ClientEnforce",
-  description:
-    "Client onboarding software that enforces completion at every step. Document collection, e-signatures, automated reminders, and a full audit trail — built for agencies and service teams. Free to start. Compare vs Dubsado, HoneyBook, and Copilot.",
+  title: "Client Onboarding Software: Features, Pricing & Reviews 2026",
+  description: "Client onboarding software that enforces completion. Docs, e-signatures, automated reminders, full audit trail — for agencies and service teams. Free.",
   path: "/client-onboarding-software",
   keywords: [
     "client onboarding software",
