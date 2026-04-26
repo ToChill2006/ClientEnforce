@@ -365,6 +365,9 @@ export default function CopilotAlternativePage() {
                     { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook", desc: "Side-by-side breakdown of two leading onboarding tools." },
                     { href: "/dubsado-alternative", label: "vs Dubsado", desc: "How ClientEnforce compares to Dubsado." },
                     { href: "/honeybook-alternative", label: "vs HoneyBook", desc: "How ClientEnforce compares to HoneyBook." },
+                    { href: "/assembly-alternative", label: "Assembly alternative", desc: "Copilot was formerly Assembly — see our Assembly comparison." },
+                    { href: "/bonsai-alternative", label: "vs Bonsai", desc: "How ClientEnforce compares to Bonsai for agencies." },
+                    { href: "/blog/honeybook-alternatives", label: "HoneyBook alternatives roundup", desc: "All 7 best alternatives compared in one guide." },
                     { href: "/client-portal-software", label: "Client portal software", desc: "What to look for in a client portal built for onboarding." },
                   ].map((link) => (
                     <Link

@@ -308,8 +308,10 @@ export default function DubsadoVsHoneyBookPage() {
                   {[
                     { href: "/dubsado-alternative", label: "Dubsado alternative", desc: "Why teams switch from Dubsado to ClientEnforce." },
                     { href: "/honeybook-alternative", label: "HoneyBook alternative", desc: "Why agencies switch from HoneyBook." },
+                    { href: "/bonsai-alternative", label: "Bonsai alternative", desc: "Compare ClientEnforce vs Bonsai for agencies." },
+                    { href: "/copilot-alternative", label: "Copilot alternative", desc: "Portal vs enforcement — Copilot vs ClientEnforce." },
                     { href: "/client-onboarding-software", label: "Client onboarding software", desc: "Full comparison of onboarding platforms." },
-                    { href: "/client-portal-software", label: "Client portal software", desc: "Secure portals with no client login required." },
+                    { href: "/blog/honeybook-alternatives", label: "7 HoneyBook alternatives", desc: "Full roundup of every major HoneyBook alternative." },
                   ].map(link => (
                     <Link key={link.href} href={link.href} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5">
                       <p className="text-sm font-semibold text-[var(--color-text-primary)]">{link.label}</p>

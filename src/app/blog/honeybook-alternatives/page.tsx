@@ -15,8 +15,22 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 const publishedTime = "2026-04-13";
+const modifiedTime = "2026-04-26";
 
-const alternatives = [
+const alternatives: Array<{
+  rank: string;
+  name: string;
+  badge: string;
+  bestFor: string;
+  href: string;
+  comparePage?: string;
+  summary: string;
+  pros: string[];
+  cons: string[];
+  pricing: string;
+  verdict: string;
+  highlight: boolean;
+}> = [
   {
     rank: "01",
     name: "ClientEnforce",
@@ -47,6 +61,7 @@ const alternatives = [
     badge: "Best for solo freelancers wanting all-in-one",
     bestFor: "Independent service providers who want workflows, forms, and CRM in one tool",
     href: "https://dubsado.com",
+    comparePage: "/dubsado-alternative",
     summary:
       "Dubsado is the most direct HoneyBook competitor — another all-in-one clientflow tool for independent business owners. It covers proposals, contracts, invoicing, scheduler, canned emails, and basic automations. The interface is more complex than HoneyBook but offers deeper workflow customization.",
     pros: [
@@ -71,6 +86,7 @@ const alternatives = [
     badge: "Best for client communication portals",
     bestFor: "Teams who want a branded client portal with messaging and file sharing",
     href: "https://copilot.com",
+    comparePage: "/copilot-alternative",
     summary:
       "Copilot positions itself as a client portal platform — a central hub where clients can communicate, share files, view invoices, and access embedded apps. It is genuinely good-looking and well-executed for that use case. It is not primarily an onboarding enforcement tool.",
     pros: [
@@ -94,6 +110,7 @@ const alternatives = [
     badge: "Best for freelancers wanting simple contracts and payments",
     bestFor: "Independent freelancers who need contracts, invoicing, and basic project tracking",
     href: "https://hellobonsai.com",
+    comparePage: "/bonsai-alternative",
     summary:
       "Bonsai (formerly AND.CO) focuses on the freelancer financial and legal workflow: contracts, proposals, invoices, time tracking, and basic project management. It is cleaner and simpler than both HoneyBook and Dubsado, which makes it faster to set up but limits depth.",
     pros: [
@@ -222,7 +239,7 @@ const articleSchema = {
   headline: "7 Best HoneyBook Alternatives in 2026 — Ranked for Agencies and Service Teams",
   description: "HoneyBook raised prices ~89% in 2025. Here are the 7 best HoneyBook alternatives in 2026 — ranked honestly for agencies, consultants, and service teams.",
   datePublished: publishedTime,
-  dateModified: publishedTime,
+  dateModified: modifiedTime,
   author: {
     "@type": "Organization",
     name: "ClientEnforce",
@@ -260,11 +277,22 @@ export default function HoneyBookAlternativesPage() {
               <span className="text-[var(--color-text-primary)]">HoneyBook Alternatives</span>
             </nav>
             <div className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
-              Updated April 2026
+              Updated April 26, 2026
             </div>
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-4xl lg:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
               7 Best HoneyBook Alternatives in 2026 — Ranked for Agencies and Service Teams
             </h1>
+
+            {/* Top CTA — single recommendation */}
+            <div className="mt-6 rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-5 py-4">
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Looking for a single recommendation rather than a roundup? See our{" "}
+                <Link href="/honeybook-alternative" className="font-semibold text-[var(--color-accent)] underline underline-offset-2 hover:opacity-80">
+                  HoneyBook alternative comparison
+                </Link>{" "}
+                — a direct side-by-side of HoneyBook vs ClientEnforce with full feature breakdown and FAQ.
+              </p>
+            </div>
 
             {/* Intro */}
             <div className="mt-6 max-w-3xl space-y-4 text-base leading-7 text-[var(--color-text-secondary)]">
@@ -272,11 +300,43 @@ export default function HoneyBookAlternativesPage() {
                 HoneyBook raised prices approximately 89% in 2025. For freelancers who use every feature — AI lead capture, scheduler, full CRM, invoicing — the new pricing may still make sense. But for agency teams and service businesses who only needed the onboarding and workflow components, the jump from ~$19 to ~$36/month (for essentials, billed annually) was the push they needed to find something better suited to their actual use case.
               </p>
               <p>
-                The second group switching away from HoneyBook is teams that have simply outgrown it. HoneyBook was designed for independent business owners — solo photographers, coaches, designers. When a team of five tries to run structured client onboarding through it, the gaps show: no enforcement of required steps, no compliance-grade audit trail, no cross-client completion dashboard. These are not HoneyBook's fault — they were never its intended use case.
+                The second group switching away from HoneyBook is teams that have simply outgrown it. HoneyBook was designed for independent business owners — solo photographers, coaches, designers. When a team of five tries to run structured client onboarding through it, the gaps show: no enforcement of required steps, no compliance-grade audit trail, no cross-client completion dashboard. These are not HoneyBook&apos;s fault — they were never its intended use case.
               </p>
               <p>
                 This guide covers the 7 best alternatives, ranked honestly. We are the company behind ClientEnforce, which ranks first — but the other six are real, and we will tell you exactly who each one is right for.
               </p>
+            </div>
+
+            {/* Comparison matrix */}
+            <div className="mt-8 overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)]">
+              <table className="w-full min-w-[680px] text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Tool</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Starting price</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Best for</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Verdict</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-border)]">
+                  {[
+                    { tool: "ClientEnforce", price: "$49/mo", bestFor: "Agencies & service teams — onboarding enforcement", verdict: "Best for structured onboarding with audit trail", accent: true },
+                    { tool: "Dubsado", price: "~$20/mo", bestFor: "Solo freelancers wanting workflow control", verdict: "All-in-one with steep setup curve", accent: false },
+                    { tool: "Copilot", price: "~$29/mo", bestFor: "Teams wanting a branded client portal", verdict: "Great portal; limited onboarding enforcement", accent: false },
+                    { tool: "Bonsai", price: "~$21/mo", bestFor: "Freelancers needing contracts + invoicing", verdict: "Clean and simple; no team or enforcement features", accent: false },
+                    { tool: "17hats", price: "~$45/mo", bestFor: "Photographers and creatives", verdict: "Dated UI; good feature depth for its niche", accent: false },
+                    { tool: "Studio Ninja", price: "~$13/mo", bestFor: "Wedding/portrait photographers only", verdict: "Excellent for photographers; irrelevant for others", accent: false },
+                    { tool: "Notion + templates", price: "Free / $10/user", bestFor: "DIY teams on a tight budget", verdict: "Not real onboarding software; breaks at scale", accent: false },
+                  ].map((row, i) => (
+                    <tr key={row.tool} className={i % 2 === 0 ? "bg-white" : "bg-[var(--color-bg-subtle)]"}>
+                      <td className={`px-4 py-3 text-sm font-semibold ${row.accent ? "text-[var(--color-accent)]" : "text-[var(--color-text-primary)]"}`}>{row.tool}</td>
+                      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{row.price}</td>
+                      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{row.bestFor}</td>
+                      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{row.verdict}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* TL;DR box */}
@@ -378,7 +438,14 @@ export default function HoneyBookAlternativesPage() {
                         <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Pricing — </span>
                         <span className="text-xs text-[var(--color-text-secondary)]">{alt.pricing}</span>
                       </div>
-                      <p className="text-xs font-medium text-[var(--color-text-primary)]">{alt.verdict}</p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <p className="text-xs font-medium text-[var(--color-text-primary)]">{alt.verdict}</p>
+                        {alt.comparePage && (
+                          <Link href={alt.comparePage} className="text-xs font-semibold text-[var(--color-accent)] underline underline-offset-2 hover:opacity-80">
+                            Full comparison →
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </article>
                 </FadeUp>
@@ -420,12 +487,15 @@ export default function HoneyBookAlternativesPage() {
         <section className="bg-[var(--color-bg-subtle)] py-12">
           <PageContainer>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Related</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { href: "/honeybook-alternative", label: "HoneyBook vs ClientEnforce" },
                 { href: "/dubsado-alternative", label: "Dubsado alternative" },
-                { href: "/blog/best-client-onboarding-software", label: "Best onboarding software" },
+                { href: "/copilot-alternative", label: "Copilot alternative" },
+                { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
+                { href: "/blog/best-client-onboarding-software-2026", label: "Best onboarding software 2026" },
                 { href: "/blog/what-is-client-onboarding", label: "What is client onboarding?" },
+                { href: "/client-onboarding-software-for-agencies", label: "Onboarding software for agencies" },
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
               ].map((link) => (
                 <Link
