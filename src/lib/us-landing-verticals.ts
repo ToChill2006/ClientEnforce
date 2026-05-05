@@ -39,6 +39,9 @@ export type UsVerticalConfig = {
   faqItems: UsVerticalFaq[];
   ctaHeading: string;
   ctaSubtext: string;
+  /** Optional link to a more product-focused page — used by the /agencies hub to point at /client-onboarding-software-for-agencies */
+  productPageHref?: string;
+  productPageLabel?: string;
 };
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -47,40 +50,40 @@ export type UsVerticalConfig = {
 const agencies: UsVerticalConfig = {
   slug: "agencies",
   vertical: "Agencies",
-  badge: "For Marketing & Creative Agencies",
-  metaTitle: "Client Onboarding Software for Agencies | ClientEnforce",
+  badge: "Agency Operations Hub",
+  metaTitle: "Agency Client Onboarding: How to Build a Repeatable Kickoff | ClientEnforce",
   metaDescription:
-    "Stop rebuilding onboarding from scratch for every client. ClientEnforce gives agencies repeatable templates, branded portals, and required-step enforcement — live in 20 minutes.",
+    "How agencies build a repeatable client kickoff — operations playbook, templates, and the systems that scale account management without adding headcount.",
   keywords: [
-    "client onboarding software for agencies",
-    "agency onboarding automation",
-    "agency client portal software",
-    "client intake software for agencies",
-    "agency onboarding checklist",
+    "agency client onboarding",
+    "agency operations",
+    "repeatable client kickoff",
+    "agency account management process",
+    "agency client kickoff template",
   ],
-  heroHeadline: "Stop onboarding clients by hand. Your agency has better things to do.",
+  heroHeadline: "How agencies build a repeatable client kickoff.",
   heroSubheadline:
-    "ClientEnforce gives agencies a repeatable onboarding system — branded portals, automated follow-ups, and required-step enforcement so nothing slips through the cracks.",
+    "An operations-led playbook: the templates, account-management process, and systems agencies use to make every kickoff identical — so creative work starts on time, every time.",
   painPoints: [
     {
-      title: "You're rebuilding the same onboarding checklist for every new client",
-      body: "Copy-pasting from last client's email thread, then starting over every time a new account lands. It's a tax on your team and an inconsistent experience for your client.",
+      title: "Every kickoff is bespoke",
+      body: "Each new account manager runs onboarding their own way. There's no shared template, no shared definition of 'ready', and no shared expectations for the client.",
     },
     {
-      title: "Creative work starts before the brief is even complete",
-      body: "Kickoff happens before all assets, approvals, and credentials are in hand. Delivery suffers. The client doesn't see the connection. You take the blame.",
+      title: "Creative starts before the brief is complete",
+      body: "Kickoff happens before assets, approvals, and credentials are in hand. Delivery suffers. The client blames the agency. The agency blames the AM.",
     },
     {
-      title: "Your account manager is the bottleneck",
+      title: "Account management is the bottleneck",
       body: "One person manually chasing every client, every time — and they have actual client work to deliver. Every hour spent on follow-up is an hour not spent on results.",
     },
     {
-      title: "A client ghosts mid-onboarding and the project stalls",
-      body: "No enforcement means no accountability, and no early warning. You find out a week later when a deadline is already at risk.",
+      title: "Onboarding state lives in someone's head",
+      body: "When the AM goes on holiday or leaves, nobody else knows where each new client is in the kickoff process. The agency rebuilds context from scratch.",
     },
   ],
   howItWorksIntro:
-    "Agencies use ClientEnforce to standardize onboarding across every service line — so every client gets the same clean start, every time.",
+    "Agencies that scale past 30 accounts standardise onboarding before they hire the next AM — repeatable templates, enforced steps, and a single dashboard across every active kickoff.",
   testimonialQuote:
     "We onboard 8–12 clients a month. ClientEnforce paid for itself in the first week.",
   testimonialName: "[Agency Owner Name]",
@@ -112,9 +115,11 @@ const agencies: UsVerticalConfig = {
         "Most agencies launch their first onboarding template in under 20 minutes. You build the template once, then reuse it for every new client in that service line.",
     },
   ],
-  ctaHeading: "Your agency's next client deserves a better start",
+  ctaHeading: "Want the product, not the playbook?",
   ctaSubtext:
-    "Build your first agency onboarding template in under 20 minutes. No credit card required. 30-day money-back guarantee.",
+    "If you're past the planning stage and ready to ship a repeatable kickoff system, see the dedicated product page below. Or start free and build your first template in 20 minutes.",
+  productPageHref: "/client-onboarding-software-for-agencies",
+  productPageLabel: "See client onboarding software for agencies →",
 };
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -353,21 +358,23 @@ const opsTeams: UsVerticalConfig = {
 const autoService: UsVerticalConfig = {
   slug: "auto-service",
   vertical: "Auto Service",
-  badge: "For Tire Shops, Auto Service Chains & Fleet Businesses",
-  metaTitle: "Auto Service & Fleet Account Onboarding Software | ClientEnforce",
+  badge: "For Auto Repair Shops, Tire Shops & Mobile Mechanics",
+  metaTitle: "Auto Repair Shop Client Onboarding Software | ClientEnforce",
   metaDescription:
-    "Onboard fleet accounts and commercial clients faster — without the paperwork chaos. ClientEnforce enforces completion so nothing gets missed before the first service call.",
+    "Onboard auto repair, tire shop and mobile mechanic clients faster — vehicle details, signed authorisations, and contact info collected before the bay opens.",
   keywords: [
-    "fleet account onboarding software",
+    "auto repair shop client onboarding",
     "auto service client onboarding",
-    "fleet management onboarding system",
-    "commercial client intake software",
+    "tire shop client intake software",
+    "mobile mechanic onboarding",
     "auto service business software",
   ],
   heroHeadline:
-    "Fleet accounts, commercial clients, new locations — onboard them all without the paperwork chaos.",
+    "Auto repair shops, tire shops, and mobile mechanics — onboard every new client without the paperwork chaos.",
   heroSubheadline:
-    "ClientEnforce gives auto service businesses a structured onboarding system for fleet accounts, commercial clients, and new location rollouts — so nothing gets missed before the first service call.",
+    "ClientEnforce gives oil-change shops, repair shops, tire shops, and mobile-mechanic operations a structured client intake system — vehicle details, signed work authorisations, and billing info collected before the bay opens. (Running fleet accounts? See fleet account onboarding.)",
+  productPageHref: "/fleet-account-onboarding",
+  productPageLabel: "See fleet account onboarding software →",
   // TODO: Replace with Telletire logo/quote when available
   heroTrustNote: "Trusted by Telletire and growing auto service businesses across the US",
   painPoints: [

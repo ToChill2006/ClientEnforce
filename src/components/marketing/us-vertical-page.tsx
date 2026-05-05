@@ -91,6 +91,16 @@ function HeroSection({ config }: { config: UsVerticalConfig }) {
           <p className="mt-4 text-xs text-[var(--color-text-muted)]">
             No credit card required · 30-day money-back guarantee · Cancel anytime
           </p>
+          {config.productPageHref && config.productPageLabel ? (
+            <p className="mt-3 text-sm">
+              <Link
+                href={config.productPageHref}
+                className="font-medium text-[var(--color-accent)] underline underline-offset-4 hover:no-underline"
+              >
+                {config.productPageLabel}
+              </Link>
+            </p>
+          ) : null}
         </FadeUp>
       </div>
     </section>

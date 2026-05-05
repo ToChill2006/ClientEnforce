@@ -57,7 +57,7 @@ const productSchema = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   url: "https://clientenforce.com/guidecx-alternative",
-  description: "Client onboarding software for agencies, consultants, and accountants. Enforces required-step completion, collects documents and e-signatures, automates follow-ups, and maintains a full timestamped audit trail.",
+  description: "Affordable client onboarding software for small teams GUIDEcx doesn't price for — enforced steps, document collection, and audit trail at SMB pricing.",
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue: "4.8",

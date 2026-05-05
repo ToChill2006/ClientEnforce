@@ -3,20 +3,13 @@ import Link from "next/link";
 
 import { ChecklistDownloadForm } from "@/components/marketing/checklist-download-form";
 import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildNoindexMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = buildPageMetadata({
+export const metadata: Metadata = buildNoindexMetadata({
   title: "Free Client Onboarding Checklist Template | Download | ClientEnforce",
   description:
     "Download the free client onboarding checklist template used by agencies and consultants. PDF format - covers intake, documents, signatures, and kickoff readiness.",
   path: "/downloads/client-onboarding-checklist",
-  keywords: [
-    "client onboarding checklist template",
-    "client onboarding checklist",
-    "onboarding checklist for agencies",
-    "client onboarding software",
-  ],
-  type: "website",
 });
 
 export default function ClientOnboardingChecklistDownloadPage() {

@@ -5,16 +5,16 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildBlogPostingSchema, buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client onboarding checklist template | ClientEnforce",
+  title: "Copy-Paste Client Onboarding Checklist Template (Free, 2026) | ClientEnforce",
   description:
-    "Use this complete client onboarding checklist template to standardize intake, document collection, and kickoff readiness in 2026.",
+    "A copy-paste client onboarding checklist template. Free download or embed directly. Built for accounting, legal and agency intake.",
   path: "/blog/client-onboarding-checklist-template",
   keywords: [
     "client onboarding checklist template",
-    "client onboarding checklist",
-    "onboarding new clients checklist",
-    "how to automate client onboarding",
-    "client onboarding software",
+    "free client onboarding template",
+    "copy paste onboarding checklist",
+    "client intake template download",
+    "agency onboarding template",
   ],
   type: "article",
 });
@@ -67,7 +67,7 @@ export default function ClientOnboardingChecklistTemplatePostPage() {
             <article className="py-12 sm:py-16">
               <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">Client onboarding checklist template</div>
               <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-                The Complete Client Onboarding Checklist Template (2026)
+                Copy-Paste Client Onboarding Checklist Template
               </h1>
               <div className="mt-4 flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-subtle)] text-xs font-bold text-[var(--color-accent)]">T</div>

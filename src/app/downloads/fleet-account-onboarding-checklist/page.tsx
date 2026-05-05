@@ -3,21 +3,13 @@ import Link from "next/link";
 
 import { ChecklistDownloadForm } from "@/components/marketing/checklist-download-form";
 import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildNoindexMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = buildPageMetadata({
+export const metadata: Metadata = buildNoindexMetadata({
   title: "Fleet Account Onboarding Checklist (Free Download) | ClientEnforce",
   description:
     "Download the free fleet account onboarding checklist for multi-location auto service operators. Covers account setup, vehicle data, compliance docs, and kickoff readiness — 30+ required steps.",
   path: "/downloads/fleet-account-onboarding-checklist",
-  keywords: [
-    "fleet account onboarding checklist",
-    "multi-location onboarding checklist",
-    "fleet client onboarding template",
-    "auto service onboarding checklist",
-    "fleet account setup checklist",
-  ],
-  type: "website",
 });
 
 export default function FleetChecklistDownloadPage() {
@@ -91,7 +83,7 @@ export default function FleetChecklistDownloadPage() {
                   <Link href="/auto-service" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">
                     Auto service &amp; fleet onboarding software
                   </Link>
-                  <Link href="/blog/fleet-account-onboarding" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">
+                  <Link href="/fleet-account-onboarding" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">
                     Fleet account onboarding guide
                   </Link>
                   <Link href="/client-onboarding-software" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">

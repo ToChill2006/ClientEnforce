@@ -482,7 +482,7 @@ export function BlogHubTemplate({
                     </div>
                   </Link>
                   <Link
-                    href="/blog/best-client-onboarding-software-2026"
+                    href="/best-client-onboarding-software"
                     className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:bg-white"
                   >
                     <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Best client onboarding software (2026)</h3>

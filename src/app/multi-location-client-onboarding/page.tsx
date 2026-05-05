@@ -86,7 +86,7 @@ export default function MultiLocationClientOnboardingPage() {
                 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Multi-location client onboarding software — the same intake process across every site, every time
+                Multi-Location Client Onboarding Software
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
                 When your business operates across multiple locations, client onboarding should be consistent — but in practice, every location does it differently. One site collects documents over email. Another uses a Google Form. A third relies on whoever is available to follow up.
@@ -191,6 +191,23 @@ export default function MultiLocationClientOnboardingPage() {
                   <Link href="/franchise-onboarding-software" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">franchise onboarding</Link>
                   <Link href="/client-onboarding-automation" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">onboarding automation</Link>
                   <Link href="/pricing" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">view pricing</Link>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Related multi-site onboarding pages</h2>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {[
+                    { href: "/franchise-onboarding-software", label: "Franchise onboarding software", desc: "Standardise client intake across every franchisee from day one." },
+                    { href: "/commercial-client-intake", label: "Commercial client intake", desc: "B2B / commercial accounts with COIs, signed authorisations, and procurement docs." },
+                    { href: "/rocketlane-alternative", label: "Rocketlane alternative", desc: "Same enforced multi-site onboarding without enterprise pricing." },
+                    { href: "/guidecx-alternative", label: "GUIDEcx alternative", desc: "Affordable client onboarding for small multi-location teams." },
+                  ].map((link) => (
+                    <Link key={link.href} href={link.href} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5">
+                      <p className="text-sm font-semibold text-[var(--color-text-primary)]">{link.label}</p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--color-text-secondary)]">{link.desc}</p>
+                    </Link>
+                  ))}
                 </div>
               </section>
 

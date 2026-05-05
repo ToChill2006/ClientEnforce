@@ -63,6 +63,7 @@ const ratingSchema = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   url: "https://clientenforce.com/copilot-alternative",
+  description: "Client onboarding software for ops teams replacing Copilot's portal-first model — built around enforced steps and an audit trail rather than messaging and file-sharing.",
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue: "4.8",

@@ -29,6 +29,7 @@ const ratingSchema = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   url: "https://clientenforce.com/bonsai-alternative",
+  description: "Client intake software for service teams outgrowing Bonsai's freelancer-first toolkit — multi-user, enforced onboarding with an exportable audit trail.",
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue: "4.8",

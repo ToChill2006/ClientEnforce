@@ -56,7 +56,7 @@ const productSchema = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   url: "https://clientenforce.com/honeybook-pricing-guide",
-  description: "Client onboarding software for US agencies, consultants, and accountants. Starts free. Required-step enforcement, document collection, e-signatures, automated reminders, audit trail.",
+  description: "Onboarding-focused alternative to HoneyBook for teams hit by HoneyBook's 2025 price hike — same enforcement and audit trail without the freelancer-CRM bundle. Starts free.",
 };
 
 const hbPricingRows = [
@@ -344,7 +344,7 @@ export default function HoneyBookPricingGuidePage() {
                 { href: "/dubsado-pricing-guide", label: "Dubsado pricing guide" },
                 { href: "/pricing", label: "ClientEnforce pricing" },
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
-                { href: "/onboarding-for-accountants", label: "For accountants" },
+                { href: "/accountants", label: "For accountants" },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
                   {link.label}

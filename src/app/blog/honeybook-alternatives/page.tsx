@@ -6,10 +6,10 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "7 Best HoneyBook Alternatives in 2026 | ClientEnforce",
-  description: "HoneyBook raised prices ~89% in 2025. Here are the 7 best HoneyBook alternatives in 2026 — ranked honestly for agencies, consultants, and service teams.",
+  title: "7 Best HoneyBook Alternatives in 2026 (Ranked + Compared) | ClientEnforce",
+  description: "HoneyBook raised prices ~89% in 2025. Here are the 7 best HoneyBook alternatives in 2026 — ranked and compared honestly for agencies, consultants, and service teams.",
   path: "/blog/honeybook-alternatives",
-  keywords: ["honeybook alternatives", "best honeybook alternative", "honeybook competitors", "alternatives to honeybook 2026"],
+  keywords: ["honeybook alternatives", "honeybook competitors", "alternatives to honeybook 2026", "best honeybook alternatives ranked"],
   type: "article",
   ogImage: "https://clientenforce.com/images/og/honeybook-alternatives-og.png",
 });
@@ -493,7 +493,7 @@ export default function HoneyBookAlternativesPage() {
                 { href: "/dubsado-alternative", label: "Dubsado alternative" },
                 { href: "/copilot-alternative", label: "Copilot alternative" },
                 { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
-                { href: "/blog/best-client-onboarding-software-2026", label: "Best onboarding software 2026" },
+                { href: "/best-client-onboarding-software", label: "Best onboarding software 2026" },
                 { href: "/blog/what-is-client-onboarding", label: "What is client onboarding?" },
                 { href: "/client-onboarding-software-for-agencies", label: "Onboarding software for agencies" },
                 { href: "/client-onboarding-software", label: "Client onboarding software" },

@@ -289,8 +289,8 @@ export default function ClientOnboardingProcessPage() {
             </FadeUp>
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                { title: "Agencies", href: "/onboarding-for-agencies", description: "Brand assets, logins, brief, account access, signed scope. Block kickoff until the full brief is submitted." },
-                { title: "Accounting firms", href: "/onboarding-for-accountants", description: "Prior returns, bank statements, ID documents, engagement letter. Timestamped audit trail for every submission." },
+                { title: "Agencies", href: "/client-onboarding-software-for-agencies", description: "Brand assets, logins, brief, account access, signed scope. Block kickoff until the full brief is submitted." },
+                { title: "Accounting firms", href: "/accountants", description: "Prior returns, bank statements, ID documents, engagement letter. Timestamped audit trail for every submission." },
                 { title: "Consultants", href: "/client-onboarding-software", description: "Discovery questionnaire, NDA, engagement terms, data sharing consent. Gate the first call on intake completion." },
                 { title: "Law firms", href: "/law-firm", description: "Retainer, ID verification, conflict check, engagement letter. Required steps enforce bar compliance from day one." },
                 { title: "Financial advisors", href: "/financial-advisors", description: "CIP documents, suitability questionnaire, ADV acknowledgement. Full audit trail for regulator examinations." },
@@ -344,7 +344,7 @@ export default function ClientOnboardingProcessPage() {
                 { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
                 { href: "/client-onboarding-automation", label: "Onboarding automation" },
-                { href: "/client-onboarding-platform", label: "Onboarding platform" },
+                { href: "/client-onboarding-software", label: "Onboarding platform" },
                 { href: "/best-client-onboarding-software", label: "Best onboarding software" },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">

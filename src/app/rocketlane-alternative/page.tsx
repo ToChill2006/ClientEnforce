@@ -65,7 +65,7 @@ const productSchema = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   url: "https://clientenforce.com/rocketlane-alternative",
-  description: "Client onboarding software for agencies, consultants, and accountants. Enforces required-step completion, collects documents and e-signatures, automates follow-ups, and maintains a full timestamped audit trail.",
+  description: "SMB-priced client onboarding software for teams Rocketlane is too enterprise for — same enforced steps and audit trail, without enterprise minimums or implementation costs.",
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue: "4.8",

@@ -11,7 +11,7 @@ const solutionsByUseCase = [
   { href: "/client-intake-software", label: "Client intake software" },
   { href: "/client-onboarding-automation", label: "Client onboarding automation" },
   { href: "/client-onboarding-checklist", label: "Client onboarding checklist" },
-  { href: "/client-onboarding-tools", label: "Best client onboarding tools" },
+  { href: "/best-client-onboarding-software", label: "Best client onboarding tools" },
 ] as const;
 
 const solutionsWhoFor = [
@@ -24,6 +24,10 @@ const solutionsWhoFor = [
   { href: "/health-wellness", label: "Health & wellness" },
   { href: "/law-firm", label: "Law firms" },
   { href: "/financial-advisors", label: "Financial advisors" },
+  { href: "/multi-location-client-onboarding", label: "Multi-location operators" },
+  { href: "/franchise-onboarding-software", label: "Franchises" },
+  { href: "/commercial-client-intake", label: "Commercial / B2B accounts" },
+  { href: "/fleet-account-onboarding", label: "Fleet accounts" },
 ] as const;
 
 const solutionsCompare = [
@@ -31,6 +35,11 @@ const solutionsCompare = [
   { href: "/honeybook-alternative", label: "vs HoneyBook" },
   { href: "/copilot-alternative", label: "vs Copilot" },
   { href: "/bonsai-alternative", label: "vs Bonsai" },
+  { href: "/rocketlane-alternative", label: "vs Rocketlane" },
+  { href: "/guidecx-alternative", label: "vs GUIDEcx" },
+  { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
+  { href: "/dubsado-pricing-guide", label: "Dubsado pricing guide" },
+  { href: "/honeybook-pricing-guide", label: "HoneyBook pricing guide" },
   { href: "/client-onboarding-software#why-software", label: "vs manual process" },
 ] as const;
 
@@ -48,6 +57,10 @@ const sections = [
       { href: "/health-wellness", label: "Health & wellness" },
       { href: "/law-firm", label: "Law firms" },
       { href: "/financial-advisors", label: "Financial advisors" },
+      { href: "/multi-location-client-onboarding", label: "Multi-location operators" },
+      { href: "/franchise-onboarding-software", label: "Franchises" },
+      { href: "/commercial-client-intake", label: "Commercial / B2B accounts" },
+      { href: "/fleet-account-onboarding", label: "Fleet accounts" },
     ] as const,
   },
   { heading: "Compare", links: solutionsCompare },

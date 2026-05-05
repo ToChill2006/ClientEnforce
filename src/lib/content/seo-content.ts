@@ -177,7 +177,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "Use this framework to define required onboarding tasks before kickoff.",
           },
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare tool options if your current stack is creating handoff friction.",
           },
@@ -225,7 +225,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         },
         links: [
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare categories if you are deciding between platform and stack.",
           },
@@ -359,7 +359,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
         links: [
           {
-            href: "/blog/client-onboarding-process",
+            href: "/client-onboarding-process",
             label: "client onboarding process guide",
             description: "Map your full onboarding process before selecting implementation priorities.",
           },
@@ -435,7 +435,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "See what to automate first and how to structure trigger rules.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Compare categories and choose the right onboarding stack strategy.",
       },
@@ -489,305 +489,6 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
     breadcrumbs: [
       { name: "Home", path: "/" },
       { name: "Client onboarding software", path: "/client-onboarding-software" },
-    ],
-  },
-  "client-onboarding-tools": {
-    path: "/client-onboarding-tools",
-    title: "Best Client Onboarding Tools and Workflow Software | ClientEnforce",
-    description:
-      "Compare client onboarding tools for agencies and service businesses. Learn which client onboarding workflow software options help automate onboarding, checklist execution, and kickoff readiness.",
-    keywords: [
-      "best client onboarding tools",
-      "client onboarding tools",
-      "client onboarding software",
-      "client onboarding platform",
-      "client onboarding workflow software",
-      "client onboarding system",
-    ],
-    eyebrow: "Best client onboarding tools",
-    h1: "Best client onboarding tools for agencies and service businesses",
-    intro:
-      "The best client onboarding tools reduce handoffs, enforce required tasks, and help teams automate client onboarding without creating tool sprawl. Use this guide to compare tool categories, evaluate workflow software tradeoffs, and choose a client onboarding system that scales.",
-    highlights: [
-      "Compare all-in-one onboarding platforms versus multi-tool stacks",
-      "Identify tools that improve completion speed and kickoff readiness",
-      "Use practical criteria for agency and service-team evaluation",
-      "Choose workflow software that supports repeatable onboarding governance",
-    ],
-    sections: [
-      {
-        heading: "What client onboarding tools should solve first",
-        paragraphs: [
-          "Start with bottlenecks, not product checklists. If your team struggles with missing documents, late approvals, and unpredictable kickoff timing, the right client onboarding tools should solve those problems directly.",
-          "A good onboarding tool strategy focuses on required-step execution, status visibility, and reminder automation. If those workflows are still manual, your stack is likely underperforming.",
-        ],
-        bullets: [
-          "How often do projects start without complete onboarding inputs?",
-          "How many reminder emails are sent manually each week?",
-          "Can account owners and operations see onboarding blockers in one view?",
-          "Can clients complete onboarding without jumping between tools?",
-        ],
-      },
-      {
-        heading: "Tool categories in a modern onboarding stack",
-        paragraphs: [
-          "Most teams combine forms, e-signature, storage, and project software. The risk is fragmentation: every handoff creates another place where progress can get lost.",
-        ],
-        table: {
-          headers: ["Category", "What it handles", "What to watch"],
-          rows: [
-            [
-              "Intake and forms",
-              "Collect client information and requirements",
-              "Can it enforce required fields and completion?",
-            ],
-            [
-              "Documents and signatures",
-              "Gather files and approvals",
-              "Do clients need multiple logins or portals?",
-            ],
-            [
-              "Workflow tracking",
-              "Status visibility and accountability",
-              "Is progress clear for both clients and internal teams?",
-            ],
-            [
-              "Automation and follow-ups",
-              "Reminders and nudges",
-              "Can you trigger reminders based on step state?",
-            ],
-          ],
-        },
-      },
-      {
-        heading: "All-in-one platform vs multi-tool onboarding stack",
-        paragraphs: [
-          "Multi-tool stacks can work when operations teams have the capacity to maintain integrations and manual governance. For most agencies, complexity grows faster than control.",
-          "A dedicated client onboarding platform usually reduces operational overhead because forms, files, signatures, reminders, and progress tracking are managed in one workflow.",
-        ],
-        bullets: [
-          "Multi-tool stack: higher flexibility but more handoff risk",
-          "All-in-one platform: lower complexity and clearer accountability",
-          "Unified workflow reduces duplicate data requests",
-          "Single status view improves team and client alignment",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-software",
-            label: "client onboarding software",
-            description: "See how a unified platform handles onboarding end to end.",
-          },
-          {
-            href: "/client-onboarding-automation",
-            label: "automate client onboarding",
-            description: "Review the automation approach for reminders and status transitions.",
-          },
-        ],
-      },
-      {
-        heading: "Features that matter most in client onboarding tools",
-        paragraphs: [
-          "Not every feature contributes equally to onboarding outcomes. Prioritize capabilities that reduce cycle time, improve completion rates, and protect handoff quality.",
-        ],
-        bullets: [
-          "Template-driven onboarding checklists",
-          "Document collection and signature capture in one flow",
-          "Reminder and escalation automation tied to workflow state",
-          "Stage-level progress tracking and readiness validation",
-          "Client-facing portal designed for completion",
-        ],
-      },
-      {
-        heading: "Client onboarding workflow software vs generic project tools",
-        paragraphs: [
-          "Generic project tools can track tasks, but they usually do not enforce onboarding-specific completion logic. Teams often end up rebuilding reminders, required fields, and readiness checks manually.",
-          "Client onboarding workflow software is purpose-built for pre-delivery onboarding execution. It gives teams one flow for intake, documents, signatures, reminders, and completion validation.",
-        ],
-        table: {
-          headers: ["Workflow need", "Dedicated onboarding software", "Generic project tools"],
-          rows: [
-            [
-              "Required onboarding task enforcement",
-              "Built-in completion and readiness controls",
-              "Usually manual or custom-configured",
-            ],
-            [
-              "Client document + intake collection",
-              "Unified onboarding flow for forms and files",
-              "Often split across external forms and storage",
-            ],
-            [
-              "Automated follow-up behavior",
-              "Reminder/escalation logic tied to onboarding state",
-              "Depends on custom automations and integrations",
-            ],
-          ],
-        },
-        links: [
-          {
-            href: "/client-onboarding-software",
-            label: "client onboarding software",
-            description: "See how dedicated onboarding software manages all onboarding stages.",
-          },
-          {
-            href: "/client-onboarding-checklist",
-            label: "client onboarding checklist",
-            description: "Use a checklist baseline before selecting tools and automations.",
-          },
-        ],
-      },
-      {
-        heading: "How ClientEnforce fits this evaluation",
-        paragraphs: [
-          "ClientEnforce is built for onboarding execution, not generic task management. It gives teams one place to run required-step workflows, automate follow-ups, and validate readiness before delivery handoff.",
-          "If your current tools can collect data but still require heavy manual coordination, onboarding-first software typically creates faster operational gains.",
-        ],
-        links: [
-          {
-            href: "/dubsado-alternative",
-            label: "Dubsado alternative",
-            description: "Compare onboarding-first execution with broader operations platforms.",
-          },
-          {
-            href: "/pricing",
-            label: "client onboarding pricing",
-            description: "Choose the plan that matches onboarding volume and team size.",
-          },
-        ],
-      },
-      {
-        heading: "Implementation roadmap for onboarding tools",
-        paragraphs: [
-          "Adopt tools in phases to avoid disruption. Standardize your workflow first, then automate repetitive coordination once the baseline process is stable.",
-        ],
-        steps: [
-          {
-            title: "Phase 1: Build your checklist",
-            description: "Define required onboarding tasks, owners, and readiness criteria.",
-          },
-          {
-            title: "Phase 2: Consolidate client touchpoints",
-            description: "Move forms, files, and approvals into one onboarding portal workflow.",
-          },
-          {
-            title: "Phase 3: Automate reminders and escalations",
-            description: "Trigger reminders and escalations from actual workflow state changes.",
-          },
-          {
-            title: "Phase 4: Track outcomes and refine",
-            description:
-              "Measure completion speed, overdue tasks, and kickoff quality to improve your process each month.",
-          },
-        ],
-      },
-      {
-        heading: "Best client onboarding tools for agency scale",
-        paragraphs: [
-          "As agency volume grows, tool choice should prioritize operational repeatability. Select tools that enforce the same onboarding standards across account managers while still allowing service-specific templates.",
-        ],
-        bullets: [
-          "Require one source of truth for onboarding status",
-          "Track overdue tasks and reminder load by account owner",
-          "Validate kickoff readiness before delivery handoff",
-          "Support process reviews without manual spreadsheet work",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-software-for-agencies",
-            label: "onboarding software for agencies",
-            description: "See agency-specific onboarding implementation guidance.",
-          },
-          {
-            href: "/pricing",
-            label: "client onboarding pricing",
-            description: "Review plan fit for growing agency onboarding volume.",
-          },
-        ],
-      },
-    ],
-    faq: [
-      {
-        question: "What are the most important client onboarding tools?",
-        answer:
-          "The most important tools handle checklist execution, document collection, signatures, reminder automation, and status tracking in one connected workflow.",
-      },
-      {
-        question: "What software helps automate client onboarding?",
-        answer:
-          "Software that combines templates, reminders, file collection, and workflow tracking is usually strongest for onboarding automation because it reduces handoff gaps.",
-      },
-      {
-        question: "How do I evaluate onboarding tools fairly?",
-        answer:
-          "Compare tools against real bottlenecks: missing files, delayed approvals, manual reminder workload, and weak kickoff-readiness visibility.",
-      },
-      {
-        question: "Should agencies use one onboarding platform or multiple tools?",
-        answer:
-          "Agencies with growing onboarding volume usually benefit from one platform because it simplifies operations and improves consistency across account teams.",
-      },
-      {
-        question: "How does ClientEnforce fit into an onboarding tool stack?",
-        answer:
-          "ClientEnforce consolidates checklist workflows, document collection, signatures, reminders, and tracking into one onboarding platform to reduce operational friction.",
-      },
-      {
-        question: "What are the best client onboarding tools for agencies?",
-        answer:
-          "The best tools for agencies combine checklist enforcement, automated reminders, document collection, and readiness tracking so teams can scale onboarding without process drift.",
-      },
-    ],
-    relatedLinks: [
-      {
-        href: "/client-onboarding-software",
-        label: "Client onboarding software",
-        description: "Use the pillar page to compare feature fit and implementation scope.",
-      },
-      {
-        href: "/client-onboarding-automation",
-        label: "Client onboarding automation",
-        description: "Learn how to automate reminders and status transitions.",
-      },
-      {
-        href: "/client-onboarding-checklist",
-        label: "Client onboarding checklist",
-        description: "Use this checklist to standardize onboarding requirements.",
-      },
-      {
-        href: "/pricing",
-        label: "Client onboarding pricing",
-        description: "Compare plans based on team size and onboarding volume.",
-      },
-      {
-        href: "/dubsado-alternative",
-        label: "Dubsado alternative",
-        description: "See how onboarding-first software compares to Dubsado.",
-      },
-      {
-        href: "/best-client-onboarding-software",
-        label: "Best client onboarding software",
-        description: "Review the buyer guide before selecting a platform.",
-      },
-      {
-        href: "/client-onboarding-process",
-        label: "Client onboarding process",
-        description: "Use a process baseline before changing onboarding tools.",
-      },
-      {
-        href: "/blog/client-onboarding-process",
-        label: "Client onboarding process",
-        description: "Review the process framework before changing tools.",
-      },
-      {
-        href: "/blog",
-        label: "Onboarding resources",
-        description: "Browse all guides and execution playbooks.",
-      },
-    ],
-    cta: commonCta,
-    breadcrumbs: [
-      { name: "Home", path: "/" },
-      { name: "Client onboarding tools", path: "/client-onboarding-tools" },
     ],
   },
   "client-onboarding-checklist": {
@@ -945,7 +646,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
         links: [
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare tools that support checklist-driven onboarding operations.",
           },
@@ -1043,7 +744,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Use this authority page to connect checklist tasks to full workflow stages.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Compare tool options for checklist enforcement and completion tracking.",
       },
@@ -1135,7 +836,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "Use this checklist to define required onboarding steps before automation.",
           },
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare tooling options if your current stack is fragmented.",
           },
@@ -1183,7 +884,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
         links: [
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare tool categories for implementing these automation sequences.",
           },
@@ -1313,7 +1014,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Review the full onboarding platform and implementation guidance.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Best client onboarding tools",
         description: "Compare tooling categories for automation-ready onboarding.",
       },
@@ -1343,7 +1044,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Follow a practical rollout process from manual to automated.",
       },
       {
-        href: "/blog/client-onboarding-process",
+        href: "/client-onboarding-process",
         label: "Client onboarding process",
         description: "Map your baseline process before adding automation layers.",
       },
@@ -1486,7 +1187,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "Review the full onboarding platform built for workflow execution.",
           },
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare onboarding tool categories and stack tradeoffs.",
           },
@@ -1510,7 +1211,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
         links: [
           {
-            href: "/blog/client-onboarding-process",
+            href: "/client-onboarding-process",
             label: "client onboarding process",
             description: "Map your baseline process before running a platform pilot.",
           },
@@ -1585,7 +1286,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "See how to automate reminders, escalations, and handoff triggers.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Compare stack options when moving from Dubsado.",
       },
@@ -1802,7 +1503,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Review the buyer's guide and comparison criteria.",
       },
       {
-        href: "/blog/client-onboarding-process",
+        href: "/client-onboarding-process",
         label: "Client onboarding process",
         description: "Use this process guide to improve outcomes before and after switching.",
       },
@@ -2076,7 +1777,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Map agency onboarding stages before scaling templates.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Compare tool options for agency onboarding operations.",
       },
@@ -2416,7 +2117,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "See automation strategy and rollout steps for high-volume onboarding teams.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Compare tool categories and how they fit your workflow.",
       },
@@ -2441,7 +2142,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Read the supporting informational buyer guide.",
       },
       {
-        href: "/blog/best-client-onboarding-software-2026",
+        href: "/best-client-onboarding-software",
         label: "Best client onboarding software 2026 — honest ranking",
         description: "See the 2026 honest ranking of top onboarding software options.",
       },
@@ -2581,7 +2282,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "See how to automate reminders, escalations, and handoff triggers.",
           },
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare implementation options before selecting your stack.",
           },
@@ -2686,7 +2387,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Run a checklist that maps directly to process stages.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Evaluate tools for process enforcement and visibility.",
       },
@@ -2696,7 +2397,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Compare commercial options before implementation.",
       },
       {
-        href: "/blog/client-onboarding-process",
+        href: "/client-onboarding-process",
         label: "Client onboarding process guide",
         description: "Read the supporting educational guide for stage-level examples.",
       },
@@ -2712,505 +2413,46 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
       { name: "Client onboarding process", path: "/client-onboarding-process" },
     ],
   },
-  "client-onboarding-platform": {
-    path: "/client-onboarding-platform",
-    title: "Client Onboarding Platform for Agencies and Service Teams | ClientEnforce",
-    description:
-      "ClientEnforce is a client onboarding platform that helps teams automate intake, document collection, approvals, and onboarding workflow execution.",
-    keywords: [
-      "client onboarding platform",
-      "client onboarding software",
-      "client onboarding system",
-      "client onboarding automation software",
-      "client onboarding workflow software",
-    ],
-    eyebrow: "Client onboarding platform",
-    h1: "Client Onboarding Platform for Agencies and Service Teams",
-    intro:
-      "ClientEnforce is a client onboarding platform designed for teams that need predictable onboarding outcomes. Centralize intake, collect documents and signatures, automate reminders, and track readiness from one onboarding system.",
-    highlights: [
-      "Run onboarding from intake to kickoff in one platform",
-      "Reduce manual follow-ups with workflow automation",
-      "Keep operations and delivery aligned with shared status visibility",
-      "Standardize onboarding quality across clients and account owners",
-    ],
-    sections: [
-      {
-        heading: "What a client onboarding platform includes",
-        paragraphs: [
-          "A client onboarding platform combines the workflows that usually live in separate tools: intake forms, checklist tasks, file collection, signatures, reminders, and completion status.",
-          "The value is operational clarity. Teams stop rebuilding onboarding in email threads and start using one structured process with clear ownership.",
-        ],
-        bullets: [
-          "Client intake and requirement capture",
-          "Document collection and approvals",
-          "Automated reminders and escalations",
-          "Readiness validation before kickoff",
-        ],
-      },
-      {
-        heading: "Why teams move from disconnected tools to one platform",
-        paragraphs: [
-          "Disconnected tools can look flexible at first, but handoffs create hidden delays. Missing files, unclear ownership, and manual chasing become expensive as onboarding volume grows.",
-          "A platform model creates one source of truth for onboarding progress, so account, operations, and delivery teams can act faster on blockers.",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-tools",
-            label: "client onboarding tools",
-            description: "Compare stack options and understand where fragmentation creates risk.",
-          },
-          {
-            href: "/client-onboarding-automation",
-            label: "client onboarding automation",
-            description: "See how platform automation reduces manual reminder workload.",
-          },
-        ],
-      },
-      {
-        heading: "How ClientEnforce works as your onboarding system",
-        paragraphs: [
-          "ClientEnforce gives teams a practical onboarding system: launch with templates, collect required assets, trigger follow-ups automatically, and validate readiness before handoff.",
-        ],
-        steps: [
-          {
-            title: "Template launch",
-            description: "Use standardized onboarding templates by service type or client segment.",
-          },
-          {
-            title: "Client completion",
-            description: "Clients complete forms, files, and signatures in one onboarding flow.",
-          },
-          {
-            title: "Automation and monitoring",
-            description: "Reminders and escalations run from onboarding task status and due dates.",
-          },
-          {
-            title: "Readiness handoff",
-            description: "Delivery teams receive a clean completion signal before kickoff.",
-          },
-        ],
-      },
-      {
-        heading: "Who should use a client onboarding platform",
-        paragraphs: [
-          "This model is strongest for teams that onboard repeatedly and need consistency: agencies, consultants, freelancers, and service businesses with recurring onboarding requirements.",
-        ],
-        table: {
-          headers: ["Team type", "Common onboarding challenge", "Platform outcome"],
-          rows: [
-            [
-              "Agencies",
-              "Different account managers running different onboarding methods",
-              "Standardized onboarding quality and cleaner handoffs",
-            ],
-            [
-              "Consultants",
-              "Discovery inputs arriving late or incomplete",
-              "Faster context collection and better kickoff readiness",
-            ],
-            [
-              "Service businesses",
-              "Manual follow-up for missing forms and files",
-              "Lower admin workload with automated reminders",
-            ],
-          ],
-        },
-      },
-    ],
-    faq: [
-      {
-        question: "What is a client onboarding platform?",
-        answer:
-          "A client onboarding platform is software that combines intake, checklist execution, document collection, approvals, and progress tracking into one workflow.",
-      },
-      {
-        question: "How is a client onboarding platform different from project management software?",
-        answer:
-          "Project tools track delivery tasks, while onboarding platforms focus on pre-delivery requirements, reminder automation, and kickoff-readiness controls.",
-      },
-      {
-        question: "Can agencies use one platform across multiple services?",
-        answer:
-          "Yes. Agencies can run one onboarding baseline and add service-specific templates while keeping shared governance standards.",
-      },
-      {
-        question: "How does ClientEnforce support onboarding platform needs?",
-        answer:
-          "ClientEnforce supports templates, forms, files, signatures, reminders, and status tracking in one onboarding system built for repeatable execution.",
-      },
-    ],
-    relatedLinks: [
-      {
-        href: "/client-onboarding-software",
-        label: "Client onboarding software",
-        description: "Review the pillar page for complete platform capability and use-case coverage.",
-      },
-      {
-        href: "/onboarding-workflow-software",
-        label: "Onboarding workflow software",
-        description: "See workflow-specific implementation guidance for onboarding operations.",
-      },
-      {
-        href: "/client-intake-and-onboarding-software",
-        label: "Client intake and onboarding software",
-        description: "Learn how to unify intake and onboarding into one execution flow.",
-      },
-      {
-        href: "/pricing",
-        label: "Client onboarding pricing",
-        description: "Compare plan fit based on your onboarding volume and team size.",
-      },
-    ],
-    cta: commonCta,
-    breadcrumbs: [
-      { name: "Home", path: "/" },
-      { name: "Client onboarding platform", path: "/client-onboarding-platform" },
-    ],
-  },
-  "onboarding-workflow-software": {
-    path: "/onboarding-workflow-software",
-    title: "Onboarding Workflow Software for Agencies and Service Teams | ClientEnforce",
-    description:
-      "Use ClientEnforce as onboarding workflow software to standardize task sequencing, automate follow-ups, and improve kickoff readiness.",
-    keywords: [
-      "onboarding workflow software",
-      "client onboarding workflow software",
-      "client onboarding automation software",
-      "automate client onboarding software",
-      "client onboarding software",
-    ],
-    eyebrow: "Onboarding workflow software",
-    h1: "Onboarding Workflow Software to Standardize Client Onboarding",
-    intro:
-      "Onboarding workflow software helps teams move from ad hoc onboarding to repeatable execution. ClientEnforce gives you structured workflows, automated follow-ups, and clear readiness checkpoints before delivery starts.",
-    highlights: [
-      "Sequence onboarding steps with clear ownership",
-      "Automate reminders and escalation logic by status",
-      "Track blocked tasks before they delay kickoff",
-      "Improve handoff quality between onboarding and delivery",
-    ],
-    sections: [
-      {
-        heading: "What onboarding workflow software solves",
-        paragraphs: [
-          "Workflow software solves the operational gaps that cause delayed starts: missing requirements, unclear owners, and inconsistent follow-up timing.",
-          "Instead of checking status manually, teams run onboarding as a measurable process with defined stages and completion rules.",
-        ],
-      },
-      {
-        heading: "Core workflow stages to model",
-        paragraphs: [
-          "Most teams need the same stage pattern even if service details differ: intake, requirements, approvals, validation, and handoff.",
-        ],
-        steps: [
-          {
-            title: "Intake stage",
-            description: "Collect core context, contacts, and delivery prerequisites.",
-          },
-          {
-            title: "Requirements stage",
-            description: "Gather required files, credentials, and questionnaire responses.",
-          },
-          {
-            title: "Approval stage",
-            description: "Capture signatures and final onboarding confirmations.",
-          },
-          {
-            title: "Readiness stage",
-            description: "Validate completion criteria and notify delivery stakeholders.",
-          },
-        ],
-      },
-      {
-        heading: "How automation improves onboarding workflow quality",
-        paragraphs: [
-          "Automation is most effective when tied to workflow state. Reminder and escalation rules should activate when tasks are overdue, incomplete, or blocked.",
-        ],
-        bullets: [
-          "Reduce manual reminder volume for account managers",
-          "Increase completion consistency across service lines",
-          "Surface stalled onboarding tasks earlier",
-          "Protect kickoff timelines with readiness gating",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-automation",
-            label: "client onboarding automation",
-            description: "Apply practical trigger patterns for reminder and escalation workflows.",
-          },
-          {
-            href: "/client-onboarding-checklist",
-            label: "client onboarding checklist",
-            description: "Define required tasks first, then automate around that baseline.",
-          },
-        ],
-      },
-      {
-        heading: "Why teams choose ClientEnforce for workflow execution",
-        paragraphs: [
-          "ClientEnforce is designed for onboarding workflow execution rather than generic task tracking. Teams can run templates, enforce required steps, and monitor stage status in one place.",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-software",
-            label: "client onboarding software",
-            description: "Explore the full product and workflow implementation guidance.",
-          },
-          {
-            href: "/pricing",
-            label: "client onboarding pricing",
-            description: "Select the plan that fits your workflow complexity and team model.",
-          },
-        ],
-      },
-    ],
-    faq: [
-      {
-        question: "What is onboarding workflow software?",
-        answer:
-          "Onboarding workflow software is software that structures onboarding stages, tracks completion status, and automates follow-ups for stalled or overdue tasks.",
-      },
-      {
-        question: "How does onboarding workflow software help agencies?",
-        answer:
-          "It helps agencies standardize onboarding across account managers, reduce manual chasing, and improve kickoff-readiness consistency.",
-      },
-      {
-        question: "What should be automated in onboarding workflows first?",
-        answer:
-          "Start with overdue reminders, inactivity nudges, and readiness notifications tied to required task completion.",
-      },
-      {
-        question: "Can ClientEnforce run onboarding workflows end to end?",
-        answer:
-          "Yes. ClientEnforce supports templates, intake, document collection, approvals, automation, and readiness tracking in one workflow.",
-      },
-    ],
-    relatedLinks: [
-      {
-        href: "/client-onboarding-software",
-        label: "Client onboarding software",
-        description: "See the central commercial page for full workflow and platform details.",
-      },
-      {
-        href: "/client-onboarding-platform",
-        label: "Client onboarding platform",
-        description: "Compare platform-level capabilities for onboarding execution.",
-      },
-      {
-        href: "/client-onboarding-tools",
-        label: "Client onboarding tools",
-        description: "Evaluate alternatives if you are comparing workflow tooling options.",
-      },
-      {
-        href: "/pricing",
-        label: "Client onboarding pricing",
-        description: "Review plans before implementing workflow software across teams.",
-      },
-    ],
-    cta: commonCta,
-    breadcrumbs: [
-      { name: "Home", path: "/" },
-      { name: "Onboarding workflow software", path: "/onboarding-workflow-software" },
-    ],
-  },
-  "client-intake-and-onboarding-software": {
-    path: "/client-intake-and-onboarding-software",
-    title: "Client Intake and Onboarding Software for Agencies | ClientEnforce",
-    description:
-      "ClientEnforce is client intake and onboarding software that centralizes forms, documents, approvals, and workflow tracking for agencies and service teams.",
-    keywords: [
-      "client intake and onboarding software",
-      "client intake software",
-      "client onboarding software",
-      "client onboarding platform",
-      "client onboarding workflow software",
-    ],
-    eyebrow: "Client intake and onboarding software",
-    h1: "Client Intake and Onboarding Software Built for Execution",
-    intro:
-      "ClientEnforce combines client intake and onboarding software in one system so teams can collect the right inputs, enforce required tasks, and launch projects with cleaner handoffs.",
-    highlights: [
-      "Unify intake forms and onboarding checklists in one flow",
-      "Collect files and approvals without tool switching",
-      "Automate reminders for incomplete intake and onboarding steps",
-      "Improve kickoff readiness with stage-level visibility",
-    ],
-    sections: [
-      {
-        heading: "Why intake and onboarding should run in one system",
-        paragraphs: [
-          "Separating intake from onboarding creates rework. Teams collect data in one place, then manually move requirements into another workflow and lose context in the handoff.",
-          "A unified intake and onboarding system keeps requirements, files, approvals, and status connected from the start.",
-        ],
-      },
-      {
-        heading: "What to include in a strong intake-to-onboarding flow",
-        paragraphs: [
-          "Use one structured sequence for all new clients, then tailor templates by service model.",
-        ],
-        bullets: [
-          "Client and stakeholder details",
-          "Project goals, constraints, and timeline expectations",
-          "Required files and access credentials",
-          "Approvals and signatures before kickoff",
-          "Readiness confirmation for delivery handoff",
-        ],
-        links: [
-          {
-            href: "/blog/client-intake-form-template",
-            label: "client intake form template",
-            description: "Use a practical field structure for faster intake completion.",
-          },
-          {
-            href: "/client-onboarding-checklist",
-            label: "client onboarding checklist",
-            description: "Map intake outputs directly into enforceable onboarding tasks.",
-          },
-        ],
-      },
-      {
-        heading: "How ClientEnforce supports intake and onboarding",
-        paragraphs: [
-          "ClientEnforce lets teams launch from templates, collect intake inputs, request files, gather approvals, and track completion in one workflow.",
-        ],
-        table: {
-          headers: ["Workflow area", "Operational goal", "ClientEnforce approach"],
-          rows: [
-            [
-              "Intake collection",
-              "Capture complete client context quickly",
-              "Structured forms tied to onboarding requirements",
-            ],
-            [
-              "Requirement fulfillment",
-              "Reduce missing files and credentials",
-              "Centralized document requests with reminder logic",
-            ],
-            [
-              "Readiness handoff",
-              "Start delivery with complete onboarding context",
-              "Stage-level completion status and handoff controls",
-            ],
-          ],
-        },
-      },
-      {
-        heading: "Implementation steps for intake and onboarding software",
-        paragraphs: [
-          "Rollout works best in phases so teams can validate quality before scaling.",
-        ],
-        steps: [
-          {
-            title: "Phase 1: Define required intake inputs",
-            description: "Document what is mandatory before onboarding can progress.",
-          },
-          {
-            title: "Phase 2: Build onboarding templates",
-            description: "Translate intake outputs into required onboarding tasks and owners.",
-          },
-          {
-            title: "Phase 3: Automate follow-ups",
-            description: "Enable reminder and escalation logic for incomplete intake and onboarding items.",
-          },
-          {
-            title: "Phase 4: Monitor completion quality",
-            description: "Track cycle time and readiness quality to improve the workflow monthly.",
-          },
-        ],
-      },
-    ],
-    faq: [
-      {
-        question: "What is client intake and onboarding software?",
-        answer:
-          "It is software that combines intake forms, requirement collection, onboarding tasks, approvals, and readiness tracking in one connected workflow.",
-      },
-      {
-        question: "Why combine intake and onboarding in one platform?",
-        answer:
-          "Combining both reduces handoff gaps, prevents duplicate data entry, and gives teams a clearer view of completion status before kickoff.",
-      },
-      {
-        question: "Can ClientEnforce replace separate intake and onboarding tools?",
-        answer:
-          "Yes. ClientEnforce centralizes intake, onboarding tasks, documents, signatures, reminders, and progress tracking in one system.",
-      },
-      {
-        question: "Who benefits most from intake and onboarding software?",
-        answer:
-          "Agencies, consultants, freelancers, and service businesses that onboard repeatedly and need consistent process quality benefit most.",
-      },
-    ],
-    relatedLinks: [
-      {
-        href: "/client-onboarding-software",
-        label: "Client onboarding software",
-        description: "Return to the pillar page for the complete commercial overview.",
-      },
-      {
-        href: "/client-onboarding-platform",
-        label: "Client onboarding platform",
-        description: "Compare platform-level capabilities for intake and onboarding operations.",
-      },
-      {
-        href: "/client-onboarding-automation",
-        label: "Client onboarding automation",
-        description: "Automate follow-ups once your intake and onboarding baseline is stable.",
-      },
-      {
-        href: "/pricing",
-        label: "Client onboarding pricing",
-        description: "Choose a plan aligned to your onboarding and intake volume.",
-      },
-    ],
-    cta: commonCta,
-    breadcrumbs: [
-      { name: "Home", path: "/" },
-      { name: "Client intake and onboarding software", path: "/client-intake-and-onboarding-software" },
-    ],
-  },
   "onboarding-software-for-service-businesses": {
     path: "/onboarding-software-for-service-businesses",
-    title: "Onboarding Software for Service Businesses | ClientEnforce",
+    title: "Onboarding Software for Service Businesses (Trades, Field Service, Multi-Site)",
     description:
-      "ClientEnforce is onboarding software for service businesses that need repeatable client intake, document collection, and automated onboarding workflows.",
+      "Onboarding software built for service businesses — trades, field service, mobile teams. Standardise client intake across multiple sites and crews.",
     keywords: [
-      "onboarding software for service businesses",
-      "client onboarding software",
-      "client onboarding platform",
-      "client onboarding system",
-      "automate client onboarding software",
+      "service business onboarding software",
+      "field service client onboarding",
+      "trades client intake software",
+      "multi-site service onboarding",
+      "mobile crew client intake",
     ],
-    eyebrow: "Onboarding software for service businesses",
-    h1: "Onboarding Software for Service Businesses That Need Consistent Starts",
+    eyebrow: "Service business onboarding software",
+    h1: "Onboarding Software for Service Businesses Working Across Sites",
     intro:
-      "Service businesses need onboarding software that keeps every new client organized, complete, and kickoff-ready. ClientEnforce helps teams automate onboarding tasks and reduce manual admin without losing client experience quality.",
+      "Trades, field service, and multi-site service shops need an intake system that holds up across every crew, every site, and every job. ClientEnforce gives mobile and dispatch-driven service businesses a single, enforced intake — so every new account starts with the same paperwork, the same compliance docs, and the same kickoff checklist.",
     highlights: [
-      "Standardize onboarding for every new service client",
-      "Collect forms, files, and signatures from one portal",
-      "Automate reminders to reduce manual follow-up work",
-      "Track readiness before delivery starts",
+      "Standardise intake across multiple sites, crews, and trucks",
+      "Collect site access, COIs, signed work authorisations, and photo evidence in one portal",
+      "Automate reminders so dispatch isn't chasing customers between jobs",
+      "Confirm readiness before a crew is scheduled — no more wasted truck rolls",
     ],
     sections: [
       {
-        heading: "Why service businesses need onboarding systems",
+        heading: "Why service businesses need site-aware onboarding",
         paragraphs: [
-          "Service businesses often lose time before delivery starts because requirements arrive late or incomplete. Without a system, onboarding quality depends on individual team habits.",
-          "A structured onboarding system protects revenue timelines by making required tasks visible, enforceable, and measurable.",
+          "Trades and field-service businesses lose money before the first visit when intake is informal. Site access, signed work authorisations, COIs, and scope confirmation get scattered across calls, texts, and inbox threads — and the crew arrives missing one critical thing.",
+          "A site-aware onboarding system makes the requirements visible per location, enforceable per job, and measurable per technician — so dispatch only schedules work that's actually ready to do.",
         ],
       },
       {
-        heading: "Common onboarding bottlenecks in service teams",
+        heading: "Common onboarding gaps in field-service and trades",
         paragraphs: [
-          "Most bottlenecks are operational: unclear requirements, manual reminders, and weak handoff visibility between client-facing and delivery roles.",
+          "Most field-service intake gaps are operational, not technical: requirements live in the head of one estimator, follow-up is manual, and the crew finds out about the missing access code at 7am on the day.",
         ],
         bullets: [
-          "Incomplete intake forms delaying project setup",
-          "Documents and approvals spread across email threads",
-          "No consistent checklist for kickoff readiness",
-          "High manual workload for follow-up reminders",
+          "Site access codes, gate keys, and after-hours instructions arrive after the truck rolls",
+          "COIs, signed work authorisations, and homeowner approvals scattered across email and text",
+          "No consistent kickoff checklist by service line — every estimator does it differently",
+          "Dispatch chasing customers between jobs to confirm readiness",
         ],
       },
       {
@@ -3287,12 +2529,12 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
     ],
     relatedLinks: [
       {
-        href: "/client-intake-and-onboarding-software",
+        href: "/client-onboarding-software",
         label: "Client intake and onboarding software",
         description: "See how intake and onboarding workflows connect in one system.",
       },
       {
-        href: "/client-onboarding-platform",
+        href: "/client-onboarding-software",
         label: "Client onboarding platform",
         description: "Compare platform-level capabilities for service-team onboarding.",
       },
@@ -3749,7 +2991,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Review the core platform powering fleet account intake workflows.",
       },
       {
-        href: "/blog/fleet-account-onboarding-checklist",
+        href: "/downloads/fleet-account-onboarding-checklist",
         label: "Fleet account onboarding checklist",
         description: "Use this checklist to standardize every new fleet account intake.",
       },
@@ -4132,7 +3374,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "See the complete onboarding workflow platform powering commercial intake.",
       },
       {
-        href: "/client-intake-and-onboarding-software",
+        href: "/client-onboarding-software",
         label: "Client intake and onboarding software",
         description: "Combine structured intake with full onboarding workflow management.",
       },
@@ -4171,257 +3413,6 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
 };
 
 export const blogPosts: Record<string, BlogPost> = {
-  "client-onboarding-process": {
-    slug: "client-onboarding-process",
-    path: "/blog/client-onboarding-process",
-    title: "Client Onboarding Process Guide | ClientEnforce",
-    description:
-      "Learn a practical client onboarding process with step-by-step workflow guidance, ownership rules, and automation tips to reduce delays.",
-    keywords: [
-      "client onboarding process",
-      "client onboarding workflow",
-      "client onboarding",
-      "client onboarding software",
-    ],
-    category: "Client onboarding basics",
-    h1: "Client onboarding process: a practical workflow your team can actually run",
-    intro:
-      "A strong client onboarding process creates momentum before delivery starts. This guide shows how to structure onboarding so clients complete requirements faster and teams avoid slow, manual follow-up loops.",
-    readTime: "10 min read",
-    publishedTime: "2026-03-09",
-    modifiedTime: "2026-03-09",
-    highlights: [
-      "Define the full workflow from contract to kickoff",
-      "Assign clear owners for every step",
-      "Automate reminders for incomplete tasks",
-    ],
-    sections: [
-      {
-        heading: "Why most onboarding processes break",
-        paragraphs: [
-          "Onboarding usually fails from unclear ownership, scattered communication, and missing requirements discovered too late.",
-          "When clients are asked to switch between tools, completion rates drop. A single onboarding flow is easier to complete and easier to manage.",
-        ],
-      },
-      {
-        heading: "A 5-stage client onboarding workflow",
-        paragraphs: [
-          "Use these five stages to map your operating model.",
-        ],
-        steps: [
-          {
-            title: "Stage 1: Intake and expectation setting",
-            description: "Confirm scope, timeline, and what the client must submit before kickoff.",
-          },
-          {
-            title: "Stage 2: Document and data collection",
-            description: "Gather files, credentials, and business inputs with clear due dates.",
-          },
-          {
-            title: "Stage 3: Signatures and approvals",
-            description: "Capture agreements and consents in the same workflow so nothing is missed.",
-          },
-          {
-            title: "Stage 4: Follow-up and validation",
-            description: "Automatically remind clients about missing steps and verify submitted information.",
-          },
-          {
-            title: "Stage 5: Kickoff readiness handoff",
-            description: "Mark onboarding complete and hand off to delivery with full context.",
-          },
-        ],
-      },
-      {
-        heading: "Ownership model for reliable execution",
-        paragraphs: [
-          "Every onboarding task should have one clear owner. If ownership is shared, accountability disappears.",
-        ],
-        bullets: [
-          "Sales or account owner: expectation setting and kickoff framing",
-          "Operations: template quality and workflow governance",
-          "Delivery lead: readiness validation and handoff acceptance",
-        ],
-      },
-      {
-        heading: "Where automation fits",
-        paragraphs: [
-          "Automate repetitive coordination, not strategic conversations. Reminder triggers and status alerts are high-leverage starting points.",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-automation",
-            label: "client onboarding automation",
-            description: "See what to automate first and how to avoid fragile workflows.",
-          },
-          {
-            href: "/client-onboarding-software",
-            label: "client onboarding software",
-            description: "Use software built for onboarding execution and completion visibility.",
-          },
-        ],
-      },
-    ],
-    checklist: [
-      "Each onboarding stage has one accountable owner",
-      "Required steps are clearly marked for clients",
-      "Automated reminders are triggered by inactivity",
-      "Kickoff cannot start until required tasks are complete",
-    ],
-    relatedLinks: [
-      {
-        href: "/",
-        label: "ClientEnforce homepage",
-        description: "Return to the main product page and launch your onboarding system.",
-      },
-      {
-        href: "/client-onboarding-software",
-        label: "Client onboarding software",
-        description: "Explore the full software guide and feature walkthrough.",
-      },
-      {
-        href: "/client-onboarding-automation",
-        label: "Client onboarding automation",
-        description: "Apply automation patterns to reduce onboarding delays.",
-      },
-      {
-        href: "/client-onboarding-tools",
-        label: "Client onboarding tools",
-        description: "Compare tool categories before changing your onboarding stack.",
-      },
-      {
-        href: "/blog/client-onboarding-checklist",
-        label: "Client onboarding checklist",
-        description: "Turn your process into a repeatable checklist.",
-      },
-      {
-        href: "/blog/automate-client-onboarding",
-        label: "How to automate client onboarding",
-        description: "Roll out automation in stages without losing quality.",
-      },
-    ],
-    cta: commonCta,
-    breadcrumbs: [
-      { name: "Home", path: "/" },
-      { name: "Blog", path: "/blog" },
-      { name: "Client onboarding process", path: "/blog/client-onboarding-process" },
-    ],
-  },
-  "client-onboarding-automation": {
-    slug: "client-onboarding-automation",
-    path: "/blog/client-onboarding-automation",
-    title: "Client Onboarding Automation: Strategy and Examples | ClientEnforce",
-    description:
-      "Learn how to implement client onboarding automation with practical workflows, reminder logic, and implementation steps.",
-    keywords: [
-      "client onboarding automation",
-      "automated client onboarding",
-      "client onboarding software",
-    ],
-    category: "Automation",
-    h1: "Client onboarding automation: practical workflows that reduce delays",
-    intro:
-      "Automation works best when it follows a clear process. This guide covers where automation creates immediate gains and where human interaction should stay in place.",
-    readTime: "9 min read",
-    publishedTime: "2026-03-09",
-    modifiedTime: "2026-03-09",
-    highlights: [
-      "Start with reminders, deadlines, and status triggers",
-      "Keep discovery and strategic steps high-touch",
-      "Measure automation impact with completion metrics",
-    ],
-    sections: [
-      {
-        heading: "What automation should solve",
-        paragraphs: [
-          "The goal is fewer delays and clearer handoffs. Automate work that is repetitive, rules-based, and tied to predictable events.",
-        ],
-      },
-      {
-        heading: "High-impact automation examples",
-        paragraphs: [
-          "Most teams can implement these quickly.",
-        ],
-        bullets: [
-          "Reminder sent 24-48 hours before due date",
-          "Escalation when no progress after a set window",
-          "Automatic status notification on completion",
-          "Internal alert when onboarding is ready for kickoff",
-        ],
-      },
-      {
-        heading: "Implementation sequence",
-        paragraphs: [
-          "Add automation in stages so your team can verify quality at each step.",
-        ],
-        steps: [
-          {
-            title: "Stage 1: Standardize your onboarding checklist",
-            description: "Automation amplifies process quality, good or bad. Fix the checklist first.",
-          },
-          {
-            title: "Stage 2: Add reminder and escalation rules",
-            description: "Start with simple triggers based on inactivity and due dates.",
-          },
-          {
-            title: "Stage 3: Add handoff notifications",
-            description: "Notify delivery stakeholders when onboarding is complete and verified.",
-          },
-        ],
-      },
-      {
-        heading: "Tooling considerations",
-        paragraphs: [
-          "Avoid over-fragmented stacks where automation and status live in different systems. One onboarding platform is easier to maintain.",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-software",
-            label: "client onboarding software",
-            description: "Use software that combines workflow control and automation in one place.",
-          },
-          {
-            href: "/blog/automate-client-onboarding",
-            label: "how to automate client onboarding",
-            description: "Follow a full implementation roadmap with rollout checkpoints.",
-          },
-        ],
-      },
-    ],
-    checklist: [
-      "Automation triggers are tied to task state",
-      "Escalation logic is documented",
-      "Human ownership is clear for exceptions",
-      "Completion metrics are reviewed monthly",
-    ],
-    relatedLinks: [
-      {
-        href: "/",
-        label: "ClientEnforce homepage",
-        description: "Return to the product page and launch your onboarding workflow.",
-      },
-      {
-        href: "/client-onboarding-software",
-        label: "Client onboarding software",
-        description: "See the core platform built for automated onboarding.",
-      },
-      {
-        href: "/blog/client-onboarding-process",
-        label: "Client onboarding process",
-        description: "Map your baseline process before automation changes.",
-      },
-      {
-        href: "/blog/client-onboarding-checklist",
-        label: "Client onboarding checklist",
-        description: "Use a stable checklist before adding automation layers.",
-      },
-    ],
-    cta: commonCta,
-    breadcrumbs: [
-      { name: "Home", path: "/" },
-      { name: "Blog", path: "/blog" },
-      { name: "Client onboarding automation", path: "/blog/client-onboarding-automation" },
-    ],
-  },
   "client-onboarding-email-templates": {
     slug: "client-onboarding-email-templates",
     path: "/blog/client-onboarding-email-templates",
@@ -4504,7 +3495,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Run these templates inside a structured onboarding system.",
       },
       {
-        href: "/blog/client-onboarding-automation",
+        href: "/client-onboarding-automation",
         label: "Client onboarding automation",
         description: "Link your template system to reminder automation.",
       },
@@ -4621,7 +3612,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Run your process with better control and visibility.",
       },
       {
-        href: "/blog/client-onboarding-process",
+        href: "/client-onboarding-process",
         label: "Client onboarding process",
         description: "Rebuild your process from first principles.",
       },
@@ -4780,7 +3771,7 @@ export const blogPosts: Record<string, BlogPost> = {
             description: "Run this workflow inside one onboarding-focused platform.",
           },
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare tool categories for running this workflow at scale.",
           },
@@ -4810,12 +3801,12 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Layer reminder and escalation rules on top of your workflow model.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Evaluate tool options for workflow standardization.",
       },
       {
-        href: "/blog/client-onboarding-process",
+        href: "/client-onboarding-process",
         label: "Client onboarding process",
         description: "Start with the process foundations before workflow optimization.",
       },
@@ -5082,7 +4073,7 @@ export const blogPosts: Record<string, BlogPost> = {
             description: "See how to run intake and onboarding in one system.",
           },
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Compare tooling options before choosing your stack.",
           },
@@ -5112,7 +4103,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Compare commercial options with practical selection criteria.",
       },
       {
-        href: "/blog/client-onboarding-process",
+        href: "/client-onboarding-process",
         label: "Client onboarding process",
         description: "Map intake and onboarding into one end-to-end workflow.",
       },
@@ -5325,7 +4316,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Apply this onboarding method in a structured platform.",
       },
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Compare software options for implementation.",
       },
@@ -5437,7 +4428,7 @@ export const blogPosts: Record<string, BlogPost> = {
         description: "Scale best practices across teams and service lines.",
       },
       {
-        href: "/blog/client-onboarding-process",
+        href: "/client-onboarding-process",
         label: "Client onboarding process",
         description: "Map these practices into an end-to-end workflow.",
       },
@@ -5612,7 +4603,7 @@ export const blogPosts: Record<string, BlogPost> = {
         ],
         links: [
           {
-            href: "/client-onboarding-tools",
+            href: "/best-client-onboarding-software",
             label: "client onboarding tools",
             description: "Review the commercial tools page for broader stack strategy.",
           },
@@ -5637,7 +4628,7 @@ export const blogPosts: Record<string, BlogPost> = {
     ],
     relatedLinks: [
       {
-        href: "/client-onboarding-tools",
+        href: "/best-client-onboarding-software",
         label: "Client onboarding tools",
         description: "Compare tool categories and commercial implementation options.",
       },
@@ -5804,12 +4795,12 @@ export const blogPosts: Record<string, BlogPost> = {
         ],
         links: [
           {
-            href: "/client-intake-and-onboarding-software",
+            href: "/client-onboarding-software",
             label: "client intake and onboarding software",
             description: "Unify forms, files, and approvals in one onboarding flow.",
           },
           {
-            href: "/client-onboarding-platform",
+            href: "/client-onboarding-software",
             label: "client onboarding platform",
             description: "Use one platform to simplify client-side onboarding experience.",
           },
@@ -5864,240 +4855,6 @@ export const blogPosts: Record<string, BlogPost> = {
     ],
   },
 
-  "fleet-account-onboarding": {
-    slug: "fleet-account-onboarding",
-    path: "/blog/fleet-account-onboarding",
-    title: "Fleet Account Onboarding Software | ClientEnforce",
-    description:
-      "Learn how fleet account onboarding software helps service businesses collect data, assign tasks, and complete fleet client setup faster — with fewer follow-ups and no dropped steps.",
-    keywords: [
-      "fleet account onboarding software",
-      "fleet account onboarding",
-      "fleet client onboarding",
-      "fleet onboarding process",
-      "fleet account setup software",
-      "fleet account management onboarding",
-      "onboarding fleet clients",
-      "fleet client portal",
-      "fleet onboarding checklist",
-    ],
-    category: "Fleet & account onboarding",
-    h1: "Fleet account onboarding software: how to onboard fleet clients without the chaos",
-    intro:
-      "Fleet accounts are high-value — and high-complexity. Each one typically involves multiple stakeholders, vehicle data, compliance paperwork, and service agreements. Without structured fleet account onboarding software, teams spend weeks chasing down missing information and trying to keep every client setup on track. This guide walks through what fleet account onboarding actually requires and how the right software eliminates the most common failure points.",
-    readTime: "9 min read",
-    publishedTime: "2026-04-15",
-    modifiedTime: "2026-04-15",
-    highlights: [
-      "Fleet accounts involve more data, more stakeholders, and more risk than standard client onboarding",
-      "Structured fleet account onboarding software prevents dropped steps and missed compliance requirements",
-      "Automated reminders and required-field enforcement close the most common fleet setup gaps",
-      "A client portal keeps fleet contacts accountable without constant manual follow-up",
-    ],
-    sections: [
-      {
-        heading: "Why fleet account onboarding is harder than standard client onboarding",
-        paragraphs: [
-          "Fleet accounts rarely have a single point of contact. You might be coordinating with a fleet manager, a finance contact, a safety officer, and an operations lead — all with different responsibilities and different response times.",
-          "Each vehicle or asset typically needs its own data: VIN numbers, license plates, current service records, driver assignments, or compliance certifications. And unlike a standard client onboarding where you collect one set of business details, fleet onboarding scales with the size of the account.",
-          "The result is a process that breaks down quickly when managed through email threads, shared spreadsheets, or one-off intake forms. Steps get missed. Follow-ups pile up. Kickoff dates slip.",
-        ],
-        bullets: [
-          "Multiple client-side stakeholders with different information to provide",
-          "Vehicle- or asset-level data requirements that grow with account size",
-          "Compliance documents and service agreements that need tracking and signature",
-          "Longer setup timelines that require systematic follow-up, not manual chasing",
-        ],
-      },
-      {
-        heading: "What fleet account onboarding software actually does",
-        paragraphs: [
-          "Fleet account onboarding software is purpose-built to handle the structured, multi-step data collection that fleet clients require. Rather than managing onboarding through scattered tools, it gives your team one workflow where every required step is visible, tracked, and enforced.",
-          "The best fleet client onboarding tools combine an intake and data collection layer with task enforcement, automated reminders, and a client-facing portal. That combination removes the coordination burden from your team while keeping fleet contacts engaged and accountable.",
-        ],
-        steps: [
-          {
-            title: "1. Fleet account intake",
-            description:
-              "Collect company details, fleet size, account type, and primary contact in a structured intake form that triggers the rest of the onboarding workflow.",
-          },
-          {
-            title: "2. Stakeholder assignment",
-            description:
-              "Identify and assign each client-side role — fleet manager, finance, safety — so the right person receives the right requests.",
-          },
-          {
-            title: "3. Vehicle and asset data collection",
-            description:
-              "Gather per-vehicle data through structured fields or bulk upload, with validation to prevent incomplete submissions.",
-          },
-          {
-            title: "4. Document and compliance gathering",
-            description:
-              "Request service agreements, insurance certificates, compliance docs, and signatures through the same workflow — no tool-switching required.",
-          },
-          {
-            title: "5. Automated follow-up and reminders",
-            description:
-              "Trigger reminders based on inactivity or approaching due dates so your team isn't manually tracking who has responded and who hasn't.",
-          },
-          {
-            title: "6. Kickoff readiness validation",
-            description:
-              "Block service activation or account launch until all required onboarding steps are marked complete — enforced by the software, not by human memory.",
-          },
-        ],
-      },
-      {
-        heading: "The fleet onboarding checklist: what to collect before kickoff",
-        paragraphs: [
-          "Before a fleet account can go live, your team typically needs a predictable set of information. Defining this as a required checklist — rather than a loose internal list — is what separates consistent fleet onboarding from chaotic fleet onboarding.",
-        ],
-        bullets: [
-          "Business entity details: legal name, tax ID, billing address",
-          "Fleet size and vehicle types: number of vehicles, asset categories, service scope",
-          "Key stakeholder contacts: fleet manager, billing contact, safety lead",
-          "Vehicle data: VINs, plate numbers, current mileage or usage data",
-          "Existing service history and maintenance records (if applicable)",
-          "Signed service agreement and rate schedule",
-          "Insurance certificate and compliance documentation",
-          "Preferred communication method and escalation contacts",
-          "Billing setup: payment terms, purchase order requirements, invoice delivery",
-        ],
-      },
-      {
-        heading: "Common failure points in fleet client onboarding",
-        paragraphs: [
-          "Even experienced operations teams run into the same fleet onboarding problems repeatedly. Most failures aren't about process knowledge — they're about process enforcement.",
-        ],
-        bullets: [
-          "No single owner: tasks float between account managers, coordinators, and client contacts with no one accountable",
-          "Incomplete data accepted: onboarding moves forward with missing vehicle data or unsigned agreements",
-          "Follow-up handled manually: account managers remember to chase some clients but not others",
-          "No completion gate: service is activated before onboarding is actually done",
-          "Scattered tools: intake happens in one place, documents in another, tasks in a third — nothing connected",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-automation",
-            label: "client onboarding automation",
-            description: "See how automation fixes the follow-up problem in complex onboarding workflows.",
-          },
-        ],
-      },
-      {
-        heading: "Fleet account onboarding software vs generic project management tools",
-        paragraphs: [
-          "Some teams try to manage fleet account setup through general-purpose project tools — Asana, Monday, ClickUp — or through CRM pipelines. These tools track tasks, but they weren't designed for client-facing onboarding.",
-          "Fleet account onboarding software is different because it includes a client portal. Clients can submit required information directly, upload documents, and see what's still outstanding — without needing access to your internal tools or coordination from your team.",
-          "That distinction matters at scale. When you're onboarding five fleet accounts at once, the difference between a system that clients actively participate in and one that requires your team to relay every request is weeks of setup time.",
-        ],
-        table: {
-          headers: ["Tool type", "Client-facing?", "Fleet onboarding fit"],
-          rows: [
-            ["Fleet account onboarding software", "Yes — client portal included", "Strong: built for structured, multi-step client data collection"],
-            ["Project management tools", "No — internal only", "Weak: no client intake or automated follow-up"],
-            ["CRM pipelines", "Partial — some email workflows", "Limited: tracks deal stage but not onboarding completion"],
-            ["Email + spreadsheets", "No", "Breaks down quickly at any meaningful fleet account volume"],
-          ],
-        },
-      },
-      {
-        heading: "How to choose fleet account onboarding software",
-        paragraphs: [
-          "Not all client onboarding platforms handle the specific requirements of fleet accounts well. When evaluating options, prioritize these capabilities.",
-        ],
-        bullets: [
-          "Required-field enforcement: can the system block submission if key vehicle data is missing?",
-          "Multi-stakeholder workflows: can different tasks be assigned to different client contacts?",
-          "Document collection and e-signature: can clients upload files and sign agreements in the same portal?",
-          "Automated reminders: does the system send follow-ups based on inactivity, not just calendar reminders?",
-          "Completion gating: can you prevent service activation until all required steps are done?",
-          "Audit trail: does the platform log what was submitted, by whom, and when?",
-          "Template reuse: can you replicate a standard fleet onboarding template across new accounts?",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-software",
-            label: "client onboarding software",
-            description: "Explore the full feature set for structured client onboarding at scale.",
-          },
-          {
-            href: "/client-portal-software",
-            label: "client portal software",
-            description: "See how a client portal keeps fleet contacts accountable without manual chasing.",
-          },
-        ],
-      },
-      {
-        heading: "ClientEnforce for fleet account onboarding",
-        paragraphs: [
-          "ClientEnforce is a client onboarding platform built for service businesses that need consistent, enforced onboarding execution across complex accounts — including fleet clients.",
-          "With ClientEnforce, you launch a structured onboarding workflow for each fleet account from a reusable template. Required steps are enforced. Reminders run automatically. Clients complete their tasks through a secure client portal — without needing to call or email your team to find out what's needed.",
-          "When an account is ready to go live, your team has a complete record of every submitted document, signed agreement, and completed step. No guesswork. No late-discovered gaps. Just a clean handoff to service delivery.",
-        ],
-        links: [
-          {
-            href: "/client-onboarding-software",
-            label: "client onboarding software",
-            description: "See the full ClientEnforce platform overview.",
-          },
-          {
-            href: "/client-onboarding-automation",
-            label: "client onboarding automation",
-            description: "Learn how automation handles fleet account follow-up without manual effort.",
-          },
-          {
-            href: "/client-intake-software",
-            label: "client intake software",
-            description: "Explore the intake and data collection layer of ClientEnforce.",
-          },
-        ],
-      },
-    ],
-    checklist: [
-      "Fleet onboarding template covers all required data fields before a new account is created",
-      "Each onboarding task has one assigned owner — internal or client-side",
-      "Vehicle and asset data is validated before the account advances",
-      "Documents and signatures are collected in the onboarding workflow, not separately",
-      "Automated reminders trigger on inactivity — no manual follow-up required",
-      "Service or account activation is gated on onboarding completion",
-      "Every submission is logged with timestamp and contact attribution",
-    ],
-    relatedLinks: [
-      {
-        href: "/client-onboarding-software",
-        label: "Client onboarding software",
-        description: "The full platform overview for structured client onboarding.",
-      },
-      {
-        href: "/client-portal-software",
-        label: "Client portal software",
-        description: "How a dedicated client portal improves fleet account completion rates.",
-      },
-      {
-        href: "/client-onboarding-automation",
-        label: "Client onboarding automation",
-        description: "Automate fleet follow-up without adding manual coordination overhead.",
-      },
-      {
-        href: "/client-intake-software",
-        label: "Client intake software",
-        description: "Collect structured fleet account data from the first touchpoint.",
-      },
-      {
-        href: "/blog/client-onboarding-checklist",
-        label: "Client onboarding checklist",
-        description: "Build a complete fleet onboarding checklist from this template.",
-      },
-    ],
-    cta: commonCta,
-    breadcrumbs: [
-      { name: "Home", path: "/" },
-      { name: "Blog", path: "/blog" },
-      { name: "Fleet account onboarding software", path: "/blog/fleet-account-onboarding" },
-    ],
-  },
 };
 
 export const blogPostSlugs = Object.keys(blogPosts);
@@ -6108,12 +4865,8 @@ export const blogPostList = Object.values(blogPosts).sort((a, b) =>
 
 export const coreSeoPaths = [
   "/client-onboarding-software",
-  "/client-onboarding-platform",
-  "/client-onboarding-tools",
   "/client-onboarding-checklist",
   "/client-onboarding-automation",
-  "/onboarding-workflow-software",
-  "/client-intake-and-onboarding-software",
   "/onboarding-software-for-service-businesses",
   "/client-onboarding-process",
 ] as const;

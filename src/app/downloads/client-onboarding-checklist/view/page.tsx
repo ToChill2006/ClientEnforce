@@ -2,16 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildNoindexMetadata } from "@/lib/seo";
 import { PrintButton } from "./PrintButton";
 
-export const metadata: Metadata = buildPageMetadata({
+export const metadata: Metadata = buildNoindexMetadata({
   title: "Client Onboarding Checklist Template (Free, Printable) | ClientEnforce",
   description:
     "The complete 25-step client onboarding checklist for agencies, consultants, and service businesses — printable, free, ready to use.",
   path: "/downloads/client-onboarding-checklist/view",
-  keywords: ["client onboarding checklist", "client onboarding template", "new client checklist"],
-  type: "website",
 });
 
 const phases = [

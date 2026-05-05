@@ -2,16 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer, PublicFooter, PublicHeader } from "@/components/marketing/public-shell";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildNoindexMetadata } from "@/lib/seo";
 import { PrintButton } from "./PrintButton";
 
-export const metadata: Metadata = buildPageMetadata({
+export const metadata: Metadata = buildNoindexMetadata({
   title: "Multi-Location Fleet Account Onboarding Checklist | ClientEnforce",
   description:
     "The complete 30-step fleet account onboarding checklist for multi-location auto service operators — printable, free, ready to use.",
   path: "/downloads/fleet-account-onboarding-checklist/view",
-  keywords: ["fleet account onboarding checklist", "fleet onboarding steps", "multi-location fleet checklist"],
-  type: "website",
 });
 
 const phases = [

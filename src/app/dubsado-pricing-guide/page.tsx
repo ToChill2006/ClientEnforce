@@ -56,7 +56,7 @@ const productSchema = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   url: "https://clientenforce.com/dubsado-pricing-guide",
-  description: "Client onboarding software for US agencies, consultants, and accountants. Starts free. Required-step enforcement, document collection, e-signatures, automated reminders, audit trail.",
+  description: "Onboarding-focused alternative to Dubsado for teams that need enforcement and an audit trail more than full-stack workflow orchestration. Pricing starts free.",
 };
 
 const dubsadoPricingRows = [

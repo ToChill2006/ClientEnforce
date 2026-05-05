@@ -3,23 +3,32 @@ import { sitemapPublicPaths } from "@/lib/content/seo-content";
 import { allLpPaths } from "@/lib/verticals";
 import { absoluteUrl } from "@/lib/seo";
 
-// Pages recently updated (April 2026) — signal freshness to search engines
+// Pages recently updated (May 2026) — signal freshness to search engines
 const recentlyUpdatedPaths = new Set([
   "/dubsado-alternative",
   "/honeybook-alternative",
   "/rocketlane-alternative",
+  "/guidecx-alternative",
   "/dubsado-vs-honeybook",
   "/copilot-alternative",
   "/bonsai-alternative",
+  "/dubsado-pricing-guide",
+  "/honeybook-pricing-guide",
   "/client-portal-software",
   "/client-intake-software",
   "/client-onboarding-software",
   "/client-onboarding-software-for-agencies",
   "/client-onboarding-automation",
   "/client-onboarding-checklist",
-  "/onboarding-for-accountants",
-  "/blog/best-client-onboarding-software-2026",
+  "/client-onboarding-process",
+  "/onboarding-software-for-service-businesses",
+  "/accountants",
+  "/consultants",
+  "/agencies",
+  "/auto-service",
+  "/best-client-onboarding-software",
   "/blog/honeybook-alternatives",
+  "/blog/client-onboarding-checklist-template",
   "/fleet-account-onboarding",
   "/multi-location-client-onboarding",
   "/franchise-onboarding-software",
@@ -37,35 +46,42 @@ const highPriorityPages = new Set([
   "/client-onboarding-software-for-agencies",
   "/client-onboarding-automation",
   "/client-onboarding-checklist",
-  "/client-onboarding-tools",
+  "/best-client-onboarding-software",
   "/rocketlane-alternative",
   "/dubsado-vs-honeybook",
-  "/onboarding-for-accountants",
+  "/accountants",
   "/fleet-account-onboarding",
   "/multi-location-client-onboarding",
   "/franchise-onboarding-software",
   "/commercial-client-intake",
 ]);
 
+// Paths excluded from sitemap — gated lead magnets and paid LPs (noindex,follow).
+// These should not compete with canonical pages in SERPs and have no organic role.
+const excludedFromSitemap = new Set<string>([
+  "/downloads/client-onboarding-checklist",
+  "/downloads/client-onboarding-checklist/view",
+  "/downloads/fleet-account-onboarding-checklist",
+  "/downloads/fleet-account-onboarding-checklist/view",
+]);
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const recentDate = new Date("2026-04-26");
+  const recentDate = new Date("2026-05-04");
 
   const additionalPublicPaths = [
     "/copilot-alternative",
     "/bonsai-alternative",
     "/client-portal-software",
     "/client-intake-software",
-    "/onboarding-for-accountants",
-    "/onboarding-for-consultants",
+    "/accountants",
+    "/consultants",
     "/honeybook-pricing-guide",
     "/dubsado-pricing-guide",
     "/dubsado-vs-honeybook",
-    "/downloads/client-onboarding-checklist",
-    "/downloads/client-onboarding-checklist/view",
     "/blog/why-client-onboarding-fails",
     "/blog/client-onboarding-checklist-template",
-    "/blog/best-client-onboarding-software-2026",
+    "/best-client-onboarding-software",
     "/blog/how-to-stop-chasing-clients-during-onboarding",
     "/blog/client-onboarding-guide",
     "/blog/honeybook-alternatives",
@@ -73,13 +89,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Blog posts (template-driven)
     "/blog/client-intake-form-template",
     "/blog/client-intake-process",
-    "/blog/client-onboarding-automation",
+    "/client-onboarding-automation",
     "/blog/client-onboarding-best-practices",
     "/blog/client-onboarding-email-templates",
     "/blog/client-onboarding-mistakes",
-    "/blog/client-onboarding-process",
+    "/client-onboarding-process",
     "/blog/client-onboarding-workflow",
-    "/blog/fleet-account-onboarding",
+    "/fleet-account-onboarding",
     "/blog/how-to-improve-client-onboarding",
     "/blog/how-to-onboard-new-clients",
     "/blog/how-to-standardize-client-onboarding",
@@ -88,16 +104,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog/onboarding-experience-tips",
     "/resources/agency-onboarding-checklist",
     "/resources/consultant-intake-checklist",
-    "/downloads/fleet-account-onboarding-checklist",
-    "/downloads/fleet-account-onboarding-checklist/view",
     "/rocketlane-alternative",
     "/guidecx-alternative",
-    // New keyword pages (April 2026)
+    // Vertical pages (canonical winners)
     "/fleet-account-onboarding",
     "/multi-location-client-onboarding",
     "/franchise-onboarding-software",
     "/commercial-client-intake",
-    // Industry / vertical pages
+    // Industry pages
     "/agencies",
     "/consultants",
     "/accountants",
@@ -109,7 +123,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/financial-advisors",
   ] as const;
 
-  const canonicalPaths = Array.from(new Set([...sitemapPublicPaths, ...additionalPublicPaths, ...allLpPaths]));
+  // /lp/* are paid landing pages set to noindex,follow — exclude from sitemap entirely.
+  void allLpPaths;
+
+  const canonicalPaths = Array.from(
+    new Set([...sitemapPublicPaths, ...additionalPublicPaths]),
+  ).filter((p) => !excludedFromSitemap.has(p));
 
   return canonicalPaths.map((path) => {
     const isHome = path === "/";
@@ -117,14 +136,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const isHighPriority = highPriorityPages.has(path);
     const isBlogPost = path.startsWith("/blog/");
     const isHighValueBlog = path === "/blog/best-client-onboarding-software";
-    const isLpVertical = path.startsWith("/lp/") && path.split("/").length === 3;
-    const isLpSubPage = path.startsWith("/lp/") && path.split("/").length === 4;
     const wasRecentlyUpdated = recentlyUpdatedPaths.has(path);
 
     return {
       url: absoluteUrl(path),
       lastModified: wasRecentlyUpdated ? recentDate : now,
-      changeFrequency: isBlogPost || isLpVertical || isLpSubPage ? "monthly" : "weekly",
+      changeFrequency: isBlogPost ? "monthly" : "weekly",
       priority: isHome
         ? 1
         : isMoneyPage
@@ -133,13 +150,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
             ? 0.9
             : isHighValueBlog
               ? 0.85
-              : isLpVertical
-                ? 0.8
-                : isLpSubPage
-                  ? 0.75
-                  : isBlogPost
-                    ? 0.72
-                    : 0.85,
+              : isBlogPost
+                ? 0.72
+                : 0.85,
     } satisfies MetadataRoute.Sitemap[number];
   });
 }

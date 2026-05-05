@@ -319,6 +319,9 @@ export default function BestClientOnboardingSoftwarePage() {
                     { href: "/dubsado-alternative", label: "Dubsado alternative", desc: "Why agencies outgrow Dubsado for onboarding." },
                     { href: "/honeybook-alternative", label: "HoneyBook alternative", desc: "Where HoneyBook falls short for team onboarding." },
                     { href: "/copilot-alternative", label: "Copilot alternative", desc: "Copilot vs ClientEnforce for structured onboarding." },
+                    { href: "/bonsai-alternative", label: "Bonsai alternative", desc: "Why service teams outgrow Bonsai's freelancer-first toolkit." },
+                    { href: "/rocketlane-alternative", label: "Rocketlane alternative", desc: "SMB-friendly alternative to enterprise Rocketlane." },
+                    { href: "/guidecx-alternative", label: "GUIDEcx alternative", desc: "Affordable onboarding software for small teams." },
                     { href: "/client-onboarding-software", label: "Client onboarding software", desc: "Full overview of the ClientEnforce platform." },
                     { href: "/client-intake-software", label: "Client intake software", desc: "Intake enforcement vs form collection." },
                   ].map((link) => (

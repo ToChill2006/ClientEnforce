@@ -78,7 +78,7 @@ const hbProductSchema = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   url: "https://clientenforce.com/honeybook-alternative",
-  description: "Client onboarding software for agencies and service teams. Enforces required-step completion, collects documents and signatures, automates follow-ups, and maintains a full audit trail.",
+  description: "Client intake software for accountants and law firms who need an audit trail HoneyBook doesn't build — timestamped submissions, enforced compliance steps, and exportable evidence per client.",
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue: "4.8",
@@ -304,7 +304,7 @@ export default function HoneyBookAlternativePage() {
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
                 { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
                 { href: "/dubsado-alternative", label: "Dubsado alternative" },
-                { href: "/onboarding-for-accountants", label: "For accountants" },
+                { href: "/accountants", label: "For accountants" },
                 { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
