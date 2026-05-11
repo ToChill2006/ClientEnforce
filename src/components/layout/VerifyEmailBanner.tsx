@@ -13,7 +13,10 @@ export default function VerifyEmailBanner({ emailVerified }: { emailVerified: bo
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    if (emailVerified) return;
+    if (emailVerified) {
+      setVisible(false);
+      return;
+    }
     const dismissed = sessionStorage.getItem(DISMISS_KEY);
     if (!dismissed) setVisible(true);
   }, [emailVerified]);
@@ -34,7 +37,6 @@ export default function VerifyEmailBanner({ emailVerified }: { emailVerified: bo
       setErrorMsg(result.error);
     } else {
       setSent(true);
-      setTimeout(dismiss, 3000);
     }
   }
 
