@@ -65,7 +65,7 @@ export default async function SignupPage({
             Create your account
           </h1>
           <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
-            Start automating your client onboarding in minutes.
+            You&apos;ll be signed in straight away. No email confirmation required.
           </p>
         </div>
 

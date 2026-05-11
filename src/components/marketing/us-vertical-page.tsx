@@ -4,7 +4,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import { PublicHeader, PublicFooter, CtaBand } from "@/components/marketing/public-shell";
+import { PublicHeader, PublicFooter, CtaBand, JsonLd } from "@/components/marketing/public-shell";
+import { buildFaqPageSchema } from "@/lib/seo";
 import { FadeUp } from "@/components/marketing/fade-up";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { PricingToggle } from "@/components/marketing/pricing-toggle";
@@ -442,6 +443,9 @@ export function UsVerticalPage({ config }: { config: UsVerticalConfig }) {
         />
       </main>
       <PublicFooter />
+      {config.faqItems?.length > 0 && (
+        <JsonLd data={buildFaqPageSchema(config.faqItems.map((item) => ({ question: item.question, answer: item.answer })))} />
+      )}
     </div>
   );
 }

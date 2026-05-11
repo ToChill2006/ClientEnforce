@@ -275,6 +275,71 @@ export default function HoneyBookAlternativePage() {
           secondaryHref="/features"
         />
 
+        {/* Other HoneyBook alternatives — absorbed from /blog/honeybook-alternatives */}
+        <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-16">
+          <PageContainer>
+            <FadeUp>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>
+                Other HoneyBook alternatives at a glance
+              </h2>
+              <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
+                ClientEnforce is the strongest HoneyBook alternative for agency and service team onboarding. But depending on your situation, other tools may be a better fit. Here is an honest summary.
+              </p>
+            </FadeUp>
+            <FadeUp delay={60}>
+              <div className="mt-8 overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-sm)]">
+                <table className="w-full min-w-[680px] text-sm">
+                  <thead>
+                    <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Tool</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Starting price</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Best for</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Verdict</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-border)]">
+                    {[
+                      { tool: "ClientEnforce", price: "Free / $37/mo", bestFor: "Agencies & service teams — onboarding enforcement", verdict: "Best for structured onboarding with audit trail", accent: true },
+                      { tool: "Dubsado", price: "~$20/mo", bestFor: "Solo freelancers wanting workflow control", verdict: "All-in-one with steep setup curve", accent: false },
+                      { tool: "Copilot", price: "~$29/mo", bestFor: "Teams wanting a branded client portal", verdict: "Great portal; limited onboarding enforcement", accent: false },
+                      { tool: "Bonsai", price: "~$21/mo", bestFor: "Freelancers needing contracts + invoicing", verdict: "Clean and simple; no team or enforcement features", accent: false },
+                      { tool: "17hats", price: "~$45/mo", bestFor: "Photographers and creatives", verdict: "Dated UI; good feature depth for its niche", accent: false },
+                      { tool: "Notion + templates", price: "Free / $10/user", bestFor: "DIY teams on a tight budget", verdict: "Not real onboarding software; breaks at scale", accent: false },
+                    ].map((row, i) => (
+                      <tr key={row.tool} className={i % 2 === 0 ? "bg-white" : "bg-[var(--color-bg-subtle)]"}>
+                        <td className={`px-4 py-3 text-sm font-semibold ${row.accent ? "text-[var(--color-accent)]" : "text-[var(--color-text-primary)]"}`}>{row.tool}</td>
+                        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{row.price}</td>
+                        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{row.bestFor}</td>
+                        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{row.verdict}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </FadeUp>
+            <FadeUp delay={120}>
+              <div className="mt-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5">
+                <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">TL;DR — best for each use case</p>
+                <ul className="mt-4 space-y-2">
+                  {[
+                    { label: "Best for agency / team onboarding enforcement", pick: "ClientEnforce" },
+                    { label: "Best for solo freelancers wanting all-in-one", pick: "Dubsado" },
+                    { label: "Best for client communication portals", pick: "Copilot" },
+                    { label: "Best for simple freelance contracts + payments", pick: "Bonsai" },
+                    { label: "Best for photographers and creatives", pick: "17hats" },
+                    { label: "Best for DIY teams on a tight budget", pick: "Notion + templates" },
+                  ].map((row) => (
+                    <li key={row.label} className="flex flex-wrap items-baseline gap-2 text-sm">
+                      <span className="text-[var(--color-text-muted)]">{row.label}:</span>
+                      <span className="font-semibold text-[var(--color-text-primary)]">{row.pick}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </FadeUp>
+          </PageContainer>
+        </section>
+
         {/* FAQ */}
         <section className="border-b border-[var(--color-border)] bg-white py-16">
           <PageContainer>

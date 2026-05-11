@@ -6,9 +6,9 @@ import { FadeUp } from "@/components/marketing/fade-up";
 import { buildPageMetadata, buildFaqPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Client Onboarding Checklist 2026 — Free Template | ClientEnforce",
+  title: "Client Onboarding Checklist & Template 2026 | ClientEnforce",
   description:
-    "A complete client onboarding checklist covering every step from signed agreement to kickoff-ready. Free to use and adapt. Plus: how to enforce it automatically so nothing gets skipped.",
+    "Complete client onboarding checklist template — from signed agreement to kickoff-ready. Free to use. Includes how to enforce every step automatically.",
   path: "/client-onboarding-checklist",
   keywords: [
     "client onboarding checklist",
@@ -198,6 +198,109 @@ export default function ClientOnboardingChecklistPage() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </FadeUp>
+
+              {/* Download CTA */}
+              <FadeUp>
+                <div className="flex flex-wrap gap-3">
+                  <Link href="/downloads/client-onboarding-checklist" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-sm)] hover:bg-[var(--color-accent-hover)]">
+                    Download checklist as PDF
+                  </Link>
+                  <Link href="/client-onboarding-software" className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-3 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]">
+                    See the onboarding platform →
+                  </Link>
+                </div>
+              </FadeUp>
+
+              {/* What makes a useful checklist */}
+              <FadeUp>
+                <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                  <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+                    What makes a useful client onboarding checklist template
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
+                    A useful onboarding checklist template is specific, enforceable, and connected to action. A useless one is a vague wish list with no owners, no due dates, and no completion standard.
+                  </p>
+                  <ul className="mt-4 space-y-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 text-sm text-[var(--color-text-primary)]">
+                    {["Every step has one owner.", "Every required item has a clear completion definition.", "The sequence mirrors how clients actually complete onboarding.", "The checklist is run in a system, not in static docs."].map((item) => (
+                      <li key={item} className="flex gap-2.5"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-text-primary)]" />{item}</li>
+                    ))}
+                  </ul>
+                </section>
+              </FadeUp>
+
+              {/* Detailed template sections from blog */}
+              <FadeUp>
+                <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                  <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+                    Client onboarding checklist template — detailed sections
+                  </h2>
+                  <p className="mt-2 text-sm text-[var(--color-text-secondary)]">Each section below maps to a phase in your onboarding workflow. Use these as the basis for your own template.</p>
+                  <div className="mt-6 space-y-6">
+                    {[
+                      {
+                        heading: "Section 1: Pre-onboarding (before portal send)",
+                        intro: "Pre-onboarding is where most future delays are either created or prevented. If this stage is sloppy, everything after it slows down.",
+                        items: [
+                          "Confirm scope and service package in plain language.",
+                          "Assign onboarding owner on your team.",
+                          "Prepare onboarding template for this client type.",
+                          "Define required documents and signatures.",
+                          "Set expected completion timeline and due dates.",
+                          "Prepare kickoff readiness criteria.",
+                          "Confirm client primary contact and backup contact.",
+                        ],
+                      },
+                      {
+                        heading: "Section 2: Client intake requirements",
+                        intro: "Intake quality determines delivery quality. Teams that rush this section usually pay with rework, delays, and avoidable scope confusion.",
+                        items: [
+                          "Business goals and success criteria for the engagement.",
+                          "Primary stakeholder list and decision-maker contacts.",
+                          "Current tools, platforms, and access dependencies.",
+                          "Brand assets, guidelines, and source files.",
+                          "Technical credentials and login requirements.",
+                          "Approvals workflow and sign-off authority.",
+                          "Communication preferences and reporting cadence.",
+                          "Known risks, constraints, or launch deadlines.",
+                        ],
+                      },
+                      {
+                        heading: "Section 3: Document and signature collection",
+                        intro: "This is where many teams drop the ball because files arrive through mixed channels. Keep everything in one place and enforce required items.",
+                        items: [
+                          "Engagement letter sent and signed.",
+                          "Required compliance documents uploaded.",
+                          "Identity or authorization files collected.",
+                          "Billing and legal contacts verified.",
+                          "Contract attachments and annexes captured.",
+                          "Final approval timestamp recorded.",
+                        ],
+                      },
+                      {
+                        heading: "Section 4: Internal kickoff readiness checks",
+                        intro: "Kickoff should not happen because the date arrived. It should happen because onboarding is complete by definition.",
+                        items: [
+                          "All required intake fields are complete and reviewed.",
+                          "All required documents and signatures are present.",
+                          "Access credentials tested by delivery owner.",
+                          "Risks and constraints reviewed with project lead.",
+                          "Kickoff agenda aligned to submitted onboarding context.",
+                        ],
+                      },
+                    ].map((section) => (
+                      <div key={section.heading}>
+                        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{section.heading}</h3>
+                        <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{section.intro}</p>
+                        <ol className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {section.items.map((item) => (
+                            <li key={item} className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-3 text-sm text-[var(--color-text-primary)]">{item}</li>
+                          ))}
+                        </ol>
                       </div>
                     ))}
                   </div>

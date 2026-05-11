@@ -46,7 +46,7 @@ const features = [
 ] as const;
 
 const whoItsFor = [
-  { icon: <TrendingUp className="h-5 w-5" />, title: "Agencies", href: "/client-onboarding-software-for-agencies", pain: "Running 10 onboardings at once with no consistent process.", solution: "One repeatable template. Live status across every active account." },
+  { icon: <TrendingUp className="h-5 w-5" />, title: "Agencies", href: "/agencies", pain: "Running 10 onboardings at once with no consistent process.", solution: "One repeatable template. Live status across every active account." },
   { icon: <PenLine className="h-5 w-5" />, title: "Consultants", href: "/consultants", pain: "Discovery and intake details buried in email before kickoff.", solution: "Keep intake, documents, and approvals in one portal before work begins." },
   { icon: <ShieldCheck className="h-5 w-5" />, title: "Accountants", href: "/accountants", pain: "Compliance docs must be traceable — inbox collection is not enough.", solution: "Enforce required submissions. Maintain an audit-ready timeline." },
   { icon: <Layers className="h-5 w-5" />, title: "Multi-location operators", href: "/auto-service", pain: "Running onboarding across 3+ locations? Every manager does it differently.", solution: "One enforced template across every location. Same process, every time, at scale." },

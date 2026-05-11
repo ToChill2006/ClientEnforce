@@ -5,16 +5,16 @@ import { JsonLd, PageContainer, PublicFooter, PublicHeader } from "@/components/
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Fleet Account Onboarding Software — Structured Client Intake | ClientEnforce",
+  title: "Fleet Account Onboarding Software | ClientEnforce",
   description:
-    "Fleet account onboarding software that enforces required documents, signed agreements, and compliance steps before an account goes live. Stop chasing fleet clients over email.",
+    "Fleet account onboarding software that enforces required documents, signed agreements, and compliance steps before an account goes live. Free trial.",
   path: "/fleet-account-onboarding",
   keywords: [
     "fleet account onboarding software",
     "fleet client onboarding",
     "fleet account intake",
     "fleet management client onboarding",
-    "fleet account setup",
+    "fleet account setup software",
     "client onboarding software",
   ],
   type: "website",
@@ -23,23 +23,33 @@ export const metadata: Metadata = buildPageMetadata({
 const faqItems = [
   {
     question: "What is fleet account onboarding software?",
-    answer: "Fleet account onboarding software structures the intake process for new fleet clients — collecting required documents, signed service agreements, vehicle lists, driver authorisations, and payment information before the account goes live. It replaces email-based intake with an enforced, trackable workflow so nothing is missed.",
+    answer:
+      "Fleet account onboarding software structures the intake process for new fleet clients — collecting required documents, signed service agreements, vehicle lists, driver authorisations, and payment information before the account goes live. It replaces email-based intake with an enforced, trackable workflow so nothing is missed.",
   },
   {
     question: "What documents are typically required for fleet account onboarding?",
-    answer: "Fleet account onboarding typically requires: a signed service or master account agreement, company registration documents, an authorised signatories form, an initial vehicle list or fleet register, driver licence and authorisation records, insurance certificates, and payment method on file. ClientEnforce enforces completion of every required item before the account is marked active.",
+    answer:
+      "Fleet account onboarding typically requires: a signed service or master account agreement, company registration documents, an authorised signatories form, an initial vehicle list or fleet register, driver licence and authorisation records, insurance certificates, and payment method on file. ClientEnforce enforces completion of every required item before the account is marked active.",
   },
   {
     question: "How does ClientEnforce handle fleet accounts with multiple contacts?",
-    answer: "Fleet accounts often involve a fleet manager, a finance contact, and sometimes a driver coordinator. ClientEnforce lets you send one portal link that multiple stakeholders can access, with each required task clearly assigned and tracked until complete.",
+    answer:
+      "Fleet accounts often involve a fleet manager, a finance contact, and sometimes a driver coordinator. ClientEnforce lets you send one portal link that multiple stakeholders can access, with each required task clearly assigned and tracked until complete.",
   },
   {
     question: "Can we use different onboarding templates for different fleet types?",
-    answer: "Yes. Build separate templates for commercial fleet accounts, government fleet accounts, or specific service tiers. Each template defines its own required steps, documents, and intake questions.",
+    answer:
+      "Yes. Build separate templates for commercial fleet accounts, government fleet accounts, or specific service tiers. Each template defines its own required steps, documents, and intake questions.",
   },
   {
     question: "How long does fleet account setup take with ClientEnforce?",
-    answer: "Most teams build their first fleet account onboarding template in under 20 minutes. Clients complete intake through the secure portal without creating an account — no friction on their side.",
+    answer:
+      "Most teams build their first fleet account onboarding template in under 20 minutes. Clients complete intake through the secure portal without creating an account — no friction on their side.",
+  },
+  {
+    question: "How is fleet account onboarding software different from generic CRM onboarding?",
+    answer:
+      "Generic CRM onboarding tracks deal stages and contact history but does not enforce structured data collection from the client side. Fleet account onboarding software gives each new account a client-facing portal where required steps — vehicle lists, signed agreements, insurance certificates, driver records — must be completed before the account advances. The difference is enforcement: CRMs tell you what is missing; dedicated onboarding software prevents you from proceeding without it.",
   },
 ];
 
@@ -69,21 +79,30 @@ export default function FleetAccountOnboardingPage() {
                 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-5xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Fleet account onboarding software — enforce every intake step before an account goes live
+                Fleet Account Onboarding Software for Multi-Location Operators
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
-                Fleet account onboarding involves multiple stakeholders, layers of documentation, and compliance requirements that cannot be skipped. Yet most teams manage it over email — missing documents, chasing signatures, and activating accounts before intake is complete.
+                Fleet account onboarding software gives auto service operators, dealerships, and commercial fleet managers a structured intake workflow that collects signed agreements, insurance certificates, vehicle rosters, and driver records — before the account goes live. Required steps are enforced. Automated reminders chase contacts until every item is complete.
               </p>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)]">
-                ClientEnforce gives fleet teams a structured intake workflow that enforces every required step — documents, agreements, vehicle records, and payment setup — before an account is activated.
-              </p>
+
+              {/* Cross-link to blog */}
+              <div className="mt-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-4">
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  Want to understand the fleet onboarding process first?{" "}
+                  <Link href="/blog/fleet-account-onboarding" className="font-semibold text-[var(--color-accent)] underline underline-offset-2">
+                    How the fleet onboarding process works →
+                  </Link>
+                </p>
+              </div>
+
               <ul className="mt-5 max-w-3xl space-y-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 text-sm text-[var(--color-text-primary)]">
                 {[
-                  "Required documents and signed agreements enforced before account activation",
-                  "Automated reminders chase contacts when tasks are overdue",
+                  "Fleet account onboarding software enforces required documents before account activation",
+                  "Automated reminders chase contacts when tasks are overdue — no manual follow-up",
                   "Single portal link — no account creation required for fleet contacts",
-                  "Timestamped audit trail of every submission and signature",
+                  "Full timestamped audit trail of every submission and signature",
                   "Dashboard showing completion status across all active fleet accounts",
+                  "Build separate templates for commercial, government, or tiered fleet accounts",
                 ].map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)]" />
@@ -106,6 +125,7 @@ export default function FleetAccountOnboardingPage() {
         <section>
           <PageContainer>
             <div className="space-y-6 py-10 sm:py-12">
+
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
                   The fleet account intake problem
@@ -159,7 +179,20 @@ export default function FleetAccountOnboardingPage() {
 
               <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
-                  Frequently asked questions
+                  Pricing and getting started
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
+                  ClientEnforce is free to start. Build your first fleet account onboarding template in under 20 minutes. Paid plans from £29/month for growing teams — no per-client fees, no setup costs.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)]">Start free trial</Link>
+                  <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 py-3 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]">View pricing →</Link>
+                </div>
+              </section>
+
+              <section className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+                  Frequently asked questions about fleet account onboarding software
                 </h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   {faqItems.map((item) => (
@@ -174,7 +207,7 @@ export default function FleetAccountOnboardingPage() {
                   <Link href="/client-portal-software" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">client portal software</Link>
                   <Link href="/client-intake-software" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">client intake software</Link>
                   <Link href="/client-onboarding-automation" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">onboarding automation</Link>
-                  <Link href="/dubsado-vs-honeybook" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">Dubsado vs HoneyBook</Link>
+                  <Link href="/blog/fleet-account-onboarding" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">How the fleet onboarding process works →</Link>
                   <Link href="/law-firm" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">law firm onboarding</Link>
                   <Link href="/auto-service" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">auto-service onboarding</Link>
                   <Link href="/downloads/fleet-account-onboarding-checklist" className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white">fleet onboarding checklist</Link>
@@ -190,7 +223,7 @@ export default function FleetAccountOnboardingPage() {
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-bg-subtle)]">Try ClientEnforce free</Link>
-                  <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-medium text-white hover:bg-white/20">View pricing</Link>
+                  <Link href="/blog/fleet-account-onboarding" className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-medium text-white hover:bg-white/20">How the fleet onboarding process works →</Link>
                 </div>
               </section>
             </div>

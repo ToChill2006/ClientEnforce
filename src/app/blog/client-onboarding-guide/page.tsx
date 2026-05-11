@@ -538,7 +538,7 @@ export default function ClientOnboardingGuidePage() {
                 { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
                 { href: "/client-onboarding-automation", label: "Onboarding automation" },
                 { href: "/blog/client-onboarding-checklist", label: "Checklist deep dive" },
-                { href: "/client-onboarding-software-for-agencies", label: "For agencies" },
+                { href: "/agencies", label: "For agencies" },
                 { href: "/accountants", label: "For accountants" },
                 { href: "/blog/client-onboarding-mistakes", label: "Onboarding mistakes" },
                 { href: "/blog/automate-client-onboarding", label: "How to automate onboarding" },

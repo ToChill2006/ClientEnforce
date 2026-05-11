@@ -455,7 +455,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Compare leading options and identify the right fit for your workflow.",
       },
       {
-        href: "/client-onboarding-process",
+        href: "/client-onboarding-software",
         label: "Client onboarding process",
         description: "Review the full process model before selecting onboarding software.",
       },
@@ -567,7 +567,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
             description: "Review practical fixes for the most common onboarding failures.",
           },
           {
-            href: "/client-onboarding-process",
+            href: "/client-onboarding-software",
             label: "client onboarding process",
             description: "Map your checklist to a full workflow from contract to kickoff.",
           },
@@ -739,7 +739,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Layer automation on top of your checklist to reduce delays.",
       },
       {
-        href: "/client-onboarding-process",
+        href: "/client-onboarding-software",
         label: "Client onboarding process",
         description: "Use this authority page to connect checklist tasks to full workflow stages.",
       },
@@ -1034,7 +1034,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Compare onboarding-first automation against broader operations tools.",
       },
       {
-        href: "/client-onboarding-process",
+        href: "/client-onboarding-software",
         label: "Client onboarding process",
         description: "Define a clear process baseline before automating onboarding workflows.",
       },
@@ -1301,7 +1301,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Review product capabilities for documents, signatures, reminders, and tracking.",
       },
       {
-        href: "/client-onboarding-process",
+        href: "/client-onboarding-software",
         label: "Client onboarding process",
         description: "Use this process framework before moving from Dubsado.",
       },
@@ -1478,7 +1478,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "See the core capabilities teams use to improve onboarding completion.",
       },
       {
-        href: "/client-onboarding-process",
+        href: "/client-onboarding-software",
         label: "Client onboarding process",
         description: "Map your process before selecting an onboarding platform.",
       },
@@ -1772,7 +1772,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         description: "Apply reminder and escalation rules across agency onboarding workflows.",
       },
       {
-        href: "/client-onboarding-process",
+        href: "/client-onboarding-software",
         label: "Client onboarding process",
         description: "Map agency onboarding stages before scaling templates.",
       },
@@ -1866,7 +1866,7 @@ export const seoLandingPages: Record<string, SeoLandingPage> = {
         ],
         links: [
           {
-            href: "/client-onboarding-process",
+            href: "/client-onboarding-software",
             label: "client onboarding process",
             description: "Map workflow stages before comparing software features and pricing.",
           },
@@ -4730,7 +4730,7 @@ export const blogPosts: Record<string, BlogPost> = {
     ],
     relatedLinks: [
       {
-        href: "/client-onboarding-process",
+        href: "/client-onboarding-software",
         label: "Client onboarding process",
         description: "Review the process page for a complete implementation model.",
       },
@@ -4868,7 +4868,6 @@ export const coreSeoPaths = [
   "/client-onboarding-checklist",
   "/client-onboarding-automation",
   "/onboarding-software-for-service-businesses",
-  "/client-onboarding-process",
 ] as const;
 
 export const comparisonPaths = [

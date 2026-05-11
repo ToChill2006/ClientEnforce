@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageTransition from "@/components/layout/PageTransition";
+import VerifyEmailBanner from "@/components/layout/VerifyEmailBanner";
 
 // All dashboard routes are auth-gated — never pre-render statically.
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const authEmail = data.user.email ?? null;
   const profileRes = await supabase
     .from("profiles")
-    .select("full_name,email")
+    .select("full_name,email,email_verified")
     .eq("user_id", data.user.id)
     .limit(1);
   const profile = Array.isArray(profileRes.data) && profileRes.data.length > 0 ? profileRes.data[0] : null;
@@ -53,9 +54,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const email = (typeof profile?.email === "string" && profile.email.trim() ? profile.email.trim() : authEmail) || null;
   const initials = initialsFromIdentity(fullName, email);
+  const emailVerified = profile?.email_verified === true;
 
   return (
     <DashboardShell fullName={fullName} email={email} initials={initials}>
+      <VerifyEmailBanner emailVerified={emailVerified} />
       <PageTransition>{children}</PageTransition>
     </DashboardShell>
   );

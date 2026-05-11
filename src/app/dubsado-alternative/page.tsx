@@ -298,7 +298,7 @@ export default function DubsadoAlternativePage() {
                 { href: "/client-onboarding-software", label: "Client onboarding software" },
                 { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
                 { href: "/honeybook-alternative", label: "HoneyBook alternative" },
-                { href: "/client-onboarding-software-for-agencies", label: "For agencies" },
+                { href: "/agencies", label: "For agencies" },
                 { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="card-lift rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">

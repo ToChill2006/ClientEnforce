@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabaseServer } from "@/lib/supabase-server";
 import { resend } from "@/lib/resend";
-import { appOrigin, buildAuthTokenLink, normalizeAuthEmailLink } from "@/lib/app-url";
 import { renderClientEnforceEmail } from "@/lib/email-template";
 import { buildNurtureSequence } from "@/lib/nurture-emails";
 
@@ -11,7 +11,6 @@ export async function signupAction(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
-  const next = String(formData.get("next") || "").trim() || "/dashboard";
 
   if (!email || !password) {
     redirect(`/signup?error=${encodeURIComponent("Email and password are required.")}`);
@@ -21,29 +20,13 @@ export async function signupAction(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent("Password must be at least 8 characters.")}`);
   }
 
-  if (!process.env.RESEND_API_KEY) {
-    redirect(`/signup?error=${encodeURIComponent("RESEND_API_KEY is not configured.")}`);
-  }
-
   const admin = supabaseAdmin();
 
-  const loginRedirect = new URL("/login", appOrigin());
-  loginRedirect.searchParams.set("verified", "1");
-  if (next && next.startsWith("/")) {
-    loginRedirect.searchParams.set("next", next);
-  }
-
-  const callbackRedirect = new URL("/auth/callback", appOrigin());
-  callbackRedirect.searchParams.set("next", `${loginRedirect.pathname}${loginRedirect.search}`);
-
-  const { data, error } = await admin.auth.admin.generateLink({
-    type: "signup",
+  const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: { full_name: fullName || null },
-      redirectTo: callbackRedirect.toString(),
-    },
+    email_confirm: true,
+    user_metadata: { full_name: fullName || null },
   });
 
   if (error) {
@@ -54,68 +37,39 @@ export async function signupAction(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent("Signup failed")}`);
   }
 
-  if (data.user) {
-    try {
-      await admin
-        .from("profiles")
-        .upsert(
-          {
-            user_id: data.user.id,
-            email,
-            full_name: fullName || null,
-            org_id: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        );
-    } catch (e) {
-      console.error("[signup] profile upsert failed", e);
-    }
+  // Upsert profile row (email_verified starts false — banner in dashboard prompts them)
+  try {
+    await admin
+      .from("profiles")
+      .upsert(
+        {
+          user_id: data.user.id,
+          email,
+          full_name: fullName || null,
+          org_id: null,
+          email_verified: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
+  } catch (e) {
+    console.error("[signup] profile upsert failed", e);
   }
 
-  const verifyLink =
-    buildAuthTokenLink({
-      tokenHash: data?.properties?.hashed_token,
-      type: "signup",
-      next: `${loginRedirect.pathname}${loginRedirect.search}`,
-    }) || normalizeAuthEmailLink(data?.properties?.action_link);
-  if (!verifyLink) {
-    redirect(`/signup?error=${encodeURIComponent("Could not generate verification link.")}`);
+  // Sign in server-side so the session cookie is written before the redirect
+  const supabase = await supabaseServer();
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (signInError) {
+    // Account was created but sign-in failed — send them to login to complete manually
+    redirect(`/login?message=${encodeURIComponent("Account created. Please sign in.")}`);
   }
 
+  // Internal signup notification
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const fromName = process.env.RESEND_FROM_NAME || "ClientEnforce";
-  const emailTemplate = renderClientEnforceEmail({
-    preheader: "Verify your ClientEnforce account",
-    eyebrow: "Account security",
-    title: "Verify your email",
-    subtitle: "Confirm your account to finish signup.",
-    paragraphs: [
-      "Use the button below to verify your email and activate your ClientEnforce account.",
-      "If you did not create this account, you can safely ignore this message.",
-    ],
-    primaryCta: {
-      label: "Verify account",
-      href: verifyLink,
-    },
-    footerNote: "This is a transactional email from ClientEnforce.",
-  });
 
-  const send = await resend.emails.send({
-    from: `${fromName} <${fromEmail}>`,
-    to: email,
-    subject: "Verify your ClientEnforce account",
-    html: emailTemplate.html,
-    text: emailTemplate.text,
-  });
-
-  if (send && "error" in send && send.error) {
-    const message = typeof send.error.message === "string" ? send.error.message : "Failed to send verification email.";
-    redirect(`/signup?error=${encodeURIComponent(message)}`);
-  }
-
-  // Internal signup notification to info@clientenforce.com
   const internalNotification = renderClientEnforceEmail({
     title: "New signup",
     eyebrow: "New user",
@@ -165,5 +119,5 @@ export async function signupAction(formData: FormData) {
     }
   });
 
-  redirect(`/login?message=${encodeURIComponent("Check your email for a verification link.")}&next=${encodeURIComponent(next)}`);
+  redirect("/dashboard?welcome=1");
 }

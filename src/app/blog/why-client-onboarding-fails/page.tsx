@@ -137,7 +137,7 @@ export default function WhyClientOnboardingFailsPostPage() {
                   Example: your best account manager sends brilliant reminders and always catches missing items. Everyone else operates differently, so onboarding quality varies by person.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-                  Fix: automate overdue nudges, receipt confirmations, and readiness alerts so quality does not depend on memory. This is where dedicated <Link href="/best-client-onboarding-software" className="font-medium text-[var(--color-text-primary)] underline underline-offset-4">client onboarding tools</Link> beat manual coordination.
+                  Fix: automate overdue nudges, receipt confirmations, and readiness alerts so quality does not depend on memory. This is where dedicated <Link href="/client-onboarding-platform" className="font-medium text-[var(--color-text-primary)] underline underline-offset-4">client onboarding platform</Link> beat manual coordination.
                 </p>
               </section>
 
