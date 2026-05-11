@@ -5,65 +5,42 @@ import Link from "next/link";
 import { X, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const solutionsByUseCase = [
-  { href: "/client-onboarding-software", label: "Client onboarding software" },
-  { href: "/client-portal-software", label: "Client portal software" },
-  { href: "/client-intake-software", label: "Client intake software" },
-  { href: "/client-onboarding-automation", label: "Client onboarding automation" },
-  { href: "/client-onboarding-checklist", label: "Client onboarding checklist" },
-  { href: "/best-client-onboarding-software", label: "Best client onboarding tools" },
-] as const;
-
-const solutionsWhoFor = [
-  { href: "/agencies", label: "Agencies" },
-  { href: "/consultants", label: "Consultants" },
-  { href: "/accountants", label: "Accountants" },
-  { href: "/ops-teams", label: "Ops teams" },
-  { href: "/auto-service", label: "Auto service" },
-  { href: "/dental-practices", label: "Dental practices" },
-  { href: "/health-wellness", label: "Health & wellness" },
-  { href: "/law-firm", label: "Law firms" },
-  { href: "/financial-advisors", label: "Financial advisors" },
-  { href: "/multi-location-client-onboarding", label: "Multi-location operators" },
-  { href: "/franchise-onboarding-software", label: "Franchises" },
-  { href: "/commercial-client-intake", label: "Commercial / B2B accounts" },
-  { href: "/fleet-account-onboarding", label: "Fleet accounts" },
-] as const;
-
-const solutionsCompare = [
-  { href: "/dubsado-alternative", label: "vs Dubsado" },
-  { href: "/honeybook-alternative", label: "vs HoneyBook" },
-  { href: "/copilot-alternative", label: "vs Copilot" },
-  { href: "/bonsai-alternative", label: "vs Bonsai" },
-  { href: "/rocketlane-alternative", label: "vs Rocketlane" },
-  { href: "/guidecx-alternative", label: "vs GUIDEcx" },
-  { href: "/dubsado-vs-honeybook", label: "Dubsado vs HoneyBook" },
-  { href: "/dubsado-pricing-guide", label: "Dubsado pricing guide" },
-  { href: "/honeybook-pricing-guide", label: "HoneyBook pricing guide" },
-  { href: "/client-onboarding-software#why-software", label: "vs manual process" },
-] as const;
-
 const sections = [
-  { heading: "By use case", links: solutionsByUseCase },
+  {
+    heading: "By use case",
+    links: [
+      { href: "/client-onboarding-software", label: "Client onboarding software" },
+      { href: "/client-portal-software", label: "Client portal software" },
+      { href: "/client-intake-software", label: "Client intake software" },
+      { href: "/client-onboarding-automation", label: "Onboarding automation" },
+      { href: "/client-onboarding-checklist", label: "Onboarding checklist" },
+      { href: "/best-client-onboarding-software", label: "Best onboarding tools" },
+    ] as const,
+  },
   {
     heading: "Industries",
     links: [
-      { href: "/auto-service", label: "Auto service & fleet ops" },
       { href: "/agencies", label: "Agencies" },
       { href: "/consultants", label: "Consultants" },
       { href: "/accountants", label: "Accountants" },
-      { href: "/ops-teams", label: "Ops teams" },
+      { href: "/law-firm", label: "Law firms" },
+      { href: "/auto-service", label: "Auto service" },
+      { href: "/financial-advisors", label: "Financial advisors" },
       { href: "/dental-practices", label: "Dental practices" },
       { href: "/health-wellness", label: "Health & wellness" },
-      { href: "/law-firm", label: "Law firms" },
-      { href: "/financial-advisors", label: "Financial advisors" },
-      { href: "/multi-location-client-onboarding", label: "Multi-location operators" },
-      { href: "/franchise-onboarding-software", label: "Franchises" },
-      { href: "/commercial-client-intake", label: "Commercial / B2B accounts" },
-      { href: "/fleet-account-onboarding", label: "Fleet accounts" },
     ] as const,
   },
-  { heading: "Compare", links: solutionsCompare },
+  {
+    heading: "Compare",
+    links: [
+      { href: "/dubsado-alternative", label: "vs Dubsado" },
+      { href: "/honeybook-alternative", label: "vs HoneyBook" },
+      { href: "/copilot-alternative", label: "vs Copilot" },
+      { href: "/bonsai-alternative", label: "vs Bonsai" },
+      { href: "/rocketlane-alternative", label: "vs Rocketlane" },
+      { href: "/guidecx-alternative", label: "vs GUIDEcx" },
+    ] as const,
+  },
   {
     heading: "Navigate",
     links: [
