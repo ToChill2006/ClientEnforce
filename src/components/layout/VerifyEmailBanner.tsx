@@ -34,6 +34,7 @@ export default function VerifyEmailBanner({ emailVerified }: { emailVerified: bo
       setErrorMsg(result.error);
     } else {
       setSent(true);
+      setTimeout(dismiss, 3000);
     }
   }
 
