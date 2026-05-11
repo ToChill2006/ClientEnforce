@@ -4855,6 +4855,112 @@ export const blogPosts: Record<string, BlogPost> = {
     ],
   },
 
+  "fleet-account-onboarding": {
+    slug: "fleet-account-onboarding",
+    path: "/blog/fleet-account-onboarding",
+    title: "How to Onboard Fleet Accounts: 6-Step Process for Service Teams | ClientEnforce",
+    description:
+      "A practical guide to the fleet account onboarding process — six steps, common failure points, and what to collect before the first service appointment.",
+    keywords: [
+      "how to onboard fleet accounts",
+      "fleet account onboarding process",
+      "fleet onboarding steps",
+      "fleet account setup process",
+    ],
+    category: "Execution",
+    h1: "How to onboard fleet accounts: a 6-step process for service teams",
+    intro:
+      "Fleet accounts are high-value — and high-complexity. Each one typically involves multiple stakeholders, vehicle data, compliance paperwork, and service agreements. This guide walks through a practical six-step process for onboarding fleet clients without the chaos: what to collect, who owns each stage, and where teams consistently drop the ball.",
+    readTime: "8 min read",
+    publishedTime: "2026-04-01",
+    modifiedTime: "2026-05-11",
+    highlights: [
+      "Six stages every fleet account onboarding should follow",
+      "Common failure points at each stage",
+      "What to collect before account activation",
+    ],
+    sections: [
+      {
+        heading: "The 6-step fleet account onboarding process",
+        paragraphs: [
+          "Regardless of which tools you use, a reliable fleet onboarding process follows the same six stages. Missing any one of them creates the gaps that slow account activation and create compliance exposure.",
+        ],
+        steps: [
+          {
+            title: "Step 1: Initial account intake",
+            description:
+              "Collect company details, fleet size, account type, and primary contact before any other stage begins. This information determines which onboarding template applies and who needs to be contacted.",
+          },
+          {
+            title: "Step 2: Stakeholder identification",
+            description:
+              "Identify each client-side role — fleet manager, finance contact, safety officer — and confirm who is responsible for each submission. Without this, requests go to the wrong person and stall.",
+          },
+          {
+            title: "Step 3: Vehicle and asset data collection",
+            description:
+              "Gather per-vehicle data: VIN numbers, plate numbers, vehicle categories, driver assignments, and current service records. This stage scales with account size.",
+          },
+          {
+            title: "Step 4: Document and compliance submission",
+            description:
+              "Request service agreements, insurance certificates, compliance declarations, and signatures. This must happen before account activation — not after.",
+          },
+          {
+            title: "Step 5: Follow-up and completion tracking",
+            description:
+              "Track which contacts have responded and which have not. Send reminders based on inactivity. This stage is where email-based processes most commonly break down.",
+          },
+          {
+            title: "Step 6: Kickoff readiness gate",
+            description:
+              "Confirm all required steps are complete before the account goes live. This should be a hard gate, not a checklist you hope someone remembered to review.",
+          },
+        ],
+      },
+      {
+        heading: "Software that automates this process",
+        paragraphs: [
+          "If you are managing fleet account onboarding manually — through email, spreadsheets, or a CRM pipeline — the six steps above still apply, but the coordination burden falls entirely on your team. Every follow-up, every document chase, every readiness check is done by a person.",
+          "ClientEnforce automates the enforcement layer: required steps are gated, reminders fire automatically, and your team sees completion status across every active fleet account without checking individual threads.",
+        ],
+      },
+    ],
+    relatedLinks: [
+      {
+        href: "/fleet-account-onboarding",
+        label: "Fleet account onboarding software",
+        description: "Software that automates this process →",
+      },
+      {
+        href: "/client-portal-software",
+        label: "Client portal software",
+        description: "How a dedicated client portal improves fleet account completion rates.",
+      },
+      {
+        href: "/client-onboarding-automation",
+        label: "Client onboarding automation",
+        description: "Automate fleet follow-up without adding manual coordination overhead.",
+      },
+      {
+        href: "/client-intake-software",
+        label: "Client intake software",
+        description: "Collect structured fleet account data from the first touchpoint.",
+      },
+      {
+        href: "/client-onboarding-checklist",
+        label: "Client onboarding checklist",
+        description: "Build a complete fleet onboarding checklist from this template.",
+      },
+    ],
+    cta: commonCta,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+      { name: "Fleet account onboarding process", path: "/blog/fleet-account-onboarding" },
+    ],
+  },
+
 };
 
 export const blogPostSlugs = Object.keys(blogPosts);
