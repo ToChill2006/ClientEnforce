@@ -26,7 +26,7 @@ export async function signupAction(formData: FormData) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName || null },
+    user_metadata: { full_name: fullName || null, email_verified: false },
   });
 
   if (error) {

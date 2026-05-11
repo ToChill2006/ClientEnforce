@@ -18,14 +18,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard?verified=error", request.url));
   }
 
-  // Mark the profile as verified
-  const { data } = await supabase.auth.getUser();
-  if (data.user) {
+  // Mark email as verified via user_metadata (no migration needed)
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user) {
     const admin = supabaseAdmin();
-    await admin
-      .from("profiles")
-      .update({ email_verified: true, updated_at: new Date().toISOString() })
-      .eq("user_id", data.user.id);
+    await admin.auth.admin.updateUserById(userData.user.id, {
+      user_metadata: { email_verified: true },
+    });
   }
 
   return NextResponse.redirect(new URL("/dashboard?verified=1", request.url));

@@ -17,6 +17,11 @@ export default function VerifyEmailBanner({ emailVerified }: { emailVerified: bo
       setVisible(false);
       return;
     }
+    // Dismiss immediately if returning from the verification link
+    if (new URLSearchParams(window.location.search).get("verified") === "1") {
+      sessionStorage.setItem(DISMISS_KEY, "1");
+      return;
+    }
     const dismissed = sessionStorage.getItem(DISMISS_KEY);
     if (!dismissed) setVisible(true);
   }, [emailVerified]);

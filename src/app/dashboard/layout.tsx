@@ -39,7 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const authEmail = data.user.email ?? null;
   const profileRes = await supabase
     .from("profiles")
-    .select("full_name,email,email_verified")
+    .select("full_name,email")
     .eq("user_id", data.user.id)
     .limit(1);
   const profile = Array.isArray(profileRes.data) && profileRes.data.length > 0 ? profileRes.data[0] : null;
@@ -54,7 +54,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const email = (typeof profile?.email === "string" && profile.email.trim() ? profile.email.trim() : authEmail) || null;
   const initials = initialsFromIdentity(fullName, email);
-  const emailVerified = profile?.email_verified === true;
+  // email_verified stored in user_metadata — no DB migration needed.
+  // New signups get email_verified: false; set to true via /auth/verify-email.
+  // Existing users without the flag are treated as verified to avoid nagging them.
+  const meta2 = (data.user.user_metadata ?? {}) as { email_verified?: unknown };
+  const emailVerified = "email_verified" in meta2 ? meta2.email_verified === true : true;
 
   return (
     <DashboardShell fullName={fullName} email={email} initials={initials}>
