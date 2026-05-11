@@ -38,7 +38,7 @@ export default function VerifyEmailBanner({ emailVerified }: { emailVerified: bo
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200 mb-5">
+    <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200 mb-5">
       <Mail className="h-4 w-4 shrink-0 opacity-70" />
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
         {sent ? (
