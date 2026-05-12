@@ -47,7 +47,6 @@ export async function signupAction(formData: FormData) {
           email,
           full_name: fullName || null,
           org_id: null,
-          email_verified: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
