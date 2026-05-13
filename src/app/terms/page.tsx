@@ -189,8 +189,11 @@ export default function TermsPage() {
                   .
                 </p>
                 <p>
-                  For formal legal correspondence details, request the appropriate contact information by
-                  email and our team will route it correctly.
+                  For general enquiries, email{" "}
+                  <a href="mailto:info@clientenforce.com" className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
+                    info@clientenforce.com
+                  </a>
+                  .
                 </p>
                 <p>
                   For general inquiries, visit our

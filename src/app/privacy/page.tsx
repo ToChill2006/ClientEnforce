@@ -107,8 +107,8 @@ export default function PrivacyPage() {
                       info@clientenforce.com
                     </a>
                   </li>
-                  <li>Registered office: [to be confirmed &mdash; update before publishing]</li>
-                  <li>Company number: [to be confirmed &mdash; update before publishing]</li>
+                  <li>Registered office: 16 Stratton Close, Bexleyheath, England, DA7 4AJ</li>
+                  <li>Company number: 16753925</li>
                   <li>
                     ICO registration: [to be confirmed &mdash; update before publishing]
                   </li>
@@ -626,7 +626,7 @@ export default function PrivacyPage() {
                     </a>
                   </li>
                   <li>
-                    Postal address: [to be confirmed &mdash; update before publishing]
+                    Postal address: 16 Stratton Close, Bexleyheath, England, DA7 4AJ
                   </li>
                   <li>
                     General enquiries:{" "}
