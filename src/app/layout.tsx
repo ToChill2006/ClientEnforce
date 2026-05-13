@@ -76,6 +76,7 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)] antialiased overflow-x-hidden selection:bg-[var(--color-accent-subtle)] selection:text-[var(--color-accent)]">
+        <Script id="vtag-ai-js" src="https://r2.leadsy.ai/tag.js" data-pid="19r8i0QEpAorCSgL7" data-version="062024" strategy="afterInteractive" />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-Y1W99ZK32F" strategy="afterInteractive" />
         <Script id="gtag-init" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
