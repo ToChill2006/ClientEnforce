@@ -886,8 +886,7 @@ export default function OnboardingsPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="New onboarding"
-        description="Spin up a client onboarding from a template."
-        size="xl"
+        size="md"
         footer={
           <>
             <Button variant="secondary" onClick={() => setCreateOpen(false)} disabled={creating}>
@@ -900,42 +899,10 @@ export default function OnboardingsPage() {
         }
       >
         <form onSubmit={handleCreate} className="space-y-4">
-          <FormGrid>
-            <FormField label="Template">
-              <Select value={selectedTemplateId} onChange={(e) => setSelectedTemplateId(e.target.value)}>
-                {templates.length === 0 ? (
-                  <option value="" disabled>No templates</option>
-                ) : (
-                  templates.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))
-                )}
-              </Select>
-            </FormField>
-            <FormField label="Owner" description="Assigns ownership for this onboarding.">
-              <Select value={selectedOwnerId} onChange={(e) => setSelectedOwnerId(e.target.value)}>
-                <option value="">Unassigned</option>
-                {members.map((m) => (
-                  <option key={m.user_id} value={m.user_id}>
-                    {(m.full_name || m.email || m.user_id).trim()}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-          </FormGrid>
 
-          <FormField label="Title" required>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. ACME — March onboarding"
-            />
-          </FormField>
-
+          {/* Client section */}
           <div>
-            <div className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">Client</div>
+            <div className="mb-1.5 text-xs font-medium text-[var(--color-text-secondary)]">Client</div>
             <div className="mb-3 flex rounded-[var(--radius-md)] border border-[var(--color-border)] p-0.5 bg-[var(--color-bg-subtle)]">
               <button
                 type="button"
@@ -990,19 +957,19 @@ export default function OnboardingsPage() {
               </Select>
             ) : (
               <FormGrid>
+                <FormField label="Full name" required>
+                  <Input
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Jane Doe"
+                  />
+                </FormField>
                 <FormField label="Email" required>
                   <Input
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
                     placeholder="client@company.com"
                     inputMode="email"
-                  />
-                </FormField>
-                <FormField label="Full name" required>
-                  <Input
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    placeholder="Jane Doe"
                   />
                 </FormField>
               </FormGrid>
@@ -1017,13 +984,48 @@ export default function OnboardingsPage() {
             />
           </FormField>
 
+          <div className="border-t border-[var(--color-border)]" />
+
+          <FormField label="Title" required>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. ACME — March onboarding"
+            />
+          </FormField>
+
+          <FormGrid>
+            <FormField label="Template">
+              <Select value={selectedTemplateId} onChange={(e) => setSelectedTemplateId(e.target.value)}>
+                {templates.length === 0 ? (
+                  <option value="" disabled>No templates</option>
+                ) : (
+                  templates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))
+                )}
+              </Select>
+            </FormField>
+            <FormField label="Owner">
+              <Select value={selectedOwnerId} onChange={(e) => setSelectedOwnerId(e.target.value)}>
+                <option value="">Unassigned</option>
+                {members.map((m) => (
+                  <option key={m.user_id} value={m.user_id}>
+                    {(m.full_name || m.email || m.user_id).trim()}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+          </FormGrid>
+
           {createErr && (
             <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">
               {createErr}
             </div>
           )}
 
-          {/* Hidden submit so Enter works inside the form */}
           <button type="submit" className="hidden" />
         </form>
       </Modal>

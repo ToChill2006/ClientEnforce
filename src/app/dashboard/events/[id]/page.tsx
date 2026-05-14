@@ -42,7 +42,7 @@ type ExhibitorRow = {
   client_name: string | null;
   client_email: string | null;
   company_name: string | null;
-  client_type_name: string | null;
+  template_title: string | null;
   current_phase: number | null;
   phase_status: string | null;
   deadline: string | null;
@@ -52,14 +52,14 @@ type ExhibitorRow = {
 type CsvRow = {
   email: string;
   full_name: string;
-  client_type_name: string;
+  template_name: string;
   company_name?: string;
   _valid: boolean;
   _error?: string;
   _template?: string;
 };
 
-type ClientType = { id: string; name: string; templates?: { name: string } | null };
+type Template = { id: string; name: string };
 type TeamMember = { user_id: string; email: string | null; full_name: string | null };
 
 type Tab = "add" | "exhibitors" | "templates";
@@ -84,11 +84,11 @@ function formatDate(d?: string | null) {
 
 function SingleExhibitorForm({
   eventId,
-  clientTypes,
+  templates,
   onAdded,
 }: {
   eventId: string;
-  clientTypes: ClientType[];
+  templates: Template[];
   onAdded: () => void;
 }) {
   const { toast } = useToast();
@@ -97,7 +97,7 @@ function SingleExhibitorForm({
   const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [companyName, setCompanyName] = React.useState("");
-  const [clientTypeId, setClientTypeId] = React.useState("");
+  const [templateId, setTemplateId] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [existingClients, setExistingClients] = React.useState<Array<{ id: string; email: string; full_name?: string | null; company_name?: string | null }>>([]);
@@ -111,9 +111,9 @@ function SingleExhibitorForm({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!clientTypeId) { setErr("Client type is required."); return; }
-    const ct = clientTypes.find((c) => c.id === clientTypeId);
-    if (!ct) { setErr("Select a client type."); return; }
+    if (!templateId) { setErr("Template is required."); return; }
+    const tpl = templates.find((t) => t.id === templateId);
+    if (!tpl) { setErr("Select a template."); return; }
 
     if (useExisting) {
       if (!selectedClientId) { setErr("Select an existing client."); return; }
@@ -131,7 +131,7 @@ function SingleExhibitorForm({
           body: JSON.stringify({
             client: { id: selectedClientId },
             event_id: eventId,
-            client_type_id: clientTypeId,
+            template_id: templateId,
             company_name: companyName.trim() || null,
             title: fullName.trim() ? `${fullName.trim()} — Exhibitor` : "Exhibitor",
           }),
@@ -142,14 +142,14 @@ function SingleExhibitorForm({
         const res = await fetch(`/api/events/${eventId}/bulk-import`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ rows: [{ email: email.trim(), full_name: fullName.trim(), client_type_name: ct.name, company_name: companyName.trim() || undefined }] }),
+          body: JSON.stringify({ rows: [{ email: email.trim(), full_name: fullName.trim(), template_name: tpl.name, company_name: companyName.trim() || undefined }] }),
         });
         const json = await res.json().catch(() => null);
         if (!res.ok) throw new Error(json?.error || "Failed to add exhibitor");
         if (json?.failed?.length) throw new Error(json.failed[0]?.error || "Failed to add exhibitor");
       }
       toast({ title: "Exhibitor added", description: `${fullName || "Exhibitor"} has been invited.`, variant: "success" });
-      setFullName(""); setEmail(""); setClientTypeId(""); setCompanyName(""); setSelectedClientId(""); setUseExisting(false);
+      setFullName(""); setEmail(""); setTemplateId(""); setCompanyName(""); setSelectedClientId(""); setUseExisting(false);
       onAdded();
     } catch (e: any) {
       setErr(e?.message || "Unknown error");
@@ -213,10 +213,10 @@ function SingleExhibitorForm({
           <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Acme Inc." />
         </FormField>
 
-        <FormField label="Client type" required>
-          <Select value={clientTypeId} onChange={(e) => setClientTypeId(e.target.value)}>
-            <option value="">Select a client type…</option>
-            {clientTypes.map((ct) => <option key={ct.id} value={ct.id}>{ct.name}</option>)}
+        <FormField label="Template" required>
+          <Select value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
+            <option value="">Select a template…</option>
+            {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </Select>
         </FormField>
         {err && <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">{err}</div>}
@@ -248,11 +248,11 @@ export default function EventDetailPage() {
   const [assignOwnerOpen, setAssignOwnerOpen] = React.useState(false);
   const [changeTypeOpen, setChangeTypeOpen] = React.useState(false);
   const [bulkOwnerId, setBulkOwnerId] = React.useState("");
-  const [bulkClientTypeId, setBulkClientTypeId] = React.useState("");
+  const [bulkTemplateId, setBulkTemplateId] = React.useState("");
   const [bulkBusy, setBulkBusy] = React.useState(false);
 
-  // Client types (for CSV preview)
-  const [clientTypes, setClientTypes] = React.useState<ClientType[]>([]);
+  // Templates (for single-add form and CSV preview)
+  const [templates, setTemplates] = React.useState<Template[]>([]);
 
   // CSV upload state
   const [csvRows, setCsvRows] = React.useState<CsvRow[]>([]);
@@ -288,7 +288,7 @@ export default function EventDetailPage() {
         client_name: o.client_full_name ?? o.client_name ?? null,
         client_email: o.client_email ?? null,
         company_name: o.company_name ?? null,
-        client_type_name: o.client_type_name ?? null,
+        template_title: o.template_title ?? null,
         current_phase: o.current_phase ?? null,
         phase_status: o.phase_status ?? null,
         deadline: o.phase_deadline ?? null,
@@ -302,11 +302,11 @@ export default function EventDetailPage() {
     }
   }
 
-  async function loadClientTypes() {
+  async function loadTemplates() {
     try {
-      const res = await fetch("/api/client-types", { cache: "no-store" });
+      const res = await fetch("/api/templates", { cache: "no-store" });
       const json = await res.json().catch(() => null);
-      if (res.ok) setClientTypes(json.client_types ?? []);
+      if (res.ok) setTemplates((json.items ?? []).map((t: any) => ({ id: t.id, name: t.name })));
     } catch { /* ignore */ }
   }
 
@@ -365,19 +365,19 @@ export default function EventDetailPage() {
     } finally { setBulkBusy(false); }
   }
 
-  async function bulkChangeType(ids: string[], clientTypeId: string, clear: () => void) {
+  async function bulkChangeTemplate(ids: string[], tplId: string, clear: () => void) {
     setBulkBusy(true);
     try {
       await Promise.all(
         ids.map((id) => fetch(`/api/onboardings/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ client_type_id: clientTypeId }),
+          body: JSON.stringify({ template_id: tplId }),
         }))
       );
-      const ct = clientTypes.find((c) => c.id === clientTypeId);
-      setExhibitors((prev) => prev.map((e) => ids.includes(e.id) ? { ...e, client_type_name: ct?.name ?? e.client_type_name } : e));
-      toast({ title: `Type updated for ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`, variant: "success" });
+      const tpl = templates.find((t) => t.id === tplId);
+      setExhibitors((prev) => prev.map((e) => ids.includes(e.id) ? { ...e, template_title: tpl?.name ?? e.template_title } : e));
+      toast({ title: `Template updated for ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`, variant: "success" });
       setChangeTypeOpen(false);
       clear();
     } finally { setBulkBusy(false); }
@@ -385,7 +385,7 @@ export default function EventDetailPage() {
 
   React.useEffect(() => {
     loadEvent();
-    loadClientTypes();
+    loadTemplates();
     loadMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
@@ -401,41 +401,39 @@ export default function EventDetailPage() {
     const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/^"|"$/g, ""));
     const emailIdx = headers.indexOf("email");
     const nameIdx = headers.indexOf("full_name");
-    const ctIdx = headers.indexOf("client_type_name");
+    const tplIdx = headers.indexOf("template_name");
     const companyIdx = headers.indexOf("company_name");
 
-    if (emailIdx === -1 || nameIdx === -1 || ctIdx === -1) {
-      toast({ title: "Invalid CSV", description: "Required columns: email, full_name, client_type_name", variant: "error" });
+    if (emailIdx === -1 || nameIdx === -1 || tplIdx === -1) {
+      toast({ title: "Invalid CSV", description: "Required columns: email, full_name, template_name", variant: "error" });
       return;
     }
 
-    const ctNames = new Set(clientTypes.map((c) => c.name.toLowerCase()));
+    const tplNames = new Set(templates.map((t) => t.name.toLowerCase()));
 
     const rows: CsvRow[] = lines.slice(1).map((line) => {
       const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
       const email = cols[emailIdx] ?? "";
       const full_name = cols[nameIdx] ?? "";
-      const client_type_name = cols[ctIdx] ?? "";
+      const template_name = cols[tplIdx] ?? "";
       const company_name = companyIdx !== -1 ? cols[companyIdx] : undefined;
 
       const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      const validCt = ctNames.has(client_type_name.toLowerCase());
-
-      const ct = clientTypes.find((c) => c.name.toLowerCase() === client_type_name.toLowerCase());
+      const validTpl = tplNames.has(template_name.toLowerCase());
 
       let _error: string | undefined;
       if (!validEmail) _error = "Invalid email";
       else if (!full_name) _error = "Missing name";
-      else if (!validCt) _error = `Unknown client type: "${client_type_name}"`;
+      else if (!validTpl) _error = `Unknown template: "${template_name}"`;
 
       return {
         email,
         full_name,
-        client_type_name,
+        template_name,
         company_name,
         _valid: !_error,
         _error,
-        _template: ct ? (ct.templates as any)?.name ?? "Default" : undefined,
+        _template: template_name || undefined,
       };
     }).filter((r) => r.email || r.full_name);
 
@@ -462,7 +460,7 @@ export default function EventDetailPage() {
       const res = await fetch(`/api/events/${eventId}/bulk-import`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ rows: validRows.map(({ email, full_name, client_type_name, company_name }) => ({ email, full_name, client_type_name, company_name })) }),
+        body: JSON.stringify({ rows: validRows.map(({ email, full_name, template_name, company_name }) => ({ email, full_name, template_name, company_name })) }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Import failed");
@@ -485,7 +483,7 @@ export default function EventDetailPage() {
     return exhibitors.filter((e) => {
       const statusOk = statusFilter === "all" || e.phase_status === statusFilter;
       if (!q) return statusOk;
-      const hay = [e.client_name ?? "", e.client_email ?? "", e.client_type_name ?? ""].join(" ").toLowerCase();
+      const hay = [e.client_name ?? "", e.client_email ?? "", e.template_title ?? ""].join(" ").toLowerCase();
       return statusOk && hay.includes(q);
     });
   }, [exhibitors, exhibitorQuery, statusFilter]);
@@ -506,10 +504,10 @@ export default function EventDetailPage() {
       ),
     },
     {
-      key: "client_type",
-      header: "Type",
+      key: "template",
+      header: "Template",
       hideOnMobile: true,
-      render: (r) => r.client_type_name ? <Tag tone="info">{r.client_type_name}</Tag> : <span className="text-xs text-[var(--color-text-muted)]">—</span>,
+      render: (r) => r.template_title ? <Tag tone="info">{r.template_title}</Tag> : <span className="text-xs text-[var(--color-text-muted)]">—</span>,
     },
     {
       key: "phase",
@@ -593,7 +591,7 @@ export default function EventDetailPage() {
           {/* Single exhibitor form */}
           <SingleExhibitorForm
             eventId={eventId}
-            clientTypes={clientTypes}
+            templates={templates}
             onAdded={() => { setTab("exhibitors"); loadExhibitors(); }}
           />
 
@@ -607,7 +605,7 @@ export default function EventDetailPage() {
             <Upload className="mx-auto mb-3 h-8 w-8 text-[var(--color-text-muted)]" />
             <div className="text-sm font-medium text-[var(--color-text-primary)]">Upload CSV</div>
             <div className="mt-1 text-xs text-[var(--color-text-muted)]">
-              Required columns: <code>email</code>, <code>full_name</code>, <code>client_type_name</code>. Optional: <code>company_name</code>
+              Required columns: <code>email</code>, <code>full_name</code>, <code>template_name</code>. Optional: <code>company_name</code>
             </div>
             <label className="mt-4 inline-block cursor-pointer">
               <span className="inline-flex h-9 items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 text-sm font-medium text-white hover:opacity-90">
@@ -640,8 +638,8 @@ export default function EventDetailPage() {
                       <th className="px-3 py-2 text-left font-medium">#</th>
                       <th className="px-3 py-2 text-left font-medium">Email</th>
                       <th className="px-3 py-2 text-left font-medium">Name</th>
-                      <th className="px-3 py-2 text-left font-medium">Client Type</th>
                       <th className="px-3 py-2 text-left font-medium">Template</th>
+                      <th className="px-3 py-2 text-left font-medium">Status</th>
                       <th className="px-3 py-2 text-left font-medium">Status</th>
                     </tr>
                   </thead>
@@ -651,8 +649,7 @@ export default function EventDetailPage() {
                         <td className="px-3 py-2 text-[var(--color-text-muted)]">{i + 1}</td>
                         <td className="px-3 py-2">{row.email}</td>
                         <td className="px-3 py-2">{row.full_name}</td>
-                        <td className="px-3 py-2">{row.client_type_name}</td>
-                        <td className="px-3 py-2 text-[var(--color-text-muted)]">{row._template ?? "—"}</td>
+                        <td className="px-3 py-2">{row.template_name}</td>
                         <td className="px-3 py-2">
                           {row._valid
                             ? <span className="text-[var(--color-success)]">✓</span>
@@ -724,9 +721,9 @@ export default function EventDetailPage() {
                   variant="ghost"
                   iconLeft={<TagIcon className="h-3 w-3" />}
                   disabled={bulkBusy}
-                  onClick={() => { setBulkClientTypeId(""); setChangeTypeOpen(true); }}
+                  onClick={() => { setBulkTemplateId(""); setChangeTypeOpen(true); }}
                 >
-                  Change type
+                  Change template
                 </Button>
                 <Button
                   size="xs"
@@ -768,21 +765,21 @@ export default function EventDetailPage() {
                 <Modal
                   open={changeTypeOpen}
                   onClose={() => setChangeTypeOpen(false)}
-                  title={`Change client type for ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`}
+                  title={`Change template for ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`}
                   size="sm"
                   footer={
                     <>
                       <Button variant="secondary" onClick={() => setChangeTypeOpen(false)}>Cancel</Button>
-                      <Button loading={bulkBusy} disabled={!bulkClientTypeId} onClick={() => bulkChangeType(ids, bulkClientTypeId, clear)}>
+                      <Button loading={bulkBusy} disabled={!bulkTemplateId} onClick={() => bulkChangeTemplate(ids, bulkTemplateId, clear)}>
                         Apply
                       </Button>
                     </>
                   }
                 >
-                  <Select value={bulkClientTypeId} onChange={(e) => setBulkClientTypeId(e.target.value)}>
-                    <option value="">Select a type…</option>
-                    {clientTypes.map((ct) => (
-                      <option key={ct.id} value={ct.id}>{ct.name}</option>
+                  <Select value={bulkTemplateId} onChange={(e) => setBulkTemplateId(e.target.value)}>
+                    <option value="">Select a template…</option>
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                   </Select>
                 </Modal>
@@ -800,23 +797,21 @@ export default function EventDetailPage() {
       {/* Templates tab */}
       {tab === "templates" && (
         <div className="space-y-3">
-          <p className="text-sm text-[var(--color-text-secondary)]">Templates assigned by client type for this event.</p>
-          {clientTypes.length === 0 ? (
-            <div className="text-sm text-[var(--color-text-muted)]">No client types defined for this organisation.</div>
+          <p className="text-sm text-[var(--color-text-secondary)]">Available templates for this organisation. Select one when adding exhibitors.</p>
+          {templates.length === 0 ? (
+            <div className="text-sm text-[var(--color-text-muted)]">No templates defined. Create templates in the Templates section.</div>
           ) : (
             <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
               <table className="w-full text-sm">
                 <thead className="bg-[var(--color-bg-subtle)]">
                   <tr>
-                    <th className="px-4 py-2.5 text-left font-medium">Client Type</th>
-                    <th className="px-4 py-2.5 text-left font-medium">Default Template</th>
+                    <th className="px-4 py-2.5 text-left font-medium">Template name</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-border)]">
-                  {clientTypes.map((ct) => (
-                    <tr key={ct.id}>
-                      <td className="px-4 py-3 font-medium">{ct.name}</td>
-                      <td className="px-4 py-3 text-[var(--color-text-muted)]">{(ct.templates as any)?.name ?? "—"}</td>
+                  {templates.map((t) => (
+                    <tr key={t.id}>
+                      <td className="px-4 py-3 font-medium">{t.name}</td>
                     </tr>
                   ))}
                 </tbody>

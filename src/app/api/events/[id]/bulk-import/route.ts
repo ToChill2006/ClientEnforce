@@ -15,7 +15,7 @@ function err(status: number, msg: string) {
 const RowSchema = z.object({
   email: z.string().email(),
   full_name: z.string().min(1),
-  client_type_name: z.string().min(1),
+  template_name: z.string().min(1),
   company_name: z.string().optional().nullable(),
 });
 
@@ -58,23 +58,20 @@ export async function POST(
     const parsed = ImportPayload.safeParse(body);
     if (!parsed.success) return err(400, "Invalid payload");
 
-    // Load all client types for this org in one query
-    const { data: clientTypes, error: ctErr } = await supabase
-      .from("client_types")
-      .select("id, name, default_template_id")
+    // Load all templates for this org indexed by name
+    const { data: orgTemplates, error: tplErr } = await supabase
+      .from("templates")
+      .select("id, name")
       .eq("org_id", org_id);
 
-    if (ctErr) return err(400, ctErr.message);
+    if (tplErr) return err(400, tplErr.message);
 
-    const clientTypeByName: Record<string, { id: string; default_template_id: string | null }> = {};
-    for (const ct of clientTypes ?? []) {
-      clientTypeByName[(ct.name as string).toLowerCase()] = {
-        id: ct.id as string,
-        default_template_id: (ct as any).default_template_id ?? null,
-      };
+    const templateByName: Record<string, string> = {};
+    for (const t of orgTemplates ?? []) {
+      templateByName[(t.name as string).toLowerCase()] = t.id as string;
     }
 
-    // Fallback template
+    // Fallback template (first created)
     const { data: fallbackTpl } = await supabase
       .from("templates")
       .select("id")
@@ -103,16 +100,9 @@ export async function POST(
     for (let i = 0; i < parsed.data.rows.length; i++) {
       const row = parsed.data.rows[i];
       try {
-        const ctKey = row.client_type_name.toLowerCase();
-        const ct = clientTypeByName[ctKey];
-        if (!ct) {
-          failed.push({ row_index: i, error: `Client type not found: "${row.client_type_name}"` });
-          continue;
-        }
-
-        const templateId = ct.default_template_id ?? fallbackTemplateId;
+        const templateId = templateByName[row.template_name.toLowerCase()] ?? fallbackTemplateId;
         if (!templateId) {
-          failed.push({ row_index: i, error: "No template available for this client type" });
+          failed.push({ row_index: i, error: `Template not found: "${row.template_name}"` });
           continue;
         }
 
@@ -155,7 +145,6 @@ export async function POST(
             status: "draft",
             client_token: token,
             event_id: eventId,
-            client_type_id: ct.id,
             created_by_user_id: userData.user.id,
             updated_at: new Date().toISOString(),
           })
