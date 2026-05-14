@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
@@ -85,8 +86,8 @@ export async function POST(
       }
     }
 
-    // Fetch onboarding + client for emails
-    const { data: onboarding } = await supabase
+    // Fetch onboarding + client for emails — use admin to bypass RLS on the clients join
+    const { data: onboarding } = await supabaseAdmin()
       .from("onboardings")
       .select("id, title, client_id, event_id, client_token, events(id, name), clients(id, full_name, email)")
       .eq("id", onboardingId)
