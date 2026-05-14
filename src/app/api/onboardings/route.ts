@@ -44,6 +44,7 @@ async function getOrgIdForUser(supabase: Awaited<ReturnType<typeof supabaseServe
 const EnterpriseFields = {
   event_id: z.string().uuid().optional().nullable(),
   client_type_id: z.string().uuid().optional().nullable(),
+  company_name: z.string().optional().nullable(),
 };
 
 const CreatePayload = z.union([
@@ -448,7 +449,7 @@ export async function GET(req: Request) {
   const templateIds = Array.from(new Set(rows.map((r) => r.template_id).filter(Boolean)));
 
   // Clients: prefer full_name if it exists; fall back defensively.
-  let clientsById: Record<string, { id: string; email?: string | null; name?: string | null }> = {};
+  let clientsById: Record<string, { id: string; email?: string | null; name?: string | null; company_name?: string | null }> = {};
   if (clientIds.length > 0) {
     let cData: any[] | null = null;
     let cErr: any = null;
@@ -456,7 +457,7 @@ export async function GET(req: Request) {
     // Prefer `full_name` first (most common in your current schema).
     const r1 = await supabase
       .from("clients")
-      .select("id, email, full_name")
+      .select("id, email, full_name, company_name")
       .eq("org_id", org_id)
       .in("id", clientIds);
 
@@ -467,7 +468,7 @@ export async function GET(req: Request) {
     if (cErr && isMissingColumnError(cErr, "full_name")) {
       const r2 = await supabase
         .from("clients")
-        .select("id, email, name")
+        .select("id, email, name, company_name")
         .eq("org_id", org_id)
         .in("id", clientIds);
 
@@ -497,6 +498,7 @@ export async function GET(req: Request) {
             email: c.email ?? null,
             // Normalize to `name` for UI usage.
             name: (c.full_name ?? c.name ?? null) as any,
+            company_name: c.company_name ?? null,
           },
         ])
       );
@@ -613,6 +615,7 @@ export async function GET(req: Request) {
     // Prefer denormalized columns on onboardings if present.
     const resolvedClientEmail = o.client_email ?? client?.email ?? null;
     const resolvedClientName = o.client_full_name ?? o.client_name ?? client?.name ?? null;
+    const resolvedCompanyName = client?.company_name ?? null;
 
     const resolvedTemplateName = (template as any)?.name ?? null;
     const resolvedOwnerName = o.owner_id ? (ownerNamesById[o.owner_id] ?? null) : null;
@@ -626,6 +629,7 @@ export async function GET(req: Request) {
       client_email: resolvedClientEmail,
       client_name: resolvedClientName,
       client_full_name: resolvedClientName,
+      company_name: resolvedCompanyName,
       template_name: resolvedTemplateName,
       template_title: resolvedTemplateName,
       owner_name: resolvedOwnerName,
@@ -793,6 +797,12 @@ export async function POST(req: Request) {
   }
 
   const now = new Date().toISOString();
+
+  // Save company_name to the client record if provided (best-effort)
+  const company_name = (parsed.data as any).company_name ?? null;
+  if (company_name && client_id) {
+    await supabase.from("clients").update({ company_name }).eq("id", client_id).eq("org_id", org_id);
+  }
 
   const owner_id = (parsed.data as any).owner_id ?? null;
   const event_id = (parsed.data as any).event_id ?? null;

@@ -24,6 +24,7 @@ type OnboardingRow = {
   status?: string | null;
   client_name?: string | null;
   client_email?: string | null;
+  company_name?: string | null;
   template_title?: string | null;
   client_link?: string | null;
   client_token?: string | null;
@@ -259,10 +260,11 @@ export default function OnboardingsPage() {
   const [title, setTitle] = React.useState("");
   const [clientEmail, setClientEmail] = React.useState("");
   const [clientName, setClientName] = React.useState("");
+  const [clientCompany, setClientCompany] = React.useState("");
 
   const [templates, setTemplates] = React.useState<Array<{ id: string; name: string }>>([]);
   const [clients, setClients] = React.useState<
-    Array<{ id: string; email: string; full_name?: string | null; name?: string | null }>
+    Array<{ id: string; email: string; full_name?: string | null; name?: string | null; company_name?: string | null }>
   >([]);
   const [members, setMembers] = React.useState<TeamMember[]>([]);
 
@@ -481,6 +483,7 @@ export default function OnboardingsPage() {
           title: t,
           template_id: selectedTemplateId || null,
           owner_id: selectedOwnerId || null,
+          company_name: clientCompany.trim() || null,
           client: useExistingClient ? { id: selectedClientId } : { email: em, full_name: nm || null },
         }),
       });
@@ -493,6 +496,7 @@ export default function OnboardingsPage() {
       setTitle("");
       setClientEmail("");
       setClientName("");
+      setClientCompany("");
       setUseExistingClient(false);
       setSelectedClientId("");
       setSelectedOwnerId("");
@@ -634,6 +638,9 @@ export default function OnboardingsPage() {
           <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">
             {r.client_name || "—"}
           </div>
+          {r.company_name && (
+            <div className="truncate text-xs text-[var(--color-text-secondary)]">{r.company_name}</div>
+          )}
           <div className="truncate text-xs text-[var(--color-text-muted)]">{r.client_email || "—"}</div>
         </div>
       ),
@@ -961,6 +968,7 @@ export default function OnboardingsPage() {
                     const nm = ((c.full_name ?? c.name ?? "") as string).trim();
                     setClientEmail(c.email);
                     setClientName(nm);
+                    setClientCompany(((c as any).company_name ?? "") as string);
                   }
                 }}
               >
@@ -994,6 +1002,14 @@ export default function OnboardingsPage() {
               </FormGrid>
             )}
           </div>
+
+          <FormField label="Company name">
+            <Input
+              value={clientCompany}
+              onChange={(e) => setClientCompany(e.target.value)}
+              placeholder="Acme Inc."
+            />
+          </FormField>
 
           {createErr && (
             <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">

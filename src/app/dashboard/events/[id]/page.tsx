@@ -41,6 +41,7 @@ type ExhibitorRow = {
   title: string | null;
   client_name: string | null;
   client_email: string | null;
+  company_name: string | null;
   client_type_name: string | null;
   current_phase: number | null;
   phase_status: string | null;
@@ -91,31 +92,64 @@ function SingleExhibitorForm({
   onAdded: () => void;
 }) {
   const { toast } = useToast();
+  const [useExisting, setUseExisting] = React.useState(false);
+  const [selectedClientId, setSelectedClientId] = React.useState("");
   const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
+  const [companyName, setCompanyName] = React.useState("");
   const [clientTypeId, setClientTypeId] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+  const [existingClients, setExistingClients] = React.useState<Array<{ id: string; email: string; full_name?: string | null; company_name?: string | null }>>([]);
+
+  React.useEffect(() => {
+    fetch("/api/clients", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((j) => { if (j) setExistingClients(j.items ?? j.clients ?? []); })
+      .catch(() => {});
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!fullName.trim()) { setErr("Full name is required."); return; }
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErr("Valid email is required."); return; }
     if (!clientTypeId) { setErr("Client type is required."); return; }
     const ct = clientTypes.find((c) => c.id === clientTypeId);
     if (!ct) { setErr("Select a client type."); return; }
+
+    if (useExisting) {
+      if (!selectedClientId) { setErr("Select an existing client."); return; }
+    } else {
+      if (!fullName.trim()) { setErr("Full name is required."); return; }
+      if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErr("Valid email is required."); return; }
+    }
+
     setErr(null); setSaving(true);
     try {
-      const res = await fetch(`/api/events/${eventId}/bulk-import`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ rows: [{ email: email.trim(), full_name: fullName.trim(), client_type_name: ct.name }] }),
-      });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Failed to add exhibitor");
-      if (json?.failed?.length) throw new Error(json.failed[0]?.error || "Failed to add exhibitor");
-      toast({ title: "Exhibitor added", description: `${fullName} has been invited.`, variant: "success" });
-      setFullName(""); setEmail(""); setClientTypeId("");
+      if (useExisting) {
+        const res = await fetch("/api/onboardings", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            client: { id: selectedClientId },
+            event_id: eventId,
+            client_type_id: clientTypeId,
+            company_name: companyName.trim() || null,
+            title: fullName.trim() ? `${fullName.trim()} — Exhibitor` : "Exhibitor",
+          }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.error || "Failed to add exhibitor");
+      } else {
+        const res = await fetch(`/api/events/${eventId}/bulk-import`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ rows: [{ email: email.trim(), full_name: fullName.trim(), client_type_name: ct.name, company_name: companyName.trim() || undefined }] }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.error || "Failed to add exhibitor");
+        if (json?.failed?.length) throw new Error(json.failed[0]?.error || "Failed to add exhibitor");
+      }
+      toast({ title: "Exhibitor added", description: `${fullName || "Exhibitor"} has been invited.`, variant: "success" });
+      setFullName(""); setEmail(""); setClientTypeId(""); setCompanyName(""); setSelectedClientId(""); setUseExisting(false);
       onAdded();
     } catch (e: any) {
       setErr(e?.message || "Unknown error");
@@ -126,14 +160,59 @@ function SingleExhibitorForm({
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
       <div className="mb-4 text-sm font-medium text-[var(--color-text-primary)]">Add one exhibitor</div>
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormGrid className="grid-cols-2">
-          <FormField label="Full name" required>
-            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Smith" />
+        <div>
+          <div className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">Client</div>
+          <div className="flex rounded-[var(--radius-md)] border border-[var(--color-border)] p-0.5 bg-[var(--color-bg-subtle)]">
+            <button type="button" onClick={() => { setUseExisting(false); setSelectedClientId(""); }}
+              className={cn("flex-1 rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-medium transition-colors",
+                !useExisting ? "bg-[var(--color-panel)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]")}>
+              New client
+            </button>
+            <button type="button" onClick={() => setUseExisting(true)}
+              className={cn("flex-1 rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-medium transition-colors",
+                useExisting ? "bg-[var(--color-panel)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]")}>
+              Existing client
+            </button>
+          </div>
+        </div>
+
+        {useExisting ? (
+          <FormField label="Select client" required>
+            <Select value={selectedClientId} onChange={(e) => {
+              const id = e.target.value;
+              setSelectedClientId(id);
+              const c = existingClients.find((x) => x.id === id);
+              if (c) {
+                setFullName(c.full_name ?? "");
+                setEmail(c.email);
+                setCompanyName(c.company_name ?? "");
+              }
+            }}>
+              <option value="">Select a client…</option>
+              {existingClients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {((c.full_name ?? "") || "Unnamed") + " — " + c.email}
+                </option>
+              ))}
+            </Select>
           </FormField>
-          <FormField label="Email" required>
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@company.com" inputMode="email" />
-          </FormField>
-        </FormGrid>
+        ) : (
+          <FormGrid className="grid-cols-2">
+            <FormField label="Full name" required>
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Smith" />
+            </FormField>
+            <FormField label="Email" required>
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@company.com" inputMode="email" />
+            </FormField>
+          </FormGrid>
+        )}
+
+        <FormField label="Company name">
+          <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Acme Inc." />
+        </FormField>
+
         <FormField label="Client type" required>
           <Select value={clientTypeId} onChange={(e) => setClientTypeId(e.target.value)}>
             <option value="">Select a client type…</option>
@@ -208,6 +287,7 @@ export default function EventDetailPage() {
         title: o.title,
         client_name: o.client_full_name ?? o.client_name ?? null,
         client_email: o.client_email ?? null,
+        company_name: o.company_name ?? null,
         client_type_name: o.client_type_name ?? null,
         current_phase: o.current_phase ?? null,
         phase_status: o.phase_status ?? null,
@@ -418,6 +498,9 @@ export default function EventDetailPage() {
       render: (r) => (
         <div>
           <div className="text-sm font-medium text-[var(--color-text-primary)]">{r.client_name || "—"}</div>
+          {r.company_name && (
+            <div className="text-xs text-[var(--color-text-secondary)]">{r.company_name}</div>
+          )}
           <div className="text-xs text-[var(--color-text-muted)]">{r.client_email || "—"}</div>
         </div>
       ),

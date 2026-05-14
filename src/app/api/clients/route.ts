@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 
   let query = supabase
     .from("clients")
-    .select("id, email, full_name, created_at, updated_at")
+    .select("id, email, full_name, company_name, created_at, updated_at")
     .eq("org_id", profile.org_id)
     .order("updated_at", { ascending: false })
     .limit(50);
@@ -61,6 +61,7 @@ export async function POST(req: Request) {
 
   const full_name = String(body?.full_name ?? body?.name ?? "").trim();
   const email = String(body?.email ?? "").trim().toLowerCase();
+  const company_name = String(body?.company_name ?? "").trim() || null;
 
   if (!full_name) {
     return NextResponse.json({ error: "Client name is required" }, { status: 400 });
@@ -76,8 +77,9 @@ export async function POST(req: Request) {
       org_id: profile.org_id,
       full_name,
       email,
+      ...(company_name ? { company_name } : {}),
     })
-    .select("id, email, full_name, created_at, updated_at")
+    .select("id, email, full_name, company_name, created_at, updated_at")
     .single();
 
   if (error) {
@@ -117,6 +119,7 @@ export async function PUT(req: Request) {
   const id = String(body?.id ?? "").trim();
   const full_name = String(body?.full_name ?? body?.name ?? "").trim();
   const email = String(body?.email ?? "").trim().toLowerCase();
+  const company_name = body?.company_name !== undefined ? (String(body.company_name).trim() || null) : undefined;
 
   const uuidOk = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
   if (!uuidOk) {
@@ -140,7 +143,7 @@ export async function PUT(req: Request) {
     })
     .eq("org_id", profile.org_id)
     .eq("id", id)
-    .select("id, email, full_name, created_at, updated_at")
+    .select("id, email, full_name, company_name, created_at, updated_at")
     .single();
 
   if (error) {

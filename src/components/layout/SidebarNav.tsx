@@ -89,7 +89,6 @@ export default function SidebarNav({
         <>
           <SectionLabel>Enterprise</SectionLabel>
           <div className="flex flex-col gap-0.5">
-            <NavItem href="/dashboard/onboardings?tab=bulk" label="Events" icon={CalendarDays} onClose={onClose} />
             <NavItem href="/dashboard/review-queue" label="Review Queue" icon={ShieldCheck} onClose={onClose} />
           </div>
         </>
