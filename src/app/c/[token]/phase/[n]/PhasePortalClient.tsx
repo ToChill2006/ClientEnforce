@@ -33,6 +33,7 @@ type WhiteLabel = {
   brand_name?: string | null;
   logo_url?: string | null;
   accent_color?: string | null;
+  heading_color?: string | null;
   portal_tagline?: string | null;
 } | null;
 
@@ -104,6 +105,8 @@ export default function PhasePortalClient({
   const brandName = whiteLabel?.brand_name?.trim() || "ClientEnforce";
   const logoUrl = whiteLabel?.logo_url?.trim() || null;
   const accentColor = whiteLabel?.accent_color?.trim() || null;
+  const headingColor = whiteLabel?.heading_color?.trim() || accentColor || null;
+  const tagline = whiteLabel?.portal_tagline?.trim() || null;
 
   const totalPhases = phases.length;
   const approvedCount = phases.filter((p) => p.status === "approved").length;
@@ -250,19 +253,34 @@ export default function PhasePortalClient({
       r.signature_path
     );
 
-  const style: React.CSSProperties = accentColor ? { ["--color-accent" as any]: accentColor } : {};
+  const style: React.CSSProperties = {
+    ...(accentColor ? { ["--color-accent" as any]: accentColor } : {}),
+    ...(headingColor ? { ["--color-heading" as any]: headingColor } : {}),
+  };
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-subtle)]" style={style}>
       {/* Top bar */}
-      <header className="border-b border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-3">
+      <header className="border-b border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {logoUrl && <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" />}
-            <span className="text-sm font-semibold text-[var(--color-text-primary)]">{brandName}</span>
-            {eventName && <span className="hidden text-xs text-[var(--color-text-muted)] sm:inline">· {eventName}</span>}
+          <div className="flex items-center gap-3 min-w-0">
+            {logoUrl && (
+              <img src={logoUrl} alt={brandName} className="h-10 w-auto max-w-[120px] shrink-0 object-contain" />
+            )}
+            <div className="min-w-0">
+              <div
+                className="text-sm font-semibold leading-tight"
+                style={headingColor ? { color: headingColor } : undefined}
+              >
+                {brandName}
+                {eventName && <span className="ml-2 font-normal text-[var(--color-text-muted)]">· {eventName}</span>}
+              </div>
+              {tagline && (
+                <div className="mt-0.5 truncate text-xs text-[var(--color-text-secondary)]">{tagline}</div>
+              )}
+            </div>
           </div>
-          <div className="text-xs text-[var(--color-text-muted)]">
+          <div className="shrink-0 text-xs text-[var(--color-text-muted)]">
             Hi, {clientName}
           </div>
         </div>
@@ -308,7 +326,10 @@ export default function PhasePortalClient({
         {/* Main content */}
         <main className="flex-1 space-y-6">
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">{currentPhase.name}</h1>
+            <h1
+              className="text-xl font-semibold"
+              style={headingColor ? { color: headingColor } : { color: "var(--color-text-primary)" }}
+            >{currentPhase.name}</h1>
             <p className="mt-1 text-sm text-[var(--color-text-muted)]">
               Phase {currentPhase.phase_number} of {totalPhases}
               {currentPhase.deadline && ` · Deadline: ${currentPhase.deadline}`}

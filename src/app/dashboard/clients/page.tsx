@@ -156,6 +156,7 @@ type Client = {
   email: string;
   full_name?: string | null;
   name?: string | null;
+  company_name?: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -191,6 +192,7 @@ export default function ClientsPage() {
 
   const [email, setEmail] = React.useState("");
   const [fullName, setFullName] = React.useState("");
+  const [companyName, setCompanyName] = React.useState("");
   const [formErr, setFormErr] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [savingClientId, setSavingClientId] = React.useState<string | null>(null);
@@ -242,6 +244,7 @@ export default function ClientsPage() {
     setEditing(null);
     setEmail("");
     setFullName("");
+    setCompanyName("");
     setFormErr(null);
     setModalOpen(true);
   }
@@ -250,6 +253,7 @@ export default function ClientsPage() {
     setEditing(c);
     setEmail(c.email ?? "");
     setFullName((c.full_name ?? c.name ?? "").trim());
+    setCompanyName(c.company_name ?? "");
     setFormErr(null);
     setModalOpen(true);
   }
@@ -276,13 +280,15 @@ export default function ClientsPage() {
     if (editing?.id) setSavingClientId(editing.id);
 
     try {
+      const co = companyName.trim() || null;
+
       if (editing?.id) {
-        const payload = { id: editing.id, email: em, full_name: nm };
+        const payload = { id: editing.id, email: em, full_name: nm, company_name: co };
 
         let res = await fetch(`/api/clients/${editing.id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email: em, full_name: nm }),
+          body: JSON.stringify({ email: em, full_name: nm, company_name: co }),
         });
 
         if (res.status === 404 || res.status === 405) {
@@ -310,7 +316,7 @@ export default function ClientsPage() {
         const res = await fetch("/api/clients", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email: em, full_name: nm }),
+          body: JSON.stringify({ email: em, full_name: nm, company_name: co }),
         });
         const json = await res.json().catch(() => null);
         if (!res.ok) throw new Error(json?.error || "Create failed");
@@ -332,6 +338,7 @@ export default function ClientsPage() {
       setEditing(null);
       setEmail("");
       setFullName("");
+      setCompanyName("");
     } catch (e: any) {
       setFormErr(e?.message ?? "Unknown error");
     } finally {
@@ -382,9 +389,14 @@ export default function ClientsPage() {
         const nm = displayName(r);
         const missingName = nm === "Unnamed";
         return (
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="truncate text-sm font-medium text-[var(--color-text-primary)]">{nm}</span>
-            {missingName && <Tag tone="warning">Missing name</Tag>}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-sm font-medium text-[var(--color-text-primary)]">{nm}</span>
+              {missingName && <Tag tone="warning">Missing name</Tag>}
+            </div>
+            {r.company_name && (
+              <div className="truncate text-xs text-[var(--color-text-secondary)]">{r.company_name}</div>
+            )}
           </div>
         );
       },
@@ -565,6 +577,14 @@ export default function ClientsPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="client@company.com"
               inputMode="email"
+            />
+          </FormField>
+
+          <FormField label="Company name">
+            <Input
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="e.g. Acme Inc."
             />
           </FormField>
 
