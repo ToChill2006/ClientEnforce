@@ -46,6 +46,8 @@ const PatchSchema = z.union([
       })
       .nullable(),
   }),
+  z.object({ owner_id: z.string().uuid().nullable() }),
+  z.object({ client_type_id: z.string().uuid().nullable() }),
 ]);
 
 type ResponseError = { message?: string | null };
@@ -108,6 +110,26 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
     if (upd.error) return jsonError(400, upd.error.message || "Failed to save reminders override");
     return NextResponse.json({ ok: true, item: upd.data });
+  }
+
+  if ("owner_id" in parsed.data) {
+    const { error } = await supabase
+      .from("onboardings")
+      .update({ owner_id: parsed.data.owner_id, updated_at: now })
+      .eq("org_id", org_id)
+      .eq("id", id);
+    if (error) return jsonError(400, error.message || "Failed to update owner");
+    return NextResponse.json({ ok: true });
+  }
+
+  if ("client_type_id" in parsed.data) {
+    const { error } = await supabase
+      .from("onboardings")
+      .update({ client_type_id: parsed.data.client_type_id, updated_at: now })
+      .eq("org_id", org_id)
+      .eq("id", id);
+    if (error) return jsonError(400, error.message || "Failed to update client type");
+    return NextResponse.json({ ok: true });
   }
 
   let update = (await supabase

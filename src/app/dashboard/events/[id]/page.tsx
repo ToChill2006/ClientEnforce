@@ -11,6 +11,10 @@ import {
   CheckCircle2,
   Loader2,
   Search,
+  Trash2,
+  Send,
+  UserCheck,
+  Tag as TagIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -55,6 +59,7 @@ type CsvRow = {
 };
 
 type ClientType = { id: string; name: string; templates?: { name: string } | null };
+type TeamMember = { user_id: string; email: string | null; full_name: string | null };
 
 type Tab = "add" | "exhibitors" | "templates";
 
@@ -158,6 +163,15 @@ export default function EventDetailPage() {
   const [exhibitorQuery, setExhibitorQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
 
+  // Selection + bulk actions
+  const [selected, setSelected] = React.useState<string[]>([]);
+  const [members, setMembers] = React.useState<TeamMember[]>([]);
+  const [assignOwnerOpen, setAssignOwnerOpen] = React.useState(false);
+  const [changeTypeOpen, setChangeTypeOpen] = React.useState(false);
+  const [bulkOwnerId, setBulkOwnerId] = React.useState("");
+  const [bulkClientTypeId, setBulkClientTypeId] = React.useState("");
+  const [bulkBusy, setBulkBusy] = React.useState(false);
+
   // Client types (for CSV preview)
   const [clientTypes, setClientTypes] = React.useState<ClientType[]>([]);
 
@@ -216,9 +230,83 @@ export default function EventDetailPage() {
     } catch { /* ignore */ }
   }
 
+  async function loadMembers() {
+    try {
+      const res = await fetch("/api/team/members", { cache: "no-store" });
+      const json = await res.json().catch(() => null);
+      if (res.ok) setMembers(json.members ?? []);
+    } catch { /* ignore */ }
+  }
+
+  async function bulkDelete(ids: string[], clear: () => void) {
+    if (!ids.length) return;
+    if (!window.confirm(`Delete ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}? This cannot be undone.`)) return;
+    setBulkBusy(true);
+    try {
+      const results = await Promise.allSettled(
+        ids.map((id) => fetch(`/api/onboardings/${id}`, { method: "DELETE" }).then((r) => { if (!r.ok) throw new Error(); return id; }))
+      );
+      const ok = results.filter((r) => r.status === "fulfilled").length;
+      setExhibitors((prev) => prev.filter((e) => !ids.includes(e.id)));
+      toast({ title: `${ok} deleted`, variant: ok === ids.length ? "success" : "info" });
+      clear();
+    } finally { setBulkBusy(false); }
+  }
+
+  async function bulkSend(ids: string[], clear: () => void) {
+    setBulkBusy(true);
+    try {
+      const results = await Promise.allSettled(
+        ids.map((id) => fetch("/api/onboardings/send", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ onboarding_id: id }),
+        }).then((r) => { if (!r.ok) throw new Error(); return id; }))
+      );
+      const ok = results.filter((r) => r.status === "fulfilled").length;
+      toast({ title: `${ok} invite${ok === 1 ? "" : "s"} sent`, variant: ok === ids.length ? "success" : "info" });
+      clear();
+    } finally { setBulkBusy(false); }
+  }
+
+  async function bulkAssignOwner(ids: string[], ownerId: string | null, clear: () => void) {
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        ids.map((id) => fetch(`/api/onboardings/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ owner_id: ownerId || null }),
+        }))
+      );
+      toast({ title: `Owner updated for ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`, variant: "success" });
+      setAssignOwnerOpen(false);
+      clear();
+    } finally { setBulkBusy(false); }
+  }
+
+  async function bulkChangeType(ids: string[], clientTypeId: string, clear: () => void) {
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        ids.map((id) => fetch(`/api/onboardings/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ client_type_id: clientTypeId }),
+        }))
+      );
+      const ct = clientTypes.find((c) => c.id === clientTypeId);
+      setExhibitors((prev) => prev.map((e) => ids.includes(e.id) ? { ...e, client_type_name: ct?.name ?? e.client_type_name } : e));
+      toast({ title: `Type updated for ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`, variant: "success" });
+      setChangeTypeOpen(false);
+      clear();
+    } finally { setBulkBusy(false); }
+  }
+
   React.useEffect(() => {
     loadEvent();
     loadClientTypes();
+    loadMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
@@ -522,6 +610,101 @@ export default function EventDetailPage() {
             rowHref={(r) => `/dashboard/onboardings/${r.id}`}
             loading={loadingExhibitors}
             defaultSort={{ key: "client", dir: "asc" }}
+            selectable
+            selectedIds={selected}
+            onSelectionChange={setSelected}
+            bulkBar={(ids, clear) => (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--color-text-muted)]">{ids.length} selected</span>
+                <Button size="xs" variant="ghost" onClick={clear}>Clear</Button>
+                <div className="mx-1 h-4 w-px bg-[var(--color-border)]" />
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  iconLeft={<Send className="h-3 w-3" />}
+                  disabled={bulkBusy}
+                  onClick={() => bulkSend(ids, clear)}
+                >
+                  Send invite
+                </Button>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  iconLeft={<UserCheck className="h-3 w-3" />}
+                  disabled={bulkBusy}
+                  onClick={() => { setBulkOwnerId(""); setAssignOwnerOpen(true); }}
+                >
+                  Assign owner
+                </Button>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  iconLeft={<TagIcon className="h-3 w-3" />}
+                  disabled={bulkBusy}
+                  onClick={() => { setBulkClientTypeId(""); setChangeTypeOpen(true); }}
+                >
+                  Change type
+                </Button>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  className="text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"
+                  iconLeft={<Trash2 className="h-3 w-3" />}
+                  disabled={bulkBusy}
+                  onClick={() => bulkDelete(ids, clear)}
+                >
+                  Delete
+                </Button>
+
+                {/* Assign owner modal */}
+                <Modal
+                  open={assignOwnerOpen}
+                  onClose={() => setAssignOwnerOpen(false)}
+                  title={`Assign owner to ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`}
+                  size="sm"
+                  footer={
+                    <>
+                      <Button variant="secondary" onClick={() => setAssignOwnerOpen(false)}>Cancel</Button>
+                      <Button loading={bulkBusy} onClick={() => bulkAssignOwner(ids, bulkOwnerId, clear)}>
+                        Assign
+                      </Button>
+                    </>
+                  }
+                >
+                  <Select value={bulkOwnerId} onChange={(e) => setBulkOwnerId(e.target.value)}>
+                    <option value="">Unassigned</option>
+                    {members.map((m) => (
+                      <option key={m.user_id} value={m.user_id}>
+                        {(m.full_name || m.email || m.user_id).trim()}
+                      </option>
+                    ))}
+                  </Select>
+                </Modal>
+
+                {/* Change type modal */}
+                <Modal
+                  open={changeTypeOpen}
+                  onClose={() => setChangeTypeOpen(false)}
+                  title={`Change client type for ${ids.length} exhibitor${ids.length === 1 ? "" : "s"}`}
+                  size="sm"
+                  footer={
+                    <>
+                      <Button variant="secondary" onClick={() => setChangeTypeOpen(false)}>Cancel</Button>
+                      <Button loading={bulkBusy} disabled={!bulkClientTypeId} onClick={() => bulkChangeType(ids, bulkClientTypeId, clear)}>
+                        Apply
+                      </Button>
+                    </>
+                  }
+                >
+                  <Select value={bulkClientTypeId} onChange={(e) => setBulkClientTypeId(e.target.value)}>
+                    <option value="">Select a type…</option>
+                    {clientTypes.map((ct) => (
+                      <option key={ct.id} value={ct.id}>{ct.name}</option>
+                    ))}
+                  </Select>
+                </Modal>
+              </div>
+            )}
             empty={
               <div className="py-10 text-center">
                 <div className="text-sm text-[var(--color-text-muted)]">No exhibitors yet. Use the Add Exhibitors tab to import from CSV.</div>
