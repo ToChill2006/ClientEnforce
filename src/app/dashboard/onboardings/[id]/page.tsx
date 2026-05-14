@@ -362,19 +362,13 @@ export default function OnboardingDetailAdminPage() {
     } catch { /* best-effort */ }
   }
 
-  async function openReviewPanel(phaseNumber: number) {
-    const sb = supabaseBrowser();
-    const { data: reqs } = await sb
-      .from("onboarding_requirements")
-      .select("id, label, value_text, file_path, signature_path, phase_number, review_status, reviewer_comment")
-      .eq("onboarding_id", params.id)
-      .order("sort_order", { ascending: true });
-
-    const phaseReqs = (reqs ?? []).filter(
-      (r: any) => r.phase_number === phaseNumber || (!r.phase_number && phaseNumber === 1)
+  function openReviewPanel(phaseNumber: number) {
+    const allReqs = payload?.requirements ?? [];
+    const phaseReqs = allReqs.filter(
+      (r) => (r.phase_number ?? 1) === phaseNumber && (r.type ?? r.kind ?? "").toLowerCase() !== "heading"
     );
 
-    setReviewItems(phaseReqs.map((r: any) => ({
+    setReviewItems(phaseReqs.map((r) => ({
       id: r.id,
       label: r.label ?? "Field",
       value: r.value_text ?? (r.file_path ? "📎 File uploaded" : r.signature_path ? "✍ Signature" : "—"),
