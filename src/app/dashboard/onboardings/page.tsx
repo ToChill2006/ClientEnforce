@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, RefreshCw, Copy, Send, Lock, Trash2, ExternalLink, Search } from "lucide-react";
+import { Plus, RefreshCw, Copy, Send, Lock, Trash2, ExternalLink, Search, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { FormField, FormGrid } from "@/components/ui/form-field";
@@ -14,6 +14,9 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/toast";
 import { normalizeStatus, type OnboardingStatus } from "@/lib/status";
 import { cn } from "@/lib/cn";
+
+// Re-export so BulkTab (defined above the main component in this file) can use them
+// These are already imported below — this comment is just for clarity
 
 type OnboardingRow = {
   id: string;
@@ -27,6 +30,7 @@ type OnboardingRow = {
   token?: string | null;
   owner_id?: string | null;
   owner_name?: string | null;
+  event_id?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 };
@@ -48,6 +52,181 @@ function toLocaleDate(v?: string | null) {
 function statusKey(raw?: string | null): OnboardingStatus {
   return normalizeStatus(raw) as OnboardingStatus;
 }
+
+// ─── Bulk Onboardings (Events) tab ────────────────────────────────────────────
+
+type EventCard = {
+  id: string;
+  name: string;
+  start_date: string | null;
+  end_date: string;
+  location: string | null;
+  status: string;
+  exhibitor_count?: number;
+};
+
+function EventStatusBadge({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    planning: "bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]",
+    active: "bg-[var(--color-success-subtle)] text-[var(--color-success)]",
+    closed: "bg-[var(--color-warning-subtle)] text-[var(--color-warning)]",
+    archived: "bg-[var(--color-bg-subtle)] text-[var(--color-text-muted)]",
+  };
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${map[status] ?? map.planning}`}>
+      {status}
+    </span>
+  );
+}
+
+function BulkTab({ hasFlag }: { hasFlag: boolean }) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [events, setEvents] = React.useState<EventCard[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [creating, setCreating] = React.useState(false);
+  const [name, setName] = React.useState("");
+  const [endDate, setEndDate] = React.useState("");
+  const [startDate, setStartDate] = React.useState("");
+  const [location, setLocation] = React.useState("");
+  const [formErr, setFormErr] = React.useState<string | null>(null);
+
+  async function loadEvents() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/events", { cache: "no-store" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to load events");
+      setEvents(json.events ?? []);
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message, variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  React.useEffect(() => {
+    if (hasFlag) loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasFlag]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setFormErr(null);
+    if (!name.trim()) return setFormErr("Event name is required.");
+    if (!endDate) return setFormErr("End date is required.");
+    setCreating(true);
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), end_date: endDate, start_date: startDate || null, location: location.trim() || null }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to create event");
+      setCreateOpen(false);
+      setName(""); setEndDate(""); setStartDate(""); setLocation("");
+      toast({ title: "Event created", variant: "success" });
+      router.push(`/dashboard/events/${json.event.id}`);
+    } catch (err: any) {
+      setFormErr(err?.message || "Failed to create event.");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  if (!hasFlag) {
+    return (
+      <div className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+        Enterprise onboarding is not enabled for your organization.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[var(--color-text-secondary)]">
+          {events.length} event{events.length !== 1 ? "s" : ""}
+        </p>
+        <Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={() => setCreateOpen(true)}>
+          New Event
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="py-12 text-center text-sm text-[var(--color-text-muted)]">Loading…</div>
+      ) : events.length === 0 ? (
+        <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] p-10 text-center">
+          <CalendarDays className="mx-auto mb-3 h-8 w-8 text-[var(--color-text-muted)]" />
+          <div className="text-sm font-semibold text-[var(--color-text-primary)]">No events yet</div>
+          <div className="mt-1 text-sm text-[var(--color-text-secondary)]">Create an event to bulk-onboard exhibitors.</div>
+          <Button className="mt-4" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={() => setCreateOpen(true)}>
+            New Event
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {events.map((ev) => (
+            <button
+              key={ev.id}
+              onClick={() => router.push(`/dashboard/events/${ev.id}`)}
+              className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 text-left shadow-[var(--shadow-sm)] transition hover:border-[var(--color-accent)] hover:shadow-[var(--shadow-md)]"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{ev.name}</div>
+                  {ev.location && <div className="mt-0.5 truncate text-xs text-[var(--color-text-muted)]">{ev.location}</div>}
+                </div>
+                <EventStatusBadge status={ev.status} />
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+                <span>{ev.end_date ? new Date(ev.end_date).toLocaleDateString(undefined, { month: "short", day: "2-digit", year: "numeric" }) : "—"}</span>
+                <span>{ev.exhibitor_count ?? 0} exhibitor{(ev.exhibitor_count ?? 0) !== 1 ? "s" : ""}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="New Event"
+        description="Create a new event to bulk-onboard exhibitors."
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCreateOpen(false)} disabled={creating}>Cancel</Button>
+            <Button onClick={handleCreate as any} loading={creating}>Create Event</Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreate} className="space-y-4">
+          <FormField label="Event name" required>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="DreamHack Dallas 2026" />
+          </FormField>
+          <FormGrid>
+            <FormField label="End date" required>
+              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </FormField>
+            <FormField label="Start date">
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </FormField>
+          </FormGrid>
+          <FormField label="Location">
+            <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dallas, TX" />
+          </FormField>
+          {formErr && <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">{formErr}</div>}
+          <button type="submit" className="hidden" />
+        </form>
+      </Modal>
+    </div>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function OnboardingsPage() {
   const router = useRouter();
@@ -95,11 +274,33 @@ export default function OnboardingsPage() {
   const [rowBusy, setRowBusy] = React.useState<Record<string, boolean>>({});
   const [confirmDelete, setConfirmDelete] = React.useState<OnboardingRow | null>(null);
 
+  // Enterprise feature flag
+  const [hasEnterpriseFlag, setHasEnterpriseFlag] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState<"solo" | "bulk">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("onboardings_tab");
+      return saved === "bulk" ? "bulk" : "solo";
+    }
+    return "solo";
+  });
+
+  React.useEffect(() => {
+    // Check if we landed with ?tab=bulk
+    if (searchParams?.get("tab") === "bulk") setActiveTab("bulk");
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  React.useEffect(() => {
+    // Check enterprise flag
+    fetch("/api/events", { cache: "no-store" })
+      .then((r) => { if (r.ok || r.status === 200) setHasEnterpriseFlag(true); })
+      .catch(() => {});
+  }, []);
+
   async function load() {
     try {
       setLoading(true);
       setLoadError(null);
-      const res = await fetch("/api/onboardings", { cache: "no-store" });
+      const res = await fetch("/api/onboardings?no_event=1", { cache: "no-store" });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error(text || `Failed to load onboardings (${res.status})`);
@@ -574,22 +775,50 @@ export default function OnboardingsPage() {
         description="Create, track, and send client onboarding links. Progress updates automatically."
         actions={
           <>
-            <Button
-              variant="outline"
-              size="sm"
-              iconLeft={<RefreshCw className="h-3.5 w-3.5" />}
-              onClick={() => load()}
-              disabled={loading}
-            >
-              Refresh
-            </Button>
-            <Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={() => setCreateOpen(true)}>
-              New onboarding
-            </Button>
+            {activeTab === "solo" && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  iconLeft={<RefreshCw className="h-3.5 w-3.5" />}
+                  onClick={() => load()}
+                  disabled={loading}
+                >
+                  Refresh
+                </Button>
+                <Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={() => setCreateOpen(true)}>
+                  New onboarding
+                </Button>
+              </>
+            )}
           </>
         }
       />
 
+      {/* Solo / Bulk tab bar — only visible when enterprise flag is on */}
+      {hasEnterpriseFlag && (
+        <div className="flex gap-1 border-b border-[var(--color-border)]">
+          {(["solo", "bulk"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => { setActiveTab(t); localStorage.setItem("onboardings_tab", t); }}
+              className={cn(
+                "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+                activeTab === t
+                  ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                  : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+              )}
+            >
+              {t === "solo" ? "Solo Onboardings" : <><CalendarDays className="h-3.5 w-3.5" /> Bulk Onboardings (Events)</>}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {activeTab === "bulk" && hasEnterpriseFlag && <BulkTab hasFlag={hasEnterpriseFlag} />}
+
+      {activeTab === "solo" && (
+        <>
       {loadError && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-sm text-[var(--color-danger)]">
           {loadError}
@@ -692,21 +921,36 @@ export default function OnboardingsPage() {
             />
           </FormField>
 
-          <label className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-[var(--color-accent)]"
-              checked={useExistingClient}
-              onChange={(e) => {
-                setUseExistingClient(e.target.checked);
-                if (!e.target.checked) setSelectedClientId("");
-              }}
-            />
-            Use existing client
-          </label>
+          <div>
+            <div className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">Client</div>
+            <div className="mb-3 flex rounded-[var(--radius-md)] border border-[var(--color-border)] p-0.5 bg-[var(--color-bg-subtle)]">
+              <button
+                type="button"
+                onClick={() => { setUseExistingClient(false); setSelectedClientId(""); }}
+                className={cn(
+                  "flex-1 rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-medium transition-colors",
+                  !useExistingClient
+                    ? "bg-[var(--color-panel)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+                )}
+              >
+                New client
+              </button>
+              <button
+                type="button"
+                onClick={() => setUseExistingClient(true)}
+                className={cn(
+                  "flex-1 rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-medium transition-colors",
+                  useExistingClient
+                    ? "bg-[var(--color-panel)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+                )}
+              >
+                Existing client
+              </button>
+            </div>
 
-          {useExistingClient ? (
-            <FormField label="Client" required>
+            {useExistingClient ? (
               <Select
                 value={selectedClientId}
                 onChange={(e) => {
@@ -720,7 +964,7 @@ export default function OnboardingsPage() {
                   }
                 }}
               >
-                <option value="">Select a client</option>
+                <option value="">Select a client…</option>
                 {clients.map((c) => {
                   const nm = ((c.full_name ?? c.name ?? "") as string).trim();
                   return (
@@ -730,26 +974,26 @@ export default function OnboardingsPage() {
                   );
                 })}
               </Select>
-            </FormField>
-          ) : (
-            <FormGrid>
-              <FormField label="Client email" required>
-                <Input
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  placeholder="client@company.com"
-                  inputMode="email"
-                />
-              </FormField>
-              <FormField label="Client full name" required>
-                <Input
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Jane Doe"
-                />
-              </FormField>
-            </FormGrid>
-          )}
+            ) : (
+              <FormGrid>
+                <FormField label="Email" required>
+                  <Input
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    placeholder="client@company.com"
+                    inputMode="email"
+                  />
+                </FormField>
+                <FormField label="Full name" required>
+                  <Input
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Jane Doe"
+                  />
+                </FormField>
+              </FormGrid>
+            )}
+          </div>
 
           {createErr && (
             <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">
@@ -779,6 +1023,8 @@ export default function OnboardingsPage() {
         confirmLabel="Delete"
         destructive
       />
+        </>
+      )}
     </div>
   );
 }

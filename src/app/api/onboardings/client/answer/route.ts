@@ -34,7 +34,33 @@ export async function POST(req: Request) {
   if (oErr || !onboarding) return json(404, { error: "Invalid link" });
 
   const locked = Boolean(onboarding.locked_at) || onboarding.status === "locked";
-  if (locked) return json(423, { error: "Onboarding is locked" });
+
+  if (locked) {
+    // Allow saves when the requirement's phase is still in_progress or rejected
+    const { data: phaseCheck } = await admin
+      .from("onboarding_requirements")
+      .select("phase_number")
+      .eq("id", requirement_id)
+      .eq("onboarding_id", onboarding.id)
+      .single();
+
+    if (phaseCheck) {
+      const phaseNum = (phaseCheck as any).phase_number ?? 1;
+      const { data: phaseRow } = await admin
+        .from("onboarding_phases")
+        .select("status")
+        .eq("onboarding_id", onboarding.id)
+        .eq("phase_number", phaseNum)
+        .single();
+      const phaseStatus = (phaseRow as any)?.status ?? null;
+      if (!phaseRow || (phaseStatus !== "in_progress" && phaseStatus !== "rejected")) {
+        return json(423, { error: "This phase is not open for editing." });
+      }
+      // Phase is open — allow the save
+    } else {
+      return json(423, { error: "Onboarding is locked" });
+    }
+  }
 
   // Ensure requirement belongs to this onboarding
   const { data: reqRow, error: rErr } = await admin

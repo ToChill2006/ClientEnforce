@@ -40,6 +40,12 @@ async function getOrgIdForUser(supabase: Awaited<ReturnType<typeof supabaseServe
   return { user, org_id: profile.org_id as string };
 }
 
+// Enterprise onboarding optional fields added to every variant
+const EnterpriseFields = {
+  event_id: z.string().uuid().optional().nullable(),
+  client_type_id: z.string().uuid().optional().nullable(),
+};
+
 const CreatePayload = z.union([
   // ID-based (admin UI can use this)
   z.object({
@@ -47,6 +53,7 @@ const CreatePayload = z.union([
     template_id: z.string().uuid().optional(),
     owner_id: z.string().uuid().optional(),
     client_id: z.string().uuid(),
+    ...EnterpriseFields,
   }),
   // Nested client object (supports either selecting an existing client by id, or providing email+name/full_name)
   z.object({
@@ -67,6 +74,7 @@ const CreatePayload = z.union([
         path: ["name"],
       }),
     ]),
+    ...EnterpriseFields,
   }),
   // Flat fields (current modal posts this)
   z
@@ -77,6 +85,7 @@ const CreatePayload = z.union([
       client_email: z.string().email(),
       client_name: z.string().min(1).optional(),
       client_full_name: z.string().min(1).optional(),
+      ...EnterpriseFields,
     })
     .refine((v) => Boolean((v.client_name ?? v.client_full_name)?.trim()), {
       message: "Client name is required",
@@ -370,14 +379,20 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 100), 1), 500);
+  const filterEventId = url.searchParams.get("event_id") ?? null;
+  const noEvent = url.searchParams.get("no_event") === "1";
 
-  const run = (sel: string) =>
-    supabase
+  const run = (sel: string) => {
+    let q = supabase
       .from("onboardings")
       .select(sel)
       .eq("org_id", org_id)
       .order("updated_at", { ascending: false })
       .limit(limit);
+    if (filterEventId) q = (q as any).eq("event_id", filterEventId);
+    if (noEvent) q = (q as any).is("event_id", null);
+    return q;
+  };
 
   // Try a small set of increasingly compatible selects.
   const selectCandidates = [
@@ -555,9 +570,45 @@ export async function GET(req: Request) {
     }
   }
 
+  // Enrich with phase data (active phase per onboarding)
+  const onboardingIds = rows.map((r: any) => r.id).filter(Boolean);
+  let phasesByOnboardingId: Record<string, { phase_number: number; name: string; status: string; deadline: string | null }> = {};
+  let clientTypeNamesById: Record<string, string> = {};
+
+  if (onboardingIds.length > 0) {
+    const { data: phases } = await supabase
+      .from("onboarding_phases")
+      .select("onboarding_id, phase_number, name, status, deadline")
+      .in("onboarding_id", onboardingIds)
+      .order("phase_number", { ascending: false });
+
+    if (phases) {
+      for (const p of phases as any[]) {
+        const existing = phasesByOnboardingId[p.onboarding_id];
+        // Pick the highest-number non-locked phase as "current"
+        if (!existing || (p.status !== "locked" && (existing.status === "locked" || p.phase_number > existing.phase_number))) {
+          phasesByOnboardingId[p.onboarding_id] = p;
+        }
+      }
+    }
+
+    // Enrich client_type_name
+    const ctIds = Array.from(new Set(rows.map((r: any) => r.client_type_id).filter(Boolean)));
+    if (ctIds.length > 0) {
+      const { data: ctRows } = await supabase
+        .from("client_types")
+        .select("id, name")
+        .in("id", ctIds);
+      if (ctRows) {
+        for (const ct of ctRows as any[]) clientTypeNamesById[ct.id] = ct.name;
+      }
+    }
+  }
+
   const enriched = rows.map((o: any) => {
     const client = o.client_id ? clientsById[o.client_id] : undefined;
     const template = o.template_id ? templatesById[o.template_id] : undefined;
+    const phase = phasesByOnboardingId[o.id];
 
     // Prefer denormalized columns on onboardings if present.
     const resolvedClientEmail = o.client_email ?? client?.email ?? null;
@@ -578,8 +629,13 @@ export async function GET(req: Request) {
       template_name: resolvedTemplateName,
       template_title: resolvedTemplateName,
       owner_name: resolvedOwnerName,
-      // Always include a ready-to-use portal link with the correct domain
       client_link: clientLink,
+      // Phase + type enrichment
+      client_type_name: o.client_type_id ? (clientTypeNamesById[o.client_type_id] ?? null) : null,
+      current_phase: phase?.phase_number ?? null,
+      phase_name: phase?.name ?? null,
+      phase_status: phase?.status ?? null,
+      phase_deadline: phase?.deadline ?? null,
     };
   });
 
@@ -739,6 +795,15 @@ export async function POST(req: Request) {
   const now = new Date().toISOString();
 
   const owner_id = (parsed.data as any).owner_id ?? null;
+  const event_id = (parsed.data as any).event_id ?? null;
+  const client_type_id = (parsed.data as any).client_type_id ?? null;
+
+  // Validate enterprise fields if present: org must have the flag
+  if (event_id || client_type_id) {
+    const { orgHasFeature } = await import("@/lib/feature-flags");
+    const flagOn = await orgHasFeature(org_id, "enterprise_onboarding");
+    if (!flagOn) return jsonError(400, "Invalid payload");
+  }
 
   // Some environments may not have newer columns (e.g. created_by). Try with the full payload,
   // and fall back gracefully if the schema doesn't include optional columns.
@@ -753,6 +818,8 @@ export async function POST(req: Request) {
     client_token: randomUUID(),
     updated_at: now,
     ...(owner_id ? { owner_id } : {}),
+    ...(event_id ? { event_id } : {}),
+    ...(client_type_id ? { client_type_id } : {}),
   };
 
   const tryInsert = async (payload: Record<string, any>) =>
@@ -917,6 +984,7 @@ export async function POST(req: Request) {
             };
           }
           const metadata = Object.keys(metadataObj).length > 0 ? metadataObj : null;
+          const phase_number = typeof it.phase_number === "number" ? it.phase_number : null;
 
           return {
             org_id,
@@ -925,6 +993,7 @@ export async function POST(req: Request) {
             label,
             is_required,
             sort_order,
+            phase_number,
             requirement_key,
             attachment_path,
             options,
@@ -998,6 +1067,63 @@ export async function POST(req: Request) {
         }
 
         // Do not fail onboarding creation if requirements generation fails.
+      }
+
+      // Generate onboarding_phases rows if org has enterprise_onboarding flag
+      if (event_id || client_type_id) {
+        try {
+          const { orgHasFeature } = await import("@/lib/feature-flags");
+          const flagOn = await orgHasFeature(org_id, "enterprise_onboarding");
+          if (flagOn && defObj) {
+            const phaseDefs: any[] = defObj.phases ?? [];
+            let eventEndDate: string | null = null;
+
+            if (event_id) {
+              const { data: eventRow } = await supabase
+                .from("events")
+                .select("end_date")
+                .eq("id", event_id)
+                .maybeSingle();
+              eventEndDate = (eventRow as any)?.end_date ?? null;
+            }
+
+            const nowIso = new Date().toISOString();
+            if (phaseDefs.length > 0) {
+              const phaseRows = phaseDefs.map((p: any, idx: number) => {
+                let deadline: string | null = null;
+                if (eventEndDate && typeof p.default_deadline_offset_days === "number") {
+                  const d = new Date(eventEndDate);
+                  d.setDate(d.getDate() + p.default_deadline_offset_days);
+                  deadline = d.toISOString().split("T")[0];
+                }
+                return {
+                  org_id,
+                  onboarding_id: onboarding.id,
+                  phase_number: p.number ?? idx + 1,
+                  name: p.name ?? `Phase ${p.number ?? idx + 1}`,
+                  deadline,
+                  status: idx === 0 ? "in_progress" : "locked",
+                  created_at: nowIso,
+                  updated_at: nowIso,
+                };
+              });
+              await supabase.from("onboarding_phases").insert(phaseRows);
+            } else {
+              // Single fallback phase covering all requirements
+              await supabase.from("onboarding_phases").insert({
+                org_id,
+                onboarding_id: onboarding.id,
+                phase_number: 1,
+                name: "Onboarding",
+                status: "in_progress",
+                created_at: nowIso,
+                updated_at: nowIso,
+              });
+            }
+          }
+        } catch {
+          // Best-effort phase generation.
+        }
       }
     }
   } catch {

@@ -57,6 +57,14 @@ export async function POST(req: Request) {
     );
   }
 
+  // Transition any in_progress phase to awaiting_review
+  await supabase
+    .from("onboarding_phases")
+    .update({ status: "awaiting_review", updated_at: new Date().toISOString() })
+    .eq("onboarding_id", parsed.data.id)
+    .eq("org_id", profile.org_id)
+    .eq("status", "in_progress");
+
   // Audit log
   const baseAudit = {
     org_id: profile.org_id,

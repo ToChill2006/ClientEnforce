@@ -1,7 +1,9 @@
 import * as React from "react";
+import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ClientPortal } from "@/components/client/ClientPortal";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
+import { orgHasFeature } from "@/lib/feature-flags";
 
 function StatusPill({ status, locked }: { status?: string | null; locked: boolean }) {
   const s = (status || "draft").toLowerCase();
@@ -374,6 +376,56 @@ export default async function ClientTokenPage({
   const locked = Boolean(onboarding.locked_at) || onboarding.status === "locked";
 
   const orgId = (onboarding as any).org_id ?? (onboarding as any).orgId ?? null;
+
+  // Enterprise phase-based portal: if flag is on, always use the phase view.
+  // IMPORTANT: redirect() must be called OUTSIDE try/catch — Next.js redirect() throws
+  // a NEXT_REDIRECT error internally which a catch block would silently swallow.
+  let phaseRedirectUrl: string | null = null;
+  if (orgId) {
+    try {
+      const hasFlag = await orgHasFeature(String(orgId), "enterprise_onboarding");
+      if (hasFlag) {
+        const { data: existingPhases } = await admin
+          .from("onboarding_phases")
+          .select("phase_number, status")
+          .eq("onboarding_id", onboarding.id)
+          .order("phase_number", { ascending: true });
+
+        let phases = existingPhases && existingPhases.length > 0 ? existingPhases : null;
+
+        // No phases yet — auto-create a single in_progress phase so the portal works
+        if (!phases) {
+          const now = new Date().toISOString();
+          const { data: created } = await admin
+            .from("onboarding_phases")
+            .upsert(
+              {
+                org_id: String(orgId),
+                onboarding_id: onboarding.id,
+                phase_number: 1,
+                name: "Onboarding",
+                status: "in_progress",
+                created_at: now,
+                updated_at: now,
+              },
+              { onConflict: "onboarding_id,phase_number" }
+            )
+            .select("phase_number, status");
+          phases = created ?? [{ phase_number: 1, status: "in_progress" }];
+        }
+
+        if (phases && phases.length > 0) {
+          const active = (phases as any[]).find((p) => p.status === "in_progress" || p.status === "rejected")
+            ?? (phases as any[]).find((p) => p.status === "awaiting_review")
+            ?? (phases as any[]).find((p) => p.status === "approved")
+            ?? phases[0];
+          phaseRedirectUrl = `/c/${token}/phase/${(active as any).phase_number}`;
+        }
+      }
+    } catch { /* fall through to legacy portal */ }
+  }
+  if (phaseRedirectUrl) redirect(phaseRedirectUrl);
+
   const whiteLabel = orgId ? await loadWhiteLabelForOrg(String(orgId)) : null;
   const brandName = whiteLabel?.brand_name?.trim() || "ClientEnforce";
   const portalTagline = whiteLabel?.portal_tagline?.trim() || "Client portal";

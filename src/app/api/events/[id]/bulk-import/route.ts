@@ -1,0 +1,267 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
+import { roleHasPermission } from "@/lib/permissions";
+import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { sendOrgEmail } from "@/lib/send-email";
+import { randomUUID } from "crypto";
+
+function err(status: number, msg: string) {
+  return NextResponse.json({ error: msg }, { status });
+}
+
+const RowSchema = z.object({
+  email: z.string().email(),
+  full_name: z.string().min(1),
+  client_type_name: z.string().min(1),
+  company_name: z.string().optional().nullable(),
+});
+
+const ImportPayload = z.object({
+  rows: z.array(RowSchema).min(1).max(500),
+});
+
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const flagOn = await currentOrgHasFeature("enterprise_onboarding");
+    if (!flagOn) return err(404, "Not found");
+
+    const { id: eventId } = await params;
+    const supabase = await supabaseServer();
+    const admin = supabaseAdmin();
+
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return err(401, "Unauthorized");
+
+    const org_id = await getOrgId();
+    if (!org_id) return err(403, "No organization");
+
+    const role = await requireRole();
+    if (!roleHasPermission(role as any, "events_write")) return err(403, "Forbidden");
+
+    // Verify event belongs to org
+    const { data: event, error: eventErr } = await supabase
+      .from("events")
+      .select("id, name, end_date")
+      .eq("id", eventId)
+      .eq("org_id", org_id)
+      .single();
+
+    if (eventErr || !event) return err(404, "Event not found");
+
+    const body = await req.json().catch(() => null);
+    const parsed = ImportPayload.safeParse(body);
+    if (!parsed.success) return err(400, "Invalid payload");
+
+    // Load all client types for this org in one query
+    const { data: clientTypes, error: ctErr } = await supabase
+      .from("client_types")
+      .select("id, name, default_template_id")
+      .eq("org_id", org_id);
+
+    if (ctErr) return err(400, ctErr.message);
+
+    const clientTypeByName: Record<string, { id: string; default_template_id: string | null }> = {};
+    for (const ct of clientTypes ?? []) {
+      clientTypeByName[(ct.name as string).toLowerCase()] = {
+        id: ct.id as string,
+        default_template_id: (ct as any).default_template_id ?? null,
+      };
+    }
+
+    // Fallback template
+    const { data: fallbackTpl } = await supabase
+      .from("templates")
+      .select("id")
+      .eq("org_id", org_id)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    const fallbackTemplateId = (fallbackTpl as any)?.id ?? null;
+
+    // Fetch org portal base for invite links
+    let portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
+    try {
+      const { data: orgRow } = await supabase
+        .from("organizations")
+        .select("white_label_settings")
+        .eq("id", org_id)
+        .single();
+      const customDomain = (orgRow as any)?.white_label_settings?.custom_domain?.trim();
+      if (customDomain) portalBase = `https://${customDomain}`;
+    } catch { /* use default */ }
+
+    const created: string[] = [];
+    const failed: Array<{ row_index: number; error: string }> = [];
+
+    for (let i = 0; i < parsed.data.rows.length; i++) {
+      const row = parsed.data.rows[i];
+      try {
+        const ctKey = row.client_type_name.toLowerCase();
+        const ct = clientTypeByName[ctKey];
+        if (!ct) {
+          failed.push({ row_index: i, error: `Client type not found: "${row.client_type_name}"` });
+          continue;
+        }
+
+        const templateId = ct.default_template_id ?? fallbackTemplateId;
+        if (!templateId) {
+          failed.push({ row_index: i, error: "No template available for this client type" });
+          continue;
+        }
+
+        // Upsert client
+        const email = row.email.trim().toLowerCase();
+        const fullName = row.full_name.trim();
+
+        let clientId: string;
+        const { data: existingClient } = await admin
+          .from("clients")
+          .select("id")
+          .eq("org_id", org_id)
+          .eq("email", email)
+          .limit(1)
+          .maybeSingle();
+
+        if (existingClient?.id) {
+          await admin.from("clients").update({ full_name: fullName, updated_at: new Date().toISOString() }).eq("id", existingClient.id);
+          clientId = existingClient.id as string;
+        } else {
+          const { data: newClient, error: clientInsertErr } = await admin
+            .from("clients")
+            .insert({ org_id, email, full_name: fullName, ...(row.company_name ? { company_name: row.company_name } : {}) })
+            .select("id")
+            .single();
+          if (clientInsertErr || !newClient) throw new Error(clientInsertErr?.message || "Failed to create client");
+          clientId = (newClient as any).id;
+        }
+
+        const token = randomUUID();
+
+        // Create onboarding
+        const { data: onboarding, error: obErr } = await admin
+          .from("onboardings")
+          .insert({
+            org_id,
+            client_id: clientId,
+            template_id: templateId,
+            title: `${fullName} — ${event.name}`,
+            status: "draft",
+            client_token: token,
+            event_id: eventId,
+            client_type_id: ct.id,
+            created_by_user_id: userData.user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (obErr || !onboarding) throw new Error(obErr?.message || "Failed to create onboarding");
+
+        const onboardingId = (onboarding as any).id as string;
+
+        // Generate requirements from template
+        const { data: tplRow } = await admin
+          .from("templates")
+          .select("definition")
+          .eq("id", templateId)
+          .single();
+
+        if (tplRow) {
+          const def = (tplRow as any).definition as any;
+          const reqs: any[] = def?.requirements ?? def?.fields ?? [];
+          if (reqs.length > 0) {
+            const now = new Date().toISOString();
+            const reqRows = reqs.map((it: any, idx: number) => ({
+              org_id,
+              onboarding_id: onboardingId,
+              type: it.type ?? "text",
+              label: it.label ?? `Field ${idx + 1}`,
+              is_required: it.type === "heading" ? false : Boolean(it.is_required ?? false),
+              sort_order: Number(it.sort_order ?? idx),
+              phase_number: typeof it.phase_number === "number" ? it.phase_number : null,
+              options: it.options ?? null,
+              created_at: now,
+              updated_at: now,
+            }));
+            await admin.from("onboarding_requirements").insert(reqRows);
+          }
+
+          // Generate phase rows if template has phases
+          const phaseDefs: any[] = def?.phases ?? [];
+          const now = new Date().toISOString();
+          if (phaseDefs.length > 0) {
+            const phaseRows = phaseDefs.map((p: any, idx: number) => {
+              let deadline: string | null = null;
+              if (event.end_date && typeof p.default_deadline_offset_days === "number") {
+                const d = new Date(event.end_date as string);
+                d.setDate(d.getDate() + p.default_deadline_offset_days);
+                deadline = d.toISOString().split("T")[0];
+              }
+              return {
+                org_id,
+                onboarding_id: onboardingId,
+                phase_number: p.number ?? idx + 1,
+                name: p.name ?? `Phase ${p.number ?? idx + 1}`,
+                deadline,
+                status: idx === 0 ? "in_progress" : "locked",
+                created_at: now,
+                updated_at: now,
+              };
+            });
+            await admin.from("onboarding_phases").insert(phaseRows);
+          } else {
+            await admin.from("onboarding_phases").insert({
+              org_id,
+              onboarding_id: onboardingId,
+              phase_number: 1,
+              name: "Onboarding",
+              status: "in_progress",
+              created_at: now,
+              updated_at: now,
+            });
+          }
+        }
+
+        // Send invite email
+        const portalLink = `${portalBase}/c/${token}`;
+        try {
+          await sendOrgEmail(org_id, {
+            to: email,
+            subject: `You have been invited to complete your onboarding for ${event.name}`,
+            html: `<p>Hi ${fullName},</p><p>You have been invited to complete your onboarding for <strong>${event.name}</strong>.</p><p><a href="${portalLink}">Click here to get started</a></p>`,
+            text: `Hi ${fullName},\n\nYou have been invited to complete your onboarding for ${event.name}.\n\nGet started: ${portalLink}`,
+          });
+        } catch { /* Don't fail import on email error */ }
+
+        created.push(onboardingId);
+      } catch (e: any) {
+        failed.push({ row_index: i, error: e?.message || "Unknown error" });
+      }
+    }
+
+    // Write activity feed entry
+    try {
+      await supabase.from("team_activity").insert({
+        org_id,
+        actor_user_id: userData.user.id,
+        actor_kind: "user",
+        verb: "invited",
+        subject_kind: "event",
+        subject_id: eventId,
+        context: { event_id: eventId, event_name: event.name, count: created.length },
+      });
+    } catch { /* best-effort */ }
+
+    return NextResponse.json({ created: created.length, failed });
+  } catch (e: any) {
+    if (e instanceof HttpError) return err(e.status, e.message);
+    return err(500, e?.message || "Internal error");
+  }
+}

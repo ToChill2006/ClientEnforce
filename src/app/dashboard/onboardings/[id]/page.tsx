@@ -46,6 +46,9 @@ type Requirement = {
   completed_at?: string | null;
   completed_by?: string | null;
   completed?: boolean | null;
+  phase_number?: number | null;
+  review_status?: string | null;
+  reviewer_comment?: string | null;
   sort_order?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -103,6 +106,9 @@ function normalizeRequirement(raw: any): Requirement {
     completed_at: r.completed_at ?? r.completedAt ?? null,
     completed_by: r.completed_by ?? r.completedBy ?? null,
     completed: typeof r.completed === "boolean" ? r.completed : null,
+    phase_number: typeof r.phase_number === "number" ? r.phase_number : null,
+    review_status: r.review_status ?? null,
+    reviewer_comment: r.reviewer_comment ?? null,
     sort_order: typeof r.sort_order === "number" ? r.sort_order : r.sortOrder ?? null,
     created_at: r.created_at ?? r.createdAt ?? null,
     updated_at: r.updated_at ?? r.updatedAt ?? null,
@@ -243,6 +249,9 @@ async function fetchRequirementsDirect(onboardingId: string): Promise<Requiremen
         "label",
         "is_required",
         "sort_order",
+        "phase_number",
+        "review_status",
+        "reviewer_comment",
         "completed_at",
         "completed_by",
         "value_text",
@@ -277,10 +286,21 @@ export default function OnboardingDetailAdminPage() {
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
 
+  // Phase strip + review panel state
+  const [phases, setPhases] = React.useState<any[]>([]);
+  const [reviewPhaseNumber, setReviewPhaseNumber] = React.useState<number | null>(null);
+  const [reviewItems, setReviewItems] = React.useState<Array<{ id: string; label: string; value: string; flagged: boolean; comment: string }>>([]);
+  const [reviewNote, setReviewNote] = React.useState("");
+  const [submittingReview, setSubmittingReview] = React.useState(false);
+  const [reviewPanelOpen, setReviewPanelOpen] = React.useState(false);
+
   // Reminder override state
   const [orgReminders, setOrgReminders] = React.useState<OrgFollowupSettings | null>(null);
   const [reminderOverride, setReminderOverride] = React.useState<ReminderOverride | null>(null);
   const [remindersSaving, setRemindersSaving] = React.useState(false);
+
+  // Response phase tab state
+  const [activeResponsePhase, setActiveResponsePhase] = React.useState<number | null>(null);
 
   // Preview state
   const [previewOpen, setPreviewOpen] = React.useState(false);
@@ -330,6 +350,100 @@ export default function OnboardingDetailAdminPage() {
       setPreviewError(e?.message || "Could not load preview.");
     } finally {
       setPreviewLoading(false);
+    }
+  }
+
+  async function loadPhases() {
+    try {
+      const res = await fetch(`/api/onboardings/${params.id}/phases`, { cache: "no-store" });
+      if (!res.ok) { setPhases([]); return; }
+      const json = await res.json();
+      setPhases(json.phases ?? []);
+    } catch { /* best-effort */ }
+  }
+
+  async function openReviewPanel(phaseNumber: number) {
+    const sb = supabaseBrowser();
+    const { data: reqs } = await sb
+      .from("onboarding_requirements")
+      .select("id, label, value_text, file_path, signature_path, phase_number, review_status, reviewer_comment")
+      .eq("onboarding_id", params.id)
+      .order("sort_order", { ascending: true });
+
+    const phaseReqs = (reqs ?? []).filter(
+      (r: any) => r.phase_number === phaseNumber || (!r.phase_number && phaseNumber === 1)
+    );
+
+    setReviewItems(phaseReqs.map((r: any) => ({
+      id: r.id,
+      label: r.label ?? "Field",
+      value: r.value_text ?? (r.file_path ? "📎 File uploaded" : r.signature_path ? "✍ Signature" : "—"),
+      flagged: r.review_status === "needs_revision",
+      comment: r.reviewer_comment ?? "",
+    })));
+    setReviewNote("");
+    setReviewPhaseNumber(phaseNumber);
+    setReviewPanelOpen(true);
+  }
+
+  async function submitApprove() {
+    if (!reviewPhaseNumber) return;
+    setSubmittingReview(true);
+    try {
+      const res = await fetch(`/api/onboardings/${params.id}/phases/${reviewPhaseNumber}/approve`, { method: "POST" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Approve failed");
+      toast({ title: "Phase approved", variant: "success" });
+      setReviewPanelOpen(false);
+      await loadPhases();
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message, variant: "error" });
+    } finally {
+      setSubmittingReview(false);
+    }
+  }
+
+  async function submitReject() {
+    if (!reviewPhaseNumber) return;
+    const flagged = reviewItems.filter((i) => i.flagged);
+    if (flagged.length === 0 && !reviewNote.trim()) {
+      toast({ title: "Add a note or flag at least one item", variant: "error" });
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      const res = await fetch(`/api/onboardings/${params.id}/phases/${reviewPhaseNumber}/reject`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          reviewer_note: reviewNote.trim() || null,
+          per_item_flags: flagged.map((i) => ({ requirement_id: i.id, comment: i.comment || null })),
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Reject failed");
+      toast({ title: "Sent back for revision", variant: "success" });
+      setReviewPanelOpen(false);
+      await loadPhases();
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message, variant: "error" });
+    } finally {
+      setSubmittingReview(false);
+    }
+  }
+
+  async function overridePhaseStatus(phaseNumber: number, status: string) {
+    try {
+      const res = await fetch(`/api/onboardings/${params.id}/phases`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ phase_number: phaseNumber, status }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "Failed");
+      toast({ title: `Phase ${phaseNumber} updated`, variant: "success" });
+      await loadPhases();
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message, variant: "error" });
     }
   }
 
@@ -444,6 +558,7 @@ export default function OnboardingDetailAdminPage() {
       toast({ title: "Submission locked", variant: "success" });
       setConfirmLock(false);
       await loadDetail();
+      await loadPhases();
     } catch (e: any) {
       toast({ title: "Lock failed", description: e?.message, variant: "error" });
     } finally {
@@ -525,6 +640,7 @@ export default function OnboardingDetailAdminPage() {
   React.useEffect(() => {
     loadDetail();
     loadProgress();
+    loadPhases();
     const t = window.setInterval(() => loadProgress(), 20_000);
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -685,6 +801,167 @@ export default function OnboardingDetailAdminPage() {
         }
       />
 
+      {/* Phase progress strip — only when phases exist */}
+      {phases.length > 0 && (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Phases</span>
+            <a href={`/c/${payload?.onboarding?.token}`} target="_blank" rel="noreferrer" className="text-xs text-[var(--color-accent)] hover:underline">
+              View exhibitor portal ↗
+            </a>
+          </div>
+          <div className="flex flex-wrap items-start gap-3">
+            {phases.map((ph: any, idx: number) => {
+              const statusColors: Record<string, string> = {
+                locked: "bg-[var(--color-bg-subtle)] text-[var(--color-text-muted)] border-[var(--color-border)]",
+                in_progress: "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[var(--color-accent)]",
+                awaiting_review: "bg-[var(--color-warning-subtle)] text-[var(--color-warning)] border-[var(--color-warning)]",
+                approved: "bg-[var(--color-success-subtle)] text-[var(--color-success)] border-[var(--color-success)]",
+                rejected: "bg-[var(--color-danger-subtle)] text-[var(--color-danger)] border-[var(--color-danger)]",
+              };
+              const statusLabel: Record<string, string> = { locked: "Locked", in_progress: "In Progress", awaiting_review: "Awaiting Review", approved: "Approved", rejected: "Rejected" };
+              const statusIcon: Record<string, string> = { approved: "✓", locked: "🔒", awaiting_review: "⏳", rejected: "✗", in_progress: "●" };
+              return (
+                <React.Fragment key={ph.id}>
+                  {idx > 0 && <span className="mt-3 text-[var(--color-text-muted)]">→</span>}
+                  <div className={`inline-flex flex-col items-start gap-1 rounded-[var(--radius-md)] border px-3 py-2 text-xs font-medium ${statusColors[ph.status] ?? statusColors.locked}`}>
+                    <span className="font-semibold">{statusIcon[ph.status] ?? ""} {ph.name}</span>
+                    <span className="opacity-70">{statusLabel[ph.status] ?? ph.status}</span>
+                    {ph.deadline && <span className="opacity-60">Due {ph.deadline}</span>}
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {ph.status === "awaiting_review" && (
+                        <button
+                          className="rounded bg-[var(--color-warning)] px-2 py-0.5 text-[10px] font-semibold text-white hover:opacity-90"
+                          onClick={() => openReviewPanel(ph.phase_number)}
+                        >
+                          Review →
+                        </button>
+                      )}
+                      {ph.status === "locked" && (
+                        <button
+                          className="rounded border border-[var(--color-accent)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)]"
+                          onClick={() => overridePhaseStatus(ph.phase_number, "in_progress")}
+                        >
+                          Unlock
+                        </button>
+                      )}
+                      {ph.status === "in_progress" && (
+                        <button
+                          className="rounded border border-[var(--color-warning)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-warning)] hover:bg-[var(--color-warning-subtle)]"
+                          onClick={() => openReviewPanel(ph.phase_number)}
+                        >
+                          Review →
+                        </button>
+                      )}
+                      {(ph.status === "approved" || ph.status === "rejected") && (
+                        <button
+                          className="rounded border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                          onClick={() => openReviewPanel(ph.phase_number)}
+                        >
+                          Re-review
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Review panel modal */}
+      {reviewPanelOpen && reviewPhaseNumber !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)]" onClick={() => setReviewPanelOpen(false)}>
+          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] p-6 shadow-[var(--shadow-xl)]" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Review Phase {reviewPhaseNumber}</h2>
+              <button onClick={() => setReviewPanelOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">✕</button>
+            </div>
+
+            <div className="space-y-2">
+              {reviewItems.map((item, i) => (
+                <div
+                  key={item.id}
+                  className={`rounded-[var(--radius-md)] border px-4 py-3 transition-colors ${
+                    item.flagged
+                      ? "border-[var(--color-danger)] bg-[var(--color-danger-subtle)]"
+                      : "border-[var(--color-border)] bg-[var(--color-bg-subtle)]"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className={`text-sm font-medium ${item.flagged ? "text-[var(--color-danger)]" : "text-[var(--color-text-primary)]"}`}>
+                        {item.flagged && <span className="mr-1.5">⚑</span>}{item.label}
+                      </div>
+                      <div className="mt-0.5 text-xs text-[var(--color-text-secondary)] break-words">{item.value}</div>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <button
+                        onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: false, comment: "" } : x))}
+                        className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
+                          !item.flagged
+                            ? "bg-[var(--color-success)] text-white"
+                            : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
+                        }`}
+                      >✓ OK</button>
+                      <button
+                        onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: true } : x))}
+                        className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
+                          item.flagged
+                            ? "bg-[var(--color-danger)] text-white"
+                            : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
+                        }`}
+                      >✗ Needs revision</button>
+                    </div>
+                  </div>
+                  {item.flagged && (
+                    <textarea
+                      className="mt-3 w-full rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-bg)] px-3 py-2 text-xs placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-danger)]"
+                      placeholder="Tell the exhibitor what needs to change (optional)"
+                      rows={2}
+                      value={item.comment}
+                      onChange={(e) => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, comment: e.target.value } : x))}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5">
+              <label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">Overall note (sent to exhibitor)</label>
+              <textarea
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm placeholder:text-[var(--color-text-muted)]"
+                rows={3}
+                placeholder="Optional message to the exhibitor…"
+                value={reviewNote}
+                onChange={(e) => setReviewNote(e.target.value)}
+              />
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setReviewPanelOpen(false)}>Cancel</Button>
+              <Button
+                variant="outline"
+                className="text-[var(--color-danger)] border-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"
+                onClick={submitReject}
+                loading={submittingReview}
+                disabled={reviewItems.filter((i) => i.flagged).length === 0 && !reviewNote.trim()}
+              >
+                Send Back for Revision
+              </Button>
+              <Button
+                onClick={submitApprove}
+                loading={submittingReview}
+                disabled={reviewItems.some((i) => i.flagged)}
+              >
+                Approve Phase
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Progress + details */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
@@ -821,6 +1098,35 @@ export default function OnboardingDetailAdminPage() {
           <CardTitle>Responses</CardTitle>
           <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">What the client has submitted so far.</p>
         </CardHeader>
+        {phases.length > 0 && (
+          <div className="flex gap-1 border-b border-[var(--color-border)] px-5 pt-3 pb-0">
+            <button
+              onClick={() => setActiveResponsePhase(null)}
+              className={[
+                "pb-2 px-3 text-xs font-medium border-b-2 transition-colors",
+                activeResponsePhase === null
+                  ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                  : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]",
+              ].join(" ")}
+            >
+              All
+            </button>
+            {phases.map((ph: any) => (
+              <button
+                key={ph.phase_number}
+                onClick={() => setActiveResponsePhase(ph.phase_number)}
+                className={[
+                  "pb-2 px-3 text-xs font-medium border-b-2 transition-colors",
+                  activeResponsePhase === ph.phase_number
+                    ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                    : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]",
+                ].join(" ")}
+              >
+                {ph.name ?? `Phase ${ph.phase_number}`}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="border-t border-[var(--color-border)]">
           {reqs.length === 0 ? (
             <div className="px-5 py-10 text-center">
@@ -831,14 +1137,20 @@ export default function OnboardingDetailAdminPage() {
             </div>
           ) : (
             <ul className="divide-y divide-[var(--color-border)]">
-              {reqs.map((r) => (
-                <ResponseItem
-                  key={r.id}
-                  r={r}
-                  onPreview={openPreview}
-                  onDownloadFailure={(msg) => toast({ title: "Download failed", description: msg, variant: "error" })}
-                />
-              ))}
+              {reqs
+                .filter((r) =>
+                  activeResponsePhase === null
+                    ? true
+                    : (r.phase_number ?? 1) === activeResponsePhase
+                )
+                .map((r) => (
+                  <ResponseItem
+                    key={r.id}
+                    r={r}
+                    onPreview={openPreview}
+                    onDownloadFailure={(msg) => toast({ title: "Download failed", description: msg, variant: "error" })}
+                  />
+                ))}
             </ul>
           )}
         </div>

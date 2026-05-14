@@ -28,6 +28,7 @@ type Requirement = {
   label: string;
   is_required: boolean;
   sort_order: number;
+  phase_number?: number;
   // file type: optional admin form template (upload or link mode)
   attachment_path?: string | null;
   // Feature 1: toggle between uploading a file or pasting a URL
@@ -41,12 +42,18 @@ type Requirement = {
   include_other?: boolean;
   // Feature 5: multi-line textarea instead of single-line input
   multiline?: boolean;
-  // Phase 5.3: conditional visibility. Hidden when condition not met.
+  // Conditional visibility. Hidden when condition not met.
   visible_if?: {
     depends_on_label: string;
     equals?: string;
     not_empty?: boolean;
   } | null;
+};
+
+type PhaseDef = {
+  number: number;
+  name: string;
+  default_deadline_offset_days?: number;
 };
 
 type TemplateRow = {
@@ -67,7 +74,7 @@ type TemplateApiItem = {
 type TemplateDetail = {
   id: string;
   name: string;
-  definition: { requirements: Requirement[] };
+  definition: { requirements: Requirement[]; phases?: PhaseDef[] };
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -120,6 +127,11 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
           base.multiline = Boolean(r?.multiline);
         }
 
+        // Phase assignment
+        if (typeof r?.phase_number === "number") {
+          base.phase_number = r.phase_number;
+        }
+
         // Conditional visibility (opt-in)
         if (r?.visible_if && typeof r.visible_if.depends_on_label === "string" && r.visible_if.depends_on_label) {
           base.visible_if = {
@@ -133,10 +145,20 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
       })
     : [];
 
+  const phases: PhaseDef[] = Array.isArray(input?.definition?.phases)
+    ? input.definition.phases
+        .filter((p: any) => typeof p?.number === "number")
+        .map((p: any) => ({
+          number: p.number,
+          name: typeof p.name === "string" ? p.name : `Phase ${p.number}`,
+          default_deadline_offset_days: typeof p.default_deadline_offset_days === "number" ? p.default_deadline_offset_days : undefined,
+        }))
+    : [];
+
   return {
     id: String(input?.id ?? ""),
     name: typeof input?.name === "string" ? input.name : "Untitled template",
-    definition: { requirements },
+    definition: { requirements, phases },
   };
 }
 
@@ -175,6 +197,7 @@ export default function TemplatesPage() {
   const [openingId, setOpeningId] = React.useState<string | null>(null);
   // Per-requirement upload state (keyed by array index)
   const [uploadingIdx, setUploadingIdx] = React.useState<Record<number, boolean>>({});
+  const [activePhase, setActivePhase] = React.useState(1);
 
   // ── Data loading ────────────────────────────────────────────────────────────
 
@@ -312,6 +335,7 @@ export default function TemplatesPage() {
       if (!res.ok) throw new Error(json?.error ?? "Failed");
       const normalized = normalizeTemplateDetail(json.item);
       setSelected(normalized);
+      setActivePhase(normalized.definition.phases?.[0]?.number ?? 1);
       setDetailCache((prev) => ({ ...prev, [id]: normalized }));
     } catch (e: any) {
       notify({ title: "Open failed", description: e?.message ?? "Unknown error", variant: "error" });
@@ -366,6 +390,7 @@ export default function TemplatesPage() {
         ...safeSelected,
         definition: {
           requirements: safeSelected.definition.requirements.map((r, i) => ({ ...r, sort_order: i })),
+          phases: safeSelected.definition.phases ?? [],
         },
       };
 
@@ -446,7 +471,7 @@ export default function TemplatesPage() {
         const reqs = prev.definition.requirements.map((r, i) =>
           i === idx ? { ...r, attachment_path } : r
         );
-        return { ...prev, definition: { requirements: reqs } };
+        return { ...prev, definition: { ...prev.definition, requirements: reqs } };
       });
       notify({ title: "Attachment uploaded", variant: "success" });
     } catch (e: any) {
@@ -461,7 +486,7 @@ export default function TemplatesPage() {
     setSelected((prev) => {
       if (!prev) return prev;
       const reqs = prev.definition.requirements.map((r, i) => (i === idx ? { ...r, ...patch } : r));
-      return { ...prev, definition: { requirements: reqs } };
+      return { ...prev, definition: { ...prev.definition, requirements: reqs } };
     });
   }
 
@@ -569,36 +594,15 @@ export default function TemplatesPage() {
               />
             </FormField>
 
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] p-3">
-              <div className="text-sm font-semibold">Requirements</div>
-              <RequirementList
-                requirements={selected.definition.requirements}
-                uploadingIdx={uploadingIdx}
-                onReorder={(reqs) => setSelected({ ...selected, definition: { requirements: reqs } })}
-                onUpdate={(idx, patch) => updateReq(idx, patch)}
-                onDelete={(idx) => {
-                  const reqs = selected.definition.requirements
-                    .filter((_, i) => i !== idx)
-                    .map((x, i) => ({ ...x, sort_order: i }));
-                  setSelected({ ...selected, definition: { requirements: reqs } });
-                }}
-                onUploadAttachment={(idx, file) => uploadAttachment(idx, file)}
-              />
-
-              {/* Add requirement button */}
-              <button
-                type="button"
-                onClick={() => {
-                  const reqs = (selected.definition?.requirements ?? []).slice();
-                  reqs.push({ type: "text", label: "", is_required: true, sort_order: reqs.length });
-                  setSelected({ ...selected, definition: { requirements: reqs } });
-                }}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
-              >
-                <span className="text-lg leading-none">+</span>
-                Add requirement
-              </button>
-            </div>
+            <PhaseAwareRequirements
+              selected={selected}
+              activePhase={activePhase}
+              uploadingIdx={uploadingIdx}
+              setActivePhase={setActivePhase}
+              setSelected={setSelected}
+              updateReq={updateReq}
+              uploadAttachment={uploadAttachment}
+            />
 
             <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-4">
               <Button onClick={saveSelected} loading={saving} disabled={saving || deleting}>
@@ -617,6 +621,210 @@ export default function TemplatesPage() {
         </Card>
       ) : null}
 
+    </div>
+  );
+}
+
+// ─── PhaseAwareRequirements ───────────────────────────────────────────────────
+
+function PhaseAwareRequirements({
+  selected,
+  activePhase,
+  uploadingIdx,
+  setActivePhase,
+  setSelected,
+  updateReq,
+  uploadAttachment,
+}: {
+  selected: TemplateDetail;
+  activePhase: number;
+  uploadingIdx: Record<number, boolean>;
+  setActivePhase: (n: number) => void;
+  setSelected: React.Dispatch<React.SetStateAction<TemplateDetail | null>>;
+  updateReq: (idx: number, patch: Partial<Requirement>) => void;
+  uploadAttachment: (idx: number, file: File) => void;
+}) {
+  const allReqs = selected.definition.requirements;
+  const phases = selected.definition.phases ?? [];
+  const phasedMode = phases.length > 0;
+
+  // Requirements for the active phase (sorted), with their index in allReqs
+  const viewEntries = React.useMemo(() => {
+    const sorted = allReqs
+      .map((r, i) => ({ r, i }))
+      .sort((a, b) => a.r.sort_order - b.r.sort_order);
+    return phasedMode ? sorted.filter(({ r }) => r.phase_number === activePhase) : sorted;
+  }, [allReqs, phasedMode, activePhase]);
+
+  const viewReqs = viewEntries.map(({ r }) => r);
+  const currentPhaseObj = phases.find((p) => p.number === activePhase);
+
+  function handleReorder(newViewReqs: Requirement[]) {
+    if (!phasedMode) {
+      setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, requirements: newViewReqs } });
+      return;
+    }
+    const otherReqs = allReqs.filter((r) => r.phase_number !== activePhase);
+    const reordered = newViewReqs.map((r, i) => ({ ...r, sort_order: i }));
+    setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, requirements: [...otherReqs, ...reordered] } });
+  }
+
+  function handleUpdate(viewIdx: number, patch: Partial<Requirement>) {
+    const globalIdx = viewEntries[viewIdx]?.i ?? -1;
+    if (globalIdx === -1) return;
+    updateReq(globalIdx, patch);
+  }
+
+  function handleDelete(viewIdx: number) {
+    const globalIdx = viewEntries[viewIdx]?.i ?? -1;
+    if (globalIdx === -1) return;
+    const reqs = allReqs.filter((_, i) => i !== globalIdx).map((x, i) => ({ ...x, sort_order: i }));
+    setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, requirements: reqs } });
+  }
+
+  function handleUpload(viewIdx: number, file: File) {
+    const globalIdx = viewEntries[viewIdx]?.i ?? -1;
+    if (globalIdx === -1) return;
+    uploadAttachment(globalIdx, file);
+  }
+
+  function addRequirement() {
+    const newReq: Requirement = {
+      type: "text",
+      label: "",
+      is_required: true,
+      sort_order: allReqs.length,
+      ...(phasedMode ? { phase_number: activePhase } : {}),
+    };
+    setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, requirements: [...allReqs, newReq] } });
+  }
+
+  function addPhase() {
+    const nextNum = phases.length === 0 ? 2 : Math.max(...phases.map((p) => p.number)) + 1;
+    let newReqs = allReqs;
+    let newPhases: PhaseDef[];
+    if (phases.length === 0) {
+      // First "Add phase" click: assign all existing reqs to phase 1, create phases 1 & 2
+      newReqs = allReqs.map((r) => ({ ...r, phase_number: 1 }));
+      newPhases = [
+        { number: 1, name: "Phase 1", default_deadline_offset_days: -60 },
+        { number: 2, name: "Phase 2", default_deadline_offset_days: -30 },
+      ];
+      setActivePhase(1);
+    } else {
+      newPhases = [...phases, { number: nextNum, name: `Phase ${nextNum}`, default_deadline_offset_days: -14 }];
+      setActivePhase(nextNum);
+    }
+    setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, phases: newPhases, requirements: newReqs } });
+  }
+
+  function deletePhase(phaseNum: number) {
+    const newPhases = phases.filter((p) => p.number !== phaseNum);
+    const newReqs = allReqs.filter((r) => r.phase_number !== phaseNum);
+    if (activePhase === phaseNum) setActivePhase(newPhases[0]?.number ?? 1);
+    // If removing the last phase, strip phase_number from remaining reqs
+    const finalReqs = newPhases.length === 0 ? newReqs.map(({ phase_number: _, ...r }) => r) : newReqs;
+    setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, phases: newPhases, requirements: finalReqs } });
+  }
+
+  function updatePhase(phaseNum: number, patch: Partial<PhaseDef>) {
+    const newPhases = phases.map((p) => (p.number === phaseNum ? { ...p, ...patch } : p));
+    setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, phases: newPhases } });
+  }
+
+  return (
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] p-3">
+      {/* Phase tab bar */}
+      <div className="mb-3 flex flex-wrap items-center gap-1 border-b border-[var(--color-border)] pb-2">
+        {phases.map((phase) => (
+          <div key={phase.number} className="flex items-center">
+            <button
+              type="button"
+              onClick={() => setActivePhase(phase.number)}
+              className={`rounded-l px-3 py-1.5 text-xs font-medium transition ${
+                activePhase === phase.number
+                  ? "bg-[var(--color-accent)] text-white"
+                  : "border border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
+              }`}
+            >
+              {phase.name}
+            </button>
+            <button
+              type="button"
+              onClick={() => deletePhase(phase.number)}
+              title="Remove phase"
+              className={`rounded-r border-y border-r px-1.5 py-1.5 text-[10px] transition hover:text-red-500 ${
+                activePhase === phase.number
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white hover:bg-red-500 hover:border-red-500"
+                  : "border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text-muted)]"
+              }`}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addPhase}
+          className="rounded border border-dashed border-[var(--color-accent)] px-2.5 py-1 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)] transition"
+        >
+          + Add phase
+        </button>
+        {!phasedMode && (
+          <span className="ml-1 text-xs text-[var(--color-text-muted)]">
+            Add a phase to split requirements across separate pages
+          </span>
+        )}
+      </div>
+
+      {/* Phase metadata editor */}
+      {phasedMode && currentPhaseObj && (
+        <div className="mb-3 flex flex-wrap items-end gap-3 rounded-[var(--radius-md)] bg-[var(--color-bg-subtle)] px-3 py-2">
+          <FormField label="Phase name" className="min-w-[160px] flex-1">
+            <Input
+              value={currentPhaseObj.name}
+              onChange={(e) => updatePhase(activePhase, { name: e.target.value })}
+              className="text-sm"
+            />
+          </FormField>
+          <FormField label="Days before event end (negative)" className="w-44">
+            <Input
+              type="number"
+              value={currentPhaseObj.default_deadline_offset_days ?? ""}
+              onChange={(e) =>
+                updatePhase(activePhase, {
+                  default_deadline_offset_days: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                })
+              }
+              placeholder="e.g. -30"
+              className="text-sm"
+            />
+          </FormField>
+          <div className="self-end pb-0.5 text-xs text-[var(--color-text-muted)]">
+            {viewReqs.length} requirement{viewReqs.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+      )}
+
+      {/* Requirements list */}
+      <RequirementList
+        requirements={viewReqs}
+        uploadingIdx={uploadingIdx}
+        onReorder={handleReorder}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        onUploadAttachment={handleUpload}
+      />
+
+      {/* Add requirement */}
+      <button
+        type="button"
+        onClick={addRequirement}
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
+      >
+        <span className="text-lg leading-none">+</span>
+        Add requirement{phasedMode && currentPhaseObj ? ` to ${currentPhaseObj.name}` : ""}
+      </button>
     </div>
   );
 }

@@ -17,6 +17,7 @@ export const TemplateRequirementSchema = z.object({
   label: z.string().trim().min(1),
   is_required: z.boolean().default(true),
   sort_order: z.number().int().nonnegative().default(0),
+  phase_number: z.number().int().positive().optional(),
   // file type: optional admin-provided form template (upload or link)
   attachment_path: z.string().nullish(),
   // multiple_choice: list of selectable options
@@ -46,8 +47,15 @@ export const TemplateRequirementSchema = z.object({
     .nullish(),
 });
 
+export const PhaseDefSchema = z.object({
+  number: z.number().int().positive(),
+  name: z.string().min(1),
+  default_deadline_offset_days: z.number().int().optional(),
+});
+
 export const TemplateDefinitionSchema = z.object({
   requirements: z.array(TemplateRequirementSchema).min(1),
+  phases: z.array(PhaseDefSchema).optional(),
 });
 
 export type TemplateDefinition = z.infer<typeof TemplateDefinitionSchema>;
