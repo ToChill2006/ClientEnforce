@@ -292,10 +292,16 @@ export default function OnboardingsPage() {
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
-    // Check enterprise flag
+    // Check enterprise flag; if not enterprise, force solo tab so nothing is hidden
     fetch("/api/events", { cache: "no-store" })
-      .then((r) => { if (r.ok || r.status === 200) setHasEnterpriseFlag(true); })
-      .catch(() => {});
+      .then((r) => {
+        if (r.ok || r.status === 200) {
+          setHasEnterpriseFlag(true);
+        } else {
+          setActiveTab("solo");
+        }
+      })
+      .catch(() => { setActiveTab("solo"); });
   }, []);
 
   async function load() {
