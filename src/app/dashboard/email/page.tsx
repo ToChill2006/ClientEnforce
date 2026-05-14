@@ -248,6 +248,11 @@ export default function EmailPage() {
   const { toast: notify } = useToast();
   const [previewTab, setPreviewTab] = React.useState<"edit" | "preview">("edit");
   const [sampleData, setSampleData] = React.useState<Record<string, string>>(KNOWN_TAGS);
+  const [hasEnterpriseFlag, setHasEnterpriseFlag] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch("/api/events").then((r) => { if (r.ok) setHasEnterpriseFlag(true); }).catch(() => {});
+  }, []);
 
   // Try to fetch a sample onboarding for more realistic preview
   React.useEffect(() => {
@@ -535,7 +540,7 @@ export default function EmailPage() {
       </Card>
 
       {/* ── Enterprise phase email templates ── */}
-      <PhaseEmailTemplates />
+      {hasEnterpriseFlag && <PhaseEmailTemplates />}
 
       {/* ── Email provider ── */}
       <Card>

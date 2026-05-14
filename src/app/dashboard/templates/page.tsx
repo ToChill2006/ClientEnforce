@@ -198,6 +198,11 @@ export default function TemplatesPage() {
   // Per-requirement upload state (keyed by array index)
   const [uploadingIdx, setUploadingIdx] = React.useState<Record<number, boolean>>({});
   const [activePhase, setActivePhase] = React.useState(1);
+  const [hasEnterpriseFlag, setHasEnterpriseFlag] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch("/api/events").then((r) => { if (r.ok) setHasEnterpriseFlag(true); }).catch(() => {});
+  }, []);
 
   // ── Data loading ────────────────────────────────────────────────────────────
 
@@ -602,6 +607,7 @@ export default function TemplatesPage() {
               setSelected={setSelected}
               updateReq={updateReq}
               uploadAttachment={uploadAttachment}
+              hasEnterpriseFlag={hasEnterpriseFlag}
             />
 
             <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-4">
@@ -635,6 +641,7 @@ function PhaseAwareRequirements({
   setSelected,
   updateReq,
   uploadAttachment,
+  hasEnterpriseFlag,
 }: {
   selected: TemplateDetail;
   activePhase: number;
@@ -643,6 +650,7 @@ function PhaseAwareRequirements({
   setSelected: React.Dispatch<React.SetStateAction<TemplateDetail | null>>;
   updateReq: (idx: number, patch: Partial<Requirement>) => void;
   uploadAttachment: (idx: number, file: File) => void;
+  hasEnterpriseFlag: boolean;
 }) {
   const allReqs = selected.definition.requirements;
   const phases = selected.definition.phases ?? [];
@@ -763,14 +771,16 @@ function PhaseAwareRequirements({
             </button>
           </div>
         ))}
-        <button
-          type="button"
-          onClick={addPhase}
-          className="rounded border border-dashed border-[var(--color-accent)] px-2.5 py-1 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)] transition"
-        >
-          + Add phase
-        </button>
-        {!phasedMode && (
+        {hasEnterpriseFlag && (
+          <button
+            type="button"
+            onClick={addPhase}
+            className="rounded border border-dashed border-[var(--color-accent)] px-2.5 py-1 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)] transition"
+          >
+            + Add phase
+          </button>
+        )}
+        {hasEnterpriseFlag && !phasedMode && (
           <span className="ml-1 text-xs text-[var(--color-text-muted)]">
             Add a phase to split requirements across separate pages
           </span>
