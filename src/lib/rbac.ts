@@ -1,7 +1,7 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-export type MemberRole = "owner" | "admin" | "member";
+export type MemberRole = "owner" | "admin" | "member" | "onboarder" | "reviewer";
 
 type ProfileRow = {
   user_id: string;
@@ -235,4 +235,26 @@ export function isAdmin(role: MemberRole) {
 
 export async function requireAdmin() {
   return requireRole(["owner", "admin"]);
+}
+
+import { roleHasPermission, type PermissionKey } from "@/lib/permissions";
+
+export async function requirePermission(permission: PermissionKey): Promise<MemberRole> {
+  const role = await requireRole();
+  if (!roleHasPermission(role as any, permission)) {
+    throw new HttpError(403, "Forbidden");
+  }
+  return role;
+}
+
+export async function getOrgId(): Promise<string | null> {
+  const supabase = await supabaseServer();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return null;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("org_id")
+    .eq("user_id", data.user.id)
+    .single();
+  return (profile?.org_id as string) ?? null;
 }

@@ -1,15 +1,155 @@
 "use client";
 
 import * as React from "react";
-import { Plus, RefreshCw, Search, Pencil, Trash2, Copy } from "lucide-react";
+import { Plus, RefreshCw, Search, Pencil, Trash2, Copy, Layers } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Textarea } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Modal, ConfirmModal } from "@/components/ui/modal";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Tag } from "@/components/ui/status-badge";
 import { useToast } from "@/components/ui/toast";
+
+type PageTab = "clients" | "types";
+
+type ClientType = {
+  id: string;
+  name: string;
+  description: string | null;
+  template_id: string | null;
+  templates?: { name: string } | null;
+};
+
+function ClientTypesTab() {
+  const { toast } = useToast();
+  const [types, setTypes] = React.useState<ClientType[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [editing, setEditing] = React.useState<ClientType | null>(null);
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [templateId, setTemplateId] = React.useState<string>("");
+  const [templates, setTemplates] = React.useState<{ id: string; name: string }[]>([]);
+  const [saving, setSaving] = React.useState(false);
+  const [formErr, setFormErr] = React.useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState<ClientType | null>(null);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/client-types", { cache: "no-store" });
+      const json = await res.json().catch(() => null);
+      setTypes(Array.isArray(json?.client_types) ? json.client_types : []);
+    } catch { /* non-fatal */ } finally { setLoading(false); }
+  }
+
+  async function loadTemplates() {
+    try {
+      const res = await fetch("/api/templates", { cache: "no-store" });
+      const json = await res.json().catch(() => null);
+      setTemplates(Array.isArray(json?.items) ? json.items.map((t: any) => ({ id: t.id, name: t.name })) : []);
+    } catch { /* non-fatal */ }
+  }
+
+  React.useEffect(() => { load(); loadTemplates(); }, []);
+
+  function openCreate() { setEditing(null); setName(""); setDescription(""); setTemplateId(""); setFormErr(null); setModalOpen(true); }
+  function openEdit(t: ClientType) { setEditing(t); setName(t.name); setDescription(t.description ?? ""); setTemplateId(t.template_id ?? ""); setFormErr(null); setModalOpen(true); }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) { setFormErr("Name is required."); return; }
+    setSaving(true); setFormErr(null);
+    try {
+      const res = await fetch(editing ? `/api/client-types/${editing.id}` : "/api/client-types", {
+        method: editing ? "PATCH" : "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), description: description.trim() || null, default_template_id: templateId || null }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Save failed");
+      toast({ title: editing ? "Client type updated" : "Client type created", variant: "success" });
+      setModalOpen(false); load();
+    } catch (e: any) { setFormErr(e?.message || "Unknown error"); }
+    finally { setSaving(false); }
+  }
+
+  async function onDelete(t: ClientType) {
+    try {
+      const res = await fetch(`/api/client-types/${t.id}`, { method: "DELETE" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Delete failed");
+      toast({ title: "Client type deleted", variant: "success" });
+      setConfirmDelete(null); load();
+    } catch (e: any) { toast({ title: "Delete failed", description: e?.message, variant: "error" }); }
+  }
+
+  const columns: Column<ClientType>[] = [
+    { key: "name", header: "Name", sortValue: (r) => r.name.toLowerCase(),
+      render: (r) => <span className="text-sm font-medium text-[var(--color-text-primary)]">{r.name}</span> },
+    { key: "template", header: "Template", hideOnMobile: true,
+      render: (r) => r.templates?.name ? <Tag tone="accent">{r.templates.name}</Tag> : <span className="text-xs text-[var(--color-text-muted)]">No template</span> },
+    { key: "description", header: "Description", hideOnMobile: true,
+      render: (r) => <span className="text-sm text-[var(--color-text-secondary)] line-clamp-1">{r.description || "—"}</span> },
+  ];
+
+  const rowActions = (t: ClientType) => (
+    <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+      <Button size="xs" variant="ghost" onClick={() => openEdit(t)} title="Edit"><Pencil className="h-3 w-3" /></Button>
+      <Button size="xs" variant="ghost" onClick={() => setConfirmDelete(t)} title="Delete"
+        className="text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"><Trash2 className="h-3 w-3" /></Button>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[var(--color-text-secondary)]">Client types group exhibitors and link to onboarding templates. Only admins can create or delete types.</p>
+        <Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={openCreate}>New type</Button>
+      </div>
+      <DataTable<ClientType> columns={columns} data={types} getRowId={(r) => r.id} loading={loading} rowActions={rowActions}
+        defaultSort={{ key: "name", dir: "asc" }}
+        empty={
+          <div className="py-10 text-center">
+            <Layers className="mx-auto mb-2 h-7 w-7 text-[var(--color-text-muted)]" />
+            <div className="text-sm font-medium text-[var(--color-text-primary)]">No client types yet</div>
+            <div className="mt-1 text-xs text-[var(--color-text-secondary)]">Create a type to group exhibitors by category.</div>
+            <div className="mt-3 flex justify-center"><Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={openCreate}>New type</Button></div>
+          </div>
+        }
+      />
+      <Modal open={modalOpen} onClose={() => !saving && setModalOpen(false)}
+        title={editing ? "Edit client type" : "New client type"} size="sm"
+        footer={<><Button variant="secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</Button><Button onClick={onSubmit as any} loading={saving}>{editing ? "Save" : "Create"}</Button></>}
+      >
+        <form onSubmit={onSubmit} className="space-y-4">
+          <FormField label="Name" required><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Floorspace Only" autoFocus /></FormField>
+          <FormField label="Template">
+            <select
+              value={templateId}
+              onChange={(e) => setTemplateId(e.target.value)}
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+            >
+              <option value="">— No template —</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="Description"><Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description…" /></FormField>
+          {formErr && <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">{formErr}</div>}
+          <button type="submit" className="hidden" />
+        </form>
+      </Modal>
+      <ConfirmModal open={!!confirmDelete} onClose={() => setConfirmDelete(null)}
+        onConfirm={async () => { if (confirmDelete) await onDelete(confirmDelete); }}
+        title="Delete client type?"
+        description={confirmDelete ? <>Permanently delete <b>{confirmDelete.name}</b>? This may affect existing onboardings.</> : null}
+        confirmLabel="Delete" destructive />
+    </div>
+  );
+}
 
 type Client = {
   id: string;
@@ -38,6 +178,7 @@ function isValidEmail(email: string) {
 
 export default function ClientsPage() {
   const { toast } = useToast();
+  const [pageTab, setPageTab] = React.useState<PageTab>("clients");
   const [clients, setClients] = React.useState<Client[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -345,6 +486,22 @@ export default function ClientsPage() {
         }
       />
 
+      {/* Tab bar */}
+      <div className="flex gap-1 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-1">
+        {(["clients", "types"] as PageTab[]).map((t) => (
+          <button key={t} onClick={() => setPageTab(t)}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] px-4 py-2 text-sm font-medium transition-colors ${
+              pageTab === t ? "bg-[var(--color-panel)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+            }`}
+          >
+            {t === "clients" ? "Clients" : "Client Types"}
+          </button>
+        ))}
+      </div>
+
+      {pageTab === "types" && <ClientTypesTab />}
+
+      {pageTab === "clients" && <>
       {error && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-sm text-[var(--color-danger)]">
           {error}
@@ -439,6 +596,7 @@ export default function ClientsPage() {
         confirmLabel="Delete"
         destructive
       />
+      </>}
     </div>
   );
 }

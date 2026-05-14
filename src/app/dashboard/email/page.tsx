@@ -50,6 +50,159 @@ const DEFAULT_SMTP: SmtpSettings = {
   smtp_from_name: "",
 };
 
+// ─── Phase email templates ───────────────────────────────────────────────────
+
+type PhaseTemplate = { subject: string; body: string };
+type PhaseTemplates = {
+  phase_approved_next: PhaseTemplate;
+  phase_approved_final: PhaseTemplate;
+  phase_rejected: PhaseTemplate;
+};
+
+const PHASE_TEMPLATE_DEFAULTS: PhaseTemplates = {
+  phase_approved_next: {
+    subject: "Phase {{phase_name}} approved — please complete {{next_phase_name}}",
+    body: "Hi {{client.name}},\n\nGreat news! {{phase_name}} for {{event_name}} has been approved.\n\nYour next step is {{next_phase_name}}. Please log in to continue.\n\n{{link}}",
+  },
+  phase_approved_final: {
+    subject: "Onboarding complete for {{event_name}}",
+    body: "Hi {{client.name}},\n\nCongratulations! Your onboarding for {{event_name}} is now fully complete. We look forward to seeing you at the event.\n\n{{link}}",
+  },
+  phase_rejected: {
+    subject: "{{phase_name}} needs updates for {{event_name}}",
+    body: "Hi {{client.name}},\n\n{{phase_name}} for {{event_name}} has been sent back for revisions.\n\nReviewer note: {{reviewer_note}}\n\nPlease log in and re-submit once you have made the required changes.\n\n{{link}}",
+  },
+};
+
+const PHASE_TEMPLATE_LABELS: Record<keyof PhaseTemplates, string> = {
+  phase_approved_next: "Phase approved — next phase unlocked",
+  phase_approved_final: "Final phase approved (onboarding complete)",
+  phase_rejected: "Phase rejected / sent back for revision",
+};
+
+const PHASE_TEMPLATE_HINTS: Record<keyof PhaseTemplates, string> = {
+  phase_approved_next: "Sent when a phase is approved and the next phase is unlocked.",
+  phase_approved_final: "Sent when the final phase is approved and onboarding is complete.",
+  phase_rejected: "Sent when a phase is rejected. Use {{reviewer_note}} for the reviewer's feedback.",
+};
+
+const PHASE_TAGS: Record<string, string> = {
+  "client.name": "Jane Doe",
+  "event_name": "DreamHack Dallas 2026",
+  "phase_name": "Phase 1 — Company Details",
+  "next_phase_name": "Phase 2 — Booth Setup",
+  "reviewer_note": "Please update your insurance certificate.",
+  "link": "https://app.clientenforce.com/c/sample-token",
+};
+
+function PhaseEmailTemplates() {
+  const { toast: notify } = useToast();
+  const [templates, setTemplates] = React.useState<PhaseTemplates>(PHASE_TEMPLATE_DEFAULTS);
+  const [saving, setSaving] = React.useState<keyof PhaseTemplates | null>(null);
+  const [activeKey, setActiveKey] = React.useState<keyof PhaseTemplates>("phase_approved_next");
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/email-settings?key=phase_templates");
+        if (!res.ok) return;
+        const json = await res.json().catch(() => null);
+        if (json?.settings?.phase_templates) {
+          setTemplates((prev) => ({ ...prev, ...json.settings.phase_templates }));
+        }
+      } catch { /* keep defaults */ } finally { setLoaded(true); }
+    })();
+  }, []);
+
+  async function save(key: keyof PhaseTemplates) {
+    setSaving(key);
+    try {
+      const res = await fetch("/api/email-settings", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ phase_templates: { [key]: templates[key] } }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error ?? "Failed");
+      notify({ title: "Template saved", variant: "success" });
+    } catch (e: any) {
+      notify({ title: "Save failed", description: e?.message, variant: "error" });
+    } finally { setSaving(null); }
+  }
+
+  const tpl = templates[activeKey];
+
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Enterprise phase emails</CardTitle>
+          <CardDescription>
+            Customise the emails sent during phase-based onboarding. Available when Enterprise Onboarding is enabled.
+            Use <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs font-mono">{"{{client.name}}"}</code>,{" "}
+            <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs font-mono">{"{{event_name}}"}</code>,{" "}
+            <code className="rounded bg-[var(--color-bg-subtle)] px-1 py-0.5 text-xs font-mono">{"{{phase_name}}"}</code>, etc.
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/* Template selector */}
+        <div className="mb-5 flex flex-wrap gap-2">
+          {(Object.keys(PHASE_TEMPLATE_LABELS) as (keyof PhaseTemplates)[]).map((k) => (
+            <button key={k} onClick={() => setActiveKey(k)}
+              className={`rounded-[var(--radius-md)] border px-3 py-1.5 text-xs font-medium transition-colors ${
+                activeKey === k
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)] text-[var(--color-accent)]"
+                  : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+              }`}
+            >
+              {PHASE_TEMPLATE_LABELS[k]}
+            </button>
+          ))}
+        </div>
+
+        <p className="mb-4 text-xs text-[var(--color-text-muted)]">{PHASE_TEMPLATE_HINTS[activeKey]}</p>
+
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+          <div className="flex flex-1 flex-col gap-4">
+            <FormField label="Subject line">
+              <Input
+                value={tpl.subject}
+                onChange={(e) => setTemplates((p) => ({ ...p, [activeKey]: { ...tpl, subject: e.target.value } }))}
+              />
+            </FormField>
+            <FormField label="Body">
+              <Textarea
+                rows={6}
+                value={tpl.body}
+                onChange={(e) => setTemplates((p) => ({ ...p, [activeKey]: { ...tpl, body: e.target.value } }))}
+              />
+            </FormField>
+            <div>
+              <Button onClick={() => save(activeKey)} loading={saving === activeKey}>Save template</Button>
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="w-full lg:w-72 shrink-0">
+            <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">Preview</div>
+            <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]">
+              <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2">
+                <span className="text-xs text-[var(--color-text-muted)]">Subject: </span>
+                <span className="text-xs font-medium text-[var(--color-text-primary)]">{renderMergeTags(tpl.subject, PHASE_TAGS)}</span>
+              </div>
+              <div className="whitespace-pre-wrap px-4 py-4 text-xs leading-relaxed text-[var(--color-text-secondary)]">
+                {renderMergeTags(tpl.body, PHASE_TAGS)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 // Merge-tag rendering helpers
@@ -380,6 +533,9 @@ export default function EmailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* ── Enterprise phase email templates ── */}
+      <PhaseEmailTemplates />
 
       {/* ── Email provider ── */}
       <Card>

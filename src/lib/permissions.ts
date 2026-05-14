@@ -1,27 +1,32 @@
-export type Role = "owner" | "admin" | "member";
+export type Role = "owner" | "admin" | "member" | "onboarder" | "reviewer";
 
 export const Permissions = {
-  // Recommended canonical keys
-  dashboard_read: ["owner", "admin", "member"],
-  clients_read: ["owner", "admin", "member"],
-  clients_write: ["owner", "admin", "member"],
+  dashboard_read: ["owner", "admin", "member", "onboarder", "reviewer"],
+  clients_read: ["owner", "admin", "member", "onboarder", "reviewer"],
+  clients_write: ["owner", "admin", "member", "onboarder"],
   clients_delete: ["owner", "admin"],
 
-  templates_read: ["owner", "admin", "member"],
+  templates_read: ["owner", "admin", "member", "onboarder", "reviewer"],
   templates_write: ["owner", "admin"],
   templates_delete: ["owner", "admin"],
 
-  onboardings_read: ["owner", "admin", "member"],
-  onboardings_write: ["owner", "admin", "member"],
-  onboardings_send: ["owner", "admin", "member"],
+  onboardings_read: ["owner", "admin", "member", "onboarder", "reviewer"],
+  onboardings_write: ["owner", "admin", "member", "onboarder"],
+  onboardings_send: ["owner", "admin", "member", "onboarder"],
   onboardings_lock: ["owner", "admin"],
   onboardings_delete: ["owner", "admin"],
+  onboardings_review: ["owner", "admin", "reviewer"],
+
+  // Enterprise onboarding feature
+  events_view: ["owner", "admin", "member", "onboarder", "reviewer"],
+  events_write: ["owner", "admin", "onboarder"],
+  client_types_write: ["owner", "admin"],
 
   followups_read: ["owner", "admin", "member"],
   followups_write: ["owner", "admin"],
   followups_run: ["owner", "admin"],
 
-  team_read: ["owner", "admin", "member"],
+  team_read: ["owner", "admin", "member", "onboarder", "reviewer"],
   team_invite: ["owner", "admin"],
   team_manage_roles: ["owner"],
 
@@ -34,9 +39,8 @@ export const Permissions = {
   audit_read: ["owner", "admin"],
   exports_read: ["owner", "admin"],
 
-  // Existing app capabilities still used by current routes/components
-  storage_list: ["owner", "admin", "member"],
-  storage_download: ["owner", "admin", "member"],
+  storage_list: ["owner", "admin", "member", "onboarder", "reviewer"],
+  storage_download: ["owner", "admin", "member", "onboarder", "reviewer"],
   storage_delete: ["owner", "admin"],
 
   team_tasks_view: ["owner", "admin", "member"],
@@ -44,6 +48,8 @@ export const Permissions = {
   team_tasks_update_any: ["owner", "admin"],
   team_tasks_update_own: ["owner", "admin", "member"],
   team_tasks_delete: ["owner", "admin"],
+
+  email_settings_write: ["owner", "admin"],
 } as const;
 
 const LegacyPermissionAlias = {

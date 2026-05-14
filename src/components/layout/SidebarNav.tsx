@@ -15,6 +15,8 @@ import {
   Settings,
   BarChart2,
   LifeBuoy,
+  CalendarDays,
+  ShieldCheck,
 } from "lucide-react";
 
 function isActive(currentPath: string, href: string) {
@@ -65,7 +67,13 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SidebarNav({ onClose }: { onClose?: () => void }) {
+export default function SidebarNav({
+  onClose,
+  hasEnterpriseOnboarding,
+}: {
+  onClose?: () => void;
+  hasEnterpriseOnboarding?: boolean;
+}) {
   return (
     <nav className="flex-1 overflow-y-auto px-3 py-4">
       <SectionLabel>Main</SectionLabel>
@@ -76,6 +84,16 @@ export default function SidebarNav({ onClose }: { onClose?: () => void }) {
         <NavItem href="/dashboard/email" label="Email" icon={Mail} onClose={onClose} />
         <NavItem href="/dashboard/clients" label="Clients" icon={User} onClose={onClose} />
       </div>
+
+      {hasEnterpriseOnboarding && (
+        <>
+          <SectionLabel>Enterprise</SectionLabel>
+          <div className="flex flex-col gap-0.5">
+            <NavItem href="/dashboard/onboardings?tab=bulk" label="Events" icon={CalendarDays} onClose={onClose} />
+            <NavItem href="/dashboard/review-queue" label="Review Queue" icon={ShieldCheck} onClose={onClose} />
+          </div>
+        </>
+      )}
 
       <SectionLabel>Workflow</SectionLabel>
       <div className="flex flex-col gap-0.5">

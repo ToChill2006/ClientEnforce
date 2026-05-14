@@ -14,7 +14,7 @@ type Priority = "low" | "medium" | "high" | "urgent";
 
 type Member = {
   user_id: string;
-  role: "owner" | "admin" | "member";
+  role: "owner" | "admin" | "member" | "onboarder" | "reviewer";
   email: string | null;
   full_name: string | null;
 };
@@ -39,7 +39,7 @@ type Me = {
   email: string | null;
 };
 
-type Tab = "members" | "tasks" | "workload";
+type Tab = "members" | "tasks" | "workload" | "activity";
 
 // ─── Priority helpers ─────────────────────────────────────────────────────────
 // Priority is encoded as a prefix in the description: "[P:high] rest of text"
@@ -489,7 +489,7 @@ export default function TeamPage() {
 
       {/* Tab bar */}
       <div className="flex gap-1 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-1">
-        {(["members", "tasks", "workload"] as Tab[]).map((t) => (
+        {(["members", "tasks", "workload", "activity"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -528,6 +528,8 @@ export default function TeamPage() {
               <option value="owner">Owner</option>
               <option value="admin">Admin</option>
               <option value="member">Member</option>
+              <option value="onboarder">Onboarder</option>
+              <option value="reviewer">Reviewer</option>
             </Select>
           </div>
 
@@ -1098,6 +1100,100 @@ export default function TeamPage() {
           )}
         </div>
       ) : null}
+
+      {/* ══════════════════════════════════
+          TAB: ACTIVITY
+          ══════════════════════════════════ */}
+      {tab === "activity" ? <ActivityFeedTab /> : null}
+    </div>
+  );
+}
+
+// ─── Activity Feed Tab ────────────────────────────────────────────────────────
+
+type ActivityItem = {
+  id: string;
+  verb: string;
+  actor_name: string | null;
+  actor_kind: string;
+  subject_kind: string;
+  message: string;
+  created_at: string;
+};
+
+function ActivityFeedTab() {
+  const [items, setItems] = React.useState<ActivityItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function load() {
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch("/api/team-activity", { cache: "no-store" });
+      if (!res.ok) throw new Error(`Failed to load (${res.status})`);
+      const json = await res.json().catch(() => null);
+      setItems(Array.isArray(json?.items) ? json.items : []);
+    } catch (e: any) { setError(e?.message || "Failed to load activity."); }
+    finally { setLoading(false); }
+  }
+
+  React.useEffect(() => { load(); }, []);
+
+  function relTime(iso: string) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  }
+
+  const verbDot: Record<string, string> = {
+    approved: "bg-[var(--color-success)]",
+    rejected: "bg-[var(--color-danger)]",
+    submitted: "bg-[var(--color-info)]",
+    imported: "bg-[var(--color-accent)]",
+  };
+
+  return (
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm font-medium text-[var(--color-text-primary)]">Recent activity</div>
+        <button onClick={load} className="text-xs text-[var(--color-accent)] hover:underline" disabled={loading}>Refresh</button>
+      </div>
+
+      {error && (
+        <div className="mb-3 rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">{error}</div>
+      )}
+
+      {loading ? (
+        <div className="flex flex-col gap-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--color-border)]" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3.5 w-3/4 rounded bg-[var(--color-bg-subtle)]" />
+                <div className="h-3 w-1/4 rounded bg-[var(--color-bg-subtle)]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="py-8 text-center text-sm text-[var(--color-text-muted)]">No activity yet.</div>
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {items.map((item) => (
+            <li key={item.id} className="flex items-start gap-3">
+              <span className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${verbDot[item.verb] ?? "bg-[var(--color-text-muted)]"}`} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-[var(--color-text-primary)]">{item.message}</p>
+                <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{relTime(item.created_at)}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }

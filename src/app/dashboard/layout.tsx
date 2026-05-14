@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
+import { currentOrgHasFeature } from "@/lib/feature-flags";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageTransition from "@/components/layout/PageTransition";
 import VerifyEmailBanner from "@/components/layout/VerifyEmailBanner";
@@ -60,8 +61,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const meta2 = (data.user.user_metadata ?? {}) as { email_verified?: unknown };
   const emailVerified = "email_verified" in meta2 ? meta2.email_verified === true : true;
 
+  const hasEnterpriseOnboarding = await currentOrgHasFeature("enterprise_onboarding").catch(() => false);
+
   return (
-    <DashboardShell fullName={fullName} email={email} initials={initials}>
+    <DashboardShell fullName={fullName} email={email} initials={initials} hasEnterpriseOnboarding={hasEnterpriseOnboarding}>
       <VerifyEmailBanner emailVerified={emailVerified} />
       <PageTransition>{children}</PageTransition>
     </DashboardShell>

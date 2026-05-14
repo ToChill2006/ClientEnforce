@@ -14,6 +14,7 @@ interface DashboardShellProps {
   fullName: string;
   email: string | null;
   initials: string;
+  hasEnterpriseOnboarding?: boolean;
 }
 
 function Logo({ onClick }: { onClick?: () => void }) {
@@ -73,19 +74,19 @@ function UserMenu({ fullName, email, initials }: { fullName: string; email: stri
   );
 }
 
-function SidebarContent({ onClose }: { onClose?: () => void }) {
+function SidebarContent({ onClose, hasEnterpriseOnboarding }: { onClose?: () => void; hasEnterpriseOnboarding?: boolean }) {
   return (
     <>
       <div className="shrink-0 px-4 pt-4">
         <Logo onClick={onClose} />
         <div className="mt-3 h-px bg-[var(--color-border)]" />
       </div>
-      <SidebarNav onClose={onClose} />
+      <SidebarNav onClose={onClose} hasEnterpriseOnboarding={hasEnterpriseOnboarding} />
     </>
   );
 }
 
-export default function DashboardShell({ children, fullName, email, initials }: DashboardShellProps) {
+export default function DashboardShell({ children, fullName, email, initials, hasEnterpriseOnboarding }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -99,7 +100,7 @@ export default function DashboardShell({ children, fullName, email, initials }: 
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
         {/* Desktop sidebar */}
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-[220px] flex-col border-r border-[var(--color-border)] bg-[var(--color-panel)] lg:flex">
-          <SidebarContent />
+          <SidebarContent hasEnterpriseOnboarding={hasEnterpriseOnboarding} />
         </aside>
 
         {/* Mobile drawer */}
@@ -122,7 +123,7 @@ export default function DashboardShell({ children, fullName, email, initials }: 
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <SidebarContent onClose={() => setSidebarOpen(false)} />
+              <SidebarContent onClose={() => setSidebarOpen(false)} hasEnterpriseOnboarding={hasEnterpriseOnboarding} />
             </aside>
           </>
         )}
