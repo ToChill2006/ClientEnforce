@@ -3,6 +3,14 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 
+function isMissingColumnError(err: any, column: string) {
+  const msg = String(err?.message || err || "").toLowerCase();
+  return (
+    (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find")) &&
+    msg.includes(column.toLowerCase())
+  );
+}
+
 export async function GET(req: Request) {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
@@ -17,23 +25,27 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") || "").trim().toLowerCase();
 
-  let query = supabase
-    .from("clients")
-    .select("id, email, full_name, company_name, created_at, updated_at")
-    .eq("org_id", profile.org_id)
-    .order("updated_at", { ascending: false })
-    .limit(50);
+  const buildQuery = (sel: string) => {
+    let query = supabase
+      .from("clients")
+      .select(sel)
+      .eq("org_id", profile.org_id)
+      .order("updated_at", { ascending: false })
+      .limit(50);
+    if (q) query = query.or(`email.ilike.%${q}%,full_name.ilike.%${q}%`);
+    return query;
+  };
 
-  if (q) {
-    query = query.or(`email.ilike.%${q}%,full_name.ilike.%${q}%`);
+  let result = await buildQuery("id, email, full_name, company_name, created_at, updated_at");
+  if (result.error && isMissingColumnError(result.error, "company_name")) {
+    result = await buildQuery("id, email, full_name, created_at, updated_at") as any;
   }
 
-  const { data: items, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (result.error) return NextResponse.json({ error: result.error.message }, { status: 400 });
 
-  // Normalize shape for frontend (always expose `name`)
-  const normalized = (items ?? []).map((c: any) => ({
+  const normalized = ((result.data as any[]) ?? []).map((c: any) => ({
     ...c,
+    company_name: c.company_name ?? null,
     name: c.full_name ?? null,
   }));
 
@@ -71,28 +83,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Client email is required" }, { status: 400 });
   }
 
-  const { data: created, error } = await supabase
+  const insertPayload: Record<string, any> = { org_id: profile.org_id, full_name, email };
+  if (company_name) insertPayload.company_name = company_name;
+
+  // Try with company_name first; fall back without it if column doesn't exist
+  let result = await supabase
     .from("clients")
-    .insert({
-      org_id: profile.org_id,
-      full_name,
-      email,
-      ...(company_name ? { company_name } : {}),
-    })
+    .insert(insertPayload)
     .select("id, email, full_name, company_name, created_at, updated_at")
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message || "Failed to create client" }, { status: 400 });
+  if ((result as any).error && isMissingColumnError((result as any).error, "company_name")) {
+    const { company_name: _dropped, ...payloadWithout } = insertPayload;
+    result = await supabase
+      .from("clients")
+      .insert(payloadWithout)
+      .select("id, email, full_name, created_at, updated_at")
+      .single() as any;
   }
 
+  if ((result as any).error) {
+    return NextResponse.json({ error: (result as any).error.message || "Failed to create client" }, { status: 400 });
+  }
+
+  const created = (result as any).data;
   return NextResponse.json(
-    {
-      item: {
-        ...created,
-        name: created.full_name ?? null,
-      },
-    },
+    { item: { ...created, company_name: created.company_name ?? null, name: created.full_name ?? null } },
     { status: 201 }
   );
 }
@@ -134,27 +150,36 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Client email is required" }, { status: 400 });
   }
 
-  const { data: updated, error } = await supabase
+  const updatePayload: Record<string, any> = { full_name, email, updated_at: new Date().toISOString() };
+  if (company_name !== undefined) updatePayload.company_name = company_name;
+
+  // Try with company_name first; fall back without it if column doesn't exist
+  let result = await supabase
     .from("clients")
-    .update({
-      full_name,
-      email,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("org_id", profile.org_id)
     .eq("id", id)
     .select("id, email, full_name, company_name, created_at, updated_at")
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message || "Failed to update client" }, { status: 400 });
+  if ((result as any).error && isMissingColumnError((result as any).error, "company_name")) {
+    const { company_name: _dropped, ...payloadWithout } = updatePayload;
+    result = await supabase
+      .from("clients")
+      .update(payloadWithout)
+      .eq("org_id", profile.org_id)
+      .eq("id", id)
+      .select("id, email, full_name, created_at, updated_at")
+      .single() as any;
   }
 
+  if ((result as any).error) {
+    return NextResponse.json({ error: (result as any).error.message || "Failed to update client" }, { status: 400 });
+  }
+
+  const updated = (result as any).data;
   return NextResponse.json({
-    item: {
-      ...updated,
-      name: updated.full_name ?? null,
-    },
+    item: { ...updated, company_name: updated.company_name ?? null, name: updated.full_name ?? null },
   });
 }
 
@@ -178,7 +203,6 @@ export async function DELETE(req: Request) {
   }
 
   const id = String(body?.id ?? "").trim();
-  // basic UUID v4-ish check (good enough to avoid accidental broad deletes)
   const uuidOk = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
   if (!uuidOk) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });

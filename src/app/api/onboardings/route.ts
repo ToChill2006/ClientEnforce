@@ -454,7 +454,7 @@ export async function GET(req: Request) {
     let cData: any[] | null = null;
     let cErr: any = null;
 
-    // Prefer `full_name` first (most common in your current schema).
+    // Prefer `full_name` + `company_name` first; fall back defensively.
     const r1 = await supabase
       .from("clients")
       .select("id, email, full_name, company_name")
@@ -464,11 +464,22 @@ export async function GET(req: Request) {
     cData = (r1 as any).data ?? null;
     cErr = (r1 as any).error ?? null;
 
+    // If company_name column doesn't exist yet, retry without it.
+    if (cErr && isMissingColumnError(cErr, "company_name")) {
+      const r1b = await supabase
+        .from("clients")
+        .select("id, email, full_name")
+        .eq("org_id", org_id)
+        .in("id", clientIds);
+      cData = (r1b as any).data ?? null;
+      cErr = (r1b as any).error ?? null;
+    }
+
     // If full_name doesn't exist, try `name`.
     if (cErr && isMissingColumnError(cErr, "full_name")) {
       const r2 = await supabase
         .from("clients")
-        .select("id, email, name, company_name")
+        .select("id, email, name")
         .eq("org_id", org_id)
         .in("id", clientIds);
 
@@ -798,10 +809,10 @@ export async function POST(req: Request) {
 
   const now = new Date().toISOString();
 
-  // Save company_name to the client record if provided (best-effort)
+  // Save company_name to the client record if provided (best-effort; ignored if column absent)
   const company_name = (parsed.data as any).company_name ?? null;
   if (company_name && client_id) {
-    await supabase.from("clients").update({ company_name }).eq("id", client_id).eq("org_id", org_id);
+    await (supabase.from("clients").update({ company_name }).eq("id", client_id).eq("org_id", org_id) as any).catch(() => {});
   }
 
   const owner_id = (parsed.data as any).owner_id ?? null;
