@@ -46,7 +46,7 @@ export function StatusBadge({
   className?: string;
 }) {
   const normalized = normalizeStatus(status);
-  const cfg = STATUS_CONFIG[normalized];
+  const cfg = STATUS_CONFIG[normalized] ?? STATUS_CONFIG["draft"];
   return (
     <span
       className={cn(

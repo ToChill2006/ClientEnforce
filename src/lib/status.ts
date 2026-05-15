@@ -2,6 +2,10 @@ export type OnboardingStatus =
   | "draft"
   | "sent"
   | "in_progress"
+  | "awaiting_review"
+  | "approved"
+  | "rejected"
+  | "completed"
   | "submitted"
   | "locked"
   | "archived";
@@ -11,7 +15,6 @@ export type StatusTone = "neutral" | "info" | "accent" | "success" | "warning" |
 export type StatusConfig = {
   label: string;
   tone: StatusTone;
-  /** Short description used in tooltips or empty-state copy. */
   hint: string;
 };
 
@@ -23,18 +26,38 @@ export const STATUS_CONFIG: Record<OnboardingStatus, StatusConfig> = {
   },
   sent: {
     label: "Sent",
-    tone: "info",
-    hint: "Link shared with client.",
+    tone: "neutral",
+    hint: "Invite sent — client hasn't started yet.",
   },
   in_progress: {
     label: "In progress",
     tone: "accent",
-    hint: "Client has started completing the onboarding.",
+    hint: "Client is actively filling out.",
+  },
+  awaiting_review: {
+    label: "Awaiting review",
+    tone: "warning",
+    hint: "Client submitted — waiting for your review.",
+  },
+  approved: {
+    label: "Approved",
+    tone: "success",
+    hint: "Phase approved — next phase unlocked.",
+  },
+  rejected: {
+    label: "Rejected",
+    tone: "danger",
+    hint: "Sent back for revision.",
+  },
+  completed: {
+    label: "Completed",
+    tone: "success",
+    hint: "All phases approved — onboarding complete.",
   },
   submitted: {
-    label: "Submitted",
-    tone: "success",
-    hint: "Client submitted all required fields.",
+    label: "Awaiting review",
+    tone: "warning",
+    hint: "Client submitted — waiting for your review.",
   },
   locked: {
     label: "Locked",
@@ -49,17 +72,47 @@ export const STATUS_CONFIG: Record<OnboardingStatus, StatusConfig> = {
 };
 
 export function normalizeStatus(raw: unknown): OnboardingStatus {
-  const v = String(raw ?? "").toLowerCase();
-  if (v === "draft" || v === "sent" || v === "in_progress" || v === "submitted" || v === "locked" || v === "archived") return v;
-  if (v === "complete" || v === "completed") return "submitted";
+  const v = String(raw ?? "").toLowerCase().replace(" ", "_");
+  const valid: OnboardingStatus[] = ["draft", "sent", "in_progress", "awaiting_review", "approved", "rejected", "completed", "submitted", "locked", "archived"];
+  if (valid.includes(v as OnboardingStatus)) return v as OnboardingStatus;
+  if (v === "complete") return "completed";
   return "draft";
+}
+
+/**
+ * Compute the display status the same way the events page does —
+ * phase status takes precedence over raw onboarding status.
+ */
+export function computeDisplayStatus(
+  onboardingStatus: string | null | undefined,
+  phases: Array<{ status: string; phase_number: number }> | null | undefined
+): OnboardingStatus {
+  const ob = String(onboardingStatus ?? "").toLowerCase();
+
+  if (ob === "sent") return "sent";
+  if (ob === "completed") return "completed";
+
+  if (phases && phases.length > 0) {
+    // Find the most relevant active phase (same logic as events API)
+    const active =
+      phases.find((p) => p.status === "in_progress" || p.status === "rejected") ??
+      phases.find((p) => p.status === "awaiting_review") ??
+      phases.find((p) => p.status === "approved");
+
+    if (active) return normalizeStatus(active.status);
+  }
+
+  return normalizeStatus(ob);
 }
 
 export const STATUS_ORDER: OnboardingStatus[] = [
   "draft",
   "sent",
   "in_progress",
-  "submitted",
+  "awaiting_review",
+  "approved",
+  "rejected",
+  "completed",
   "locked",
   "archived",
 ];

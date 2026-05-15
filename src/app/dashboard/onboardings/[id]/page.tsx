@@ -23,7 +23,7 @@ import { Modal, ConfirmModal } from "@/components/ui/modal";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
-import { normalizeStatus, type OnboardingStatus } from "@/lib/status";
+import { computeDisplayStatus, type OnboardingStatus } from "@/lib/status";
 import { cn } from "@/lib/cn";
 
 type Requirement = {
@@ -700,7 +700,7 @@ export default function OnboardingDetailAdminPage() {
 
   const ob = payload?.onboarding;
   const reqs = payload?.requirements ?? [];
-  const statusKey = normalizeStatus(ob?.status) as OnboardingStatus;
+  const statusKey = computeDisplayStatus(ob?.status, phases) as OnboardingStatus;
 
   const interactiveReqs = reqs.filter((r) => (r.type ?? r.kind ?? "").toLowerCase() !== "heading");
   const answered = interactiveReqs.filter((r) => valuePreview(r).type !== "empty").length;
