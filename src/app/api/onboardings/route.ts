@@ -1153,5 +1153,61 @@ export async function POST(req: Request) {
     // Best-effort only.
   }
 
+  // Send invite email to client automatically on creation
+  try {
+    const { sendOrgEmail } = await import("@/lib/send-email");
+
+    // Fetch client email + name
+    const { data: clientRow } = await supabase
+      .from("clients")
+      .select("email, full_name")
+      .eq("id", client_id)
+      .single();
+
+    const clientEmail = (clientRow as any)?.email ?? null;
+    const clientName = (clientRow as any)?.full_name ?? "there";
+
+    if (clientEmail) {
+      // Resolve portal base (custom domain or default)
+      let portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
+      try {
+        const { loadWhiteLabelForOrg } = await import("@/lib/white-label");
+        const wl = await loadWhiteLabelForOrg(org_id);
+        const customDomain = (wl as any)?.custom_domain?.trim();
+        if (customDomain) portalBase = `https://${customDomain}`;
+      } catch { /* use default */ }
+
+      const token = (onboarding as any).client_token;
+      const portalLink = `${portalBase}/c/${token}`;
+
+      // Fetch event name if applicable
+      let eventName: string | null = null;
+      if (event_id) {
+        try {
+          const { data: eventRow } = await supabase
+            .from("events")
+            .select("name")
+            .eq("id", event_id)
+            .single();
+          eventName = (eventRow as any)?.name ?? null;
+        } catch { /* best-effort */ }
+      }
+
+      const subject = eventName
+        ? `You have been invited to complete your onboarding for ${eventName}`
+        : `You have been invited to complete your onboarding`;
+
+      const html = eventName
+        ? `<p>Hi ${clientName},</p><p>You have been invited to complete your onboarding for <strong>${eventName}</strong>.</p><p><a href="${portalLink}">Click here to get started</a></p>`
+        : `<p>Hi ${clientName},</p><p>You have been invited to complete your onboarding.</p><p><a href="${portalLink}">Click here to get started</a></p>`;
+
+      const text = eventName
+        ? `Hi ${clientName},\n\nYou have been invited to complete your onboarding for ${eventName}.\n\nGet started: ${portalLink}`
+        : `Hi ${clientName},\n\nYou have been invited to complete your onboarding.\n\nGet started: ${portalLink}`;
+
+      await sendOrgEmail(org_id, { to: clientEmail, subject, html, text });
+    }
+  } catch { /* Don't fail onboarding creation if email errors */ }
+
   return NextResponse.json({ ok: true, onboarding });
 }
