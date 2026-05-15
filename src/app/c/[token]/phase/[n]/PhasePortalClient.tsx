@@ -291,10 +291,53 @@ export default function PhasePortalClient({
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:flex lg:gap-8">
-        {/* Side nav */}
-        <aside className="mb-6 lg:mb-0 lg:w-52 lg:shrink-0">
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-3">
+      {/* Mobile phase strip — horizontal scrollable, hidden on lg+ */}
+      <div className="lg:hidden border-b border-[var(--color-border)] bg-[var(--color-panel)]">
+        <div className="flex items-center gap-1 overflow-x-auto px-4 py-2 scrollbar-none">
+          {phases.map((ph) => {
+            const isActive = ph.phase_number === currentPhase.phase_number;
+            const isAccessible = ph.status !== "locked";
+            const statusDot =
+              ph.status === "approved" ? "bg-[var(--color-success)]" :
+              ph.status === "awaiting_review" ? "bg-yellow-400" :
+              ph.status === "rejected" ? "bg-[var(--color-danger)]" :
+              ph.status === "locked" ? "bg-[var(--color-border)]" :
+              "bg-[var(--color-accent)]";
+            return (
+              <button
+                key={ph.id}
+                onClick={() => isAccessible && router.push(`/c/${token}/phase/${ph.phase_number}`)}
+                disabled={!isAccessible}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
+                  isActive
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
+                    : isAccessible
+                    ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]"
+                    : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
+                )}
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", isActive ? "bg-white" : statusDot)} />
+                {ph.name}
+              </button>
+            );
+          })}
+        </div>
+        {/* Progress bar on mobile */}
+        <div className="px-4 pb-2">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
+              <div className="h-full rounded-full bg-[var(--color-accent)] transition-all" style={{ width: `${progressPct}%` }} />
+            </div>
+            <span className="shrink-0 text-[10px] text-[var(--color-text-muted)]">{approvedCount}/{totalPhases} approved</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:flex lg:gap-8 lg:py-8">
+        {/* Sidebar — desktop only */}
+        <aside className="hidden lg:block lg:w-52 lg:shrink-0">
+          <div className="sticky top-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-3">
             <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Phases</p>
             <nav className="space-y-1">
               {phases.map((ph) => {
