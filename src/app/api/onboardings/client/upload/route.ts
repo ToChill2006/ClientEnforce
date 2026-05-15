@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   // Fetch the requirement row — include file_paths so we can append to it
   const { data: reqRow, error: reqErr } = await admin
     .from("onboarding_requirements")
-    .select("id, onboarding_id, type, file_paths")
+    .select("id, onboarding_id, type, file_paths, review_status")
     .eq("id", parsed.data.requirement_id)
     .single();
 
@@ -95,13 +95,13 @@ export async function POST(req: Request) {
   const nowIso = new Date().toISOString();
   const newFilePath = `${bucket}:${path}`;
 
-  // Feature 4: append the new path to the existing file_paths array.
-  // file_paths is a JSONB column storing an array of "bucket:path" strings.
-  // We also keep file_path in sync as the most recent upload (for backward compat).
+  // On revision (needs_revision), replace all previous files — the client is submitting a corrected version.
+  // On initial upload, append so multiple files can be attached.
   const existingPaths: string[] = Array.isArray((reqRow as any).file_paths)
     ? (reqRow as any).file_paths as string[]
     : [];
-  const updatedPaths = [...existingPaths, newFilePath];
+  const isRevision = (reqRow as any).review_status === "needs_revision";
+  const updatedPaths = isRevision ? [newFilePath] : [...existingPaths, newFilePath];
 
   const { data: updated, error: updErr } = await admin
     .from("onboarding_requirements")

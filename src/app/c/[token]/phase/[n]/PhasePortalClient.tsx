@@ -21,6 +21,7 @@ type Requirement = {
   value_text: string | null;
   value_json: any;
   file_path: string | null;
+  file_paths: string[] | null;
   signature_path: string | null;
   options: string[] | null;
   phase_number: number | null;
@@ -132,7 +133,11 @@ export default function PhasePortalClient({
   const [filePaths, setFilePaths] = React.useState<Record<string, string[]>>(() => {
     const m: Record<string, string[]> = {};
     for (const r of requirements) {
-      if (r.file_path) m[r.id] = [r.file_path];
+      if (Array.isArray(r.file_paths) && r.file_paths.length > 0) {
+        m[r.id] = r.file_paths;
+      } else if (r.file_path) {
+        m[r.id] = [r.file_path];
+      }
     }
     return m;
   });
