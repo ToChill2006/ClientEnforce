@@ -5,8 +5,12 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
-import { sendOrgEmail } from "@/lib/send-email";
+import { resend } from "@/lib/resend";
+import { loadWhiteLabelForOrg } from "@/lib/white-label";
 import { randomUUID } from "crypto";
+
+// Allow up to 5 minutes — sequential DB work for 500 rows can take a while
+export const maxDuration = 300;
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -22,6 +26,42 @@ const RowSchema = z.object({
 const ImportPayload = z.object({
   rows: z.array(RowSchema).min(1).max(500),
 });
+
+type QueuedEmail = {
+  to: string;
+  fullName: string;
+  portalLink: string;
+};
+
+// Send all invite emails in one batch call (chunked at 100 — Resend's batch limit).
+// Falls back to sequential on error.
+async function sendBatchInvites(
+  orgId: string,
+  eventName: string,
+  queue: QueuedEmail[]
+): Promise<void> {
+  if (queue.length === 0) return;
+
+  const wl = await loadWhiteLabelForOrg(orgId);
+  const brandName = wl.brand_name?.trim() || "ClientEnforce";
+  const from = `${brandName} <info@clientenforce.com>`;
+  const replyTo = wl.support_email?.trim() || undefined;
+
+  const CHUNK = 100;
+  for (let offset = 0; offset < queue.length; offset += CHUNK) {
+    const chunk = queue.slice(offset, offset + CHUNK);
+    await resend.batch.send(
+      chunk.map((q) => ({
+        from,
+        ...(replyTo ? { replyTo } : {}),
+        to: [q.to],
+        subject: `You have been invited to complete your onboarding for ${eventName}`,
+        html: `<p>Hi ${q.fullName},</p><p>You have been invited to complete your onboarding for <strong>${eventName}</strong>.</p><p><a href="${q.portalLink}">Click here to get started</a></p>`,
+        text: `Hi ${q.fullName},\n\nYou have been invited to complete your onboarding for ${eventName}.\n\nGet started: ${q.portalLink}`,
+      }))
+    );
+  }
+}
 
 export async function POST(
   req: Request,
@@ -96,7 +136,9 @@ export async function POST(
 
     const created: string[] = [];
     const failed: Array<{ row_index: number; error: string }> = [];
+    const emailQueue: QueuedEmail[] = [];
 
+    // Phase 1: create all records in DB
     for (let i = 0; i < parsed.data.rows.length; i++) {
       const row = parsed.data.rows[i];
       try {
@@ -106,7 +148,6 @@ export async function POST(
           continue;
         }
 
-        // Upsert client
         const email = row.email.trim().toLowerCase();
         const fullName = row.full_name.trim();
 
@@ -134,7 +175,6 @@ export async function POST(
 
         const token = randomUUID();
 
-        // Create onboarding
         const { data: onboarding, error: obErr } = await admin
           .from("onboardings")
           .insert({
@@ -155,7 +195,6 @@ export async function POST(
 
         const onboardingId = (onboarding as any).id as string;
 
-        // Generate requirements from template
         const { data: tplRow } = await admin
           .from("templates")
           .select("definition")
@@ -182,7 +221,6 @@ export async function POST(
             await admin.from("onboarding_requirements").insert(reqRows);
           }
 
-          // Generate phase rows if template has phases
           const phaseDefs: any[] = def?.phases ?? [];
           const now = new Date().toISOString();
           if (phaseDefs.length > 0) {
@@ -218,22 +256,17 @@ export async function POST(
           }
         }
 
-        // Send invite email
-        const portalLink = `${portalBase}/c/${token}`;
-        try {
-          await sendOrgEmail(org_id, {
-            to: email,
-            subject: `You have been invited to complete your onboarding for ${event.name}`,
-            html: `<p>Hi ${fullName},</p><p>You have been invited to complete your onboarding for <strong>${event.name}</strong>.</p><p><a href="${portalLink}">Click here to get started</a></p>`,
-            text: `Hi ${fullName},\n\nYou have been invited to complete your onboarding for ${event.name}.\n\nGet started: ${portalLink}`,
-          });
-        } catch { /* Don't fail import on email error */ }
-
         created.push(onboardingId);
+        emailQueue.push({ to: email, fullName, portalLink: `${portalBase}/c/${token}` });
       } catch (e: any) {
         failed.push({ row_index: i, error: e?.message || "Unknown error" });
       }
     }
+
+    // Phase 2: send all invite emails in one batch (chunked at 100)
+    try {
+      await sendBatchInvites(org_id, event.name as string, emailQueue);
+    } catch { /* Don't fail the import if email batch errors */ }
 
     // Write activity feed entry
     try {
