@@ -883,8 +883,7 @@ export default function OnboardingDetailAdminPage() {
 
             <div className="space-y-2">
               {reviewItems.map((item, i) => {
-                const multiFiles = item.file_paths && item.file_paths.length > 1;
-                const singleFile = item.file_paths && item.file_paths.length === 1 ? item.file_paths[0] : null;
+                const hasFiles = item.file_paths && item.file_paths.length > 0;
                 return (
                   <div
                     key={item.id}
@@ -899,17 +898,11 @@ export default function OnboardingDetailAdminPage() {
                         <div className={`text-sm font-medium ${item.flagged ? "text-[var(--color-danger)]" : "text-[var(--color-text-primary)]"}`}>
                           {item.flagged && <span className="mr-1.5">⚑</span>}{item.label}
                         </div>
-                        {/* Single file or signature value row */}
-                        {!multiFiles && (
+                        {/* Text / signature value */}
+                        {!hasFiles && (
                           <div className="mt-0.5 flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
                             <span className="break-words">{item.value}</span>
-                            {singleFile && (
-                              <button
-                                onClick={() => openPreview(singleFile, "clientenforce-uploads", fileNameFromPath(singleFile))}
-                                className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] hover:bg-[var(--color-bg-hover)]"
-                              >View</button>
-                            )}
-                            {item.signature_path && !singleFile && (
+                            {item.signature_path && (
                               <button
                                 onClick={() => openPreview(item.signature_path!, "clientenforce-signatures", fileNameFromPath(item.signature_path))}
                                 className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] hover:bg-[var(--color-bg-hover)]"
@@ -918,62 +911,39 @@ export default function OnboardingDetailAdminPage() {
                           </div>
                         )}
                       </div>
-                      {/* OK / Needs revision only shown for non-multi-file items */}
-                      {!multiFiles && (
-                        <div className="flex shrink-0 gap-1">
-                          <button
-                            onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: false, comment: "" } : x))}
-                            className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
-                              !item.flagged
-                                ? "bg-[var(--color-success)] text-white"
-                                : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
-                            }`}
-                          >✓ OK</button>
-                          <button
-                            onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: true } : x))}
-                            className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
-                              item.flagged
-                                ? "bg-[var(--color-danger)] text-white"
-                                : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
-                            }`}
-                          >✗ Needs revision</button>
-                        </div>
-                      )}
+                      {/* OK / Needs revision — always whole-requirement */}
+                      <div className="flex shrink-0 gap-1">
+                        <button
+                          onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: false, comment: "" } : x))}
+                          className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
+                            !item.flagged
+                              ? "bg-[var(--color-success)] text-white"
+                              : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
+                          }`}
+                        >✓ OK</button>
+                        <button
+                          onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: true } : x))}
+                          className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
+                            item.flagged
+                              ? "bg-[var(--color-danger)] text-white"
+                              : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
+                          }`}
+                        >✗ Needs revision</button>
+                      </div>
                     </div>
 
-                    {/* Multi-file: per-file rows */}
-                    {multiFiles && (
-                      <div className="mt-2 space-y-1.5">
-                        {item.file_paths!.map((fp, fi) => {
-                          const fileFlag = Array.isArray(item.file_flags) ? (item as any).file_flags[fi] : false;
-                          return (
-                            <div key={fi} className={`flex items-center gap-2 rounded border px-3 py-1.5 text-xs ${fileFlag ? "border-[var(--color-danger)] bg-[var(--color-danger-subtle)]" : "border-[var(--color-border)] bg-[var(--color-bg)]"}`}>
-                              <span className="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]" title={fileNameFromPath(fp)}>{fileNameFromPath(fp)}</span>
-                              <button
-                                onClick={() => openPreview(fp, "clientenforce-uploads", fileNameFromPath(fp))}
-                                className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 hover:bg-[var(--color-bg-hover)]"
-                              >View</button>
-                              <button
-                                onClick={() => setReviewItems((prev) => prev.map((x, j) => {
-                                  if (j !== i) return x;
-                                  const flags: boolean[] = Array.isArray((x as any).file_flags) ? [...(x as any).file_flags] : x.file_paths!.map(() => false);
-                                  flags[fi] = false;
-                                  return { ...x, file_flags: flags, flagged: flags.some(Boolean) };
-                                }))}
-                                className={`shrink-0 rounded px-2 py-0.5 font-medium transition-colors ${!fileFlag ? "bg-[var(--color-success)] text-white" : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"}`}
-                              >✓ OK</button>
-                              <button
-                                onClick={() => setReviewItems((prev) => prev.map((x, j) => {
-                                  if (j !== i) return x;
-                                  const flags: boolean[] = Array.isArray((x as any).file_flags) ? [...(x as any).file_flags] : x.file_paths!.map(() => false);
-                                  flags[fi] = true;
-                                  return { ...x, file_flags: flags, flagged: true };
-                                }))}
-                                className={`shrink-0 rounded px-2 py-0.5 font-medium transition-colors ${fileFlag ? "bg-[var(--color-danger)] text-white" : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"}`}
-                              >✗ Revise</button>
-                            </div>
-                          );
-                        })}
+                    {/* Files — read-only list with View buttons */}
+                    {hasFiles && (
+                      <div className="mt-2 space-y-1">
+                        {item.file_paths!.map((fp, fi) => (
+                          <div key={fi} className="flex items-center gap-2 rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs">
+                            <span className="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]" title={fileNameFromPath(fp)}>{fileNameFromPath(fp)}</span>
+                            <button
+                              onClick={() => openPreview(fp, "clientenforce-uploads", fileNameFromPath(fp))}
+                              className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 hover:bg-[var(--color-bg-hover)]"
+                            >View</button>
+                          </div>
+                        ))}
                       </div>
                     )}
 

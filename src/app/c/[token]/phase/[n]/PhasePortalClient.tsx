@@ -164,6 +164,8 @@ export default function PhasePortalClient({
   }
 
   async function uploadFile(reqId: string, file: File) {
+    const req = requirements.find((r) => r.id === reqId);
+    const isRevision = req?.review_status === "needs_revision";
     setBusyByReq((p) => ({ ...p, [reqId]: true }));
     try {
       const fd = new FormData();
@@ -175,7 +177,8 @@ export default function PhasePortalClient({
       if (!res.ok) throw new Error(json?.error || "Upload failed");
       const newPath: string = json.file_path ?? "";
       if (newPath) {
-        setFilePaths((p) => ({ ...p, [reqId]: [...(p[reqId] ?? []).filter((x) => x !== newPath), newPath] }));
+        // On revision, replace all old files with just the new one
+        setFilePaths((p) => ({ ...p, [reqId]: isRevision ? [newPath] : [...(p[reqId] ?? []).filter((x) => x !== newPath), newPath] }));
       }
     } catch { /* silent */ } finally {
       setBusyByReq((p) => ({ ...p, [reqId]: false }));
@@ -443,22 +446,44 @@ export default function PhasePortalClient({
 
                       {req.type === "file" ? (
                         <div className="mt-2 flex flex-col gap-2">
-                          {(filePaths[req.id] ?? (req.file_path ? [req.file_path] : [])).map((path) => (
-                            <div key={path} className="flex items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2">
-                              <span className="truncate text-xs text-[var(--color-text-primary)]">{path.split("/").pop()}</span>
+                          {needsRevision ? (
+                            /* Revision mode — clear slate, upload fresh */
+                            <>
+                              <p className="text-xs text-[var(--color-danger)]">Please upload a replacement — all previous files will be replaced.</p>
+                              {(filePaths[req.id]?.length ?? 0) > 0 ? (
+                                filePaths[req.id].map((path) => (
+                                  <div key={path} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-danger-subtle)] px-3 py-2 opacity-60">
+                                    <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-secondary)] line-through">{path.split("/").pop()}</span>
+                                    <span className="shrink-0 text-[10px] text-[var(--color-danger)]">will be replaced</span>
+                                  </div>
+                                ))
+                              ) : null}
+                              <label className="flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-danger)] bg-[var(--color-danger-subtle)] px-4 py-3 text-sm font-medium text-[var(--color-danger)] hover:opacity-80 transition">
+                                <span>{busyByReq[req.id] ? "Uploading…" : "Upload replacement file"}</span>
+                                <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
+                              </label>
+                            </>
+                          ) : (
+                            /* Normal mode */
+                            <>
+                              {(filePaths[req.id] ?? (req.file_path ? [req.file_path] : [])).map((path) => (
+                                <div key={path} className="flex items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2">
+                                  <span className="truncate text-xs text-[var(--color-text-primary)]">{path.split("/").pop()}</span>
+                                  {!isReadOnly && (
+                                    <button onClick={() => removeFile(req.id, path)} className="text-xs text-[var(--color-text-muted)] hover:text-red-500">Remove</button>
+                                  )}
+                                </div>
+                              ))}
                               {!isReadOnly && (
-                                <button onClick={() => removeFile(req.id, path)} className="text-xs text-[var(--color-text-muted)] hover:text-red-500">Remove</button>
+                                <label className="flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition">
+                                  <span>{busyByReq[req.id] ? "Uploading…" : "Choose file"}</span>
+                                  <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
+                                </label>
                               )}
-                            </div>
-                          ))}
-                          {!isReadOnly && (
-                            <label className="flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition">
-                              <span>{busyByReq[req.id] ? "Uploading…" : "Choose file"}</span>
-                              <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
-                            </label>
-                          )}
-                          {isReadOnly && (filePaths[req.id]?.length ?? 0) === 0 && !req.file_path && (
-                            <span className="text-xs text-[var(--color-text-muted)]">No file uploaded</span>
+                              {isReadOnly && (filePaths[req.id]?.length ?? 0) === 0 && !req.file_path && (
+                                <span className="text-xs text-[var(--color-text-muted)]">No file uploaded</span>
+                              )}
+                            </>
                           )}
                         </div>
                       ) : req.type === "signature" ? (
