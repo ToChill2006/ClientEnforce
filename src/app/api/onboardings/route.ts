@@ -812,7 +812,9 @@ export async function POST(req: Request) {
   // Save company_name to the client record if provided (best-effort; ignored if column absent)
   const company_name = (parsed.data as any).company_name ?? null;
   if (company_name && client_id) {
-    await (supabase.from("clients").update({ company_name }).eq("id", client_id).eq("org_id", org_id) as any).catch(() => {});
+    try {
+      await supabase.from("clients").update({ company_name } as any).eq("id", client_id).eq("org_id", org_id);
+    } catch { /* best-effort */ }
   }
 
   const owner_id = (parsed.data as any).owner_id ?? null;
