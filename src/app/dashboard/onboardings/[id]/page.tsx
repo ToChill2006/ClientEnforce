@@ -289,7 +289,7 @@ export default function OnboardingDetailAdminPage() {
   // Phase strip + review panel state
   const [phases, setPhases] = React.useState<any[]>([]);
   const [reviewPhaseNumber, setReviewPhaseNumber] = React.useState<number | null>(null);
-  const [reviewItems, setReviewItems] = React.useState<Array<{ id: string; label: string; value: string; flagged: boolean; comment: string }>>([]);
+  const [reviewItems, setReviewItems] = React.useState<Array<{ id: string; label: string; value: string; flagged: boolean; comment: string; file_path?: string | null; file_paths?: string[] | null; file_flags?: boolean[]; signature_path?: string | null }>>([]);
   const [reviewNote, setReviewNote] = React.useState("");
   const [submittingReview, setSubmittingReview] = React.useState(false);
   const [reviewPanelOpen, setReviewPanelOpen] = React.useState(false);
@@ -368,13 +368,21 @@ export default function OnboardingDetailAdminPage() {
       (r) => (r.phase_number ?? 1) === phaseNumber && (r.type ?? r.kind ?? "").toLowerCase() !== "heading"
     );
 
-    setReviewItems(phaseReqs.map((r) => ({
-      id: r.id,
-      label: r.label ?? "Field",
-      value: r.value_text ?? (r.file_path ? "📎 File uploaded" : r.signature_path ? "✍ Signature" : "—"),
-      flagged: r.review_status === "needs_revision",
-      comment: r.reviewer_comment ?? "",
-    })));
+    setReviewItems(phaseReqs.map((r) => {
+      const filePaths = Array.isArray(r.file_paths) && r.file_paths.length > 0
+        ? r.file_paths
+        : r.file_path ? [r.file_path] : [];
+      return {
+        id: r.id,
+        label: r.label ?? "Field",
+        value: r.value_text ?? (filePaths.length > 0 ? `📎 ${filePaths.length} file${filePaths.length > 1 ? "s" : ""} uploaded` : r.signature_path ? "✍ Signature" : "—"),
+        flagged: r.review_status === "needs_revision",
+        comment: r.reviewer_comment ?? "",
+        file_path: r.file_path ?? null,
+        file_paths: filePaths.length > 0 ? filePaths : null,
+        signature_path: r.signature_path ?? null,
+      };
+    }));
     setReviewNote("");
     setReviewPhaseNumber(phaseNumber);
     setReviewPanelOpen(true);
@@ -874,52 +882,113 @@ export default function OnboardingDetailAdminPage() {
             </div>
 
             <div className="space-y-2">
-              {reviewItems.map((item, i) => (
-                <div
-                  key={item.id}
-                  className={`rounded-[var(--radius-md)] border px-4 py-3 transition-colors ${
-                    item.flagged
-                      ? "border-[var(--color-danger)] bg-[var(--color-danger-subtle)]"
-                      : "border-[var(--color-border)] bg-[var(--color-bg-subtle)]"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className={`text-sm font-medium ${item.flagged ? "text-[var(--color-danger)]" : "text-[var(--color-text-primary)]"}`}>
-                        {item.flagged && <span className="mr-1.5">⚑</span>}{item.label}
+              {reviewItems.map((item, i) => {
+                const multiFiles = item.file_paths && item.file_paths.length > 1;
+                const singleFile = item.file_paths && item.file_paths.length === 1 ? item.file_paths[0] : null;
+                return (
+                  <div
+                    key={item.id}
+                    className={`rounded-[var(--radius-md)] border px-4 py-3 transition-colors ${
+                      item.flagged
+                        ? "border-[var(--color-danger)] bg-[var(--color-danger-subtle)]"
+                        : "border-[var(--color-border)] bg-[var(--color-bg-subtle)]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className={`text-sm font-medium ${item.flagged ? "text-[var(--color-danger)]" : "text-[var(--color-text-primary)]"}`}>
+                          {item.flagged && <span className="mr-1.5">⚑</span>}{item.label}
+                        </div>
+                        {/* Single file or signature value row */}
+                        {!multiFiles && (
+                          <div className="mt-0.5 flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+                            <span className="break-words">{item.value}</span>
+                            {singleFile && (
+                              <button
+                                onClick={() => openPreview(singleFile, "clientenforce-uploads", fileNameFromPath(singleFile))}
+                                className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] hover:bg-[var(--color-bg-hover)]"
+                              >View</button>
+                            )}
+                            {item.signature_path && !singleFile && (
+                              <button
+                                onClick={() => openPreview(item.signature_path!, "clientenforce-signatures", fileNameFromPath(item.signature_path))}
+                                className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] hover:bg-[var(--color-bg-hover)]"
+                              >View signature</button>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="mt-0.5 text-xs text-[var(--color-text-secondary)] break-words">{item.value}</div>
+                      {/* OK / Needs revision only shown for non-multi-file items */}
+                      {!multiFiles && (
+                        <div className="flex shrink-0 gap-1">
+                          <button
+                            onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: false, comment: "" } : x))}
+                            className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
+                              !item.flagged
+                                ? "bg-[var(--color-success)] text-white"
+                                : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
+                            }`}
+                          >✓ OK</button>
+                          <button
+                            onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: true } : x))}
+                            className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
+                              item.flagged
+                                ? "bg-[var(--color-danger)] text-white"
+                                : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
+                            }`}
+                          >✗ Needs revision</button>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex shrink-0 gap-1">
-                      <button
-                        onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: false, comment: "" } : x))}
-                        className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
-                          !item.flagged
-                            ? "bg-[var(--color-success)] text-white"
-                            : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
-                        }`}
-                      >✓ OK</button>
-                      <button
-                        onClick={() => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, flagged: true } : x))}
-                        className={`rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors ${
-                          item.flagged
-                            ? "bg-[var(--color-danger)] text-white"
-                            : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"
-                        }`}
-                      >✗ Needs revision</button>
-                    </div>
+
+                    {/* Multi-file: per-file rows */}
+                    {multiFiles && (
+                      <div className="mt-2 space-y-1.5">
+                        {item.file_paths!.map((fp, fi) => {
+                          const fileFlag = Array.isArray(item.file_flags) ? (item as any).file_flags[fi] : false;
+                          return (
+                            <div key={fi} className={`flex items-center gap-2 rounded border px-3 py-1.5 text-xs ${fileFlag ? "border-[var(--color-danger)] bg-[var(--color-danger-subtle)]" : "border-[var(--color-border)] bg-[var(--color-bg)]"}`}>
+                              <span className="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]" title={fileNameFromPath(fp)}>{fileNameFromPath(fp)}</span>
+                              <button
+                                onClick={() => openPreview(fp, "clientenforce-uploads", fileNameFromPath(fp))}
+                                className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 hover:bg-[var(--color-bg-hover)]"
+                              >View</button>
+                              <button
+                                onClick={() => setReviewItems((prev) => prev.map((x, j) => {
+                                  if (j !== i) return x;
+                                  const flags: boolean[] = Array.isArray((x as any).file_flags) ? [...(x as any).file_flags] : x.file_paths!.map(() => false);
+                                  flags[fi] = false;
+                                  return { ...x, file_flags: flags, flagged: flags.some(Boolean) };
+                                }))}
+                                className={`shrink-0 rounded px-2 py-0.5 font-medium transition-colors ${!fileFlag ? "bg-[var(--color-success)] text-white" : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"}`}
+                              >✓ OK</button>
+                              <button
+                                onClick={() => setReviewItems((prev) => prev.map((x, j) => {
+                                  if (j !== i) return x;
+                                  const flags: boolean[] = Array.isArray((x as any).file_flags) ? [...(x as any).file_flags] : x.file_paths!.map(() => false);
+                                  flags[fi] = true;
+                                  return { ...x, file_flags: flags, flagged: true };
+                                }))}
+                                className={`shrink-0 rounded px-2 py-0.5 font-medium transition-colors ${fileFlag ? "bg-[var(--color-danger)] text-white" : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)]"}`}
+                              >✗ Revise</button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {item.flagged && (
+                      <textarea
+                        className="mt-3 w-full rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-bg)] px-3 py-2 text-xs placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-danger)]"
+                        placeholder="Tell the exhibitor what needs to change (optional)"
+                        rows={2}
+                        value={item.comment}
+                        onChange={(e) => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, comment: e.target.value } : x))}
+                      />
+                    )}
                   </div>
-                  {item.flagged && (
-                    <textarea
-                      className="mt-3 w-full rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-bg)] px-3 py-2 text-xs placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-danger)]"
-                      placeholder="Tell the exhibitor what needs to change (optional)"
-                      rows={2}
-                      value={item.comment}
-                      onChange={(e) => setReviewItems((prev) => prev.map((x, j) => j === i ? { ...x, comment: e.target.value } : x))}
-                    />
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-5">
