@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ClientPortal } from "@/components/client/ClientPortal";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
-import { orgHasFeature } from "@/lib/feature-flags";
+import { orgHasFeatureAdmin } from "@/lib/feature-flags";
 
 function StatusPill({ status, locked }: { status?: string | null; locked: boolean }) {
   const s = (status || "draft").toLowerCase();
@@ -383,7 +383,7 @@ export default async function ClientTokenPage({
   let phaseRedirectUrl: string | null = null;
   if (orgId) {
     try {
-      const hasFlag = await orgHasFeature(String(orgId), "enterprise_onboarding");
+      const hasFlag = await orgHasFeatureAdmin(String(orgId), "enterprise_onboarding");
       if (hasFlag) {
         const { data: existingPhases } = await admin
           .from("onboarding_phases")

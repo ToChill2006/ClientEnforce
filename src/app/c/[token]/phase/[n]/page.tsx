@@ -1,7 +1,7 @@
 import * as React from "react";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { orgHasFeature } from "@/lib/feature-flags";
+import { orgHasFeatureAdmin } from "@/lib/feature-flags";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
 import PhasePortalClient from "./PhasePortalClient";
 
@@ -28,7 +28,7 @@ export default async function PhasePortalPage({
   const orgId = (onboarding as any).org_id as string;
 
   // Verify enterprise flag
-  const hasFlag = await orgHasFeature(orgId, "enterprise_onboarding").catch(() => false);
+  const hasFlag = await orgHasFeatureAdmin(orgId, "enterprise_onboarding").catch(() => false);
   if (!hasFlag) return notFound();
 
   // Load all phases
