@@ -71,6 +71,13 @@ export async function POST(
       .eq("onboarding_id", onboardingId)
       .eq("phase_number", phaseNumber);
 
+    // Reset onboarding status so the client can upload files again
+    await supabaseAdmin()
+      .from("onboardings")
+      .update({ status: "in_progress", updated_at: now })
+      .eq("id", onboardingId)
+      .eq("status", "submitted");
+
     // Flag individual requirements — do NOT wipe submitted answers
     if (per_item_flags && per_item_flags.length > 0) {
       for (const flag of per_item_flags) {
