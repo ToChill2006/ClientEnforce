@@ -283,9 +283,15 @@ export async function POST(
       }
     }
 
-    // Phase 2: send all invite emails in one batch (chunked at 100)
+    // Phase 2: send all invite emails in one batch (chunked at 100), then mark as sent
     try {
       await sendBatchInvites(org_id, event.name as string, emailQueue);
+      // Mark all successfully created onboardings as sent
+      if (created.length > 0) {
+        await admin.from("onboardings")
+          .update({ status: "sent", updated_at: new Date().toISOString() })
+          .in("id", created);
+      }
     } catch { /* Don't fail the import if email batch errors */ }
 
     // Write activity feed entry

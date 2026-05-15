@@ -1206,6 +1206,10 @@ export async function POST(req: Request) {
         : `Hi ${clientName},\n\nYou have been invited to complete your onboarding.\n\nGet started: ${portalLink}`;
 
       await sendOrgEmail(org_id, { to: clientEmail, subject, html, text });
+
+      // Mark as sent now that the invite email is out
+      await supabase.from("onboardings").update({ status: "sent", updated_at: new Date().toISOString() }).eq("id", onboarding.id);
+      onboarding = { ...onboarding, status: "sent" };
     }
   } catch { /* Don't fail onboarding creation if email errors */ }
 

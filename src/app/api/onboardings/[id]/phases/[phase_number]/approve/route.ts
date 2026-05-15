@@ -78,6 +78,18 @@ export async function POST(
         .from("onboarding_phases")
         .update({ status: "in_progress", updated_at: now })
         .eq("id", (nextPhase as any).id);
+
+      // Reset onboarding to in_progress so the client can fill out the next phase
+      await supabase
+        .from("onboardings")
+        .update({ status: "in_progress", updated_at: now })
+        .eq("id", onboardingId);
+    } else {
+      // No more phases — mark onboarding as completed
+      await supabase
+        .from("onboardings")
+        .update({ status: "completed", updated_at: now })
+        .eq("id", onboardingId);
     }
 
     // Fetch onboarding + client for emails
