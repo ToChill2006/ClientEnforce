@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { sendOrgEmail, getOrgEmailConfig } from "@/lib/send-email";
 import { resend } from "@/lib/resend";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
 import { randomUUID } from "crypto";
@@ -33,8 +34,9 @@ type QueuedEmail = {
   portalLink: string;
 };
 
-// Send all invite emails in one batch call (chunked at 100 — Resend's batch limit).
-// Falls back to sequential on error.
+// Send all invite emails efficiently.
+// Resend orgs: one batch API call per 100 emails (fast, no rate-limit issues).
+// Custom SMTP orgs: sequential — their mail server handles its own delivery.
 async function sendBatchInvites(
   orgId: string,
   eventName: string,
@@ -42,6 +44,24 @@ async function sendBatchInvites(
 ): Promise<void> {
   if (queue.length === 0) return;
 
+  const config = await getOrgEmailConfig(orgId);
+
+  if (config.provider === "smtp") {
+    // Sequential through their own SMTP — respect their server's delivery
+    for (const q of queue) {
+      try {
+        await sendOrgEmail(orgId, {
+          to: q.to,
+          subject: `You have been invited to complete your onboarding for ${eventName}`,
+          html: `<p>Hi ${q.fullName},</p><p>You have been invited to complete your onboarding for <strong>${eventName}</strong>.</p><p><a href="${q.portalLink}">Click here to get started</a></p>`,
+          text: `Hi ${q.fullName},\n\nYou have been invited to complete your onboarding for ${eventName}.\n\nGet started: ${q.portalLink}`,
+        });
+      } catch { /* best-effort per email */ }
+    }
+    return;
+  }
+
+  // Resend batch — chunked at 100 per call
   const wl = await loadWhiteLabelForOrg(orgId);
   const brandName = wl.brand_name?.trim() || "ClientEnforce";
   const from = `${brandName} <info@clientenforce.com>`;

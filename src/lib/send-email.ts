@@ -19,14 +19,52 @@ function isMissingColumnError(err: any) {
   );
 }
 
+export type OrgEmailConfig = {
+  provider: "clientenforce" | "smtp";
+  smtpHost: string | null;
+  smtpPort: number | null;
+  smtpSecure: boolean | null;
+  smtpUsername: string | null;
+  smtpPassword: string | null;
+  smtpFromEmail: string | null;
+  smtpFromName: string | null;
+};
+
+export async function getOrgEmailConfig(orgId: string): Promise<OrgEmailConfig> {
+  const admin = supabaseAdmin();
+  const config: OrgEmailConfig = {
+    provider: "clientenforce",
+    smtpHost: null, smtpPort: null, smtpSecure: null,
+    smtpUsername: null, smtpPassword: null,
+    smtpFromEmail: null, smtpFromName: null,
+  };
+  try {
+    const { data, error } = await admin
+      .from("organizations")
+      .select("email_provider, smtp_host, smtp_port, smtp_secure, smtp_username, smtp_password, smtp_from_email, smtp_from_name")
+      .eq("id", orgId)
+      .single();
+    if (error && !isMissingColumnError(error)) throw new Error(error.message);
+    if (data) {
+      config.provider = (data.email_provider === "smtp" ? "smtp" : "clientenforce");
+      config.smtpHost = data.smtp_host ?? null;
+      config.smtpPort = data.smtp_port ?? null;
+      config.smtpSecure = data.smtp_secure ?? null;
+      config.smtpUsername = data.smtp_username ?? null;
+      config.smtpPassword = data.smtp_password ?? null;
+      config.smtpFromEmail = data.smtp_from_email ?? null;
+      config.smtpFromName = data.smtp_from_name ?? null;
+    }
+  } catch (e: any) {
+    if (!isMissingColumnError(e)) throw e;
+  }
+  return config;
+}
+
 /**
  * Send a client-facing email on behalf of an organisation.
  * Uses the org's configured provider (ClientEnforce/Resend or custom SMTP).
  * Always throws on failure — callers should catch and handle.
- *
- * Security note: SMTP credentials are stored as plaintext in the organizations
- * table, protected by Supabase RLS (org members only). At-rest encryption can
- * be added in a future hardening sprint.
  */
 export async function sendOrgEmail(orgId: string, opts: SendOrgEmailOpts): Promise<void> {
   const admin = supabaseAdmin();
