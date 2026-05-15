@@ -649,7 +649,8 @@ export async function GET(req: Request) {
       client_type_name: o.client_type_id ? (clientTypeNamesById[o.client_type_id] ?? null) : null,
       current_phase: phase?.phase_number ?? null,
       phase_name: phase?.name ?? null,
-      phase_status: phase?.status ?? null,
+      // Use onboarding-level status for "sent" (not yet opened) and "completed"
+      phase_status: o.status === "sent" ? "sent" : o.status === "completed" ? "completed" : phase?.status ?? o.status ?? null,
       phase_deadline: phase?.deadline ?? null,
     };
   });

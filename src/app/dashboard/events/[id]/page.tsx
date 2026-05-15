@@ -67,14 +67,24 @@ type Tab = "add" | "exhibitors" | "templates";
 function PhaseStatusBadge({ status }: { status: string | null }) {
   if (!status) return <Tag>—</Tag>;
   const map: Record<string, "neutral" | "info" | "warning" | "success" | "danger"> = {
+    sent: "neutral",
     locked: "neutral",
     in_progress: "info",
     awaiting_review: "warning",
     approved: "success",
     rejected: "danger",
+    completed: "success",
   };
-  const label = status.replace("_", " ");
-  return <Tag tone={map[status] ?? "neutral"}>{label}</Tag>;
+  const labels: Record<string, string> = {
+    sent: "Sent",
+    in_progress: "In progress",
+    awaiting_review: "Awaiting review",
+    approved: "Approved",
+    rejected: "Rejected",
+    locked: "Locked",
+    completed: "Completed",
+  };
+  return <Tag tone={map[status] ?? "neutral"}>{labels[status] ?? status.replace(/_/g, " ")}</Tag>;
 }
 
 function formatDate(d?: string | null) {
@@ -675,11 +685,12 @@ export default function EventDetailPage() {
             </div>
             <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="sm:w-44">
               <option value="all">All statuses</option>
+              <option value="sent">Sent</option>
               <option value="in_progress">In progress</option>
               <option value="awaiting_review">Awaiting review</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
-              <option value="locked">Locked</option>
+              <option value="completed">Completed</option>
             </Select>
           </div>
 
