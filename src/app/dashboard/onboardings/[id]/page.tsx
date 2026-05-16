@@ -1354,8 +1354,8 @@ export default function OnboardingDetailAdminPage() {
                   return (
                     <div key={ph.phase_number}>
                       {activeResponsePhase === null && (
-                        <div className="border-b border-[var(--color-border)] border-l-4 border-l-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-5 py-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-accent)]">
+                        <div className="border-b border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-2">
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-secondary)]">
                             {ph.name ?? `Phase ${ph.phase_number}`}
                           </span>
                         </div>
@@ -1551,13 +1551,13 @@ function ResponseItem({
 
   if (rType === "heading") {
     return (
-      <li className="border-l-4 border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-2.5 dark:border-neutral-600 dark:bg-neutral-800/40">
+      <li className="px-5 py-2 bg-[var(--color-bg-subtle)]">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-secondary)]">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
               {r.label || "Section"}
             </span>
-            <span className="rounded bg-[var(--color-bg-hover)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--color-text-muted)] dark:bg-neutral-700">
+            <span className="rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
               Heading
             </span>
           </div>
