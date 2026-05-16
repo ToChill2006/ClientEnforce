@@ -652,11 +652,11 @@ export default function EventDetailPage() {
       {/* Dashboard tab */}
       {tab === "dashboard" && (() => {
         const total = exhibitors.length;
-        const completed = exhibitors.filter((e) => e.phase_status === "approved" || (e as any).status === "completed").length;
+        const completed = exhibitors.filter((e) => e.phase_status === "completed" || e.phase_status === "approved").length;
         const awaitingReview = exhibitors.filter((e) => e.phase_status === "awaiting_review").length;
         const inProgress = exhibitors.filter((e) => e.phase_status === "in_progress").length;
         const rejected = exhibitors.filter((e) => e.phase_status === "rejected").length;
-        const notStarted = exhibitors.filter((e) => !e.phase_status || ["draft", "sent", "locked"].includes(e.phase_status)).length;
+        const notStarted = total - completed - awaitingReview - inProgress - rejected;
         const completionPct = total > 0 ? Math.round((completed / total) * 100) : 0;
         const needsAttention = exhibitors.filter((e) => e.phase_status === "awaiting_review" || e.phase_status === "rejected");
 
