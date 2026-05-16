@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { supabaseServer } from "@/lib/supabase-server";
 import { getOrgId } from "@/lib/rbac";
 
@@ -32,7 +33,7 @@ export async function PATCH(
     const deadline = body.deadline ?? null;
     if (deadline !== null && typeof deadline !== "string") return err(400, "deadline must be a date string or null");
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin()
       .from("onboarding_phases")
       .update({ deadline, updated_at: new Date().toISOString() })
       .eq("onboarding_id", onboardingId)

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
@@ -134,7 +135,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   if ("deadline" in parsed.data) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin()
       .from("onboardings")
       .update({ deadline: parsed.data.deadline, updated_at: now })
       .eq("org_id", org_id)
