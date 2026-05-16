@@ -1551,10 +1551,15 @@ function ResponseItem({
 
   if (rType === "heading") {
     return (
-      <li className="bg-[var(--color-bg-subtle)] px-5 py-2.5">
+      <li className="border-l-4 border-indigo-400 bg-indigo-50 px-5 py-2.5 dark:border-indigo-500 dark:bg-indigo-950/30">
         <div className="flex items-center justify-between gap-3">
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
-            {r.label || "Section"}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+              {r.label || "Section"}
+            </span>
+            <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-indigo-500 dark:bg-indigo-900/50 dark:text-indigo-400">
+              Heading
+            </span>
           </div>
           {draftMode && phaseEditable && (
             <button
@@ -1572,13 +1577,16 @@ function ResponseItem({
 
   if (rType === "info") {
     return (
-      <li className="px-5 py-3">
+      <li className="border-l-4 border-amber-400 bg-amber-50 px-5 py-3 dark:border-amber-500 dark:bg-amber-950/20">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-start gap-2">
-            <span className="mt-0.5 text-base leading-none text-[var(--color-text-muted)]">ℹ</span>
+            <span className="mt-0.5 text-base leading-none text-amber-500">ℹ</span>
             <div>
-              {r.label && <p className="text-xs font-medium text-[var(--color-text-secondary)]">{r.label}</p>}
-              {r.prompt && <p className="text-xs text-[var(--color-text-muted)]">{r.prompt}</p>}
+              {r.label && <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">{r.label}</p>}
+              {r.prompt && <p className="text-xs text-amber-600 dark:text-amber-500">{r.prompt}</p>}
+              <span className="mt-0.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-500 dark:bg-amber-900/50 dark:text-amber-400">
+                Info only · not a requirement
+              </span>
             </div>
           </div>
           {draftMode && phaseEditable && (
