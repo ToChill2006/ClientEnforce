@@ -116,21 +116,29 @@ export async function POST(
       });
     } catch { /* best-effort */ }
 
-    // Notify onboarding owner
-    const ownerId = (onboarding as any).owner_id;
-    const portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
-    const reviewLink = `${portalBase}/dashboard/onboardings/${onboardingId}`;
-    if (ownerId) {
-      try {
-        const { data: ownerProfile } = await admin
+    // Email all org admins and owners about the submission
+    try {
+      const { sendOrgEmail } = await import("@/lib/send-email");
+      const wl = await loadWhiteLabelForOrg(org_id);
+      const phaseName = (phase as any).name ?? `Phase ${phaseNumber}`;
+      const reviewLink = `${process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com"}/dashboard/onboardings/${onboardingId}`;
+
+      // Get all admin/owner members of the org
+      const { data: adminMembers } = await admin
+        .from("memberships")
+        .select("user_id")
+        .eq("org_id", org_id)
+        .in("role", ["owner", "admin"]);
+
+      if (adminMembers && adminMembers.length > 0) {
+        const userIds = adminMembers.map((m: any) => m.user_id);
+        const { data: adminProfiles } = await admin
           .from("profiles")
-          .select("email")
-          .eq("user_id", ownerId)
-          .single();
-        if (ownerProfile?.email) {
-          const { sendOrgEmail } = await import("@/lib/send-email");
-          const wl = await loadWhiteLabelForOrg(org_id);
-          const phaseName = (phase as any).name ?? `Phase ${phaseNumber}`;
+          .select("email, full_name")
+          .in("user_id", userIds);
+
+        for (const profile of adminProfiles ?? []) {
+          if (!(profile as any).email) continue;
           const { html, text } = renderClientEnforceEmail({
             preheader: `${clientName} submitted ${phaseName} for review`,
             eyebrow: "Awaiting review",
@@ -143,14 +151,14 @@ export async function POST(
             branding: wl,
           });
           await sendOrgEmail(org_id, {
-            to: ownerProfile.email as string,
+            to: (profile as any).email,
             subject: `${clientName} submitted ${phaseName} for review`,
             html,
             text,
           });
         }
-      } catch { /* best-effort */ }
-    }
+      }
+    } catch { /* best-effort */ }
 
     return NextResponse.json({ ok: true });
   } catch (e: any) {

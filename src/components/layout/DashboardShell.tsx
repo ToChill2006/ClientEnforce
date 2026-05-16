@@ -34,7 +34,7 @@ function useNotifications() {
 
   React.useEffect(() => {
     refresh();
-    const id = setInterval(refresh, 60_000);
+    const id = setInterval(refresh, 30_000);
     return () => clearInterval(id);
   }, []);
 
