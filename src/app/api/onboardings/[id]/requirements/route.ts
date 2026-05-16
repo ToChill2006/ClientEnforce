@@ -18,6 +18,8 @@ const PostSchema = z.object({
   label: z.string().min(1),
   is_required: z.boolean(),
   options: z.array(z.string()).optional(),
+  allow_multi_select: z.boolean().optional(),
+  include_other: z.boolean().optional(),
 });
 
 export async function POST(
@@ -51,7 +53,7 @@ export async function POST(
     const parsed = PostSchema.safeParse(body);
     if (!parsed.success) return err(400, "Invalid payload: " + parsed.error.issues.map((i) => i.message).join(", "));
 
-    const { phase_number, type, label, is_required, options } = parsed.data;
+    const { phase_number, type, label, is_required, options, allow_multi_select, include_other } = parsed.data;
 
     // Check if this phase is locked for editing
     const { data: phaseRow } = await supabase
@@ -95,6 +97,11 @@ export async function POST(
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id ?? null;
 
+    const metadataObj: Record<string, unknown> = {};
+    if (allow_multi_select) metadataObj.allow_multi_select = true;
+    if (include_other) metadataObj.include_other = true;
+    const metadata = Object.keys(metadataObj).length > 0 ? metadataObj : null;
+
     const admin = supabaseAdmin();
     const { data: newReq, error: insertErr } = await admin
       .from("onboarding_requirements")
@@ -106,6 +113,7 @@ export async function POST(
         label,
         is_required,
         options: options ?? null,
+        metadata,
         sort_order: nextSortOrder,
         is_ad_hoc: true,
         created_by: userId,

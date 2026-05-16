@@ -14,6 +14,8 @@ const PatchSchema = z.object({
   label: z.string().min(1).optional(),
   is_required: z.boolean().optional(),
   options: z.array(z.string()).optional().nullable(),
+  allow_multi_select: z.boolean().optional(),
+  include_other: z.boolean().optional(),
 });
 
 async function getOrgScopedRequirement(
@@ -62,10 +64,6 @@ export async function PATCH(
     const { req: existing, notFound } = await getOrgScopedRequirement(supabase, onboardingId, reqId, org_id);
     if (notFound || !existing) return err(404, "Requirement not found");
 
-    if (!(existing as any).is_ad_hoc) {
-      return err(403, "Cannot edit a snapshotted requirement. Only ad-hoc requirements can be edited.");
-    }
-
     const body = await req.json().catch(() => null);
     const parsed = PatchSchema.safeParse(body);
     if (!parsed.success) return err(400, "Invalid payload: " + parsed.error.issues.map((i) => i.message).join(", "));
@@ -74,6 +72,15 @@ export async function PATCH(
     if (parsed.data.label !== undefined) updates.label = parsed.data.label;
     if (parsed.data.is_required !== undefined) updates.is_required = parsed.data.is_required;
     if ("options" in parsed.data) updates.options = parsed.data.options ?? null;
+
+    // Build metadata patch for multiple_choice config
+    if (parsed.data.allow_multi_select !== undefined || parsed.data.include_other !== undefined) {
+      const existingMeta = (existing as any).metadata ?? {};
+      const nextMeta = { ...existingMeta };
+      if (parsed.data.allow_multi_select !== undefined) nextMeta.allow_multi_select = parsed.data.allow_multi_select;
+      if (parsed.data.include_other !== undefined) nextMeta.include_other = parsed.data.include_other;
+      updates.metadata = nextMeta;
+    }
 
     if (Object.keys(updates).length === 0) return err(400, "No fields to update");
 
@@ -114,8 +121,13 @@ export async function DELETE(
     if (notFound || !existing) return err(404, "Requirement not found");
 
     const row = existing as any;
+
+    // Allow removing template (non-ad-hoc) requirements only while the onboarding is in draft
     if (!row.is_ad_hoc) {
-      return err(403, "Cannot remove a snapshotted requirement. Only ad-hoc requirements can be removed.");
+      const { data: ob } = await supabase.from("onboardings").select("status").eq("id", onboardingId).maybeSingle();
+      if ((ob as any)?.status !== "draft") {
+        return err(403, "Cannot remove a snapshotted requirement. Only ad-hoc requirements can be removed.");
+      }
     }
 
     // Block if a submitted answer exists
