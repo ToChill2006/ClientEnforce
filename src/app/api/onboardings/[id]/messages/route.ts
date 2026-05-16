@@ -106,18 +106,31 @@ export async function POST(
 
   if (insertErr) return json(400, { error: insertErr.message });
 
-  // Email the client (non-blocking) — look up client info from clients table
+  // Email the client (non-blocking) — try denormalized columns first, fall back to clients table
   const clientToken = ob.client_token;
   let clientEmail: string | null = null;
   let clientName = "there";
-  if (ob.client_id) {
+
+  // Try client_full_name / client_email directly on the onboarding row
+  const { data: obFull } = await admin
+    .from("onboardings")
+    .select("client_full_name, client_email")
+    .eq("id", id)
+    .maybeSingle();
+  if (obFull) {
+    clientEmail = (obFull as any).client_email ?? null;
+    clientName = (obFull as any).client_full_name || "there";
+  }
+
+  // Fall back to clients table if still no email
+  if (!clientEmail && ob.client_id) {
     const { data: client } = await admin
       .from("clients")
       .select("email, full_name")
       .eq("id", ob.client_id)
       .maybeSingle();
     clientEmail = (client as any)?.email ?? null;
-    clientName = (client as any)?.full_name || "there";
+    clientName = (client as any)?.full_name || clientName;
   }
 
   if (clientEmail) {
