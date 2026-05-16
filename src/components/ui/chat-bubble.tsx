@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, CheckCheck } from "lucide-react";
 
 export type ChatMessage = {
   id: string;
@@ -14,8 +14,7 @@ export type ChatMessage = {
 function formatTime(iso: string) {
   const d = new Date(iso);
   const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
 
   if (diffDays === 0) {
     return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
@@ -23,14 +22,21 @@ function formatTime(iso: string) {
   if (diffDays === 1) {
     return `Yesterday ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
   }
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) +
-    " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  return (
+    d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) +
+    " " +
+    d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+  );
 }
 
 function Avatar({ name, isAdmin }: { name?: string | null; isAdmin: boolean }) {
   const initials = (name || (isAdmin ? "A" : "C")).charAt(0).toUpperCase();
   return (
-    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${isAdmin ? "bg-[var(--color-accent)]" : "bg-gray-400"}`}>
+    <div
+      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${
+        isAdmin ? "bg-[var(--color-accent)]" : "bg-gray-400"
+      }`}
+    >
       {initials}
     </div>
   );
@@ -53,6 +59,8 @@ export function ChatBubble({
 }) {
   const [open, setOpen] = React.useState(false);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [myLastReadAt, setMyLastReadAt] = React.useState<string | null>(null);
+  const [theirLastReadAt, setTheirLastReadAt] = React.useState<string | null>(null);
   const [draft, setDraft] = React.useState("");
   const [sending, setSending] = React.useState(false);
   const [sendError, setSendError] = React.useState<string | null>(null);
@@ -61,15 +69,14 @@ export function ChatBubble({
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
   const openRef = React.useRef(false);
-  const seenCountRef = React.useRef(0);
   const accent = accentColor || "var(--color-accent)";
 
-  // Keep openRef in sync so the polling interval always sees the current value
   React.useEffect(() => { openRef.current = open; }, [open]);
 
   async function fetchMessages(markRead = false) {
     try {
-      const res = await fetch(messagesUrl, { cache: "no-store" });
+      const url = markRead ? `${messagesUrl}?mark_read=1` : messagesUrl;
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) {
         const errJson = await res.json().catch(() => null);
         setSendError(errJson?.error || `Failed to load messages (${res.status})`);
@@ -77,16 +84,28 @@ export function ChatBubble({
       }
       const json = await res.json();
       const msgs: ChatMessage[] = json.messages ?? [];
+      const myRead: string | null = json.my_last_read_at ?? null;
+      const theirRead: string | null = json.their_last_read_at ?? null;
+
       setMessages(msgs);
-      const otherCount = msgs.filter((m) => m.sender_type !== currentSide).length;
+      setTheirLastReadAt(theirRead);
+
       if (markRead || openRef.current) {
-        seenCountRef.current = otherCount;
+        // After marking read, treat now as the read baseline
+        const readAt = markRead ? new Date().toISOString() : (myRead ?? new Date().toISOString());
+        setMyLastReadAt(readAt);
         setUnread(0);
       } else {
-        setUnread(Math.max(0, otherCount - seenCountRef.current));
+        setMyLastReadAt(myRead);
+        // Count messages from the other side received after we last read
+        const cutoff = myRead ? new Date(myRead).getTime() : 0;
+        const newCount = msgs.filter(
+          (m) => m.sender_type !== currentSide && new Date(m.created_at).getTime() > cutoff
+        ).length;
+        setUnread(newCount);
       }
     } catch {
-      // ignore
+      // ignore network errors silently
     }
   }
 
@@ -100,7 +119,6 @@ export function ChatBubble({
 
   React.useEffect(() => {
     if (open) {
-      setUnread(0);
       fetchMessages(true);
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -149,6 +167,14 @@ export function ChatBubble({
     }
   }
 
+  // Find the last message I sent that the other side has read
+  const theirReadTime = theirLastReadAt ? new Date(theirLastReadAt).getTime() : 0;
+  const lastSeenByThemId = theirReadTime > 0
+    ? [...messages]
+        .filter((m) => m.sender_type === currentSide && new Date(m.created_at).getTime() <= theirReadTime)
+        .pop()?.id ?? null
+    : null;
+
   return (
     <>
       {/* Floating button */}
@@ -174,14 +200,21 @@ export function ChatBubble({
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-40 flex w-[340px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] shadow-2xl"
+        <div
+          className="fixed bottom-24 right-6 z-40 flex w-[340px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] shadow-2xl"
           style={{ height: "480px" }}
         >
           {/* Header */}
-          <div className="flex items-center gap-2.5 px-4 py-3 text-white" style={{ backgroundColor: accent }}>
+          <div
+            className="flex items-center gap-2.5 px-4 py-3 text-white"
+            style={{ backgroundColor: accent }}
+          >
             <MessageCircle className="h-4 w-4 shrink-0" />
             <span className="flex-1 text-sm font-semibold">{title}</span>
-            <button onClick={() => setOpen(false)} className="opacity-80 hover:opacity-100 transition-opacity">
+            <button
+              onClick={() => setOpen(false)}
+              className="opacity-80 hover:opacity-100 transition-opacity"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -201,20 +234,35 @@ export function ChatBubble({
             ) : (
               messages.map((m) => {
                 const isMine = m.sender_type === currentSide;
+                const isLastSeenByThem = isMine && m.id === lastSeenByThemId;
                 return (
                   <div key={m.id} className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}>
                     {!isMine && <Avatar name={m.sender_name} isAdmin={m.sender_type === "admin"} />}
                     <div className={`flex max-w-[75%] flex-col gap-0.5 ${isMine ? "items-end" : "items-start"}`}>
                       {!isMine && m.sender_name && (
-                        <span className="px-1 text-[10px] font-medium text-[var(--color-text-muted)]">{m.sender_name}</span>
+                        <span className="px-1 text-[10px] font-medium text-[var(--color-text-muted)]">
+                          {m.sender_name}
+                        </span>
                       )}
                       <div
-                        className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${isMine ? "rounded-br-sm text-white" : "rounded-bl-sm bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]"}`}
+                        className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                          isMine
+                            ? "rounded-br-sm text-white"
+                            : "rounded-bl-sm bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]"
+                        }`}
                         style={isMine ? { backgroundColor: accent } : undefined}
                       >
                         {m.body}
                       </div>
-                      <span className="px-1 text-[10px] text-[var(--color-text-muted)]">{formatTime(m.created_at)}</span>
+                      <span className="px-1 text-[10px] text-[var(--color-text-muted)]">
+                        {formatTime(m.created_at)}
+                      </span>
+                      {isLastSeenByThem && (
+                        <span className="flex items-center gap-0.5 px-1 text-[10px] text-[var(--color-text-muted)]">
+                          <CheckCheck className="h-3 w-3" />
+                          Seen {formatTime(theirLastReadAt!)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -252,10 +300,16 @@ export function ChatBubble({
                 style={{ backgroundColor: accent }}
                 aria-label="Send"
               >
-                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {sending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </button>
             </div>
-            <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">Enter to send · Shift+Enter for new line</p>
+            <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+              Enter to send · Shift+Enter for new line
+            </p>
           </div>
         </div>
       )}

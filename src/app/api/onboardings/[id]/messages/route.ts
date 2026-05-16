@@ -45,10 +45,12 @@ async function resolveOnboarding(onboardingId: string, userId: string) {
 }
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const markRead = new URL(req.url).searchParams.get("mark_read") === "1";
+
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return json(401, { error: "Unauthorized" });
@@ -57,14 +59,31 @@ export async function GET(
   if (!ob) return json(404, { error: "Not found" });
 
   const admin = supabaseAdmin();
-  const { data, error } = await admin
-    .from("onboarding_messages")
-    .select("id, sender_type, sender_name, sender_email, body, created_at")
-    .eq("onboarding_id", id)
-    .order("created_at", { ascending: true });
+  const [{ data, error }, { data: reads }] = await Promise.all([
+    admin
+      .from("onboarding_messages")
+      .select("id, sender_type, sender_name, sender_email, body, created_at")
+      .eq("onboarding_id", id)
+      .order("created_at", { ascending: true }),
+    admin
+      .from("onboarding_chat_reads")
+      .select("side, last_read_at")
+      .eq("onboarding_id", id),
+  ]);
 
   if (error) return json(400, { error: error.message });
-  return json(200, { messages: data ?? [] });
+
+  const myLastReadAt = (reads as any[])?.find((r) => r.side === "admin")?.last_read_at ?? null;
+  const theirLastReadAt = (reads as any[])?.find((r) => r.side === "client")?.last_read_at ?? null;
+
+  if (markRead) {
+    await admin.from("onboarding_chat_reads").upsert(
+      { onboarding_id: id, side: "admin", last_read_at: new Date().toISOString() },
+      { onConflict: "onboarding_id,side" }
+    );
+  }
+
+  return json(200, { messages: data ?? [], my_last_read_at: myLastReadAt, their_last_read_at: theirLastReadAt });
 }
 
 export async function POST(
