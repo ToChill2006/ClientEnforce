@@ -78,6 +78,7 @@ type DetailPayload = {
     client_name: string | null;
     company_name?: string | null;
     template_name: string | null;
+    template_id: string | null;
     owner_id: string | null;
     owner_name: string | null;
     created_at: string | null;
@@ -1481,6 +1482,8 @@ export default function OnboardingDetailAdminPage() {
       <AdHocRequirementModal
         open={adHocModal.open}
         phaseNumber={adHocModal.phaseNumber}
+        templateId={ob?.template_id ?? null}
+        existingReqs={reqs}
         editingReq={adHocModal.editingReq}
         saving={adHocSaving}
         onClose={() => setAdHocModal({ open: false, phaseNumber: 1, editingReq: null })}
@@ -1825,19 +1828,6 @@ function ResponseItem({
   );
 }
 
-const AD_HOC_TYPES = [
-  { value: "text", label: "Short text" },
-  { value: "textarea", label: "Long text" },
-  { value: "multiple_choice", label: "Multiple choice" },
-  { value: "select", label: "Dropdown" },
-  { value: "file", label: "File upload" },
-  { value: "signature", label: "Signature" },
-  { value: "checkbox", label: "Checkbox" },
-  { value: "date", label: "Date" },
-  { value: "heading", label: "Section heading" },
-  { value: "info", label: "Info block" },
-] as const;
-
 type AdHocFields = {
   type: string;
   label: string;
@@ -1847,72 +1837,26 @@ type AdHocFields = {
   include_other?: boolean;
 };
 
-function OptionsList({
-  options,
-  onChange,
-}: {
-  options: string[];
-  onChange: (opts: string[]) => void;
-}) {
-  const [draft, setDraft] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  function add() {
-    const v = draft.trim();
-    if (!v || options.includes(v)) return;
-    onChange([...options, v]);
-    setDraft("");
-    inputRef.current?.focus();
-  }
-
-  return (
-    <div>
-      <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
-        Options <span className="text-[var(--color-danger)]">*</span>
-      </label>
-      {options.length > 0 && (
-        <ul className="mb-2 space-y-1">
-          {options.map((opt, i) => (
-            <li key={i} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5 text-sm">
-              <span className="flex-1 truncate">{opt}</span>
-              <button
-                type="button"
-                onClick={() => onChange(options.filter((_, j) => j !== i))}
-                className="text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition-colors"
-              >
-                <XIcon className="h-3.5 w-3.5" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="flex gap-2">
-        <input
-          ref={inputRef}
-          type="text"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
-          placeholder="Type an option and press Enter"
-          className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-        />
-        <button
-          type="button"
-          onClick={add}
-          disabled={!draft.trim()}
-          className="flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] disabled:opacity-40 transition-colors"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add
-        </button>
-      </div>
-    </div>
-  );
+function typeIcon(type: string) {
+  const t = type?.toLowerCase() ?? "";
+  if (t === "file") return "📎";
+  if (t === "signature") return "✍";
+  if (t === "multiple_choice") return "☑";
+  if (t === "select") return "▾";
+  if (t === "checkbox") return "✓";
+  if (t === "date") return "📅";
+  if (t === "textarea") return "¶";
+  if (t === "heading") return "§";
+  if (t === "info") return "ℹ";
+  if (t === "payment") return "💳";
+  return "T";
 }
 
 function AdHocRequirementModal({
   open,
   phaseNumber,
+  templateId,
+  existingReqs,
   editingReq,
   saving,
   onClose,
@@ -1920,134 +1864,171 @@ function AdHocRequirementModal({
 }: {
   open: boolean;
   phaseNumber: number;
+  templateId: string | null;
+  existingReqs: Requirement[];
   editingReq: Requirement | null;
   saving: boolean;
   onClose: () => void;
   onSave: (phaseNumber: number, fields: AdHocFields) => void;
 }) {
-  const [type, setType] = React.useState("text");
-  const [label, setLabel] = React.useState("");
-  const [isRequired, setIsRequired] = React.useState(false);
-  const [options, setOptions] = React.useState<string[]>([]);
-  const [allowMulti, setAllowMulti] = React.useState(false);
-  const [includeOther, setIncludeOther] = React.useState(false);
+  const [templateReqs, setTemplateReqs] = React.useState<any[]>([]);
+  const [loadingTemplate, setLoadingTemplate] = React.useState(false);
+  const [selected, setSelected] = React.useState<any | null>(null);
+
+  // Edit mode state
+  const [editLabel, setEditLabel] = React.useState("");
+  const [editRequired, setEditRequired] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
     if (editingReq) {
-      setType(editingReq.type ?? "text");
-      setLabel(editingReq.label ?? "");
-      setIsRequired(!!(editingReq.is_required ?? editingReq.required));
-      setOptions(Array.isArray(editingReq.options) ? editingReq.options : []);
-      const meta = (editingReq as any).metadata ?? {};
-      setAllowMulti(!!meta.allow_multi_select);
-      setIncludeOther(!!meta.include_other);
-    } else {
-      setType("text");
-      setLabel("");
-      setIsRequired(false);
-      setOptions([]);
-      setAllowMulti(false);
-      setIncludeOther(false);
+      setEditLabel(editingReq.label ?? "");
+      setEditRequired(!!(editingReq.is_required ?? editingReq.required));
+      return;
     }
-  }, [open, editingReq]);
-
-  const needsOptions = type === "multiple_choice" || type === "select";
-  const isDisplay = type === "heading" || type === "info";
-  const canSave = label.trim() && (!needsOptions || options.length >= 1);
+    setSelected(null);
+    if (!templateId) return;
+    setLoadingTemplate(true);
+    fetch(`/api/templates/${templateId}/requirements`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((j) => {
+        const all: any[] = j.requirements ?? [];
+        // Only show requirements for this phase that aren't already in the onboarding
+        const existingLabels = existingReqs
+          .filter((r) => (r.phase_number ?? 1) === phaseNumber)
+          .map((r) => (r.label ?? "").toLowerCase().trim());
+        const filtered = all.filter(
+          (r: any) =>
+            (r.phase_number ?? 1) === phaseNumber &&
+            !existingLabels.includes((r.label ?? "").toLowerCase().trim())
+        );
+        setTemplateReqs(filtered);
+      })
+      .catch(() => setTemplateReqs([]))
+      .finally(() => setLoadingTemplate(false));
+  }, [open, templateId, phaseNumber, editingReq]);
 
   function handleSave() {
-    if (!canSave) return;
-    const fields: AdHocFields = { type, label: label.trim(), is_required: isRequired };
-    if (needsOptions) fields.options = options;
-    if (type === "multiple_choice") {
-      fields.allow_multi_select = allowMulti;
-      fields.include_other = includeOther;
+    if (editingReq) {
+      onSave(editingReq.phase_number ?? phaseNumber, {
+        type: editingReq.type ?? "text",
+        label: editLabel.trim() || editingReq.label || "",
+        is_required: editRequired,
+        options: editingReq.options ?? undefined,
+      });
+      return;
     }
-    onSave(phaseNumber, fields);
+    if (!selected) return;
+    const meta = selected.metadata ?? {};
+    onSave(phaseNumber, {
+      type: selected.type,
+      label: selected.label,
+      is_required: !!(selected.is_required ?? selected.required),
+      options: Array.isArray(selected.options) ? selected.options : undefined,
+      allow_multi_select: meta.allow_multi_select,
+      include_other: meta.include_other,
+    });
   }
 
   if (!open) return null;
 
+  // Edit mode
+  if (editingReq) {
+    return (
+      <Modal
+        open={open}
+        onClose={onClose}
+        title="Edit requirement"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+            <Button onClick={handleSave} loading={saving} disabled={!editLabel.trim()}>Save</Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Label</label>
+            <input
+              type="text"
+              value={editLabel}
+              onChange={(e) => setEditLabel(e.target.value)}
+              autoFocus
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            />
+          </div>
+          {editingReq.type !== "heading" && editingReq.type !== "info" && (
+            <label className="flex cursor-pointer items-center gap-2.5 text-sm">
+              <input type="checkbox" checked={editRequired} onChange={(e) => setEditRequired(e.target.checked)} className="accent-[var(--color-accent)]" />
+              <span className="text-[var(--color-text-secondary)]">Required field</span>
+            </label>
+          )}
+        </div>
+      </Modal>
+    );
+  }
+
+  // Add from template mode
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={editingReq ? "Edit requirement" : `Add requirement — Phase ${phaseNumber}`}
+      title={`Add requirement — Phase ${phaseNumber}`}
       size="sm"
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} loading={saving} disabled={!canSave}>
-            {editingReq ? "Save changes" : "Add"}
-          </Button>
+          <Button onClick={handleSave} loading={saving} disabled={!selected}>Add</Button>
         </div>
       }
     >
-      <div className="space-y-4">
-        {/* Type selector — locked when editing */}
-        {!editingReq && (
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Field type</label>
-            <select
-              value={type}
-              onChange={(e) => { setType(e.target.value); setOptions([]); setAllowMulti(false); setIncludeOther(false); }}
-              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-            >
-              {AD_HOC_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Label */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
-            {isDisplay ? "Title / text" : "Label"} <span className="text-[var(--color-danger)]">*</span>
-          </label>
-          <input
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !needsOptions) { e.preventDefault(); handleSave(); } }}
-            placeholder={
-              type === "heading" ? "Section title…" :
-              type === "info" ? "Info message…" :
-              "e.g. Company registration number"
-            }
-            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-            autoFocus
-          />
+      {loadingTemplate ? (
+        <div className="flex h-32 items-center justify-center text-sm text-[var(--color-text-muted)]">
+          Loading template requirements…
         </div>
-
-        {/* Options list for multiple_choice and select */}
-        {needsOptions && (
-          <OptionsList options={options} onChange={setOptions} />
-        )}
-
-        {/* Multiple choice extras */}
-        {type === "multiple_choice" && (
-          <div className="space-y-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2.5">
-            <label className="flex cursor-pointer items-center gap-2.5 text-sm">
-              <input type="checkbox" checked={allowMulti} onChange={(e) => setAllowMulti(e.target.checked)} className="accent-[var(--color-accent)]" />
-              <span className="text-[var(--color-text-secondary)]">Allow selecting multiple answers</span>
-            </label>
-            <label className="flex cursor-pointer items-center gap-2.5 text-sm">
-              <input type="checkbox" checked={includeOther} onChange={(e) => setIncludeOther(e.target.checked)} className="accent-[var(--color-accent)]" />
-              <span className="text-[var(--color-text-secondary)]">Include "Other" option (free text)</span>
-            </label>
-          </div>
-        )}
-
-        {/* Required toggle — hidden for display types */}
-        {!isDisplay && (
-          <label className="flex cursor-pointer items-center gap-2.5 text-sm">
-            <input type="checkbox" checked={isRequired} onChange={(e) => setIsRequired(e.target.checked)} className="accent-[var(--color-accent)]" />
-            <span className="text-[var(--color-text-secondary)]">Required field</span>
-          </label>
-        )}
-      </div>
+      ) : templateReqs.length === 0 ? (
+        <div className="flex h-32 flex-col items-center justify-center text-center text-sm text-[var(--color-text-muted)]">
+          <p className="font-medium">All template requirements are already included</p>
+          <p className="mt-1 text-xs">Remove a requirement first to add it back.</p>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <p className="mb-2 text-xs text-[var(--color-text-muted)]">
+            Select a requirement from the template to add back to this phase.
+          </p>
+          {templateReqs.map((r: any, i: number) => {
+            const isSelected = selected === r;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setSelected(isSelected ? null : r)}
+                className={`flex w-full items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-colors ${
+                  isSelected
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]"
+                    : "border-[var(--color-border)] hover:bg-[var(--color-bg-hover)]"
+                }`}
+              >
+                <span className="text-base leading-none">{typeIcon(r.type)}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-[var(--color-text-primary)]">{r.label || "Untitled"}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] capitalize">{r.type?.replace("_", " ")}
+                    {(r.is_required ?? r.required) ? " · Required" : ""}
+                  </p>
+                </div>
+                {isSelected && (
+                  <div className="h-4 w-4 shrink-0 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
+                    <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 10 10">
+                      <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </Modal>
   );
 }

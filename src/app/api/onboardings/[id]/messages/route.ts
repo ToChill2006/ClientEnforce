@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireRole, getOrgId } from "@/lib/rbac";
 import { sendOrgEmail } from "@/lib/send-email";
 import { renderClientEnforceEmail } from "@/lib/email-template";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
@@ -16,22 +15,51 @@ const PostSchema = z.object({
   body: z.string().min(1).max(4000),
 });
 
+async function resolveOnboarding(onboardingId: string, userId: string) {
+  const admin = supabaseAdmin();
+  const { data: ob } = await admin
+    .from("onboardings")
+    .select("id, org_id, title, client_full_name, client_email, client_token")
+    .eq("id", onboardingId)
+    .maybeSingle();
+  if (!ob) return null;
+
+  // Verify the user is a member of this org
+  const { data: membership } = await admin
+    .from("memberships")
+    .select("role")
+    .eq("org_id", (ob as any).org_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!membership) return null;
+  return ob as {
+    id: string;
+    org_id: string;
+    title: string | null;
+    client_full_name: string | null;
+    client_email: string | null;
+    client_token: string | null;
+  };
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await supabaseServer();
-  const org_id = await getOrgId();
-  if (!org_id) return json(401, { error: "Unauthorized" });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return json(401, { error: "Unauthorized" });
 
-  await requireRole(["owner", "admin", "member", "onboarder", "reviewer"]);
+  const ob = await resolveOnboarding(id, user.id);
+  if (!ob) return json(404, { error: "Not found" });
 
-  const { data, error } = await supabase
+  const admin = supabaseAdmin();
+  const { data, error } = await admin
     .from("onboarding_messages")
     .select("id, sender_type, sender_name, sender_email, body, created_at")
     .eq("onboarding_id", id)
-    .eq("org_id", org_id)
     .order("created_at", { ascending: true });
 
   if (error) return json(400, { error: error.message });
@@ -44,41 +72,29 @@ export async function POST(
 ) {
   const { id } = await params;
   const supabase = await supabaseServer();
-  const org_id = await getOrgId();
-  if (!org_id) return json(401, { error: "Unauthorized" });
-
-  await requireRole(["owner", "admin", "member", "onboarder", "reviewer"]);
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return json(401, { error: "Unauthorized" });
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, email")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const ob = await resolveOnboarding(id, user.id);
+  if (!ob) return json(404, { error: "Not found" });
 
   const body = await req.json().catch(() => null);
   const parsed = PostSchema.safeParse(body);
   if (!parsed.success) return json(400, { error: "Invalid message" });
 
+  // Get sender's display name
   const admin = supabaseAdmin();
-
-  // Load onboarding to get client email and token
-  const { data: ob } = await admin
-    .from("onboardings")
-    .select("id, org_id, title, client_full_name, client_email, client_token")
-    .eq("id", id)
-    .eq("org_id", org_id)
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("full_name, email")
+    .eq("user_id", user.id)
     .maybeSingle();
-
-  if (!ob) return json(404, { error: "Onboarding not found" });
 
   const { data: msg, error: insertErr } = await admin
     .from("onboarding_messages")
     .insert({
       onboarding_id: id,
-      org_id,
+      org_id: ob.org_id,
       sender_type: "admin",
       sender_name: (profile as any)?.full_name || user.email || "Team",
       sender_email: user.email,
@@ -90,17 +106,15 @@ export async function POST(
   if (insertErr) return json(400, { error: insertErr.message });
 
   // Email the client (non-blocking)
-  const clientEmail = (ob as any).client_email;
-  const clientName = (ob as any).client_full_name || "there";
-  const clientToken = (ob as any).client_token;
+  const clientEmail = ob.client_email;
+  const clientName = ob.client_full_name || "there";
+  const clientToken = ob.client_token;
 
   if (clientEmail) {
-    const wl = await loadWhiteLabelForOrg(org_id).catch(() => ({} as any));
+    const wl = await loadWhiteLabelForOrg(ob.org_id).catch(() => ({} as any));
     const brand = wl.brand_name || "ClientEnforce";
     const senderName = (profile as any)?.full_name || brand;
-    const portalUrl = clientToken
-      ? `${appOrigin()}/c/${clientToken}`
-      : null;
+    const portalUrl = clientToken ? `${appOrigin()}/c/${clientToken}` : null;
 
     const { html, text: emailText } = renderClientEnforceEmail({
       branding: wl,
@@ -111,12 +125,12 @@ export async function POST(
         `"${parsed.data.body}"`,
       ],
       primaryCta: portalUrl ? { label: "View & reply", href: portalUrl } : null,
-      footerNote: `This message was sent via ${brand}. Reply by visiting your onboarding portal.`,
+      footerNote: `Reply by visiting your onboarding portal.`,
     });
 
-    sendOrgEmail(org_id, {
+    sendOrgEmail(ob.org_id, {
       to: clientEmail,
-      subject: `New message from ${senderName} — ${(ob as any).title || "Your onboarding"}`,
+      subject: `New message from ${senderName} — ${ob.title || "Your onboarding"}`,
       html,
       text: emailText,
     }).catch(() => {});
