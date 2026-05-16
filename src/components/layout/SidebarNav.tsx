@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   ChevronRight,
   X,
+  MessageSquare,
 } from "lucide-react";
 
 type NotificationItem = {
@@ -233,11 +234,13 @@ export default function SidebarNav({
   hasEnterpriseOnboarding,
   currentUserRole,
   notifications = [],
+  messageUnread = 0,
 }: {
   onClose?: () => void;
   hasEnterpriseOnboarding?: boolean;
   currentUserRole?: string | null;
   notifications?: NotificationItem[];
+  messageUnread?: number;
 }) {
   const isExternalViewer = currentUserRole === "external_viewer";
   const [panelOpen, setPanelOpen] = React.useState(false);
@@ -282,6 +285,13 @@ export default function SidebarNav({
           label="Onboardings"
           icon={ClipboardList}
           onClose={onClose}
+        />
+        <NavItem
+          href="/dashboard/messages"
+          label="Messages"
+          icon={MessageSquare}
+          onClose={onClose}
+          badge={messageUnread}
         />
         <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} onClose={onClose} />
         <NavItem href="/dashboard/email" label="Email" icon={Mail} onClose={onClose} />

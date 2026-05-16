@@ -41,6 +41,27 @@ function useNotifications() {
   return { items, refresh };
 }
 
+function useMessageUnread() {
+  const [unread, setUnread] = React.useState(0);
+
+  async function refresh() {
+    try {
+      const res = await fetch("/api/messages/conversations", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json();
+      setUnread(json.total_unread ?? 0);
+    } catch { /* silent */ }
+  }
+
+  React.useEffect(() => {
+    refresh();
+    const id = setInterval(refresh, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  return unread;
+}
+
 interface DashboardShellProps {
   children: React.ReactNode;
   fullName: string;
@@ -107,14 +128,14 @@ function UserMenu({ fullName, email, initials }: { fullName: string; email: stri
   );
 }
 
-function SidebarContent({ onClose, hasEnterpriseOnboarding, currentUserRole, notifications }: { onClose?: () => void; hasEnterpriseOnboarding?: boolean; currentUserRole?: string | null; notifications: NotificationItem[] }) {
+function SidebarContent({ onClose, hasEnterpriseOnboarding, currentUserRole, notifications, messageUnread }: { onClose?: () => void; hasEnterpriseOnboarding?: boolean; currentUserRole?: string | null; notifications: NotificationItem[]; messageUnread: number }) {
   return (
     <>
       <div className="shrink-0 px-4 pt-4">
         <Logo onClick={onClose} />
         <div className="mt-3 h-px bg-[var(--color-border)]" />
       </div>
-      <SidebarNav onClose={onClose} hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} />
+      <SidebarNav onClose={onClose} hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} messageUnread={messageUnread} />
     </>
   );
 }
@@ -122,6 +143,7 @@ function SidebarContent({ onClose, hasEnterpriseOnboarding, currentUserRole, not
 export default function DashboardShell({ children, fullName, email, initials, hasEnterpriseOnboarding, currentUserRole }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const { items: notifications } = useNotifications();
+  const messageUnread = useMessageUnread();
 
   React.useEffect(() => {
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
@@ -134,7 +156,7 @@ export default function DashboardShell({ children, fullName, email, initials, ha
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
         {/* Desktop sidebar */}
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-[220px] flex-col border-r border-[var(--color-border)] bg-[var(--color-panel)] lg:flex">
-          <SidebarContent hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} />
+          <SidebarContent hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} messageUnread={messageUnread} />
         </aside>
 
         {/* Mobile drawer */}
@@ -157,7 +179,7 @@ export default function DashboardShell({ children, fullName, email, initials, ha
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <SidebarContent onClose={() => setSidebarOpen(false)} hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} />
+              <SidebarContent onClose={() => setSidebarOpen(false)} hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} messageUnread={messageUnread} />
             </aside>
           </>
         )}
