@@ -15,6 +15,7 @@ import { FormField } from "@/components/ui/form-field";
 import { useToast } from "@/components/ui/toast";
 import { normalizeStatus, type OnboardingStatus } from "@/lib/status";
 import { cn } from "@/lib/cn";
+import { DeadlineBadge } from "@/components/ui/deadline-badge";
 
 type RecentOnboarding = {
   id: string;
@@ -31,6 +32,7 @@ type EventSummary = {
   id: string;
   name: string;
   end_date: string | null;
+  submission_deadline?: string | null;
   location: string | null;
   status: string;
   exhibitor_count: number;
@@ -388,6 +390,12 @@ export default function DashboardPage() {
                       </div>
                       <span className="shrink-0 rounded bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] font-medium capitalize text-[var(--color-text-muted)]">{ev.status}</span>
                     </div>
+                    {ev.submission_deadline && (
+                      <div className="mt-1.5 text-xs">
+                        <span className="text-[var(--color-text-muted)]">Deadline: </span>
+                        <DeadlineBadge deadline={ev.submission_deadline} />
+                      </div>
+                    )}
                     <div className="mt-3">
                       <div className="mb-1 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
                         <span>{total} exhibitor{total !== 1 ? "s" : ""}</span>

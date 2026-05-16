@@ -16,7 +16,9 @@ import {
   Pencil,
   X as XIcon,
   Plus,
+  CalendarDays,
 } from "lucide-react";
+import { DeadlineBadge, DeadlinePill } from "@/components/ui/deadline-badge";
 import { supabaseBrowser } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -84,6 +86,7 @@ type DetailPayload = {
     created_at: string | null;
     updated_at: string | null;
     metadata?: any;
+    deadline?: string | null;
   };
   requirements: Requirement[];
 };
@@ -330,6 +333,14 @@ export default function OnboardingDetailAdminPage() {
   const [orgReminders, setOrgReminders] = React.useState<OrgFollowupSettings | null>(null);
   const [reminderOverride, setReminderOverride] = React.useState<ReminderOverride | null>(null);
   const [remindersSaving, setRemindersSaving] = React.useState(false);
+
+  // Deadline state
+  const [deadlineEditing, setDeadlineEditing] = React.useState(false);
+  const [deadlineValue, setDeadlineValue] = React.useState("");
+  const [deadlineSaving, setDeadlineSaving] = React.useState(false);
+  const [phaseDeadlineEditing, setPhaseDeadlineEditing] = React.useState<number | null>(null);
+  const [phaseDeadlineValue, setPhaseDeadlineValue] = React.useState("");
+  const [phaseDeadlineSaving, setPhaseDeadlineSaving] = React.useState(false);
 
   // Response phase tab state
   const [activeResponsePhase, setActiveResponsePhase] = React.useState<number | null>(null);
@@ -768,6 +779,44 @@ export default function OnboardingDetailAdminPage() {
     })();
   }, []);
 
+  async function saveOverallDeadline() {
+    setDeadlineSaving(true);
+    try {
+      const res = await fetch(`/api/onboardings/${encodeURIComponent(params.id)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ deadline: deadlineValue || null }),
+      });
+      if (!res.ok) throw new Error((await res.text().catch(() => "")) || "Save failed");
+      setPayload((prev) => prev ? { ...prev, onboarding: { ...prev.onboarding, deadline: deadlineValue || null } } : prev);
+      setDeadlineEditing(false);
+      toast({ title: "Deadline saved", variant: "success" });
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e?.message, variant: "error" });
+    } finally {
+      setDeadlineSaving(false);
+    }
+  }
+
+  async function savePhaseDeadline(phaseNumber: number) {
+    setPhaseDeadlineSaving(true);
+    try {
+      const res = await fetch(`/api/onboardings/${encodeURIComponent(params.id)}/phases/${phaseNumber}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ deadline: phaseDeadlineValue || null }),
+      });
+      if (!res.ok) throw new Error((await res.text().catch(() => "")) || "Save failed");
+      setPhases((prev) => prev.map((ph) => ph.phase_number === phaseNumber ? { ...ph, deadline: phaseDeadlineValue || null } : ph));
+      setPhaseDeadlineEditing(null);
+      toast({ title: `Phase ${phaseNumber} deadline saved`, variant: "success" });
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e?.message, variant: "error" });
+    } finally {
+      setPhaseDeadlineSaving(false);
+    }
+  }
+
   function openAddReq(phaseNumber: number) {
     setAdHocModal({ open: true, phaseNumber, editingReq: null });
   }
@@ -914,6 +963,35 @@ export default function OnboardingDetailAdminPage() {
             <span>{ob?.client_email || "—"}</span>
             <span>•</span>
             <span>Updated {formatDate(ob?.updated_at)}</span>
+            <span>•</span>
+            {deadlineEditing ? (
+              <span className="inline-flex items-center gap-1.5">
+                <input
+                  type="date"
+                  value={deadlineValue}
+                  onChange={(e) => setDeadlineValue(e.target.value)}
+                  className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs text-[var(--color-text-primary)]"
+                  autoFocus
+                />
+                <button onClick={saveOverallDeadline} disabled={deadlineSaving} className="text-xs font-medium text-[var(--color-accent)] hover:underline disabled:opacity-50">
+                  {deadlineSaving ? "Saving…" : "Save"}
+                </button>
+                <button onClick={() => setDeadlineEditing(false)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">Cancel</button>
+              </span>
+            ) : (
+              <button
+                onClick={() => { setDeadlineValue(ob?.deadline ?? ""); setDeadlineEditing(true); }}
+                className="inline-flex items-center gap-1 text-xs hover:text-[var(--color-accent)] transition-colors"
+                title="Set overall deadline"
+              >
+                <CalendarDays className="h-3 w-3" />
+                {ob?.deadline ? (
+                  <DeadlineBadge deadline={ob.deadline} showLabel />
+                ) : (
+                  <span className="text-[var(--color-text-muted)]">Set deadline</span>
+                )}
+              </button>
+            )}
           </>
         }
         actions={
@@ -997,7 +1075,43 @@ export default function OnboardingDetailAdminPage() {
                   <div className={`inline-flex flex-col items-start gap-1 rounded-[var(--radius-md)] border px-3 py-2 text-xs font-medium ${statusColors[ph.status] ?? statusColors.locked}`}>
                     <span className="font-semibold">{statusIcon[ph.status] ?? ""} {ph.name}</span>
                     <span className="opacity-70">{statusLabel[ph.status] ?? ph.status}</span>
-                    {ph.deadline && <span className="opacity-60">Due {ph.deadline}</span>}
+                    {/* Phase deadline */}
+                    {phaseDeadlineEditing === ph.phase_number ? (
+                      <span className="inline-flex items-center gap-1 mt-0.5">
+                        <input
+                          type="date"
+                          value={phaseDeadlineValue}
+                          onChange={(e) => setPhaseDeadlineValue(e.target.value)}
+                          className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-primary)]"
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); savePhaseDeadline(ph.phase_number); }}
+                          disabled={phaseDeadlineSaving}
+                          className="text-[10px] font-semibold text-[var(--color-accent)] hover:underline disabled:opacity-50"
+                        >
+                          {phaseDeadlineSaving ? "…" : "Save"}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setPhaseDeadlineEditing(null); }}
+                          className="text-[10px] text-[var(--color-text-muted)]"
+                        >✕</button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setPhaseDeadlineValue(ph.deadline ?? ""); setPhaseDeadlineEditing(ph.phase_number); }}
+                        className="mt-0.5 inline-flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity"
+                        title="Set phase deadline"
+                      >
+                        <CalendarDays className="h-3 w-3" />
+                        {ph.deadline ? (
+                          <DeadlinePill deadline={ph.deadline} />
+                        ) : (
+                          <span className="text-[10px] text-[var(--color-text-muted)]">Set deadline</span>
+                        )}
+                      </button>
+                    )}
                     <div className="mt-1 flex flex-wrap gap-1">
                       {ph.status === "awaiting_review" && (
                         <button

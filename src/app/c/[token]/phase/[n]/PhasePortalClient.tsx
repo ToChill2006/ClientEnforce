@@ -465,11 +465,21 @@ export default function PhasePortalClient({
                 <h1 className="text-xl sm:text-2xl font-bold leading-tight" style={{ color: heading }}>
                   {currentPhase.name}
                 </h1>
-                {currentPhase.deadline && (
-                  <p className="mt-1.5 text-xs sm:text-sm text-gray-400">
-                    📅 Deadline: {currentPhase.deadline}
-                  </p>
-                )}
+                {currentPhase.deadline && (() => {
+                  const days = Math.ceil((new Date(currentPhase.deadline).setHours(23,59,59,999) - Date.now()) / 86400000);
+                  const label = days < 0
+                    ? `Overdue by ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"}`
+                    : days === 0
+                    ? "Due today"
+                    : `Due ${new Date(currentPhase.deadline).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${days} day${days === 1 ? "" : "s"} left`;
+                  const bg = days <= 0 ? "bg-red-50 border-red-200" : days <= 3 ? "bg-amber-50 border-amber-200" : days <= 7 ? "bg-yellow-50 border-yellow-200" : "bg-blue-50 border-blue-200";
+                  const text = days <= 0 ? "text-red-700 font-semibold" : days <= 3 ? "text-amber-700 font-semibold" : days <= 7 ? "text-yellow-700" : "text-blue-700";
+                  return (
+                    <div className={cn("mt-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs", bg, text)}>
+                      📅 {label}
+                    </div>
+                  );
+                })()}
               </div>
               <div className={cn(
                 "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap",

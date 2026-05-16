@@ -48,6 +48,7 @@ const PatchSchema = z.union([
   }),
   z.object({ owner_id: z.string().uuid().nullable() }),
   z.object({ client_type_id: z.string().uuid().nullable() }),
+  z.object({ deadline: z.string().nullable() }),
 ]);
 
 type ResponseError = { message?: string | null };
@@ -129,6 +130,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .eq("org_id", org_id)
       .eq("id", id);
     if (error) return jsonError(400, error.message || "Failed to update client type");
+    return NextResponse.json({ ok: true });
+  }
+
+  if ("deadline" in parsed.data) {
+    const { error } = await supabase
+      .from("onboardings")
+      .update({ deadline: parsed.data.deadline, updated_at: now })
+      .eq("org_id", org_id)
+      .eq("id", id);
+    if (error) return jsonError(400, error.message || "Failed to update deadline");
     return NextResponse.json({ ok: true });
   }
 
