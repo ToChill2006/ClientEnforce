@@ -35,7 +35,7 @@ export async function GET() {
     //       Duplicates with step 1 are handled by the allObsById merge below.
     const { data: directReview } = await supabase
       .from("onboardings")
-      .select("id, title, client_id, client_full_name, client_email, event_id, updated_at, client_token")
+      .select("*")
       .eq("org_id", org_id)
       .eq("status", "awaiting_review")
       .limit(50);
@@ -45,7 +45,7 @@ export async function GET() {
     if (phaseOnboardingIds.length > 0) {
       const { data: ents } = await supabase
         .from("onboardings")
-        .select("id, title, client_id, client_full_name, client_email, event_id, updated_at, client_token")
+        .select("*")
         .eq("org_id", org_id)
         .in("id", phaseOnboardingIds);
       enterpriseOnboardings = ents ?? [];
