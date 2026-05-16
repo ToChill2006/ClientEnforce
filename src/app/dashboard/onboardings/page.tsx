@@ -315,9 +315,9 @@ export default function OnboardingsPage() {
   const [activeTab, setActiveTab] = React.useState<"solo" | "bulk">(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("onboardings_tab");
-      return saved === "bulk" ? "bulk" : "solo";
+      return saved === "solo" ? "solo" : "bulk";
     }
-    return "solo";
+    return "bulk";
   });
 
   React.useEffect(() => {
@@ -331,6 +331,10 @@ export default function OnboardingsPage() {
       .then((r) => {
         if (r.ok || r.status === 200) {
           setHasEnterpriseFlag(true);
+          // Default to bulk (events) tab for enterprise users unless they've explicitly chosen solo
+          if (typeof window !== "undefined" && localStorage.getItem("onboardings_tab") !== "solo") {
+            setActiveTab("bulk");
+          }
         } else {
           setActiveTab("solo");
         }
@@ -846,7 +850,7 @@ export default function OnboardingsPage() {
       {/* Solo / Bulk tab bar — only visible when enterprise flag is on */}
       {hasEnterpriseFlag && (
         <div className="flex gap-1 border-b border-[var(--color-border)]">
-          {(["solo", "bulk"] as const).map((t) => (
+          {(["bulk", "solo"] as const).map((t) => (
             <button
               key={t}
               onClick={() => { setActiveTab(t); localStorage.setItem("onboardings_tab", t); }}
