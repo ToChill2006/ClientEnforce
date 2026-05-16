@@ -65,7 +65,11 @@ export function ChatBubble({
   async function fetchMessages(markRead = false) {
     try {
       const res = await fetch(messagesUrl, { cache: "no-store" });
-      if (!res.ok) return;
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        setSendError(errJson?.error || `Failed to load messages (${res.status})`);
+        return;
+      }
       const json = await res.json();
       const msgs: ChatMessage[] = json.messages ?? [];
       setMessages(msgs);
