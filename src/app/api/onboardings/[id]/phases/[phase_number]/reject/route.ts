@@ -160,6 +160,16 @@ export async function POST(
       console.warn("[reject] no client email found for onboarding", onboardingId);
     }
 
+    // Clear reminder dedup records so deadline reminders re-fire now the phase
+    // is back in client's hands (best-effort — don't fail the rejection if this fails).
+    try {
+      await supabaseAdmin()
+        .from("reminder_sends")
+        .delete()
+        .eq("onboarding_id", onboardingId)
+        .eq("phase_number", phaseNumber);
+    } catch { /* best-effort */ }
+
     // Activity feed (best-effort)
     try {
       await supabase.from("team_activity").insert({

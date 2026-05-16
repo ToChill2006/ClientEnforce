@@ -190,11 +190,14 @@ async function findDeadlineBasedMatches(
     ? { phase_number: rule.phase_number }
     : {};
 
+  // Include rejected phases — client still needs to fix and resubmit,
+  // so deadline reminders should keep firing. Awaiting review and approved
+  // are excluded (client has acted; awaiting decision or already done).
   const { data: phases } = await admin
     .from("onboarding_phases")
     .select("onboarding_id, phase_number, name, deadline, status, org_id")
     .eq("org_id", rule.org_id)
-    .eq("status", "in_progress")
+    .in("status", ["in_progress", "rejected"])
     .not("deadline", "is", null);
 
   if (!phases) return [];
@@ -242,7 +245,7 @@ async function findInactivityBasedMatches(
     .from("onboarding_phases")
     .select("onboarding_id, phase_number, name, deadline, status, org_id")
     .eq("org_id", rule.org_id)
-    .eq("status", "in_progress")
+    .in("status", ["in_progress", "rejected"])
     .in("onboarding_id", onboardingIds);
 
   const { data: phases } = await phaseQuery;
@@ -280,7 +283,7 @@ async function findMissingItemBasedMatches(
     .from("onboarding_phases")
     .select("onboarding_id, phase_number, name, deadline, status, updated_at, org_id")
     .eq("org_id", rule.org_id)
-    .eq("status", "in_progress")
+    .in("status", ["in_progress", "rejected"])
     .lt("updated_at", cutoff.toISOString());
 
   if (!phases || phases.length === 0) return [];
