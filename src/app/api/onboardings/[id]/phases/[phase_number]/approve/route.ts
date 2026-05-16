@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
 import { sendOrgEmail } from "@/lib/send-email";
+import { renderClientEnforceEmail } from "@/lib/email-template";
+import { loadWhiteLabelForOrg } from "@/lib/white-label";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -93,40 +96,80 @@ export async function POST(
     }
 
     // Fetch onboarding + client for emails
-    const { data: onboarding } = await supabase
+    const adminClient = supabaseAdmin();
+    const { data: onboarding } = await adminClient
       .from("onboardings")
       .select("id, title, client_id, event_id, client_token, events(id, name), clients(id, full_name, email)")
       .eq("id", onboardingId)
       .eq("org_id", org_id)
       .single();
 
-    const clientName = (onboarding as any)?.clients?.full_name ?? "Exhibitor";
-    const clientEmail = (onboarding as any)?.clients?.email ?? null;
+    let clientName = (onboarding as any)?.clients?.full_name ?? "Exhibitor";
+    let clientEmail = (onboarding as any)?.clients?.email ?? null;
     const eventName = (onboarding as any)?.events?.name ?? "the event";
     const token = (onboarding as any)?.client_token;
     const portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
     const portalLink = token ? `${portalBase}/c/${token}` : portalBase;
-    const currentPhaseName = (phase as any).name;
+    const currentPhaseName = (phase as any).name ?? `Phase ${phaseNumber}`;
+
+    // Fallback: join sometimes returns null if FK not cached — look up client directly
+    if (!clientEmail && (onboarding as any)?.client_id) {
+      const { data: clientRow } = await adminClient
+        .from("clients")
+        .select("full_name, email")
+        .eq("id", (onboarding as any).client_id)
+        .single();
+      if (clientRow) {
+        clientEmail = clientRow.email ?? null;
+        clientName = clientRow.full_name ?? clientName;
+      }
+    }
 
     // Send email
     if (clientEmail) {
       try {
-        if (nextPhase) {
-          await sendOrgEmail(org_id, {
-            to: clientEmail,
-            subject: `Phase ${phaseNumber} approved — you can proceed to ${(nextPhase as any).name}`,
-            html: `<p>Hi ${clientName},</p><p>Phase <strong>${currentPhaseName}</strong> has been approved for <strong>${eventName}</strong>.</p><p>You can now proceed to <strong>${(nextPhase as any).name}</strong>${(nextPhase as any).deadline ? ` (deadline: ${(nextPhase as any).deadline})` : ""}.</p><p><a href="${portalLink}">Continue your onboarding</a></p>`,
-            text: `Hi ${clientName},\n\n${currentPhaseName} has been approved for ${eventName}.\n\nYou can now proceed to ${(nextPhase as any).name}.\n\n${portalLink}`,
-          });
-        } else {
-          await sendOrgEmail(org_id, {
-            to: clientEmail,
-            subject: `Onboarding complete for ${eventName}`,
-            html: `<p>Hi ${clientName},</p><p>Congratulations! Your onboarding for <strong>${eventName}</strong> is now complete.</p><p><a href="${portalLink}">View your completed onboarding</a></p>`,
-            text: `Hi ${clientName},\n\nCongratulations! Your onboarding for ${eventName} is now complete.\n\n${portalLink}`,
-          });
-        }
-      } catch { /* best-effort */ }
+        const wl = await loadWhiteLabelForOrg(org_id);
+        const nextPhaseName = (nextPhase as any)?.name ?? `Phase ${phaseNumber + 1}`;
+
+        const { html, text } = nextPhase
+          ? renderClientEnforceEmail({
+              preheader: `${currentPhaseName} approved — next up: ${nextPhaseName}`,
+              eyebrow: "Phase approved",
+              title: `${currentPhaseName} approved!`,
+              subtitle: `For ${eventName}`,
+              paragraphs: [
+                `Hi ${clientName}, great news — ${currentPhaseName} has been approved.`,
+                `You can now move on to ${nextPhaseName}${(nextPhase as any).deadline ? ` (deadline: ${(nextPhase as any).deadline})` : ""}.`,
+              ],
+              primaryCta: { label: "Continue your onboarding →", href: portalLink },
+              branding: wl,
+            })
+          : renderClientEnforceEmail({
+              preheader: `Your onboarding for ${eventName} is complete`,
+              eyebrow: "Onboarding complete",
+              title: "You're all done!",
+              subtitle: `Onboarding for ${eventName}`,
+              paragraphs: [
+                `Hi ${clientName}, congratulations — your onboarding for ${eventName} is now fully complete.`,
+                "All phases have been reviewed and approved. You're good to go!",
+              ],
+              primaryCta: { label: "View your onboarding →", href: portalLink },
+              branding: wl,
+            });
+
+        await sendOrgEmail(org_id, {
+          to: clientEmail,
+          subject: nextPhase
+            ? `${currentPhaseName} approved — proceed to ${nextPhaseName}`
+            : `Onboarding complete for ${eventName}`,
+          html,
+          text,
+        });
+      } catch (emailErr: any) {
+        console.error("[approve] email send failed:", emailErr?.message || String(emailErr));
+      }
+    } else {
+      console.warn("[approve] no client email found for onboarding", onboardingId);
     }
 
     // Activity feed (best-effort)

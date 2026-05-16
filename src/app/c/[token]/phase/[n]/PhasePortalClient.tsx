@@ -28,6 +28,12 @@ type Requirement = {
   review_status: string | null;
   reviewer_comment: string | null;
   sort_order: number | null;
+  payment_amount?: number | null;
+  payment_currency?: string | null;
+  payment_description?: string | null;
+  payment_status?: string | null;
+  payment_paid_at?: string | null;
+  payment_stripe_payment_intent_id?: string | null;
 };
 
 type WhiteLabel = {
@@ -51,44 +57,6 @@ interface Props {
 
 function cn(...classes: (string | undefined | false | null)[]) {
   return classes.filter(Boolean).join(" ");
-}
-
-function StatusBanner({ phase, flaggedCount }: { phase: Phase; flaggedCount?: number }) {
-  if (phase.status === "awaiting_review") {
-    return (
-      <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm text-[var(--color-accent)]">
-        <strong>Awaiting review.</strong> Your submission has been received and is being reviewed.
-      </div>
-    );
-  }
-  if (phase.status === "approved") {
-    return (
-      <div className="rounded-[var(--radius-md)] border border-[var(--color-success)] bg-[var(--color-success-subtle)] px-4 py-3 text-sm text-[var(--color-success)]">
-        <strong>Approved.</strong> You can proceed to the next phase below.
-      </div>
-    );
-  }
-  if (phase.status === "rejected") {
-    return (
-      <div className="rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-danger-subtle)] px-4 py-3 text-sm text-[var(--color-danger)]">
-        <strong>Changes requested.</strong>
-        {phase.reviewer_note && (
-          <p className="mt-1.5 rounded-[var(--radius-sm)] border border-[var(--color-danger)] bg-[var(--color-bg)] px-3 py-2 text-xs text-[var(--color-text-primary)]">
-            {phase.reviewer_note}
-          </p>
-        )}
-        {flaggedCount != null && flaggedCount > 0 && (
-          <p className="mt-1.5">
-            {flaggedCount} field{flaggedCount === 1 ? "" : "s"} highlighted below — please update and resubmit.
-          </p>
-        )}
-        {(!flaggedCount || flaggedCount === 0) && (
-          <p className="mt-1">Please review the highlighted items below and resubmit.</p>
-        )}
-      </div>
-    );
-  }
-  return null;
 }
 
 export default function PhasePortalClient({
@@ -116,7 +84,6 @@ export default function PhasePortalClient({
   const isReadOnly = currentPhase.status === "awaiting_review" || currentPhase.status === "approved";
   const isLocked = currentPhase.status === "locked";
 
-  // Form state: map of requirement id → answer text
   const [answers, setAnswers] = React.useState<Record<string, string>>(() => {
     const m: Record<string, string> = {};
     for (const r of requirements) {
@@ -125,11 +92,12 @@ export default function PhasePortalClient({
     return m;
   });
 
-  const [saving, setSaving] = React.useState<string | null>(null); // requirement id being saved
+  const [saving, setSaving] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [submitted, setSubmitted] = React.useState(false);
   const [busyByReq, setBusyByReq] = React.useState<Record<string, boolean>>({});
+  const [replacedReqs, setReplacedReqs] = React.useState<Record<string, string>>({});
   const [filePaths, setFilePaths] = React.useState<Record<string, string[]>>(() => {
     const m: Record<string, string[]> = {};
     for (const r of requirements) {
@@ -149,6 +117,45 @@ export default function PhasePortalClient({
     return m;
   });
   const sigRefs = React.useRef<Record<string, SignatureCanvas | null>>({});
+
+  const [paymentStatuses, setPaymentStatuses] = React.useState<Record<string, string>>(() => {
+    const m: Record<string, string> = {};
+    for (const r of requirements) {
+      if (r.payment_status) m[r.id] = r.payment_status;
+    }
+    return m;
+  });
+  const [paymentBusy, setPaymentBusy] = React.useState<Record<string, boolean>>({});
+  const [paymentToast, setPaymentToast] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paidReqId = params.get("paid");
+    if (paidReqId) {
+      setPaymentStatuses((prev) => ({ ...prev, [paidReqId]: "paid" }));
+      setPaymentToast("Payment received — thank you!");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("paid");
+      window.history.replaceState({}, "", url.toString());
+      setTimeout(() => setPaymentToast(null), 4000);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function initiatePayment(reqId: string) {
+    setPaymentBusy((p) => ({ ...p, [reqId]: true }));
+    try {
+      const res = await fetch(`/api/c/${token}/requirements/${reqId}/checkout`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Could not start checkout");
+      if (json?.url) window.location.href = json.url;
+    } catch {
+      setPaymentBusy((p) => ({ ...p, [reqId]: false }));
+    }
+  }
 
   async function saveAnswer(reqId: string, value: string) {
     setSaving(reqId);
@@ -177,8 +184,8 @@ export default function PhasePortalClient({
       if (!res.ok) throw new Error(json?.error || "Upload failed");
       const newPath: string = json.file_path ?? "";
       if (newPath) {
-        // On revision, replace all old files with just the new one
         setFilePaths((p) => ({ ...p, [reqId]: isRevision ? [newPath] : [...(p[reqId] ?? []).filter((x) => x !== newPath), newPath] }));
+        if (isRevision) setReplacedReqs((p) => ({ ...p, [reqId]: newPath }));
       }
     } catch { /* silent */ } finally {
       setBusyByReq((p) => ({ ...p, [reqId]: false }));
@@ -222,7 +229,6 @@ export default function PhasePortalClient({
     setSubmitError(null);
     setSubmitting(true);
     try {
-      // Flush any unsaved text answers (saves on blur may have been skipped if user clicked Submit directly)
       await Promise.all(
         Object.entries(answers).map(([reqId, value]) =>
           fetch("/api/onboardings/client/answer", {
@@ -232,7 +238,6 @@ export default function PhasePortalClient({
           }).catch(() => null)
         )
       );
-
       const res = await fetch(`/api/onboardings/${onboardingId}/phases/${currentPhase.phase_number}/submit`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -250,257 +255,540 @@ export default function PhasePortalClient({
   }
 
   const nextPhase = phases.find((p) => p.phase_number === currentPhase.phase_number + 1);
-  const allRequiredFilled = requirements
-    .filter((r) => r.is_required && r.type !== "heading")
-    .every((r) =>
-      answers[r.id] ||
-      r.value_text ||
-      (filePaths[r.id]?.length ?? 0) > 0 ||
-      r.file_path ||
-      sigPaths[r.id] ||
-      r.signature_path
-    );
+  const interactiveReqs = requirements.filter((r) => r.type !== "heading" && r.type !== "info");
+
+  function isReqFilled(r: Requirement) {
+    if (r.type === "payment") return (paymentStatuses[r.id] ?? r.payment_status) === "paid";
+    return !!(answers[r.id] || r.value_text || (filePaths[r.id]?.length ?? 0) > 0 || r.file_path || sigPaths[r.id] || r.signature_path);
+  }
+
+  const allRequiredFilled = interactiveReqs.filter((r) => r.is_required).every(isReqFilled);
+  const filledCount = interactiveReqs.filter(isReqFilled).length;
+  const fillPct = interactiveReqs.length > 0 ? Math.round((filledCount / interactiveReqs.length) * 100) : 0;
+
+  const effectiveStatus = submitted ? "awaiting_review" : currentPhase.status;
+  const flaggedCount = requirements.filter((r) => r.review_status === "needs_revision").length;
+
+  // Derived accent values
+  const accent = accentColor ?? "#6366f1";
+  const heading = headingColor ?? accentColor ?? "#111827";
+  const accentSubtle = `${accent}18`;
 
   const style: React.CSSProperties = {
     ...(accentColor ? { ["--color-accent" as any]: accentColor } : {}),
     ...(headingColor ? { ["--color-heading" as any]: headingColor } : {}),
   };
 
+  // Pre-compute requirement groups so phase title card can absorb the first one
+  type ReqGroup = { heading: Requirement | null; infos: Requirement[] };
+  type GroupItem = { type: "group"; data: ReqGroup } | { type: "field"; data: Requirement };
+  const allGroups: GroupItem[] = [];
+  {
+    let cur: ReqGroup | null = null;
+    for (const req of requirements) {
+      if (req.type === "heading") {
+        if (cur) allGroups.push({ type: "group", data: cur });
+        cur = { heading: req, infos: [] };
+      } else if (req.type === "info") {
+        if (!cur) cur = { heading: null, infos: [] };
+        cur.infos.push(req);
+      } else {
+        if (cur) { allGroups.push({ type: "group", data: cur }); cur = null; }
+        allGroups.push({ type: "field", data: req });
+      }
+    }
+    if (cur) allGroups.push({ type: "group", data: cur });
+  }
+  // If the first group is heading/info only, it gets merged into the phase title card
+  const firstIsGroup = allGroups[0]?.type === "group";
+  const titleInlineGroup = firstIsGroup ? (allGroups[0] as { type: "group"; data: ReqGroup }).data : null;
+  const bodyGroups = firstIsGroup ? allGroups.slice(1) : allGroups;
+
   return (
-    <div className="min-h-screen bg-[var(--color-bg-subtle)]" style={style}>
-      {/* Top bar */}
-      <header className="border-b border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            {logoUrl && (
-              <img src={logoUrl} alt={brandName} className="h-10 w-auto max-w-[120px] shrink-0 object-contain" />
+    <div className="min-h-screen bg-[#f8f9fb]" style={style}>
+
+      {/* Brand accent strip */}
+      <div className="h-1.5 w-full" style={{ backgroundColor: accent }} />
+
+      {/* Header */}
+      <header className="bg-white border-b border-gray-100 shadow-sm">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {logoUrl ? (
+              <img src={logoUrl} alt={brandName} className="h-8 w-auto max-w-[100px] shrink-0 object-contain sm:h-10 sm:max-w-[120px]" />
+            ) : (
+              <div
+                className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl text-white text-base sm:text-lg font-bold shadow-sm"
+                style={{ backgroundColor: accent }}
+              >
+                {brandName.charAt(0)}
+              </div>
             )}
             <div className="min-w-0">
-              <div
-                className="text-sm font-semibold leading-tight"
-                style={headingColor ? { color: headingColor } : undefined}
-              >
+              <div className="text-sm sm:text-base font-bold leading-tight truncate" style={{ color: heading }}>
                 {brandName}
-                {eventName && <span className="ml-2 font-normal text-[var(--color-text-muted)]">· {eventName}</span>}
+                {eventName && (
+                  <span className="hidden sm:inline ml-2 text-sm font-normal text-gray-400">· {eventName}</span>
+                )}
               </div>
+              {eventName && (
+                <div className="sm:hidden text-[11px] text-gray-400 truncate">{eventName}</div>
+              )}
               {tagline && (
-                <div className="mt-0.5 truncate text-xs text-[var(--color-text-secondary)]">{tagline}</div>
+                <div className="hidden sm:block mt-0.5 text-xs text-gray-400 truncate">{tagline}</div>
               )}
             </div>
           </div>
-          <div className="shrink-0 text-xs text-[var(--color-text-muted)]">
-            Hi, {clientName}
+          <div className="shrink-0 flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-sm"
+              style={{ backgroundColor: accent }}
+            >
+              {clientName.charAt(0).toUpperCase()}
+            </div>
+            <span className="hidden sm:block text-sm text-gray-500">Hi, {clientName}</span>
           </div>
         </div>
       </header>
 
-      {/* Mobile phase strip — horizontal scrollable, hidden on lg+ */}
-      <div className="lg:hidden border-b border-[var(--color-border)] bg-[var(--color-panel)]">
-        <div className="flex items-center gap-1 overflow-x-auto px-4 py-2 scrollbar-none">
+      {/* Mobile phase strip */}
+      <div className="lg:hidden bg-white border-b border-gray-100">
+        <div className="flex items-center gap-2 overflow-x-auto px-4 py-2.5 scrollbar-none">
           {phases.map((ph) => {
             const isActive = ph.phase_number === currentPhase.phase_number;
             const isAccessible = ph.status !== "locked";
-            const statusDot =
-              ph.status === "approved" ? "bg-[var(--color-success)]" :
-              ph.status === "awaiting_review" ? "bg-yellow-400" :
-              ph.status === "rejected" ? "bg-[var(--color-danger)]" :
-              ph.status === "locked" ? "bg-[var(--color-border)]" :
-              "bg-[var(--color-accent)]";
+            const isDone = ph.status === "approved";
             return (
               <button
                 key={ph.id}
                 onClick={() => isAccessible && router.push(`/c/${token}/phase/${ph.phase_number}`)}
                 disabled={!isAccessible}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
-                  isActive
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
-                    : isAccessible
-                    ? "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]"
-                    : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
+                  "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
+                  !isAccessible && "opacity-35 cursor-not-allowed"
                 )}
+                style={isActive
+                  ? { backgroundColor: accent, color: "#fff" }
+                  : isDone
+                  ? { backgroundColor: "#dcfce7", color: "#15803d" }
+                  : { backgroundColor: accentSubtle, color: heading }
+                }
               >
-                <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", isActive ? "bg-white" : statusDot)} />
+                {isDone ? "✓ " : ph.status === "locked" ? "🔒 " : ""}
                 {ph.name}
               </button>
             );
           })}
         </div>
-        {/* Progress bar on mobile */}
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-2.5">
           <div className="flex items-center gap-2">
-            <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
-              <div className="h-full rounded-full bg-[var(--color-accent)] transition-all" style={{ width: `${progressPct}%` }} />
+            <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, backgroundColor: accent }} />
             </div>
-            <span className="shrink-0 text-[10px] text-[var(--color-text-muted)]">{approvedCount}/{totalPhases} approved</span>
+            <span className="text-[11px] font-medium text-gray-400 shrink-0">{approvedCount}/{totalPhases} approved</span>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:flex lg:gap-8 lg:py-8">
-        {/* Sidebar — desktop only */}
-        <aside className="hidden lg:block lg:w-52 lg:shrink-0">
-          <div className="sticky top-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-3">
-            <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Phases</p>
-            <nav className="space-y-1">
+      <div className="mx-auto max-w-5xl px-3 py-4 sm:px-6 sm:py-6 lg:flex lg:gap-7 lg:py-8">
+
+        {/* Sidebar */}
+        <aside className="hidden lg:block lg:w-56 lg:shrink-0">
+          <div className="sticky top-6 rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+            {/* Progress header */}
+            <div className="px-4 py-4 border-b border-gray-50" style={{ backgroundColor: accentSubtle }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: heading }}>
+                Your Progress
+              </p>
+              <div className="h-2 rounded-full bg-white/60 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${progressPct}%`, backgroundColor: accent }}
+                />
+              </div>
+              <p className="mt-2 text-xs font-medium" style={{ color: heading }}>
+                {approvedCount} of {totalPhases} phases approved
+              </p>
+            </div>
+
+            {/* Phase list */}
+            <nav className="p-2 space-y-0.5">
               {phases.map((ph) => {
                 const isActive = ph.phase_number === currentPhase.phase_number;
                 const isAccessible = ph.status !== "locked";
-                const icon = ph.status === "approved" ? "✓" : ph.status === "locked" ? "🔒" : ph.status === "awaiting_review" ? "⏳" : ph.status === "rejected" ? "!" : "→";
+                const statusIcon =
+                  ph.status === "approved" ? "✓" :
+                  ph.status === "locked" ? "🔒" :
+                  ph.status === "awaiting_review" ? "⏳" :
+                  ph.status === "rejected" ? "!" : null;
                 return (
                   <button
                     key={ph.id}
                     onClick={() => isAccessible && router.push(`/c/${token}/phase/${ph.phase_number}`)}
                     disabled={!isAccessible}
                     className={cn(
-                      "w-full rounded-[var(--radius-md)] px-3 py-2 text-left text-xs font-medium transition-colors",
-                      isActive ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)]" : "",
-                      !isActive && isAccessible ? "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]" : "",
-                      !isAccessible ? "cursor-not-allowed text-[var(--color-text-muted)] opacity-50" : ""
+                      "w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all",
+                      !isAccessible && "opacity-40 cursor-not-allowed"
                     )}
+                    style={isActive
+                      ? { backgroundColor: accent, color: "#fff" }
+                      : isAccessible
+                      ? undefined
+                      : undefined
+                    }
                   >
-                    {icon} {ph.name}
+                    <span className={isActive ? "text-white" : "text-gray-600"}>{ph.name}</span>
+                    {statusIcon && (
+                      <span className={cn("text-xs shrink-0", isActive ? "text-white/80" : "text-gray-400")}>
+                        {statusIcon}
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </nav>
-            <div className="mt-4 border-t border-[var(--color-border)] pt-3">
-              <p className="mb-1 px-2 text-[10px] text-[var(--color-text-muted)]">Overall progress</p>
-              <div className="mx-2 h-2 overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
-                <div className="h-full rounded-full bg-[var(--color-accent)] transition-all" style={{ width: `${progressPct}%` }} />
-              </div>
-              <p className="mt-1 px-2 text-[10px] text-[var(--color-text-muted)]">{approvedCount}/{totalPhases} phases approved</p>
-            </div>
           </div>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 space-y-6">
-          <div>
-            <h1
-              className="text-xl font-semibold"
-              style={headingColor ? { color: headingColor } : { color: "var(--color-text-primary)" }}
-            >{currentPhase.name}</h1>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-              Phase {currentPhase.phase_number} of {totalPhases}
-              {currentPhase.deadline && ` · Deadline: ${currentPhase.deadline}`}
-            </p>
+        {/* Main */}
+        <main className="flex-1 space-y-3 sm:space-y-4 pb-4 sm:pb-0">
+
+          {/* Phase title card — optionally absorbs first heading/info group */}
+          <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+            <div className="h-1 w-full" style={{ backgroundColor: accent }} />
+            <div className="px-4 py-4 sm:px-6 sm:py-5 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+                  Phase {currentPhase.phase_number} of {totalPhases}
+                </p>
+                <h1 className="text-xl sm:text-2xl font-bold leading-tight" style={{ color: heading }}>
+                  {currentPhase.name}
+                </h1>
+                {currentPhase.deadline && (
+                  <p className="mt-1.5 text-xs sm:text-sm text-gray-400">
+                    📅 Deadline: {currentPhase.deadline}
+                  </p>
+                )}
+              </div>
+              <div className={cn(
+                "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap",
+                effectiveStatus === "approved" ? "bg-green-100 text-green-700" :
+                effectiveStatus === "awaiting_review" ? "bg-amber-100 text-amber-700" :
+                effectiveStatus === "rejected" ? "bg-red-100 text-red-700" :
+                "bg-gray-100 text-gray-500"
+              )}>
+                {effectiveStatus === "approved" ? "✓ Approved" :
+                 effectiveStatus === "awaiting_review" ? "Reviewing" :
+                 effectiveStatus === "rejected" ? "Changes needed" :
+                 effectiveStatus === "in_progress" ? "In Progress" : "Locked"}
+              </div>
+            </div>
+            {titleInlineGroup && (
+              <div className="border-t border-gray-100">
+                {titleInlineGroup.heading && (
+                  <div className="px-4 sm:px-6 py-3 border-b border-gray-100" style={{ borderLeft: `4px solid ${accent}` }}>
+                    <h3 className="text-sm font-bold" style={{ color: heading }}>
+                      {titleInlineGroup.heading.label}
+                    </h3>
+                  </div>
+                )}
+                {titleInlineGroup.infos.map((info) => (
+                  <div key={info.id} className="px-4 sm:px-6 py-4 border-b border-gray-50 last:border-b-0">
+                    {info.label && (
+                      <p className="text-sm font-semibold text-gray-700 mb-1">{info.label}</p>
+                    )}
+                    {info.value_text && (
+                      <p className="text-sm text-gray-500 whitespace-pre-wrap leading-relaxed">{info.value_text}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Status banners */}
+          {effectiveStatus === "awaiting_review" && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-start gap-3">
+              <span className="text-2xl mt-0.5">⏳</span>
+              <div>
+                <p className="font-semibold text-amber-800">Submitted — awaiting review</p>
+                <p className="text-sm text-amber-700 mt-0.5">Your submission has been received. We'll be in touch soon.</p>
+              </div>
+            </div>
+          )}
+
+          {effectiveStatus === "approved" && (
+            <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">
+              <span className="text-2xl mt-0.5">✅</span>
+              <div>
+                <p className="font-semibold text-green-800">Phase approved!</p>
+                <p className="text-sm text-green-700 mt-0.5">
+                  {nextPhase ? "You can now proceed to the next phase." : "All phases complete — your onboarding is done!"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {effectiveStatus === "rejected" && (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 flex items-start gap-3">
+              <span className="text-2xl mt-0.5">📝</span>
+              <div>
+                <p className="font-semibold text-red-800">Changes requested</p>
+                {currentPhase.reviewer_note && (
+                  <p className="text-sm text-red-700 mt-1 rounded-lg bg-white/60 px-3 py-2 border border-red-100">
+                    {currentPhase.reviewer_note}
+                  </p>
+                )}
+                {flaggedCount > 0 && (
+                  <p className="text-sm text-red-700 mt-1">
+                    {flaggedCount} field{flaggedCount === 1 ? "" : "s"} flagged below — please update and resubmit.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {paymentToast && (
+            <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-center gap-3">
+              <span className="text-xl">✅</span>
+              <p className="font-semibold text-green-800">{paymentToast}</p>
+            </div>
+          )}
+
+          {/* Locked state */}
           {isLocked ? (
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-8 text-center">
-              <div className="text-4xl">🔒</div>
-              <p className="mt-3 text-sm font-medium text-[var(--color-text-primary)]">
-                This phase is locked
-              </p>
-              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                It will unlock after Phase {currentPhase.phase_number - 1} is approved.
+            <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-12 text-center">
+              <div className="text-5xl mb-4">🔒</div>
+              <p className="text-lg font-semibold text-gray-700">This phase is locked</p>
+              <p className="mt-1 text-sm text-gray-400">
+                It will unlock once Phase {currentPhase.phase_number - 1} is approved.
               </p>
               <button
                 onClick={() => router.push(`/c/${token}/phase/${currentPhase.phase_number - 1}`)}
-                className="mt-4 text-sm font-medium text-[var(--color-accent)] hover:underline"
+                className="mt-5 text-sm font-semibold hover:underline"
+                style={{ color: accent }}
               >
                 ← Go to Phase {currentPhase.phase_number - 1}
               </button>
             </div>
           ) : (
             <>
-              <StatusBanner
-                phase={submitted ? { ...currentPhase, status: "awaiting_review" } : currentPhase}
-                flaggedCount={requirements.filter((r) => r.review_status === "needs_revision").length}
-              />
+              {/* Requirements — first heading/info group already absorbed into title card */}
+              {(() => {
+                return (
+                  <div className="space-y-3">
+                    {bodyGroups.map((item, gi) => {
+                      // ── Heading + info group card ──────────────────────────
+                      if (item.type === "group") {
+                        const { heading: hReq, infos } = item.data;
+                        return (
+                          <div key={hReq?.id ?? `group-${gi}`} className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+                            {hReq && (
+                              <div className="px-4 sm:px-5 py-3 border-b border-gray-100" style={{ borderLeft: `4px solid ${accent}`, backgroundColor: `${accent}10` }}>
+                                <h3 className="text-sm font-bold" style={{ color: heading }}>
+                                  {hReq.label}
+                                </h3>
+                              </div>
+                            )}
+                            {infos.map((info) => (
+                              <div key={info.id} className="px-4 sm:px-5 py-4">
+                                {info.label && (
+                                  <p className="text-sm font-semibold text-gray-700 mb-1">{info.label}</p>
+                                )}
+                                {info.value_text && (
+                                  <p className="text-sm text-gray-500 whitespace-pre-wrap leading-relaxed">{info.value_text}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
 
-              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] divide-y divide-[var(--color-border)]">
-                {requirements.map((req) => {
-                  const isHeading = req.type === "heading";
-                  const needsRevision = req.review_status === "needs_revision";
+                      // ── Interactive field card ────────────────────────────
+                      const req = item.data;
+                      const needsRevision = req.review_status === "needs_revision";
 
-                  if (isHeading) {
+                  // ── Payment ─────────────────────────────────────────────
+                  if (req.type === "payment") {
+                    const payStatus = paymentStatuses[req.id] ?? req.payment_status ?? "not_paid";
+                    const amount = req.payment_amount;
+                    const currency = (req.payment_currency ?? "GBP").toUpperCase();
+                    const fmtAmount = amount != null ? `${currency} ${Number(amount).toFixed(2)}` : currency;
+                    const isBusy = paymentBusy[req.id] ?? false;
+
+                    if (payStatus === "paid") {
+                      const paidDate = req.payment_paid_at
+                        ? new Date(req.payment_paid_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })
+                        : null;
+                      return (
+                        <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 text-lg">✓</div>
+                          <div>
+                            <p className="text-sm font-semibold text-green-700">Paid {fmtAmount}{paidDate ? ` on ${paidDate}` : ""}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Receipt sent to your email.</p>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    if (payStatus === "pending") {
+                      return (
+                        <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 text-lg">⏳</div>
+                          <div>
+                            <p className="text-sm font-semibold text-amber-700">Processing payment…</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Please wait while we confirm.</p>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
-                      <div key={req.id} className="px-5 py-4 bg-[var(--color-bg-subtle)]">
-                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{req.label}</h3>
+                      <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5">
+                        <div className="flex items-baseline gap-1.5 mb-1">
+                          <label className="text-sm font-semibold text-gray-800">{req.label}</label>
+                          {req.is_required && <span className="text-xs font-semibold" style={{ color: accent }}>*</span>}
+                        </div>
+                        {req.payment_description && (
+                          <p className="text-sm text-gray-500 mb-3">{req.payment_description}</p>
+                        )}
+                        {payStatus === "failed" && (
+                          <p className="text-sm text-red-600 mb-3">Payment failed — please try again.</p>
+                        )}
+                        {!isReadOnly && (
+                          <div>
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => initiatePayment(req.id)}
+                              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm hover:opacity-90 disabled:opacity-40 transition"
+                              style={{ backgroundColor: accent }}
+                            >
+                              {isBusy ? "Redirecting…" : `Pay ${fmtAmount} →`}
+                            </button>
+                            <p className="mt-2 text-xs text-gray-400">Secure payment via Stripe.</p>
+                          </div>
+                        )}
+                        {isReadOnly && <p className="text-sm text-gray-400">Payment not yet completed.</p>}
                       </div>
                     );
                   }
 
+                  // ── Standard fields ─────────────────────────────────────
                   return (
-                    <div key={req.id} className={cn("px-5 py-4", needsRevision && "border-l-4 border-[var(--color-danger)] bg-[var(--color-danger-subtle)]")}>
-                      <div className="flex items-baseline gap-1.5">
-                        <label className={cn("block text-sm font-medium", needsRevision ? "text-[var(--color-danger)]" : "text-[var(--color-text-primary)]")}>
-                          {needsRevision && <span className="mr-1">⚑</span>}{req.label}
+                    <div
+                      key={req.id}
+                      className={cn(
+                        "rounded-2xl bg-white border shadow-sm px-4 sm:px-5 py-4 transition",
+                        needsRevision ? "border-red-200" : "border-gray-100"
+                      )}
+                      style={needsRevision ? { borderLeft: "3px solid #ef4444" } : undefined}
+                    >
+                      {/* Label row */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <label className={cn("text-sm font-semibold", needsRevision ? "text-red-700" : "text-gray-800")}>
+                          {req.label}
                         </label>
-                        {req.is_required && <span className="text-xs text-[var(--color-danger)]">*</span>}
+                        {req.is_required && (
+                          <span className="text-xs font-bold" style={{ color: needsRevision ? "#ef4444" : accent }}>*</span>
+                        )}
                         {needsRevision && (
-                          <span className="rounded-full bg-[var(--color-danger)] px-2 py-0.5 text-[10px] font-semibold text-white">Needs revision</span>
+                          <span className="ml-1 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                            Needs revision
+                          </span>
                         )}
                       </div>
 
+                      {/* Reviewer feedback */}
                       {needsRevision && (
-                        <div className="mt-2 rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-bg)] px-3 py-2">
-                          <p className="text-xs font-semibold text-[var(--color-danger)]">Reviewer feedback</p>
-                          <p className="mt-0.5 text-xs text-[var(--color-text-primary)]">
+                        <div className="mb-3 rounded-xl border border-red-200 bg-white px-4 py-3">
+                          <p className="text-xs font-bold text-red-600 mb-0.5">Reviewer feedback</p>
+                          <p className="text-sm text-gray-700">
                             {req.reviewer_comment || "Please update this field and resubmit."}
                           </p>
                         </div>
                       )}
 
+                      {/* File upload */}
                       {req.type === "file" ? (
-                        <div className="mt-2 flex flex-col gap-2">
+                        <div className="space-y-2">
                           {needsRevision ? (
-                            /* Revision mode — clear slate, upload fresh */
                             <>
-                              <p className="text-xs text-[var(--color-danger)]">Please upload a replacement — all previous files will be replaced.</p>
-                              {(filePaths[req.id]?.length ?? 0) > 0 ? (
-                                filePaths[req.id].map((path) => (
-                                  <div key={path} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-danger-subtle)] px-3 py-2 opacity-60">
-                                    <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-secondary)] line-through">{path.split("/").pop()}</span>
-                                    <span className="shrink-0 text-[10px] text-[var(--color-danger)]">will be replaced</span>
+                              {replacedReqs[req.id] ? (
+                                <>
+                                  <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+                                    <span className="text-green-600">✓</span>
+                                    <span className="flex-1 truncate text-sm text-gray-700">{replacedReqs[req.id].split("/").pop()}</span>
+                                    <span className="text-xs font-semibold text-green-600">Uploaded</span>
                                   </div>
-                                ))
-                              ) : null}
-                              <label className="flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-danger)] bg-[var(--color-danger-subtle)] px-4 py-3 text-sm font-medium text-[var(--color-danger)] hover:opacity-80 transition">
-                                <span>{busyByReq[req.id] ? "Uploading…" : "Upload replacement file"}</span>
-                                <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
-                              </label>
+                                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm text-gray-400 hover:border-gray-300 transition">
+                                    {busyByReq[req.id] ? "Uploading…" : "Upload a different file"}
+                                    <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
+                                  </label>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="text-sm text-red-600">Please upload a replacement file.</p>
+                                  {(filePaths[req.id]?.length ?? 0) > 0 && filePaths[req.id].map((path) => (
+                                    <div key={path} className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50/50 px-4 py-2.5 opacity-60">
+                                      <span className="flex-1 truncate text-sm text-gray-500 line-through">{path.split("/").pop()}</span>
+                                      <span className="text-xs text-red-500">will be replaced</span>
+                                    </div>
+                                  ))}
+                                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50 px-4 py-4 text-sm font-semibold text-red-600 hover:bg-red-100 transition">
+                                    <span>📎</span>
+                                    {busyByReq[req.id] ? "Uploading…" : "Choose replacement file"}
+                                    <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
+                                  </label>
+                                </>
+                              )}
                             </>
                           ) : (
-                            /* Normal mode */
                             <>
                               {(filePaths[req.id] ?? (req.file_path ? [req.file_path] : [])).map((path) => (
-                                <div key={path} className="flex items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2">
-                                  <span className="truncate text-xs text-[var(--color-text-primary)]">{path.split("/").pop()}</span>
+                                <div key={path} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5">
+                                  <span className="text-gray-400">📄</span>
+                                  <span className="flex-1 truncate text-sm text-gray-700">{path.split("/").pop()}</span>
                                   {!isReadOnly && (
-                                    <button onClick={() => removeFile(req.id, path)} className="text-xs text-[var(--color-text-muted)] hover:text-red-500">Remove</button>
+                                    <button onClick={() => removeFile(req.id, path)} className="text-xs text-gray-300 hover:text-red-500 transition font-medium">
+                                      Remove
+                                    </button>
                                   )}
                                 </div>
                               ))}
                               {!isReadOnly && (
-                                <label className="flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition">
-                                  <span>{busyByReq[req.id] ? "Uploading…" : "Choose file"}</span>
+                                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-4 text-sm transition hover:bg-gray-100">
+                                  <span className="text-gray-400">📎</span>
+                                  <span className="font-semibold text-gray-600">
+                                    {busyByReq[req.id] ? "Uploading…" : "Choose file"}
+                                  </span>
                                   <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
                                 </label>
                               )}
                               {isReadOnly && (filePaths[req.id]?.length ?? 0) === 0 && !req.file_path && (
-                                <span className="text-xs text-[var(--color-text-muted)]">No file uploaded</span>
+                                <p className="text-sm text-gray-400">No file uploaded.</p>
                               )}
                             </>
                           )}
                         </div>
+
                       ) : req.type === "signature" ? (
-                        <div className="mt-2 flex flex-col gap-2">
-                          {(sigPaths[req.id] ?? req.signature_path) ? (
-                            <span className="text-xs text-[var(--color-success)]">✓ Signature saved</span>
-                          ) : null}
+                        <div className="space-y-2">
+                          {(sigPaths[req.id] ?? req.signature_path) && (
+                            <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5">
+                              <span className="text-green-600">✓</span>
+                              <span className="text-sm font-medium text-green-700">Signature saved</span>
+                            </div>
+                          )}
                           {!isReadOnly && (
                             <>
-                              <SignatureCanvasPad
-                                onRef={(c) => { sigRefs.current[req.id] = c; }}
-                              />
-                              <div className="flex gap-2">
+                              <p className="text-xs text-gray-400 mb-1">Draw your signature in the box below</p>
+                              <SignatureCanvasPad onRef={(c) => { sigRefs.current[req.id] = c; }} />
+                              <div className="flex gap-2 mt-2">
                                 <button
                                   type="button"
                                   onClick={() => sigRefs.current[req.id]?.clear()}
-                                  className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
+                                  className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
                                 >
                                   Clear
                                 </button>
@@ -508,7 +796,8 @@ export default function PhasePortalClient({
                                   type="button"
                                   onClick={() => saveSignature(req.id)}
                                   disabled={busyByReq[req.id]}
-                                  className="flex-1 rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                                  className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:opacity-90 disabled:opacity-40 transition"
+                                  style={{ backgroundColor: accent }}
                                 >
                                   {busyByReq[req.id] ? "Saving…" : "Save signature"}
                                 </button>
@@ -516,29 +805,67 @@ export default function PhasePortalClient({
                             </>
                           )}
                         </div>
+
                       ) : req.type === "multiple_choice" && req.options ? (
-                        <div className="mt-2 space-y-1">
-                          {req.options.map((opt) => (
-                            <label key={opt} className="flex items-center gap-2 text-sm">
-                              <input
-                                type="radio"
-                                name={req.id}
-                                value={opt}
-                                checked={(answers[req.id] ?? req.value_text) === opt}
-                                disabled={isReadOnly}
-                                onChange={() => {
-                                  if (isReadOnly) return;
-                                  setAnswers((p) => ({ ...p, [req.id]: opt }));
-                                  saveAnswer(req.id, opt);
-                                }}
-                                className="accent-[var(--color-accent)]"
-                              />
-                              {opt}
-                            </label>
-                          ))}
+                        <div className="space-y-2">
+                          {req.options.map((opt) => {
+                            const isSelected = (answers[req.id] ?? req.value_text) === opt;
+                            return (
+                              <label
+                                key={opt}
+                                className={cn(
+                                  "flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition",
+                                  isSelected ? "border-transparent shadow-sm" : "border-gray-100 bg-gray-50 hover:bg-gray-100",
+                                  isReadOnly && "cursor-default"
+                                )}
+                                style={isSelected ? { backgroundColor: accentSubtle, borderColor: accent } : undefined}
+                              >
+                                <input
+                                  type="radio"
+                                  name={req.id}
+                                  value={opt}
+                                  checked={isSelected}
+                                  disabled={isReadOnly}
+                                  onChange={() => {
+                                    if (isReadOnly) return;
+                                    setAnswers((p) => ({ ...p, [req.id]: opt }));
+                                    saveAnswer(req.id, opt);
+                                  }}
+                                  className="sr-only"
+                                />
+                                <div
+                                  className="h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center transition"
+                                  style={isSelected ? { borderColor: accent, backgroundColor: accent } : { borderColor: "#d1d5db" }}
+                                >
+                                  {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                                </div>
+                                <span className={cn("text-sm font-medium", isSelected ? "" : "text-gray-700")}
+                                  style={isSelected ? { color: heading } : undefined}>
+                                  {opt}
+                                </span>
+                              </label>
+                            );
+                          })}
                         </div>
+
                       ) : req.type === "checkbox" ? (
-                        <label className="mt-2 flex items-center gap-2 text-sm">
+                        <label className={cn(
+                          "flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition",
+                          Boolean(answers[req.id] ?? req.value_text) ? "border-transparent shadow-sm" : "border-gray-100 bg-gray-50 hover:bg-gray-100",
+                          isReadOnly && "cursor-default"
+                        )}
+                          style={Boolean(answers[req.id] ?? req.value_text) ? { backgroundColor: accentSubtle, borderColor: accent } : undefined}
+                        >
+                          <div
+                            className="h-5 w-5 shrink-0 rounded-md border-2 flex items-center justify-center transition"
+                            style={Boolean(answers[req.id] ?? req.value_text) ? { borderColor: accent, backgroundColor: accent } : { borderColor: "#d1d5db" }}
+                          >
+                            {Boolean(answers[req.id] ?? req.value_text) && (
+                              <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
                           <input
                             type="checkbox"
                             checked={Boolean(answers[req.id] ?? req.value_text)}
@@ -549,14 +876,14 @@ export default function PhasePortalClient({
                               setAnswers((p) => ({ ...p, [req.id]: v }));
                               saveAnswer(req.id, v);
                             }}
-                            className="h-4 w-4 accent-[var(--color-accent)]"
+                            className="sr-only"
                           />
-                          I confirm
+                          <span className="text-sm font-medium text-gray-700">I confirm</span>
                         </label>
+
                       ) : (
                         <textarea
-                          className="mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm placeholder:text-[var(--color-text-muted)] disabled:opacity-60"
-                          rows={3}
+                          rows={req.type === "textarea" ? 4 : 2}
                           disabled={isReadOnly}
                           placeholder={isReadOnly ? "—" : `Enter ${req.label?.toLowerCase() ?? "your answer"}…`}
                           value={answers[req.id] ?? req.value_text ?? ""}
@@ -567,52 +894,73 @@ export default function PhasePortalClient({
                           onBlur={(e) => {
                             if (!isReadOnly) saveAnswer(req.id, e.target.value);
                           }}
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 placeholder:text-gray-300 outline-none transition disabled:opacity-50 resize-none"
+                          style={{
+                            ["--tw-ring-color" as any]: accent,
+                          } as React.CSSProperties}
+                          onFocus={(e) => { e.target.style.borderColor = accent; e.target.style.backgroundColor = "#fff"; }}
+                          onBlurCapture={(e) => { e.target.style.borderColor = ""; e.target.style.backgroundColor = ""; }}
                         />
+                      )}
+
+                      {saving === req.id && (
+                        <p className="mt-1 text-[11px] text-gray-400">Saving…</p>
                       )}
                     </div>
                   );
-                })}
-              </div>
+                    })}
+                  </div>
+                );
+              })()}
 
-              {/* Bottom action bar */}
-              <div className="flex items-center justify-between gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] px-5 py-4">
-                {currentPhase.status === "awaiting_review" || submitted ? (
-                  <p className="text-sm text-[var(--color-text-secondary)]">
-                    ⏳ Your submission is being reviewed.
-                  </p>
-                ) : currentPhase.status === "approved" ? (
-                  nextPhase && nextPhase.status !== "locked" ? (
-                    <button
-                      onClick={() => router.push(`/c/${token}/phase/${nextPhase.phase_number}`)}
-                      className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90"
-                    >
-                      Proceed to {nextPhase.name} →
-                    </button>
-                  ) : !nextPhase ? (
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--color-success)]">🎉 All done — thank you!</p>
-                      <p className="mt-1 text-xs text-[var(--color-text-muted)]">Your onboarding is complete.</p>
-                    </div>
-                  ) : null
+              {/* Submit / action bar */}
+              <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5">
+                {effectiveStatus === "awaiting_review" ? (
+                  <p className="text-sm text-gray-500 text-center">⏳ Your submission is under review — we'll be in touch.</p>
+                ) : effectiveStatus === "approved" ? (
+                  <div className="text-center">
+                    {nextPhase && nextPhase.status !== "locked" ? (
+                      <button
+                        onClick={() => router.push(`/c/${token}/phase/${nextPhase.phase_number}`)}
+                        className="inline-flex items-center gap-2 rounded-xl px-8 py-3 text-sm font-bold text-white shadow-sm hover:opacity-90 transition"
+                        style={{ backgroundColor: accent }}
+                      >
+                        Proceed to {nextPhase.name} →
+                      </button>
+                    ) : !nextPhase ? (
+                      <div>
+                        <p className="text-lg font-bold" style={{ color: heading }}>🎉 All done — thank you!</p>
+                        <p className="mt-1 text-sm text-gray-400">Your onboarding is complete.</p>
+                      </div>
+                    ) : null}
+                  </div>
                 ) : (
-                  <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="text-xs text-[var(--color-text-muted)]">
-                      {allRequiredFilled ? "All required fields filled." : "Please fill in all required fields (*) to submit."}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 flex-1 rounded-full overflow-hidden bg-gray-100">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${fillPct}%`, backgroundColor: accent }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">
+                        {allRequiredFilled ? "Ready to submit" : "Fill in required fields (*)"}
+                      </span>
                     </div>
                     <button
                       disabled={!allRequiredFilled || submitting}
                       onClick={handleSubmit}
-                      className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                      className="w-full rounded-xl px-6 py-3.5 text-sm font-bold text-white shadow-sm hover:opacity-90 disabled:opacity-40 transition"
+                      style={{ backgroundColor: accent }}
                     >
-                      {submitting ? "Submitting…" : `Submit Phase ${currentPhase.phase_number} for Review`}
+                      {submitting ? "Submitting…" : `Submit Phase ${currentPhase.phase_number} for Review →`}
                     </button>
+                    {submitError && (
+                      <p className="text-sm text-red-600 text-center">{submitError}</p>
+                    )}
                   </div>
                 )}
               </div>
-
-              {submitError && (
-                <p className="text-sm text-[var(--color-danger)]">{submitError}</p>
-              )}
             </>
           )}
         </main>
@@ -650,7 +998,7 @@ function SignatureCanvasPad({ onRef }: { onRef: (c: SignatureCanvas | null) => v
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]" style={{ minHeight: 200 }}>
+    <div ref={containerRef} className="w-full rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 overflow-hidden" style={{ minHeight: 200 }}>
       <SignatureCanvas
         penColor="black"
         minWidth={1.6}

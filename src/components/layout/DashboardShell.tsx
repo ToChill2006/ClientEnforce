@@ -9,12 +9,45 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Menu, MenuItem, MenuDivider, MenuLabel } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
 
+type NotificationItem = {
+  onboarding_id: string;
+  title: string;
+  client_name: string;
+  event_name: string | null;
+  phase_number: number | null;
+  phase_name: string | null;
+  token: string | null;
+  updated_at: string | null;
+};
+
+function useNotifications() {
+  const [items, setItems] = React.useState<NotificationItem[]>([]);
+
+  async function refresh() {
+    try {
+      const res = await fetch("/api/notifications", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json();
+      setItems(json.items ?? []);
+    } catch { /* silent */ }
+  }
+
+  React.useEffect(() => {
+    refresh();
+    const id = setInterval(refresh, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  return { items, refresh };
+}
+
 interface DashboardShellProps {
   children: React.ReactNode;
   fullName: string;
   email: string | null;
   initials: string;
   hasEnterpriseOnboarding?: boolean;
+  currentUserRole?: string | null;
 }
 
 function Logo({ onClick }: { onClick?: () => void }) {
@@ -74,20 +107,21 @@ function UserMenu({ fullName, email, initials }: { fullName: string; email: stri
   );
 }
 
-function SidebarContent({ onClose, hasEnterpriseOnboarding }: { onClose?: () => void; hasEnterpriseOnboarding?: boolean }) {
+function SidebarContent({ onClose, hasEnterpriseOnboarding, currentUserRole, notifications }: { onClose?: () => void; hasEnterpriseOnboarding?: boolean; currentUserRole?: string | null; notifications: NotificationItem[] }) {
   return (
     <>
       <div className="shrink-0 px-4 pt-4">
         <Logo onClick={onClose} />
         <div className="mt-3 h-px bg-[var(--color-border)]" />
       </div>
-      <SidebarNav onClose={onClose} hasEnterpriseOnboarding={hasEnterpriseOnboarding} />
+      <SidebarNav onClose={onClose} hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} />
     </>
   );
 }
 
-export default function DashboardShell({ children, fullName, email, initials, hasEnterpriseOnboarding }: DashboardShellProps) {
+export default function DashboardShell({ children, fullName, email, initials, hasEnterpriseOnboarding, currentUserRole }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const { items: notifications } = useNotifications();
 
   React.useEffect(() => {
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
@@ -100,7 +134,7 @@ export default function DashboardShell({ children, fullName, email, initials, ha
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
         {/* Desktop sidebar */}
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-[220px] flex-col border-r border-[var(--color-border)] bg-[var(--color-panel)] lg:flex">
-          <SidebarContent hasEnterpriseOnboarding={hasEnterpriseOnboarding} />
+          <SidebarContent hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} />
         </aside>
 
         {/* Mobile drawer */}
@@ -123,7 +157,7 @@ export default function DashboardShell({ children, fullName, email, initials, ha
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <SidebarContent onClose={() => setSidebarOpen(false)} hasEnterpriseOnboarding={hasEnterpriseOnboarding} />
+              <SidebarContent onClose={() => setSidebarOpen(false)} hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole} notifications={notifications} />
             </aside>
           </>
         )}

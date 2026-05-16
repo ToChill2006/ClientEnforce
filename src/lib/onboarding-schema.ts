@@ -3,6 +3,8 @@ import { z } from "zod";
 // All supported requirement/field types.
 // checkbox  = Feature 6: completion checkbox
 // heading   = Feature 7: visual section heading (no interaction)
+// payment   = Stripe payment requirement
+// info      = Read-only description / info block
 export const RequirementTypeSchema = z.enum([
   "text",
   "file",
@@ -10,6 +12,8 @@ export const RequirementTypeSchema = z.enum([
   "multiple_choice",
   "checkbox",
   "heading",
+  "payment",
+  "info",
 ]);
 
 export const TemplateRequirementSchema = z.object({
@@ -36,6 +40,14 @@ export const TemplateRequirementSchema = z.object({
 
   // Feature 5: multi-line textarea instead of single-line input for text type
   multiline: z.boolean().optional(),
+
+  // payment type fields
+  payment_amount: z.number().nullish(),
+  payment_currency: z.string().nullish(),
+  payment_description: z.string().nullish(),
+
+  // info type: read-only content block
+  info_content: z.string().nullish(),
 
   // Phase 5.3: conditional visibility — opt-in, stored in metadata downstream
   visible_if: z

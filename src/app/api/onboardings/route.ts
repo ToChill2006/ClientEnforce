@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
+import { getExternalViewerEventIds } from "@/lib/external-viewer";
 import { randomUUID } from "crypto";
 import {
   maxActiveOnboardingsForTier,
@@ -354,8 +355,9 @@ export async function GET(req: Request) {
   const { user, org_id } = await getOrgIdForUser(supabase);
   if (!user) return jsonError(401, "Unauthorized");
   if (!org_id) return jsonError(403, "No organization");
-  const role = await requireRole(["owner", "admin", "member"]);
-  if (!roleHasPermission(role, "onboardings_view")) {
+  const role = await requireRole(["owner", "admin", "member", "onboarder", "reviewer", "external_viewer"]);
+  const isExternalViewer = role === "external_viewer";
+  if (!isExternalViewer && !roleHasPermission(role, "onboardings_view")) {
     return jsonError(403, permissionDenied("You do not have access to view onboardings."));
   }
 
@@ -383,6 +385,12 @@ export async function GET(req: Request) {
   const filterEventId = url.searchParams.get("event_id") ?? null;
   const noEvent = url.searchParams.get("no_event") === "1";
 
+  // For external_viewer, scope to only their permitted events
+  let externalViewerEventIds: string[] | null = null;
+  if (isExternalViewer) {
+    externalViewerEventIds = await getExternalViewerEventIds(user.id, org_id);
+  }
+
   const run = (sel: string) => {
     let q = supabase
       .from("onboardings")
@@ -392,6 +400,12 @@ export async function GET(req: Request) {
       .limit(limit);
     if (filterEventId) q = (q as any).eq("event_id", filterEventId);
     if (noEvent) q = (q as any).is("event_id", null);
+    if (externalViewerEventIds !== null) {
+      q = (q as any).in(
+        "event_id",
+        externalViewerEventIds.length > 0 ? externalViewerEventIds : ["00000000-0000-0000-0000-000000000000"]
+      );
+    }
     return q;
   };
 
@@ -650,7 +664,7 @@ export async function GET(req: Request) {
       current_phase: phase?.phase_number ?? null,
       phase_name: phase?.name ?? null,
       // Use onboarding-level status for "sent" (not yet opened) and "completed"
-      phase_status: o.status === "sent" ? "sent" : o.status === "completed" ? "completed" : phase?.status ?? o.status ?? null,
+      phase_status: o.status === "draft" ? "draft" : o.status === "sent" ? "sent" : o.status === "completed" ? "completed" : phase?.status ?? o.status ?? null,
       phase_deadline: phase?.deadline ?? null,
     };
   });
@@ -916,6 +930,14 @@ export async function POST(req: Request) {
       onboarding = ob2;
       onboardingErr = err2;
     }
+
+    // If event_id column doesn't exist, retry without it (exhibitor will appear in normal list but won't break).
+    if (onboardingErr && isMissingColumnError(onboardingErr, "event_id")) {
+      const { event_id: _eid, ...baseWithoutEvent } = insertBase;
+      const { ob: ob3, err: err3 } = await runInsertChain(baseWithoutEvent);
+      onboarding = ob3;
+      onboardingErr = err3;
+    }
   }
 
   if (onboardingErr || !onboarding) {
@@ -984,7 +1006,7 @@ export async function POST(req: Request) {
           const type = it.type ?? it.kind ?? it.field_type ?? it.input_type ?? "text";
           const label = it.label ?? it.name ?? it.title ?? it.prompt ?? `Field ${idx + 1}`;
           // Headings are never required — enforce at snapshot time
-          const is_required = type === "heading" ? false : Boolean(it.is_required ?? it.required ?? it.mandatory ?? false);
+          const is_required = (type === "heading" || type === "info") ? false : Boolean(it.is_required ?? it.required ?? it.mandatory ?? false);
           const sort_order = Number(it.sort_order ?? it.position ?? it.order ?? idx);
 
           // If the template contains a stable id/key, keep it for traceability.
@@ -1010,6 +1032,11 @@ export async function POST(req: Request) {
           const metadata = Object.keys(metadataObj).length > 0 ? metadataObj : null;
           const phase_number = typeof it.phase_number === "number" ? it.phase_number : null;
 
+          // Payment fields (Feature 5)
+          const payment_amount = it.payment_amount != null ? Number(it.payment_amount) : null;
+          const payment_currency = it.payment_currency ?? null;
+          const payment_description = it.payment_description ?? null;
+
           return {
             org_id,
             onboarding_id: onboarding.id,
@@ -1022,6 +1049,8 @@ export async function POST(req: Request) {
             attachment_path,
             options,
             metadata,
+            ...(type === "payment" ? { payment_amount, payment_currency, payment_description, payment_status: "not_paid" } : {}),
+          ...(type === "info" ? { value_text: it.info_content ?? null } : {}),
             created_at: nowIso,
             updated_at: nowIso,
           };
@@ -1154,65 +1183,6 @@ export async function POST(req: Request) {
     // Best-effort only.
   }
 
-  // Send invite email to client automatically on creation
-  try {
-    const { sendOrgEmail } = await import("@/lib/send-email");
-
-    // Fetch client email + name
-    const { data: clientRow } = await supabase
-      .from("clients")
-      .select("email, full_name")
-      .eq("id", client_id)
-      .single();
-
-    const clientEmail = (clientRow as any)?.email ?? null;
-    const clientName = (clientRow as any)?.full_name ?? "there";
-
-    if (clientEmail) {
-      // Resolve portal base (custom domain or default)
-      let portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
-      try {
-        const { loadWhiteLabelForOrg } = await import("@/lib/white-label");
-        const wl = await loadWhiteLabelForOrg(org_id);
-        const customDomain = (wl as any)?.custom_domain?.trim();
-        if (customDomain) portalBase = `https://${customDomain}`;
-      } catch { /* use default */ }
-
-      const token = (onboarding as any).client_token;
-      const portalLink = `${portalBase}/c/${token}`;
-
-      // Fetch event name if applicable
-      let eventName: string | null = null;
-      if (event_id) {
-        try {
-          const { data: eventRow } = await supabase
-            .from("events")
-            .select("name")
-            .eq("id", event_id)
-            .single();
-          eventName = (eventRow as any)?.name ?? null;
-        } catch { /* best-effort */ }
-      }
-
-      const subject = eventName
-        ? `You have been invited to complete your onboarding for ${eventName}`
-        : `You have been invited to complete your onboarding`;
-
-      const html = eventName
-        ? `<p>Hi ${clientName},</p><p>You have been invited to complete your onboarding for <strong>${eventName}</strong>.</p><p><a href="${portalLink}">Click here to get started</a></p>`
-        : `<p>Hi ${clientName},</p><p>You have been invited to complete your onboarding.</p><p><a href="${portalLink}">Click here to get started</a></p>`;
-
-      const text = eventName
-        ? `Hi ${clientName},\n\nYou have been invited to complete your onboarding for ${eventName}.\n\nGet started: ${portalLink}`
-        : `Hi ${clientName},\n\nYou have been invited to complete your onboarding.\n\nGet started: ${portalLink}`;
-
-      await sendOrgEmail(org_id, { to: clientEmail, subject, html, text });
-
-      // Mark as sent now that the invite email is out
-      await supabase.from("onboardings").update({ status: "sent", updated_at: new Date().toISOString() }).eq("id", onboarding.id);
-      onboarding = { ...onboarding, status: "sent" };
-    }
-  } catch { /* Don't fail onboarding creation if email errors */ }
-
+  // Onboarding stays as "draft" — admin sends manually via /api/onboardings/send
   return NextResponse.json({ ok: true, onboarding });
 }

@@ -74,9 +74,9 @@ export async function POST(req: Request) {
 
   const reqType = String((reqRow as any).type || "").toLowerCase();
 
-  // Headings are display-only — they cannot be answered
-  if (reqType === "heading") {
-    return json(400, { error: "Section headings cannot be answered." });
+  // Headings and info blocks are display-only — they cannot be answered
+  if (reqType === "heading" || reqType === "info") {
+    return json(400, { error: "Display-only blocks cannot be answered." });
   }
 
   // Unpack per-type config from the snapshotted metadata column

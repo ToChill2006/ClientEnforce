@@ -10,12 +10,12 @@ interface BadgeProps {
 }
 
 const filledStyles: Record<BadgeVariant, string> = {
-  complete:      "bg-[var(--color-success-subtle)] text-[var(--color-success)] border border-green-200",
-  "in-progress": "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-blue-200",
-  pending:       "bg-[var(--color-warning-subtle)] text-[var(--color-warning)] border border-amber-200",
-  blocked:       "bg-[var(--color-danger-subtle)] text-[var(--color-danger)] border border-red-200",
-  info:          "bg-[var(--color-info-subtle)] text-[var(--color-info)] border border-cyan-200",
-  warning:       "bg-[var(--color-warning-subtle)] text-[var(--color-warning)] border border-amber-200",
+  complete:      "bg-[var(--color-success-subtle)] text-[var(--color-success)] border border-green-300",
+  "in-progress": "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-blue-300",
+  pending:       "bg-[var(--color-warning-subtle)] text-[var(--color-warning)] border border-amber-400",
+  blocked:       "bg-[var(--color-danger-subtle)] text-[var(--color-danger)] border border-red-300",
+  info:          "bg-[var(--color-info-subtle)] text-[var(--color-info)] border border-cyan-300",
+  warning:       "bg-[var(--color-warning-subtle)] text-[var(--color-warning)] border border-amber-400",
   default:       "bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)] border border-[var(--color-border)]",
 };
 

@@ -13,6 +13,9 @@ import {
   Trash2,
   CheckCircle2,
   Circle,
+  Pencil,
+  X as XIcon,
+  Plus,
 } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -52,6 +55,15 @@ type Requirement = {
   sort_order?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
+  is_ad_hoc?: boolean | null;
+  created_by?: string | null;
+  // Payment type fields
+  payment_amount?: number | null;
+  payment_currency?: string | null;
+  payment_description?: string | null;
+  payment_status?: string | null;
+  payment_paid_at?: string | null;
+  payment_stripe_payment_intent_id?: string | null;
 };
 
 type DetailPayload = {
@@ -63,6 +75,7 @@ type DetailPayload = {
     client_link: string | null;
     client_email: string | null;
     client_name: string | null;
+    company_name?: string | null;
     template_name: string | null;
     owner_id: string | null;
     owner_name: string | null;
@@ -112,6 +125,14 @@ function normalizeRequirement(raw: any): Requirement {
     sort_order: typeof r.sort_order === "number" ? r.sort_order : r.sortOrder ?? null,
     created_at: r.created_at ?? r.createdAt ?? null,
     updated_at: r.updated_at ?? r.updatedAt ?? null,
+    is_ad_hoc: typeof r.is_ad_hoc === "boolean" ? r.is_ad_hoc : null,
+    created_by: r.created_by ?? null,
+    payment_amount: r.payment_amount ?? null,
+    payment_currency: r.payment_currency ?? null,
+    payment_description: r.payment_description ?? null,
+    payment_status: r.payment_status ?? null,
+    payment_paid_at: r.payment_paid_at ?? null,
+    payment_stripe_payment_intent_id: r.payment_stripe_payment_intent_id ?? null,
   };
 }
 
@@ -140,6 +161,7 @@ function reqKindLabel(kind?: string | null) {
   if (k === "date") return "Date";
   if (k === "multiple_choice") return "Multiple choice";
   if (k === "heading") return "Section";
+  if (k === "payment") return "Payment";
   return kind as string;
 }
 
@@ -262,6 +284,14 @@ async function fetchRequirementsDirect(onboardingId: string): Promise<Requiremen
         "options",
         "created_at",
         "updated_at",
+        "is_ad_hoc",
+        "created_by",
+        "payment_amount",
+        "payment_currency",
+        "payment_description",
+        "payment_status",
+        "payment_paid_at",
+        "payment_stripe_payment_intent_id",
       ].join(",")
     )
     .eq("onboarding_id", onboardingId)
@@ -301,6 +331,17 @@ export default function OnboardingDetailAdminPage() {
 
   // Response phase tab state
   const [activeResponsePhase, setActiveResponsePhase] = React.useState<number | null>(null);
+
+  // Ad-hoc requirements state
+  const [canReview, setCanReview] = React.useState(false);
+  const [adHocModal, setAdHocModal] = React.useState<{
+    open: boolean;
+    phaseNumber: number;
+    editingReq: Requirement | null;
+  }>({ open: false, phaseNumber: 1, editingReq: null });
+  const [adHocSaving, setAdHocSaving] = React.useState(false);
+  const [confirmRemoveReq, setConfirmRemoveReq] = React.useState<Requirement | null>(null);
+  const [removingReq, setRemovingReq] = React.useState(false);
 
   // Preview state
   const [previewOpen, setPreviewOpen] = React.useState(false);
@@ -365,7 +406,7 @@ export default function OnboardingDetailAdminPage() {
   function openReviewPanel(phaseNumber: number) {
     const allReqs = payload?.requirements ?? [];
     const phaseReqs = allReqs.filter(
-      (r) => (r.phase_number ?? 1) === phaseNumber && (r.type ?? r.kind ?? "").toLowerCase() !== "heading"
+      (r) => (r.phase_number ?? 1) === phaseNumber && !["heading", "info"].includes((r.type ?? r.kind ?? "").toLowerCase())
     );
 
     setReviewItems(phaseReqs.map((r) => {
@@ -698,11 +739,106 @@ export default function OnboardingDetailAdminPage() {
     }
   }
 
+  // Check current user's permission for ad-hoc controls via Supabase browser client
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const sb = supabaseBrowser();
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data: profile } = await sb
+          .from("profiles")
+          .select("org_id")
+          .eq("user_id", user.id)
+          .single();
+        if (!profile?.org_id) return;
+        const { data: membership } = await sb
+          .from("memberships")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("org_id", profile.org_id)
+          .single();
+        const role: string = (membership as any)?.role ?? "";
+        setCanReview(role === "owner" || role === "admin" || role === "reviewer");
+      } catch {
+        // non-fatal — feature is hidden when uncertain
+      }
+    })();
+  }, []);
+
+  function openAddReq(phaseNumber: number) {
+    setAdHocModal({ open: true, phaseNumber, editingReq: null });
+  }
+
+  function openEditReq(req: Requirement) {
+    setAdHocModal({ open: true, phaseNumber: req.phase_number ?? 1, editingReq: req });
+  }
+
+  async function saveAdHocReq(
+    phaseNumber: number,
+    fields: { type: string; label: string; is_required: boolean; options?: string[] },
+    editingReqId?: string
+  ) {
+    setAdHocSaving(true);
+    try {
+      const url = editingReqId
+        ? `/api/onboardings/${params.id}/requirements/${editingReqId}`
+        : `/api/onboardings/${params.id}/requirements`;
+      const method = editingReqId ? "PATCH" : "POST";
+      const body = editingReqId
+        ? { label: fields.label, is_required: fields.is_required, options: fields.options }
+        : { phase_number: phaseNumber, ...fields };
+
+      const res = await fetch(url, {
+        method,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Save failed");
+
+      const saved = normalizeRequirement(json.requirement);
+      setPayload((prev) => {
+        if (!prev) return prev;
+        const existing = prev.requirements.find((r) => r.id === saved.id);
+        const nextReqs = existing
+          ? prev.requirements.map((r) => (r.id === saved.id ? saved : r))
+          : [...prev.requirements, saved].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        return { ...prev, requirements: nextReqs };
+      });
+      toast({ title: editingReqId ? "Requirement updated" : "Requirement added", variant: "success" });
+      setAdHocModal({ open: false, phaseNumber: 1, editingReq: null });
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message, variant: "error" });
+    } finally {
+      setAdHocSaving(false);
+    }
+  }
+
+  async function removeAdHocReq(req: Requirement) {
+    setRemovingReq(true);
+    try {
+      const res = await fetch(`/api/onboardings/${params.id}/requirements/${req.id}`, { method: "DELETE" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Delete failed");
+      setPayload((prev) =>
+        prev ? { ...prev, requirements: prev.requirements.filter((r) => r.id !== req.id) } : prev
+      );
+      toast({ title: "Requirement removed", variant: "success" });
+      setConfirmRemoveReq(null);
+    } catch (e: any) {
+      toast({ title: e?.message || "Remove failed", variant: "error" });
+    } finally {
+      setRemovingReq(false);
+    }
+  }
+
   const ob = payload?.onboarding;
   const reqs = payload?.requirements ?? [];
   const statusKey = computeDisplayStatus(ob?.status, phases) as OnboardingStatus;
 
-  const interactiveReqs = reqs.filter((r) => (r.type ?? r.kind ?? "").toLowerCase() !== "heading");
+  const NON_INTERACTIVE = ["heading", "info"];
+  const interactiveReqs = reqs.filter((r) => !NON_INTERACTIVE.includes((r.type ?? r.kind ?? "").toLowerCase()));
   const answered = interactiveReqs.filter((r) => valuePreview(r).type !== "empty").length;
   const required = interactiveReqs.filter((r) => !!(r.is_required ?? r.required)).length;
   const requiredCompleted = interactiveReqs.filter((r) => {
@@ -741,14 +877,28 @@ export default function OnboardingDetailAdminPage() {
 
   return (
     <div className="space-y-6">
+      {ob?.status === "draft" && (
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <span className="text-amber-500 text-lg">✏️</span>
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Draft — not yet sent to client</p>
+              <p className="text-xs text-amber-600 mt-0.5">Add or remove requirements below, then click <strong>Send invite</strong> when ready.</p>
+            </div>
+          </div>
+          <Button size="sm" iconLeft={<Send className="h-3.5 w-3.5" />} loading={sending} onClick={sendEmail}>
+            Send invite
+          </Button>
+        </div>
+      )}
       <PageHeader
         breadcrumbs={[
           { label: "Onboardings", href: "/dashboard/onboardings" },
-          { label: ob?.title || "Detail" },
+          { label: ob?.company_name || ob?.title || "Detail" },
         ]}
         title={
           <div className="flex items-center gap-3">
-            <span className="truncate">{ob?.title || "Onboarding"}</span>
+            <span className="truncate">{ob?.company_name || ob?.title || "Onboarding"}</span>
             <StatusBadge status={statusKey} />
           </div>
         }
@@ -772,8 +922,14 @@ export default function OnboardingDetailAdminPage() {
               </Button>
             )}
             {statusKey !== "submitted" && statusKey !== "locked" && (
-              <Button variant="outline" size="sm" iconLeft={<Send className="h-3.5 w-3.5" />} loading={sending} onClick={sendEmail}>
-                Send
+              <Button
+                variant={ob?.status === "draft" ? "primary" : "outline"}
+                size="sm"
+                iconLeft={<Send className="h-3.5 w-3.5" />}
+                loading={sending}
+                onClick={sendEmail}
+              >
+                {ob?.status === "draft" ? "Send invite" : "Send"}
               </Button>
             )}
             <Button
@@ -784,6 +940,14 @@ export default function OnboardingDetailAdminPage() {
               onClick={downloadPdf}
             >
               PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              iconLeft={<Download className="h-3.5 w-3.5" />}
+              onClick={() => { window.location.href = `/api/onboardings/${params.id}/export`; }}
+            >
+              Export CSV
             </Button>
             {statusKey === "submitted" && (
               <Button size="sm" iconLeft={<Lock className="h-3.5 w-3.5" />} onClick={() => setConfirmLock(true)}>
@@ -808,9 +972,11 @@ export default function OnboardingDetailAdminPage() {
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Phases</span>
-            <a href={`/c/${payload?.onboarding?.token}`} target="_blank" rel="noreferrer" className="text-xs text-[var(--color-accent)] hover:underline">
-              View exhibitor portal ↗
-            </a>
+            {(ob?.client_link || ob?.token || (ob as any)?.client_token) && (
+              <a href={ob?.client_link || `/c/${(ob as any)?.client_token || ob?.token}`} target="_blank" rel="noreferrer" className="text-xs text-[var(--color-accent)] hover:underline">
+                View exhibitor portal ↗
+              </a>
+            )}
           </div>
           <div className="flex flex-wrap items-start gap-3">
             {phases.map((ph: any, idx: number) => {
@@ -1161,29 +1327,93 @@ export default function OnboardingDetailAdminPage() {
           </div>
         )}
         <div className="border-t border-[var(--color-border)]">
-          {reqs.length === 0 ? (
+          {reqs.length === 0 && phases.length === 0 ? (
             <div className="px-5 py-10 text-center">
               <div className="text-sm font-semibold text-[var(--color-text-primary)]">No requirements loaded</div>
               <div className="mt-1 text-xs text-[var(--color-text-muted)]">
                 This onboarding has no requirements snapshot yet.
               </div>
             </div>
+          ) : phases.length > 0 ? (
+            // Render by phase with per-phase "Add requirement" button
+            <>
+              {phases
+                .filter((ph: any) =>
+                  activeResponsePhase === null ? true : ph.phase_number === activeResponsePhase
+                )
+                .map((ph: any) => {
+                  const phaseReqs = reqs.filter((r) => (r.phase_number ?? 1) === ph.phase_number);
+                  const phaseStatus: string = ph.status ?? "locked";
+                  const isDraftOnboarding = ob?.status === "draft";
+                  const canAdd = isDraftOnboarding
+                    ? phaseStatus !== "awaiting_review" && phaseStatus !== "approved"
+                    : canReview && phaseStatus === "in_progress";
+                  const isLocked = phaseStatus === "awaiting_review" || phaseStatus === "approved";
+                  return (
+                    <div key={ph.phase_number}>
+                      {activeResponsePhase === null && (
+                        <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-1.5">
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+                            {ph.name ?? `Phase ${ph.phase_number}`}
+                          </span>
+                        </div>
+                      )}
+                      <ul className="divide-y divide-[var(--color-border)]">
+                        {phaseReqs.map((r) => (
+                          <ResponseItem
+                            key={r.id}
+                            r={r}
+                            onPreview={openPreview}
+                            onDownloadFailure={(msg) => toast({ title: "Download failed", description: msg, variant: "error" })}
+                            canReview={canReview || isDraftOnboarding}
+                            phaseEditable={canAdd}
+                            draftMode={isDraftOnboarding}
+                            onEdit={openEditReq}
+                            onRemove={(req) => setConfirmRemoveReq(req)}
+                          />
+                        ))}
+                      </ul>
+                      {(canReview || isDraftOnboarding) && !isLocked && (
+                        <div className="px-5 py-3">
+                          <button
+                            onClick={() => openAddReq(ph.phase_number)}
+                            className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Add requirement
+                          </button>
+                        </div>
+                      )}
+                      {canReview && isLocked && phaseStatus === "awaiting_review" && (
+                        <div className="px-5 py-3">
+                          <button
+                            disabled
+                            title="Phase is under review. Reject the phase first to add new requirements."
+                            className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-muted)] opacity-50"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Add requirement
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </>
           ) : (
             <ul className="divide-y divide-[var(--color-border)]">
-              {reqs
-                .filter((r) =>
-                  activeResponsePhase === null
-                    ? true
-                    : (r.phase_number ?? 1) === activeResponsePhase
-                )
-                .map((r) => (
-                  <ResponseItem
-                    key={r.id}
-                    r={r}
-                    onPreview={openPreview}
-                    onDownloadFailure={(msg) => toast({ title: "Download failed", description: msg, variant: "error" })}
-                  />
-                ))}
+              {reqs.map((r) => (
+                <ResponseItem
+                  key={r.id}
+                  r={r}
+                  onPreview={openPreview}
+                  onDownloadFailure={(msg) => toast({ title: "Download failed", description: msg, variant: "error" })}
+                  canReview={canReview}
+                  phaseEditable={false}
+                  onEdit={openEditReq}
+                  onRemove={(req) => setConfirmRemoveReq(req)}
+                />
+              ))}
             </ul>
           )}
         </div>
@@ -1245,6 +1475,29 @@ export default function OnboardingDetailAdminPage() {
         confirmLabel={deleting ? "Deleting…" : "Delete"}
         destructive
       />
+
+      {/* Add / Edit ad-hoc requirement modal */}
+      <AdHocRequirementModal
+        open={adHocModal.open}
+        phaseNumber={adHocModal.phaseNumber}
+        editingReq={adHocModal.editingReq}
+        saving={adHocSaving}
+        onClose={() => setAdHocModal({ open: false, phaseNumber: 1, editingReq: null })}
+        onSave={(phaseNumber, fields) =>
+          saveAdHocReq(phaseNumber, fields, adHocModal.editingReq?.id)
+        }
+      />
+
+      {/* Confirm remove ad-hoc requirement */}
+      <ConfirmModal
+        open={!!confirmRemoveReq}
+        onClose={() => (removingReq ? null : setConfirmRemoveReq(null))}
+        onConfirm={() => { if (confirmRemoveReq) removeAdHocReq(confirmRemoveReq); }}
+        title="Remove requirement?"
+        description={`Remove "${confirmRemoveReq?.label ?? "this requirement"}"? This cannot be undone.`}
+        confirmLabel={removingReq ? "Removing…" : "Remove"}
+        destructive
+      />
     </div>
   );
 }
@@ -1262,10 +1515,20 @@ function ResponseItem({
   r,
   onPreview,
   onDownloadFailure,
+  canReview = false,
+  phaseEditable = false,
+  draftMode = false,
+  onEdit,
+  onRemove,
 }: {
   r: Requirement;
   onPreview: (ref: string, bucket: string, name: string) => void;
   onDownloadFailure: (msg: string) => void;
+  canReview?: boolean;
+  phaseEditable?: boolean;
+  draftMode?: boolean;
+  onEdit?: (req: Requirement) => void;
+  onRemove?: (req: Requirement) => void;
 }) {
   const rType = (r.type ?? r.kind ?? "").toLowerCase();
   const preview = valuePreview(r);
@@ -1274,8 +1537,94 @@ function ResponseItem({
   if (rType === "heading") {
     return (
       <li className="bg-[var(--color-bg-subtle)] px-5 py-2.5">
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
-          {r.label || "Section"}
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+            {r.label || "Section"}
+          </div>
+          {draftMode && phaseEditable && (
+            <button
+              onClick={() => onRemove?.(r)}
+              className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-danger-subtle)] px-2 py-0.5 text-[10px] text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)] transition-colors"
+            >
+              <XIcon className="h-3 w-3" />
+              Remove
+            </button>
+          )}
+        </div>
+      </li>
+    );
+  }
+
+  if (rType === "info") {
+    return (
+      <li className="px-5 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 text-base leading-none text-[var(--color-text-muted)]">ℹ</span>
+            <div>
+              {r.label && <p className="text-xs font-medium text-[var(--color-text-secondary)]">{r.label}</p>}
+              {r.prompt && <p className="text-xs text-[var(--color-text-muted)]">{r.prompt}</p>}
+            </div>
+          </div>
+          {draftMode && phaseEditable && (
+            <button
+              onClick={() => onRemove?.(r)}
+              className="inline-flex shrink-0 items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-danger-subtle)] px-2 py-1 text-[10px] text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)] transition-colors"
+            >
+              <XIcon className="h-3 w-3" />
+              Remove
+            </button>
+          )}
+        </div>
+      </li>
+    );
+  }
+
+  if (rType === "payment") {
+    const payStatus = (r as any).payment_status ?? "not_paid";
+    const payAmount = (r as any).payment_amount;
+    const payCurrency = ((r as any).payment_currency ?? "GBP").toUpperCase();
+    const payPaidAt = (r as any).payment_paid_at;
+    const fmtAmount = payAmount != null ? `${payCurrency} ${Number(payAmount).toFixed(2)}` : payCurrency;
+
+    const statusTone =
+      payStatus === "paid" ? "success" :
+      payStatus === "pending" ? "info" :
+      payStatus === "failed" ? "danger" :
+      "neutral";
+
+    const statusLabel =
+      payStatus === "paid" ? "Paid ✓" :
+      payStatus === "pending" ? "Pending" :
+      payStatus === "failed" ? "Failed" :
+      "Not paid";
+
+    return (
+      <li className="px-5 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                {r.label || "Payment"}
+              </span>
+              <Tag tone="neutral">Payment</Tag>
+              {(r.is_required ?? r.required) && <Tag tone="info">Required</Tag>}
+            </div>
+            {(r as any).payment_description && (
+              <p className="mt-1 text-xs text-[var(--color-text-muted)]">{(r as any).payment_description}</p>
+            )}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Tag tone={statusTone}>{statusLabel}</Tag>
+              {payAmount != null && (
+                <span className="text-xs text-[var(--color-text-secondary)]">{fmtAmount}</span>
+              )}
+              {payStatus === "paid" && payPaidAt && (
+                <span className="text-xs text-[var(--color-text-muted)]">
+                  on {new Date(payPaidAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </li>
     );
@@ -1427,12 +1776,196 @@ function ResponseItem({
             </span>
             <Tag tone="neutral">{reqKindLabel(r.kind ?? r.type)}</Tag>
             {(r.is_required ?? r.required) && <Tag tone="info">Required</Tag>}
+            {r.is_ad_hoc && canReview && (
+              <Tag tone="neutral">Ad-hoc</Tag>
+            )}
           </div>
           {r.prompt && <p className="mt-1 text-xs text-[var(--color-text-muted)]">{r.prompt}</p>}
           <div className="mt-2">{body}</div>
         </div>
-        <Tag tone={completed ? "success" : "neutral"}>{completed ? "Complete" : "Pending"}</Tag>
+        <div className="flex shrink-0 items-center gap-2">
+          {(r.is_ad_hoc || draftMode) && canReview && phaseEditable && (
+            <>
+              {r.is_ad_hoc && (
+                <button
+                  onClick={() => onEdit?.(r)}
+                  className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1 text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] transition-colors"
+                  title="Edit this requirement"
+                >
+                  <Pencil className="h-3 w-3" />
+                  Edit
+                </button>
+              )}
+              <button
+                onClick={() => onRemove?.(r)}
+                className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-danger-subtle)] px-2 py-1 text-[10px] text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)] transition-colors"
+                title="Remove this requirement"
+              >
+                <XIcon className="h-3 w-3" />
+                Remove
+              </button>
+            </>
+          )}
+          <Tag tone={completed ? "success" : "neutral"}>{completed ? "Complete" : "Pending"}</Tag>
+        </div>
       </div>
     </li>
+  );
+}
+
+const AD_HOC_TYPES = [
+  { value: "text", label: "Text" },
+  { value: "textarea", label: "Long text" },
+  { value: "file", label: "File upload" },
+  { value: "signature", label: "Signature" },
+  { value: "multiple_choice", label: "Multiple choice" },
+  { value: "select", label: "Select (dropdown)" },
+  { value: "date", label: "Date" },
+  { value: "checkbox", label: "Checkbox" },
+  { value: "heading", label: "Section heading" },
+  { value: "info", label: "Info / description block" },
+] as const;
+
+type AdHocFields = {
+  type: string;
+  label: string;
+  is_required: boolean;
+  options?: string[];
+};
+
+function AdHocRequirementModal({
+  open,
+  phaseNumber,
+  editingReq,
+  saving,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  phaseNumber: number;
+  editingReq: Requirement | null;
+  saving: boolean;
+  onClose: () => void;
+  onSave: (phaseNumber: number, fields: AdHocFields) => void;
+}) {
+  const [type, setType] = React.useState("text");
+  const [label, setLabel] = React.useState("");
+  const [isRequired, setIsRequired] = React.useState(false);
+  const [optionsText, setOptionsText] = React.useState("");
+
+  // Populate form when editing
+  React.useEffect(() => {
+    if (!open) return;
+    if (editingReq) {
+      setType(editingReq.type ?? "text");
+      setLabel(editingReq.label ?? "");
+      setIsRequired(!!(editingReq.is_required ?? editingReq.required));
+      setOptionsText(Array.isArray(editingReq.options) ? editingReq.options.join(", ") : "");
+    } else {
+      setType("text");
+      setLabel("");
+      setIsRequired(false);
+      setOptionsText("");
+    }
+  }, [open, editingReq]);
+
+  function handleSave() {
+    const trimmed = label.trim();
+    if (!trimmed) return;
+    const fields: AdHocFields = { type, label: trimmed, is_required: isRequired };
+    if (type === "select") {
+      fields.options = optionsText
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    onSave(phaseNumber, fields);
+  }
+
+  if (!open) return null;
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={editingReq ? "Edit requirement" : `Add requirement — Phase ${phaseNumber}`}
+      size="sm"
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} loading={saving} disabled={!label.trim()}>
+            {editingReq ? "Save changes" : "Add requirement"}
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        {/* Type selector — hidden when editing (type is fixed) */}
+        {!editingReq && (
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+              Field type
+            </label>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            >
+              {AD_HOC_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Label */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+            Label <span className="text-[var(--color-danger)]">*</span>
+          </label>
+          <input
+            type="text"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder={type === "heading" ? "Section title…" : "e.g. Company registration number"}
+            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            autoFocus
+          />
+        </div>
+
+        {/* Required toggle — hidden for heading */}
+        {type !== "heading" && (
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isRequired}
+              onChange={(e) => setIsRequired(e.target.checked)}
+              className="accent-[var(--color-accent)]"
+            />
+            <span className="text-[var(--color-text-secondary)]">Required field</span>
+          </label>
+        )}
+
+        {/* Options — shown only for select type */}
+        {type === "select" && (
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+              Options <span className="text-[var(--color-text-muted)]">(comma-separated)</span>
+            </label>
+            <input
+              type="text"
+              value={optionsText}
+              onChange={(e) => setOptionsText(e.target.value)}
+              placeholder="Option A, Option B, Option C"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            />
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 }

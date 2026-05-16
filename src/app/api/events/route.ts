@@ -4,6 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { getExternalViewerEventIds } from "@/lib/external-viewer";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -26,13 +27,23 @@ export async function GET() {
     if (!org_id) return err(403, "No organization");
 
     const role = await requireRole();
-    if (!roleHasPermission(role as any, "events_view")) return err(403, "Forbidden");
+    const isExternalViewer = role === "external_viewer";
+    if (!isExternalViewer && !roleHasPermission(role as any, "events_view")) return err(403, "Forbidden");
+    if (isExternalViewer && !roleHasPermission(role as any, "events_view_scoped")) return err(403, "Forbidden");
 
-    const { data: events, error } = await supabase
+    let eventsQuery = supabase
       .from("events")
       .select("*")
       .eq("org_id", org_id)
       .order("created_at", { ascending: false });
+
+    if (isExternalViewer) {
+      const { data: { user } } = await supabase.auth.getUser();
+      const scopedIds = await getExternalViewerEventIds(user!.id, org_id);
+      eventsQuery = (eventsQuery as any).in("id", scopedIds.length > 0 ? scopedIds : ["00000000-0000-0000-0000-000000000000"]);
+    }
+
+    const { data: events, error } = await eventsQuery;
 
     if (error) return err(400, error.message);
 

@@ -18,7 +18,7 @@ import {
 
 const Schema = z.object({
   email: z.string().email(),
-  role: z.enum(["member", "admin"]),
+  role: z.enum(["admin", "onboarder", "reviewer", "external_viewer"]),
 });
 // NOTE: In this project the `invites` table stores the recipient email in `invited_email`.
 // If you rename the column in SQL, update this constant.
@@ -209,7 +209,7 @@ export async function POST(req: Request) {
         title: "You are invited",
         subtitle: "Join your team workspace in ClientEnforce.",
         paragraphs: [
-          `You were invited as ${invite.role === "admin" ? "an admin" : "a member"} to collaborate in ClientEnforce.`,
+          `You were invited as ${invite.role === "admin" ? "an Admin" : invite.role === "reviewer" ? "a Reviewer" : invite.role === "external_viewer" ? "a Guest Viewer" : "an Onboarder"} to collaborate in ClientEnforce.`,
           `This invite expires on ${inviteExpiry}.`,
         ],
         primaryCta: {

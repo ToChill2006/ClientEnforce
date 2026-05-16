@@ -8,6 +8,7 @@ import { currentOrgHasFeature } from "@/lib/feature-flags";
 import { sendOrgEmail, getOrgEmailConfig } from "@/lib/send-email";
 import { resend } from "@/lib/resend";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
+import { renderClientEnforceEmail } from "@/lib/email-template";
 import { randomUUID } from "crypto";
 
 // Allow up to 5 minutes — sequential DB work for 500 rows can take a while
@@ -46,15 +47,28 @@ async function sendBatchInvites(
 
   const config = await getOrgEmailConfig(orgId);
 
+  const wl = await loadWhiteLabelForOrg(orgId);
+
   if (config.provider === "smtp") {
     // Sequential through their own SMTP — respect their server's delivery
     for (const q of queue) {
       try {
+        const { html, text } = renderClientEnforceEmail({
+          preheader: `Complete your onboarding for ${eventName}`,
+          eyebrow: "You're invited",
+          title: `Onboarding for ${eventName}`,
+          subtitle: `Hi ${q.fullName} — you've been invited to complete your onboarding.`,
+          paragraphs: [
+            `Click below to access your personalised onboarding portal for ${eventName}. You'll be guided through each step at your own pace.`,
+          ],
+          primaryCta: { label: "Get started →", href: q.portalLink },
+          branding: wl,
+        });
         await sendOrgEmail(orgId, {
           to: q.to,
           subject: `You have been invited to complete your onboarding for ${eventName}`,
-          html: `<p>Hi ${q.fullName},</p><p>You have been invited to complete your onboarding for <strong>${eventName}</strong>.</p><p><a href="${q.portalLink}">Click here to get started</a></p>`,
-          text: `Hi ${q.fullName},\n\nYou have been invited to complete your onboarding for ${eventName}.\n\nGet started: ${q.portalLink}`,
+          html,
+          text,
         });
       } catch { /* best-effort per email */ }
     }
@@ -62,7 +76,6 @@ async function sendBatchInvites(
   }
 
   // Resend batch — chunked at 100 per call
-  const wl = await loadWhiteLabelForOrg(orgId);
   const brandName = wl.brand_name?.trim() || "ClientEnforce";
   const from = `${brandName} <info@clientenforce.com>`;
   const replyTo = wl.support_email?.trim() || undefined;
@@ -71,14 +84,27 @@ async function sendBatchInvites(
   for (let offset = 0; offset < queue.length; offset += CHUNK) {
     const chunk = queue.slice(offset, offset + CHUNK);
     await resend.batch.send(
-      chunk.map((q) => ({
-        from,
-        ...(replyTo ? { replyTo } : {}),
-        to: [q.to],
-        subject: `You have been invited to complete your onboarding for ${eventName}`,
-        html: `<p>Hi ${q.fullName},</p><p>You have been invited to complete your onboarding for <strong>${eventName}</strong>.</p><p><a href="${q.portalLink}">Click here to get started</a></p>`,
-        text: `Hi ${q.fullName},\n\nYou have been invited to complete your onboarding for ${eventName}.\n\nGet started: ${q.portalLink}`,
-      }))
+      chunk.map((q) => {
+        const { html, text } = renderClientEnforceEmail({
+          preheader: `Complete your onboarding for ${eventName}`,
+          eyebrow: "You're invited",
+          title: `Onboarding for ${eventName}`,
+          subtitle: `Hi ${q.fullName} — you've been invited to complete your onboarding.`,
+          paragraphs: [
+            `Click below to access your personalised onboarding portal for ${eventName}. You'll be guided through each step at your own pace.`,
+          ],
+          primaryCta: { label: "Get started →", href: q.portalLink },
+          branding: wl,
+        });
+        return {
+          from,
+          ...(replyTo ? { replyTo } : {}),
+          to: [q.to],
+          subject: `You have been invited to complete your onboarding for ${eventName}`,
+          html,
+          text,
+        };
+      })
     );
   }
 }
@@ -226,18 +252,33 @@ export async function POST(
           const reqs: any[] = def?.requirements ?? def?.fields ?? [];
           if (reqs.length > 0) {
             const now = new Date().toISOString();
-            const reqRows = reqs.map((it: any, idx: number) => ({
-              org_id,
-              onboarding_id: onboardingId,
-              type: it.type ?? "text",
-              label: it.label ?? `Field ${idx + 1}`,
-              is_required: it.type === "heading" ? false : Boolean(it.is_required ?? false),
-              sort_order: Number(it.sort_order ?? idx),
-              phase_number: typeof it.phase_number === "number" ? it.phase_number : null,
-              options: it.options ?? null,
-              created_at: now,
-              updated_at: now,
-            }));
+            const reqRows = reqs.map((it: any, idx: number) => {
+              const reqType = it.type ?? "text";
+              const row: Record<string, any> = {
+                org_id,
+                onboarding_id: onboardingId,
+                type: reqType,
+                label: it.label ?? `Field ${idx + 1}`,
+                is_required: (reqType === "heading" || reqType === "info") ? false : Boolean(it.is_required ?? false),
+                sort_order: Number(it.sort_order ?? idx),
+                phase_number: typeof it.phase_number === "number" ? it.phase_number : null,
+                options: it.options ?? null,
+                created_at: now,
+                updated_at: now,
+              };
+              // Payment fields snapshot
+              if (reqType === "payment") {
+                row.payment_amount = it.payment_amount != null ? Number(it.payment_amount) : null;
+                row.payment_currency = it.payment_currency ?? null;
+                row.payment_description = it.payment_description ?? null;
+                row.payment_status = "not_paid";
+              }
+              // Info block: store the description content in value_text
+              if (reqType === "info") {
+                row.value_text = it.info_content ?? null;
+              }
+              return row;
+            });
             await admin.from("onboarding_requirements").insert(reqRows);
           }
 

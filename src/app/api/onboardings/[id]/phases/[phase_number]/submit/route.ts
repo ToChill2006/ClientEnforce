@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { HttpError } from "@/lib/rbac";
+import { renderClientEnforceEmail } from "@/lib/email-template";
+import { loadWhiteLabelForOrg } from "@/lib/white-label";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -116,6 +118,8 @@ export async function POST(
 
     // Notify onboarding owner
     const ownerId = (onboarding as any).owner_id;
+    const portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
+    const reviewLink = `${portalBase}/dashboard/onboardings/${onboardingId}`;
     if (ownerId) {
       try {
         const { data: ownerProfile } = await admin
@@ -125,11 +129,24 @@ export async function POST(
           .single();
         if (ownerProfile?.email) {
           const { sendOrgEmail } = await import("@/lib/send-email");
+          const wl = await loadWhiteLabelForOrg(org_id);
+          const phaseName = (phase as any).name ?? `Phase ${phaseNumber}`;
+          const { html, text } = renderClientEnforceEmail({
+            preheader: `${clientName} submitted ${phaseName} for review`,
+            eyebrow: "Awaiting review",
+            title: `${clientName} submitted ${phaseName}`,
+            subtitle: `For ${eventName}`,
+            paragraphs: [
+              `${clientName} has completed and submitted ${phaseName} for ${eventName}. Head to your dashboard to review and approve or request changes.`,
+            ],
+            primaryCta: { label: "Review submission →", href: reviewLink },
+            branding: wl,
+          });
           await sendOrgEmail(org_id, {
             to: ownerProfile.email as string,
-            subject: `${clientName} submitted Phase ${phaseNumber} for review`,
-            html: `<p>${clientName} has submitted Phase ${phaseNumber} of their onboarding for ${eventName} and it is awaiting your review.</p>`,
-            text: `${clientName} has submitted Phase ${phaseNumber} of their onboarding for ${eventName} and it is awaiting review.`,
+            subject: `${clientName} submitted ${phaseName} for review`,
+            html,
+            text,
           });
         }
       } catch { /* best-effort */ }

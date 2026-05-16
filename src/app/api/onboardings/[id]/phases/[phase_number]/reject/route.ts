@@ -6,6 +6,8 @@ import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
 import { sendOrgEmail } from "@/lib/send-email";
+import { renderClientEnforceEmail } from "@/lib/email-template";
+import { loadWhiteLabelForOrg } from "@/lib/white-label";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -94,38 +96,68 @@ export async function POST(
     }
 
     // Fetch onboarding + client for emails — use admin to bypass RLS on the clients join
-    const { data: onboarding } = await supabaseAdmin()
+    const admin2 = supabaseAdmin();
+    const { data: onboarding } = await admin2
       .from("onboardings")
       .select("id, title, client_id, event_id, client_token, events(id, name), clients(id, full_name, email)")
       .eq("id", onboardingId)
       .eq("org_id", org_id)
       .single();
 
-    const clientName = (onboarding as any)?.clients?.full_name ?? "Exhibitor";
-    const clientEmail = (onboarding as any)?.clients?.email ?? null;
+    let clientName = (onboarding as any)?.clients?.full_name ?? "Exhibitor";
+    let clientEmail = (onboarding as any)?.clients?.email ?? null;
     const eventName = (onboarding as any)?.events?.name ?? "the event";
     const token = (onboarding as any)?.client_token;
     const portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
     const portalLink = token ? `${portalBase}/c/${token}` : portalBase;
-    const phaseName = (phase as any).name;
+    const phaseName = (phase as any).name ?? `Phase ${phaseNumber}`;
     const flagCount = per_item_flags?.length ?? 0;
+
+    // Fallback: join sometimes returns null if FK not cached — look up client directly
+    if (!clientEmail && (onboarding as any)?.client_id) {
+      const { data: clientRow } = await admin2
+        .from("clients")
+        .select("full_name, email")
+        .eq("id", (onboarding as any).client_id)
+        .single();
+      if (clientRow) {
+        clientEmail = clientRow.email ?? null;
+        clientName = clientRow.full_name ?? clientName;
+      }
+    }
 
     if (clientEmail) {
       try {
-        const flaggedSummary = flagCount > 0
-          ? `<p>${flagCount} item${flagCount === 1 ? "" : "s"} need${flagCount === 1 ? "s" : ""} revision. Please review the highlighted items in your portal.</p>`
-          : "";
-        const noteSummary = reviewer_note
-          ? `<blockquote>${reviewer_note}</blockquote>`
-          : "";
+        const wl = await loadWhiteLabelForOrg(org_id);
+        const paragraphs: string[] = [`Hi ${clientName}, your submission for ${eventName} requires some updates before it can be approved.`];
+        if (reviewer_note) paragraphs.push(`Reviewer note: "${reviewer_note}"`);
+
+        const bullets: string[] = flagCount > 0
+          ? [`${flagCount} item${flagCount === 1 ? "" : "s"} highlighted — please update and resubmit`]
+          : [];
+
+        const { html, text } = renderClientEnforceEmail({
+          preheader: `Action needed on ${phaseName} for ${eventName}`,
+          eyebrow: "Action needed",
+          title: `Changes requested on ${phaseName}`,
+          subtitle: `For ${eventName}`,
+          paragraphs,
+          bullets,
+          primaryCta: { label: "Review and resubmit →", href: portalLink },
+          branding: wl,
+        });
 
         await sendOrgEmail(org_id, {
           to: clientEmail,
           subject: `Action needed on ${phaseName} for ${eventName}`,
-          html: `<p>Hi ${clientName},</p><p><strong>${phaseName}</strong> for <strong>${eventName}</strong> requires some updates.</p>${noteSummary}${flaggedSummary}<p><a href="${portalLink}">Review and resubmit</a></p>`,
-          text: `Hi ${clientName},\n\n${phaseName} for ${eventName} requires some updates.\n\n${reviewer_note ?? ""}\n\n${portalLink}`,
+          html,
+          text,
         });
-      } catch { /* best-effort */ }
+      } catch (emailErr: any) {
+        console.error("[reject] email send failed:", emailErr?.message || String(emailErr));
+      }
+    } else {
+      console.warn("[reject] no client email found for onboarding", onboardingId);
     }
 
     // Activity feed (best-effort)

@@ -85,6 +85,7 @@ function BulkTab({ hasFlag }: { hasFlag: boolean }) {
   const { toast } = useToast();
   const [events, setEvents] = React.useState<EventCard[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [deletingEventId, setDeletingEventId] = React.useState<string | null>(null);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
   const [name, setName] = React.useState("");
@@ -111,6 +112,23 @@ function BulkTab({ hasFlag }: { hasFlag: boolean }) {
     if (hasFlag) loadEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasFlag]);
+
+  async function handleDeleteEvent(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!window.confirm("Delete this event? This cannot be undone. Onboardings will not be deleted.")) return;
+    setDeletingEventId(id);
+    try {
+      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Delete failed");
+      setEvents((prev) => prev.filter((ev) => ev.id !== id));
+      toast({ title: "Event deleted", variant: "success" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message, variant: "error" });
+    } finally {
+      setDeletingEventId(null);
+    }
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -173,14 +191,24 @@ function BulkTab({ hasFlag }: { hasFlag: boolean }) {
             <button
               key={ev.id}
               onClick={() => router.push(`/dashboard/events/${ev.id}`)}
-              className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 text-left shadow-[var(--shadow-sm)] transition hover:border-[var(--color-accent)] hover:shadow-[var(--shadow-md)]"
+              className="group relative rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 text-left shadow-[var(--shadow-sm)] transition hover:border-[var(--color-accent)] hover:shadow-[var(--shadow-md)]"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{ev.name}</div>
                   {ev.location && <div className="mt-0.5 truncate text-xs text-[var(--color-text-muted)]">{ev.location}</div>}
                 </div>
-                <EventStatusBadge status={ev.status} />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <EventStatusBadge status={ev.status} />
+                  <button
+                    onClick={(e) => handleDeleteEvent(ev.id, e)}
+                    disabled={deletingEventId === ev.id}
+                    className="opacity-0 group-hover:opacity-100 rounded p-1 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)] transition-all"
+                    title="Delete event"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
                 <span>{ev.end_date ? new Date(ev.end_date).toLocaleDateString(undefined, { month: "short", day: "2-digit", year: "numeric" }) : "—"}</span>
@@ -258,9 +286,15 @@ export default function OnboardingsPage() {
   const [createErr, setCreateErr] = React.useState<string | null>(null);
 
   const [title, setTitle] = React.useState("");
+  const [titleTouched, setTitleTouched] = React.useState(false);
   const [clientEmail, setClientEmail] = React.useState("");
   const [clientName, setClientName] = React.useState("");
   const [clientCompany, setClientCompany] = React.useState("");
+
+  // Auto-fill title with company name unless user has manually edited it
+  React.useEffect(() => {
+    if (!titleTouched) setTitle(clientCompany.trim());
+  }, [clientCompany, titleTouched]);
 
   const [templates, setTemplates] = React.useState<Array<{ id: string; name: string }>>([]);
   const [clients, setClients] = React.useState<
@@ -500,6 +534,7 @@ export default function OnboardingsPage() {
       const json = (await res.json().catch(() => null)) as any;
       setCreateOpen(false);
       setTitle("");
+      setTitleTouched(false);
       setClientEmail("");
       setClientName("");
       setClientCompany("");
@@ -884,12 +919,12 @@ export default function OnboardingsPage() {
       {/* Create modal */}
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={() => { setCreateOpen(false); setTitleTouched(false); }}
         title="New onboarding"
         size="md"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setCreateOpen(false)} disabled={creating}>
+            <Button variant="secondary" onClick={() => { setCreateOpen(false); setTitleTouched(false); }} disabled={creating}>
               Cancel
             </Button>
             <Button onClick={handleCreate as any} loading={creating}>
@@ -989,8 +1024,8 @@ export default function OnboardingsPage() {
           <FormField label="Title" required>
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. ACME — March onboarding"
+              onChange={(e) => { setTitle(e.target.value); setTitleTouched(true); }}
+              placeholder="Filled from company name"
             />
           </FormField>
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
+import { getExternalViewerOnboardingIds, onboardingIdFromStoragePath } from "@/lib/external-viewer";
 
 export const runtime = "nodejs";
 
@@ -48,7 +49,7 @@ function parseBucketAndObjectPath(pathParam: string, bucketParam?: string | null
 export async function GET(req: Request) {
   try {
     const profile = await requireProfile();
-    const role = await requireRole(["owner", "admin", "member"]);
+    const role = await requireRole(["owner", "admin", "member", "onboarder", "reviewer", "external_viewer"]);
 
     if (!roleHasPermission(role, "storage_download")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -86,6 +87,16 @@ export async function GET(req: Request) {
 
     if (!allowed) {
       return NextResponse.json({ error: "Forbidden path", bucket: resolvedBucket, objectPath }, { status: 403 });
+    }
+
+    // Guest viewers may only download files belonging to their scoped onboardings
+    if (role === "external_viewer") {
+      const onboardingId = onboardingIdFromStoragePath(objectPath);
+      if (!onboardingId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      const allowedIds = await getExternalViewerOnboardingIds(profile.user_id, orgId);
+      if (!allowedIds.includes(onboardingId)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

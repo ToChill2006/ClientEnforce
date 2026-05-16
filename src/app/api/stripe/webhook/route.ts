@@ -262,10 +262,71 @@ export async function POST(req: Request) {
   console.log("[stripe-webhook] received", event.type, event.id);
 
   try {
-    // 0) Checkout completion (fallback) — useful if subscription events arrive later.
+    // 0) Checkout completion — handles both subscription billing and exhibitor payments.
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
+      // ── Payment requirement checkout ──────────────────────────────────────
+      const requirementId = session.metadata?.requirement_id as string | undefined;
+      if (requirementId) {
+        // Idempotency check
+        const { data: alreadyProcessed } = await supabaseAdmin
+          .from("processed_webhook_events")
+          .select("id")
+          .eq("id", event.id)
+          .maybeSingle();
+
+        if (alreadyProcessed?.id) {
+          console.log("[stripe-webhook] already processed payment event", event.id);
+          return NextResponse.json({ received: true });
+        }
+
+        const paymentIntentId = asStripeId(session.payment_intent);
+
+        const { error: updErr } = await supabaseAdmin
+          .from("onboarding_requirements")
+          .update({
+            payment_status: "paid",
+            payment_paid_at: new Date().toISOString(),
+            payment_stripe_payment_intent_id: paymentIntentId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", requirementId);
+
+        if (updErr) {
+          console.error("[stripe-webhook] failed to mark requirement as paid", updErr.message);
+        } else {
+          console.log("[stripe-webhook] marked requirement as paid", requirementId);
+
+          // Log to team_activity if the table exists
+          try {
+            const onboardingId = session.metadata?.onboarding_id as string | undefined;
+            const orgId = session.metadata?.org_id as string | undefined;
+            if (onboardingId && orgId) {
+              await supabaseAdmin.from("team_activity").insert({
+                org_id: orgId,
+                onboarding_id: onboardingId,
+                action: "payment_received",
+                details: { requirement_id: requirementId, payment_intent_id: paymentIntentId },
+                created_at: new Date().toISOString(),
+              });
+            }
+          } catch {
+            // team_activity is optional
+          }
+        }
+
+        // Mark event as processed (idempotency)
+        await supabaseAdmin
+          .from("processed_webhook_events")
+          .insert({ id: event.id, processed_at: new Date().toISOString() })
+          .onConflict("id")
+          .ignore();
+
+        return NextResponse.json({ received: true });
+      }
+
+      // ── Subscription billing checkout ─────────────────────────────────────
       const orgIdFromMetadata = (session.metadata?.org_id as string) || null;
       const tier = (session.metadata?.tier as string) || null;
       const customerId = asStripeId(session.customer);
@@ -296,6 +357,41 @@ export async function POST(req: Request) {
         if (customerId && subscriptionId) {
           await cancelOtherSubscriptions(customerId, subscriptionId);
         }
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // 0a) Checkout session expired — revert pending payment to not_paid
+    if (event.type === "checkout.session.expired") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const requirementId = session.metadata?.requirement_id as string | undefined;
+
+      if (requirementId) {
+        await supabaseAdmin
+          .from("onboarding_requirements")
+          .update({ payment_status: "not_paid", updated_at: new Date().toISOString() })
+          .eq("id", requirementId)
+          .eq("payment_status", "pending");
+
+        console.log("[stripe-webhook] reverted expired checkout for requirement", requirementId);
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // 0b) Payment intent failed — mark requirement as failed
+    if (event.type === "payment_intent.payment_failed") {
+      const pi = event.data.object as Stripe.PaymentIntent;
+      const piId = pi.id;
+
+      if (piId) {
+        await supabaseAdmin
+          .from("onboarding_requirements")
+          .update({ payment_status: "failed", updated_at: new Date().toISOString() })
+          .eq("payment_stripe_payment_intent_id", piId);
+
+        console.log("[stripe-webhook] marked payment as failed for PI", piId);
       }
 
       return NextResponse.json({ received: true });

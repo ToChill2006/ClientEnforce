@@ -9,7 +9,37 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 import { PageHeader } from "@/components/ui/page-header";
-import { Plus } from "lucide-react";
+import { Plus, CreditCard } from "lucide-react";
+
+// ─── Reminder rule types ──────────────────────────────────────────────────────
+
+type RuleType = "deadline_based" | "inactivity_based" | "missing_item_based";
+
+type ReminderRule = {
+  id: string;
+  org_id: string;
+  template_id: string;
+  phase_number: number | null;
+  rule_type: RuleType;
+  trigger_offset_days: number;
+  subject: string;
+  body: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+const RULE_TYPE_LABELS: Record<RuleType, string> = {
+  deadline_based: "Deadline-based",
+  inactivity_based: "Inactivity-based",
+  missing_item_based: "Missing-item-based",
+};
+
+const RULE_TYPE_HINTS: Record<RuleType, string> = {
+  deadline_based: "Days before the phase deadline (use negative for after)",
+  inactivity_based: "Send if no activity for this many days",
+  missing_item_based: "Send if required items are still missing after this many days",
+};
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -21,7 +51,9 @@ type RequirementType =
   | "signature"
   | "multiple_choice"
   | "checkbox"   // Feature 6: completion checkbox
-  | "heading";   // Feature 7: visual section heading
+  | "heading"    // Feature 7: visual section heading
+  | "payment"   // Feature 5: Stripe payment requirement
+  | "info";     // Read-only description / info block
 
 type Requirement = {
   type: RequirementType;
@@ -42,6 +74,11 @@ type Requirement = {
   include_other?: boolean;
   // Feature 5: multi-line textarea instead of single-line input
   multiline?: boolean;
+  // Payment type fields
+  payment_amount?: number | null;
+  payment_currency?: string | null;
+  payment_description?: string | null;
+  info_content?: string | null;   // content for the info/description block type
   // Conditional visibility. Hidden when condition not met.
   visible_if?: {
     depends_on_label: string;
@@ -87,6 +124,8 @@ const VALID_TYPES: RequirementType[] = [
   "multiple_choice",
   "checkbox",
   "heading",
+  "payment",
+  "info",
 ];
 
 function fileNameFromPath(path?: string | null) {
@@ -103,7 +142,7 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
         const type: RequirementType = VALID_TYPES.includes(r?.type) ? r.type : "text";
 
         // Headings are never required — enforce here to prevent stale data.
-        const is_required = type === "heading" ? false : Boolean(r?.is_required);
+        const is_required = (type === "heading" || type === "info") ? false : Boolean(r?.is_required);
 
         const base: Requirement = {
           type,
@@ -125,6 +164,15 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
         }
         if (type === "text") {
           base.multiline = Boolean(r?.multiline);
+        }
+        if (type === "payment") {
+          base.payment_amount = typeof r?.payment_amount === "number" ? r.payment_amount : (r?.payment_amount ? Number(r.payment_amount) : null);
+          base.payment_currency = r?.payment_currency ?? "GBP";
+          base.payment_description = r?.payment_description ?? null;
+        }
+        if (type === "info") {
+          base.info_content = r?.info_content ?? r?.value_text ?? null;
+          base.is_required = false;
         }
 
         // Phase assignment
@@ -178,6 +226,8 @@ const TYPE_LABELS: Record<RequirementType, string> = {
   multiple_choice: "Multiple choice",
   checkbox: "Completion checkbox",
   heading: "Section heading",
+  payment: "Payment",
+  info: "Info / Description",
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -188,6 +238,7 @@ export default function TemplatesPage() {
   const [items, setItems] = React.useState<TemplateRow[]>([]);
   const [selected, setSelected] = React.useState<TemplateDetail | null>(null);
   const [name, setName] = React.useState("");
+  const [orgStripeAccountId, setOrgStripeAccountId] = React.useState<string | null | undefined>(undefined);
   const [loading, setLoading] = React.useState(true);
   const [upgradeMessage, setUpgradeMessage] = React.useState<string | null>(null);
   const [detailCache, setDetailCache] = React.useState<Record<string, TemplateDetail>>({});
@@ -199,9 +250,25 @@ export default function TemplatesPage() {
   const [uploadingIdx, setUploadingIdx] = React.useState<Record<number, boolean>>({});
   const [activePhase, setActivePhase] = React.useState(1);
   const [hasEnterpriseFlag, setHasEnterpriseFlag] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState<"requirements" | "reminders">("requirements");
+
+  // Reminders state
+  const [reminderRules, setReminderRules] = React.useState<ReminderRule[]>([]);
+  const [remindersLoaded, setRemindersLoaded] = React.useState(false);
+  const [remindersLoading, setRemindersLoading] = React.useState(false);
+  const [reminderModalOpen, setReminderModalOpen] = React.useState(false);
+  const [editingRule, setEditingRule] = React.useState<ReminderRule | null>(null);
 
   React.useEffect(() => {
     fetch("/api/events").then((r) => { if (r.ok) setHasEnterpriseFlag(true); }).catch(() => {});
+    // Load org to check if Stripe Connect is configured
+    fetch("/api/team", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((json) => {
+        const accountId = json?.org?.stripe_account_id ?? null;
+        setOrgStripeAccountId(accountId);
+      })
+      .catch(() => setOrgStripeAccountId(null));
   }, []);
 
   // ── Data loading ────────────────────────────────────────────────────────────
@@ -486,6 +553,36 @@ export default function TemplatesPage() {
     }
   }
 
+  async function loadReminderRules(templateId: string) {
+    if (remindersLoading) return;
+    setRemindersLoading(true);
+    try {
+      const res = await fetch(`/api/templates/${templateId}/reminder-rules`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Failed to load reminder rules");
+      setReminderRules(json.rules ?? []);
+      setRemindersLoaded(true);
+    } catch (e: any) {
+      notify({ title: "Could not load reminder rules", description: e?.message, variant: "error" });
+    } finally {
+      setRemindersLoading(false);
+    }
+  }
+
+  function handleTabChange(tab: "requirements" | "reminders") {
+    setActiveTab(tab);
+    if (tab === "reminders" && selected?.id && !selected.id.startsWith("temp-") && !remindersLoaded) {
+      loadReminderRules(selected.id);
+    }
+  }
+
+  // Reset reminders state when a different template is selected
+  React.useEffect(() => {
+    setRemindersLoaded(false);
+    setReminderRules([]);
+    setActiveTab("requirements");
+  }, [selected?.id]);
+
   // Patch a single requirement at index idx with partial updates.
   function updateReq(idx: number, patch: Partial<Requirement>) {
     setSelected((prev) => {
@@ -599,30 +696,87 @@ export default function TemplatesPage() {
               />
             </FormField>
 
-            <PhaseAwareRequirements
-              selected={selected}
-              activePhase={activePhase}
-              uploadingIdx={uploadingIdx}
-              setActivePhase={setActivePhase}
-              setSelected={setSelected}
-              updateReq={updateReq}
-              uploadAttachment={uploadAttachment}
-              hasEnterpriseFlag={hasEnterpriseFlag}
-            />
-
-            <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-4">
-              <Button onClick={saveSelected} loading={saving} disabled={saving || deleting}>
-                Save
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={deleteSelected}
-                loading={deleting}
-                disabled={saving || deleting}
+            {/* Tab bar */}
+            <div className="flex gap-1 border-b border-[var(--color-border)] pb-0">
+              <button
+                type="button"
+                onClick={() => handleTabChange("requirements")}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                  activeTab === "requirements"
+                    ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                    : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                }`}
               >
-                Delete
-              </Button>
+                Requirements
+              </button>
+              {hasEnterpriseFlag && selected.id && !selected.id.startsWith("temp-") && (
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("reminders")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                    activeTab === "reminders"
+                      ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                      : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                  }`}
+                >
+                  Reminders
+                </button>
+              )}
             </div>
+
+            {activeTab === "requirements" && (
+              <PhaseAwareRequirements
+                selected={selected}
+                activePhase={activePhase}
+                uploadingIdx={uploadingIdx}
+                setActivePhase={setActivePhase}
+                setSelected={setSelected}
+                updateReq={updateReq}
+                uploadAttachment={uploadAttachment}
+                hasEnterpriseFlag={hasEnterpriseFlag}
+                orgStripeAccountId={orgStripeAccountId}
+              />
+            )}
+
+            {activeTab === "reminders" && hasEnterpriseFlag && selected.id && !selected.id.startsWith("temp-") && (
+              <RemindersTab
+                templateId={selected.id}
+                phases={selected.definition.phases ?? []}
+                rules={reminderRules}
+                loading={remindersLoading}
+                editingRule={editingRule}
+                modalOpen={reminderModalOpen}
+                onOpenModal={(rule) => { setEditingRule(rule ?? null); setReminderModalOpen(true); }}
+                onCloseModal={() => { setReminderModalOpen(false); setEditingRule(null); }}
+                onRuleSaved={(rule, isNew) => {
+                  if (isNew) {
+                    setReminderRules((prev) => [...prev, rule]);
+                  } else {
+                    setReminderRules((prev) => prev.map((r) => r.id === rule.id ? rule : r));
+                  }
+                }}
+                onRuleDeleted={(ruleId) => {
+                  setReminderRules((prev) => prev.filter((r) => r.id !== ruleId));
+                }}
+                notify={notify}
+              />
+            )}
+
+            {activeTab === "requirements" && (
+              <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-4">
+                <Button onClick={saveSelected} loading={saving} disabled={saving || deleting}>
+                  Save
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={deleteSelected}
+                  loading={deleting}
+                  disabled={saving || deleting}
+                >
+                  Delete
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : null}
@@ -642,6 +796,7 @@ function PhaseAwareRequirements({
   updateReq,
   uploadAttachment,
   hasEnterpriseFlag,
+  orgStripeAccountId,
 }: {
   selected: TemplateDetail;
   activePhase: number;
@@ -651,6 +806,7 @@ function PhaseAwareRequirements({
   updateReq: (idx: number, patch: Partial<Requirement>) => void;
   uploadAttachment: (idx: number, file: File) => void;
   hasEnterpriseFlag: boolean;
+  orgStripeAccountId?: string | null;
 }) {
   const allReqs = selected.definition.requirements;
   const phases = selected.definition.phases ?? [];
@@ -824,6 +980,7 @@ function PhaseAwareRequirements({
         onUpdate={handleUpdate}
         onDelete={handleDelete}
         onUploadAttachment={handleUpload}
+        orgStripeAccountId={orgStripeAccountId}
       />
 
       {/* Add requirement */}
@@ -839,6 +996,434 @@ function PhaseAwareRequirements({
   );
 }
 
+// ─── RemindersTab ─────────────────────────────────────────────────────────────
+
+function RemindersTab({
+  templateId,
+  phases,
+  rules,
+  loading,
+  editingRule,
+  modalOpen,
+  onOpenModal,
+  onCloseModal,
+  onRuleSaved,
+  onRuleDeleted,
+  notify,
+}: {
+  templateId: string;
+  phases: PhaseDef[];
+  rules: ReminderRule[];
+  loading: boolean;
+  editingRule: ReminderRule | null;
+  modalOpen: boolean;
+  onOpenModal: (rule?: ReminderRule) => void;
+  onCloseModal: () => void;
+  onRuleSaved: (rule: ReminderRule, isNew: boolean) => void;
+  onRuleDeleted: (ruleId: string) => void;
+  notify: (opts: { title: string; description?: string; variant?: "success" | "error" }) => void;
+}) {
+  async function handleToggleActive(rule: ReminderRule) {
+    try {
+      const res = await fetch(`/api/reminder-rules/${rule.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ is_active: !rule.is_active }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Failed");
+      onRuleSaved(json.rule, false);
+    } catch (e: any) {
+      notify({ title: "Update failed", description: e?.message, variant: "error" });
+    }
+  }
+
+  async function handleDelete(rule: ReminderRule) {
+    try {
+      const res = await fetch(`/api/reminder-rules/${rule.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Failed");
+      onRuleDeleted(rule.id);
+      notify({ title: "Reminder rule removed", variant: "success" });
+    } catch (e: any) {
+      notify({ title: "Delete failed", description: e?.message, variant: "error" });
+    }
+  }
+
+  function triggerDescription(rule: ReminderRule) {
+    if (rule.rule_type === "deadline_based") {
+      const n = rule.trigger_offset_days;
+      if (n > 0) return `${n} day${n !== 1 ? "s" : ""} before deadline`;
+      if (n < 0) return `${Math.abs(n)} day${Math.abs(n) !== 1 ? "s" : ""} after deadline`;
+      return "On the deadline";
+    }
+    if (rule.rule_type === "inactivity_based") {
+      return `After ${rule.trigger_offset_days} day${rule.trigger_offset_days !== 1 ? "s" : ""} of inactivity`;
+    }
+    return `After ${rule.trigger_offset_days} day${rule.trigger_offset_days !== 1 ? "s" : ""} with missing items`;
+  }
+
+  function phaseLabel(rule: ReminderRule) {
+    if (rule.phase_number == null) return "All phases";
+    const phase = phases.find((p) => p.number === rule.phase_number);
+    return phase ? phase.name : `Phase ${rule.phase_number}`;
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-2 py-2">
+        <div className="h-16 animate-pulse rounded-[var(--radius-md)] bg-[var(--color-bg-subtle)]" />
+        <div className="h-16 animate-pulse rounded-[var(--radius-md)] bg-[var(--color-bg-subtle)]" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {rules.length === 0 ? (
+        <div className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-5 py-8 text-center text-sm text-[var(--color-text-muted)]">
+          No reminder rules yet. Add one to automatically chase clients.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {rules.map((rule) => (
+            <div
+              key={rule.id}
+              className={`rounded-[var(--radius-md)] border p-4 ${
+                rule.is_active
+                  ? "border-[var(--color-border)] bg-[var(--color-panel)]"
+                  : "border-[var(--color-border)] bg-[var(--color-bg-subtle)] opacity-60"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="inline-flex items-center rounded-full bg-[var(--color-accent-subtle)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-accent)]">
+                      {RULE_TYPE_LABELS[rule.rule_type]}
+                    </span>
+                    <span className="text-xs text-[var(--color-text-muted)]">
+                      {phaseLabel(rule)}
+                    </span>
+                    <span className="text-xs text-[var(--color-text-muted)]">·</span>
+                    <span className="text-xs text-[var(--color-text-secondary)]">
+                      {triggerDescription(rule)}
+                    </span>
+                  </div>
+                  <div className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                    {rule.subject}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Active toggle */}
+                  <button
+                    type="button"
+                    title={rule.is_active ? "Deactivate" : "Activate"}
+                    onClick={() => handleToggleActive(rule)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                      rule.is_active ? "bg-[var(--color-accent)]" : "bg-[var(--color-border)]"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        rule.is_active ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onOpenModal(rule)}
+                    className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] transition"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(rule)}
+                    className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)] hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => onOpenModal()}
+        className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-4 py-3 text-sm font-semibold text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-white"
+      >
+        <span className="text-lg leading-none">+</span>
+        Add reminder rule
+      </button>
+
+      {modalOpen && (
+        <ReminderRuleModal
+          templateId={templateId}
+          phases={phases}
+          rule={editingRule}
+          onClose={onCloseModal}
+          onSaved={onRuleSaved}
+          notify={notify}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── ReminderRuleModal ────────────────────────────────────────────────────────
+
+function ReminderRuleModal({
+  templateId,
+  phases,
+  rule,
+  onClose,
+  onSaved,
+  notify,
+}: {
+  templateId: string;
+  phases: PhaseDef[];
+  rule: ReminderRule | null;
+  onClose: () => void;
+  onSaved: (rule: ReminderRule, isNew: boolean) => void;
+  notify: (opts: { title: string; description?: string; variant?: "success" | "error" }) => void;
+}) {
+  const isNew = !rule;
+  const [ruleType, setRuleType] = React.useState<RuleType>(rule?.rule_type ?? "deadline_based");
+  const [phaseNumber, setPhaseNumber] = React.useState<string>(
+    rule?.phase_number != null ? String(rule.phase_number) : ""
+  );
+  const [offsetDays, setOffsetDays] = React.useState<string>(
+    rule != null ? String(rule.trigger_offset_days) : "3"
+  );
+  const [subject, setSubject] = React.useState(rule?.subject ?? "");
+  const [body, setBody] = React.useState(rule?.body ?? "");
+  const [saving, setSaving] = React.useState(false);
+
+  const subjectRef = React.useRef<HTMLInputElement>(null);
+  const bodyRef = React.useRef<HTMLTextAreaElement>(null);
+
+  function insertPlaceholder(
+    field: "subject" | "body",
+    placeholder: string
+  ) {
+    if (field === "subject" && subjectRef.current) {
+      const el = subjectRef.current;
+      const start = el.selectionStart ?? subject.length;
+      const end = el.selectionEnd ?? subject.length;
+      const next = subject.slice(0, start) + placeholder + subject.slice(end);
+      setSubject(next);
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(start + placeholder.length, start + placeholder.length);
+      }, 0);
+    } else if (field === "body" && bodyRef.current) {
+      const el = bodyRef.current;
+      const start = el.selectionStart ?? body.length;
+      const end = el.selectionEnd ?? body.length;
+      const next = body.slice(0, start) + placeholder + body.slice(end);
+      setBody(next);
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(start + placeholder.length, start + placeholder.length);
+      }, 0);
+    }
+  }
+
+  async function handleSave() {
+    if (saving) return;
+
+    const trimmedSubject = subject.trim();
+    const trimmedBody = body.trim();
+    const parsedOffset = parseInt(offsetDays, 10);
+
+    if (!trimmedSubject) {
+      notify({ title: "Subject is required", variant: "error" }); return;
+    }
+    if (!trimmedBody) {
+      notify({ title: "Body is required", variant: "error" }); return;
+    }
+    if (isNaN(parsedOffset)) {
+      notify({ title: "Trigger offset must be a number", variant: "error" }); return;
+    }
+
+    const payload = {
+      rule_type: ruleType,
+      phase_number: phaseNumber ? parseInt(phaseNumber, 10) : null,
+      trigger_offset_days: parsedOffset,
+      subject: trimmedSubject,
+      body: trimmedBody,
+    };
+
+    setSaving(true);
+    try {
+      let res: Response;
+      if (isNew) {
+        res = await fetch(`/api/templates/${templateId}/reminder-rules`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        res = await fetch(`/api/reminder-rules/${rule!.id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Failed to save");
+
+      const savedRule: ReminderRule = json.rule;
+      onSaved(savedRule, isNew);
+      notify({ title: isNew ? "Reminder rule created" : "Reminder rule updated", variant: "success" });
+      onClose();
+    } catch (e: any) {
+      notify({ title: "Save failed", description: e?.message, variant: "error" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const placeholders = ["{{client_name}}", "{{phase_name}}", "{{deadline}}", "{{missing_items}}"];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-lg rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
+          <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+            {isNew ? "Add reminder rule" : "Edit reminder rule"}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex flex-col gap-4 overflow-y-auto p-5" style={{ maxHeight: "70vh" }}>
+          {/* Rule type */}
+          <FormField label="Rule type">
+            <div className="flex flex-col gap-2">
+              {(["deadline_based", "inactivity_based", "missing_item_based"] as RuleType[]).map((type) => (
+                <label key={type} className="flex cursor-pointer items-start gap-2.5">
+                  <input
+                    type="radio"
+                    name="rule_type"
+                    value={type}
+                    checked={ruleType === type}
+                    onChange={() => setRuleType(type)}
+                    className="mt-0.5 accent-[var(--color-accent)]"
+                  />
+                  <span className="text-sm text-[var(--color-text-primary)]">
+                    {RULE_TYPE_LABELS[type]}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </FormField>
+
+          {/* Phase */}
+          <FormField label="Phase">
+            <select
+              className="w-full rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+              value={phaseNumber}
+              onChange={(e) => setPhaseNumber(e.target.value)}
+            >
+              <option value="">All phases</option>
+              {phases.map((p) => (
+                <option key={p.number} value={String(p.number)}>
+                  {p.name}
+                </option>
+              ))}
+              {phases.length === 0 && (
+                <option value="1">Phase 1</option>
+              )}
+            </select>
+          </FormField>
+
+          {/* Trigger offset days */}
+          <FormField label="Trigger offset (days)">
+            <Input
+              type="number"
+              value={offsetDays}
+              onChange={(e) => setOffsetDays(e.target.value)}
+              placeholder="e.g. 3"
+            />
+            <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+              {RULE_TYPE_HINTS[ruleType]}
+            </p>
+          </FormField>
+
+          {/* Subject */}
+          <FormField label="Subject">
+            <div className="flex flex-wrap gap-1 mb-1.5">
+              {placeholders.map((ph) => (
+                <button
+                  key={ph}
+                  type="button"
+                  onClick={() => insertPlaceholder("subject", ph)}
+                  className="rounded border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)] transition"
+                >
+                  {ph}
+                </button>
+              ))}
+            </div>
+            <input
+              ref={subjectRef}
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="e.g. Reminder: items outstanding for {{client_name}}"
+              className="w-full rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none"
+            />
+          </FormField>
+
+          {/* Body */}
+          <FormField label="Body">
+            <div className="flex flex-wrap gap-1 mb-1.5">
+              {placeholders.map((ph) => (
+                <button
+                  key={ph}
+                  type="button"
+                  onClick={() => insertPlaceholder("body", ph)}
+                  className="rounded border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)] transition"
+                >
+                  {ph}
+                </button>
+              ))}
+            </div>
+            <textarea
+              ref={bodyRef}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={5}
+              placeholder={`Hi {{client_name}},\n\nThis is a reminder that your ${RULE_TYPE_LABELS[ruleType].toLowerCase()} reminder for {{phase_name}} is due.\n\nMissing items:\n{{missing_items}}`}
+              className="w-full rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none resize-y"
+            />
+          </FormField>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-2 border-t border-[var(--color-border)] px-5 py-4">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} loading={saving} disabled={saving}>
+            {isNew ? "Create rule" : "Save changes"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── RequirementList ──────────────────────────────────────────────────────────
 // Drag-and-drop list wrapper.
 
@@ -849,6 +1434,7 @@ function RequirementList({
   onUpdate,
   onDelete,
   onUploadAttachment,
+  orgStripeAccountId,
 }: {
   requirements: Requirement[];
   uploadingIdx: Record<number, boolean>;
@@ -856,6 +1442,7 @@ function RequirementList({
   onUpdate: (idx: number, patch: Partial<Requirement>) => void;
   onDelete: (idx: number) => void;
   onUploadAttachment: (idx: number, file: File) => void;
+  orgStripeAccountId?: string | null;
 }) {
   const [dragIdx, setDragIdx] = React.useState<number | null>(null);
   const [overIdx, setOverIdx] = React.useState<number | null>(null);
@@ -923,6 +1510,7 @@ function RequirementList({
             onUpdate={(patch) => onUpdate(idx, patch)}
             onDelete={() => onDelete(idx)}
             onUploadAttachment={(file) => onUploadAttachment(idx, file)}
+            orgStripeAccountId={orgStripeAccountId}
           />
         </div>
       ))}
@@ -940,6 +1528,7 @@ function RequirementEditor({
   onUpdate,
   onDelete,
   onUploadAttachment,
+  orgStripeAccountId,
 }: {
   idx: number;
   r: Requirement;
@@ -948,8 +1537,10 @@ function RequirementEditor({
   onUpdate: (patch: Partial<Requirement>) => void;
   onDelete: () => void;
   onUploadAttachment: (file: File) => void;
+  orgStripeAccountId?: string | null;
 }) {
   const isHeading = r.type === "heading";
+  const isInfo = r.type === "info";
   const [showAdvanced, setShowAdvanced] = React.useState(false);
   const priorCandidates = priorReqs.filter(
     (p) => p.type !== "heading" && p.label && p.label.trim()
@@ -961,7 +1552,9 @@ function RequirementEditor({
 
   return (
     <div className={`rounded-[var(--radius-md)] border flex flex-col gap-0 overflow-hidden ${
-      isHeading ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] bg-[var(--color-panel)]"
+      isHeading ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]" :
+      isInfo ? "border-[var(--color-info)] bg-[var(--color-info-subtle)]" :
+      "border-[var(--color-border)] bg-[var(--color-panel)]"
     }`}>
       {/* ── Main row ── */}
       <div className="flex items-center gap-2 px-3 py-2">
@@ -985,37 +1578,47 @@ function RequirementEditor({
           value={r.type}
           onChange={(e) => {
             const type = e.target.value as RequirementType;
+            if (type === "payment" && !orgStripeAccountId) return; // guard: shouldn't happen but safety
             const patch: Partial<Requirement> = { type };
             if (type !== "file") { patch.attachment_path = null; patch.file_mode = undefined; patch.link_url = null; }
             if (type !== "multiple_choice") { patch.options = undefined; patch.allow_multi_select = undefined; patch.include_other = undefined; }
             if (type !== "text") { patch.multiline = undefined; }
+            if (type !== "payment") { patch.payment_amount = undefined; patch.payment_currency = undefined; patch.payment_description = undefined; }
+            if (type !== "info") { patch.info_content = undefined; }
+            if (type === "info" || type === "heading") { patch.is_required = false; }
             if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
             if (type === "file") patch.file_mode = "upload";
             if (type === "heading") patch.is_required = false;
+            if (type === "payment") { patch.payment_currency = r.payment_currency ?? "GBP"; patch.is_required = true; }
             onUpdate(patch);
           }}
         >
-          {(Object.keys(TYPE_LABELS) as RequirementType[]).map((t) => (
-            <option key={t} value={t}>{TYPE_LABELS[t]}</option>
-          ))}
+          {(Object.keys(TYPE_LABELS) as RequirementType[]).map((t) => {
+            const isPaymentDisabled = t === "payment" && !orgStripeAccountId;
+            return (
+              <option key={t} value={t} disabled={isPaymentDisabled}>
+                {TYPE_LABELS[t]}{isPaymentDisabled ? " (Connect Stripe in Settings → Payments)" : ""}
+              </option>
+            );
+          })}
         </select>
 
         {/* Label */}
         <Input
           value={r.label}
           onChange={(e) => onUpdate({ label: e.target.value })}
-          placeholder={isHeading ? "Section heading text" : "Label"}
+          placeholder={isHeading ? "Section heading text" : isInfo ? "Optional title (e.g. \"Important information\")" : "Label"}
           className={`flex-1 text-sm ${isHeading ? "font-semibold" : ""}`}
         />
 
-        {/* Required toggle or heading hint */}
-        {!isHeading ? (
+        {/* Required toggle or type hint */}
+        {!isHeading && !isInfo ? (
           <label className="flex shrink-0 cursor-pointer items-center gap-1.5">
             <input type="checkbox" checked={r.is_required} onChange={(e) => onUpdate({ is_required: e.target.checked })} className="accent-[var(--color-accent)]" />
             <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">Required</span>
           </label>
         ) : (
-          <span className="shrink-0 text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">divider</span>
+          <span className="shrink-0 text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">{isInfo ? "info" : "divider"}</span>
         )}
 
         {/* Delete */}
@@ -1026,7 +1629,7 @@ function RequirementEditor({
       </div>
 
       {/* ── Sub-options (only when needed) ── */}
-      {(r.type === "file" || r.type === "text" || r.type === "multiple_choice") ? (
+      {(r.type === "file" || r.type === "text" || r.type === "multiple_choice" || r.type === "payment" || r.type === "info") ? (
         <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 flex flex-col gap-2">
 
           {/* File: template mode toggle + input */}
@@ -1068,6 +1671,68 @@ function RequirementEditor({
               <input type="checkbox" id={`multiline-${idx}`} checked={!!r.multiline} onChange={(e) => onUpdate({ multiline: e.target.checked })} className="accent-[var(--color-accent)]" />
               <span className={toggleLabelCls}>Multi-line textarea</span>
             </label>
+          ) : null}
+
+          {/* Payment: amount, currency, description */}
+          {r.type === "payment" ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-3.5 w-3.5 shrink-0 text-[var(--color-accent)]" />
+                <span className="text-xs font-medium text-[var(--color-text-secondary)]">Payment details</span>
+              </div>
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Amount</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={r.payment_amount ?? ""}
+                    onChange={(e) => onUpdate({ payment_amount: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="e.g. 500.00"
+                    className="w-32 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Currency</label>
+                  <select
+                    className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1.5 text-xs text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+                    value={r.payment_currency ?? "GBP"}
+                    onChange={(e) => onUpdate({ payment_currency: e.target.value })}
+                  >
+                    <option value="GBP">GBP</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="SEK">SEK</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Description (optional)</label>
+                <textarea
+                  value={r.payment_description ?? ""}
+                  onChange={(e) => onUpdate({ payment_description: e.target.value || null })}
+                  placeholder="Describe what the payment is for…"
+                  rows={2}
+                  className="w-full rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none resize-none"
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {/* Info: description content editor */}
+          {r.type === "info" ? (
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Description text</label>
+              <textarea
+                value={r.info_content ?? ""}
+                onChange={(e) => onUpdate({ info_content: e.target.value || null })}
+                placeholder="Write a description, instructions, or any information the exhibitor should see…"
+                rows={4}
+                className="w-full rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none resize-y"
+              />
+              <p className="text-[10px] text-[var(--color-text-muted)]">Shown to the exhibitor as read-only — they do not fill this in.</p>
+            </div>
           ) : null}
 
           {/* Multiple choice: options list + feature toggles */}

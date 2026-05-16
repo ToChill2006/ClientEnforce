@@ -27,14 +27,14 @@
   --color-accent-strong:  #3A46B0;
 
   /* Status (semantic) */
-  --color-success:        #16A34A;
-  --color-success-subtle: #F0FDF4;
-  --color-warning:        #CA8A04;
-  --color-warning-subtle: #FEFCE8;
-  --color-danger:         #DC2626;
-  --color-danger-subtle:  #FEF2F2;
-  --color-info:           #0891B2;
-  --color-info-subtle:    #ECFEFF;
+  --color-success:        #15803D;
+  --color-success-subtle: #DCFCE7;
+  --color-warning:        #92400E;
+  --color-warning-subtle: #FEF3C7;
+  --color-danger:         #B91C1C;
+  --color-danger-subtle:  #FEE2E2;
+  --color-info:           #0E7490;
+  --color-info-subtle:    #CFFAFE;
 
   /* Progress aliases */
   --color-complete:       var(--color-success);

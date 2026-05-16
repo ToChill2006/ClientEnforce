@@ -7,6 +7,7 @@ import { Input, Select } from "@/components/ui/input";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 import { PageHeader } from "@/components/ui/page-header";
 import { RefreshCw, UserPlus } from "lucide-react";
+import { ROLE_LABELS, type Role } from "@/lib/permissions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,7 +15,7 @@ type Priority = "low" | "medium" | "high" | "urgent";
 
 type Member = {
   user_id: string;
-  role: "owner" | "admin" | "member" | "onboarder" | "reviewer";
+  role: "owner" | "admin" | "member" | "onboarder" | "reviewer" | "external_viewer";
   email: string | null;
   full_name: string | null;
 };
@@ -151,6 +152,13 @@ export default function TeamPage() {
   const [loading, setLoading] = React.useState(true);
   const [err, setErr] = React.useState<string | null>(null);
 
+  // External viewer scopes
+  const [memberScopes, setMemberScopes] = React.useState<Record<string, string[]>>({});
+  const [availableEvents, setAvailableEvents] = React.useState<Array<{ id: string; name: string }>>([]);
+  const [editScopeUserId, setEditScopeUserId] = React.useState<string | null>(null);
+  const [editScopeEventIds, setEditScopeEventIds] = React.useState<string[]>([]);
+  const [savingScopes, setSavingScopes] = React.useState(false);
+
   // ── Create task form state ──
   const [showCreate, setShowCreate] = React.useState(false);
   const [assignedTo, setAssignedTo] = React.useState("");
@@ -182,6 +190,55 @@ export default function TeamPage() {
   const role = meMember?.role ?? null;
   const canAssign = role === "owner" || role === "admin";
   const canDelete = canAssign;
+
+  // ─── External viewer scope helpers ───────────────────────────────────────────
+  async function loadEventScopes(memberList: Member[]) {
+    const evViewers = memberList.filter((m) => m.role === "external_viewer");
+    if (evViewers.length === 0) return;
+
+    // Load available events (once)
+    const evRes = await fetch("/api/events", { cache: "no-store" }).catch(() => null);
+    if (evRes?.ok) {
+      const j = await evRes.json().catch(() => null);
+      const evts = Array.isArray(j?.events) ? j.events : [];
+      setAvailableEvents(evts.map((e: any) => ({ id: e.id, name: e.name })));
+    }
+
+    // Load per-user scopes
+    const results: Record<string, string[]> = {};
+    await Promise.all(
+      evViewers.map(async (m) => {
+        try {
+          const r = await fetch(`/api/team/external-viewer-scopes?user_id=${m.user_id}`, { cache: "no-store" });
+          if (!r.ok) return;
+          const j = await r.json().catch(() => null);
+          results[m.user_id] = Array.isArray(j?.event_ids) ? j.event_ids : [];
+        } catch { /* ignore */ }
+      })
+    );
+    setMemberScopes((prev) => ({ ...prev, ...results }));
+  }
+
+  async function saveScopes(userId: string, eventIds: string[]) {
+    setSavingScopes(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/team/external-viewer-scopes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ user_id: userId, event_ids: eventIds }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to save scopes");
+      setMemberScopes((prev) => ({ ...prev, [userId]: eventIds }));
+      setEditScopeUserId(null);
+      setEditScopeEventIds([]);
+    } catch (e: unknown) {
+      setErr(getErrMsg(e, "Failed to save scopes"));
+    } finally {
+      setSavingScopes(false);
+    }
+  }
 
   // ─── Load ────────────────────────────────────────────────────────────────────
   async function loadAll() {
@@ -245,6 +302,9 @@ export default function TeamPage() {
       setMe(normalizedMe);
       setMembers(normalizedMembers);
       setTasks(normalizedTasks);
+
+      // Load scopes for external viewers (best-effort, non-blocking)
+      loadEventScopes(normalizedMembers).catch(() => {});
     } catch (e: unknown) {
       setErr(getErrMsg(e, "Failed to load"));
     } finally {
@@ -259,7 +319,12 @@ export default function TeamPage() {
   const filteredMembers = React.useMemo(() => {
     const q = memberSearch.trim().toLowerCase();
     return members.filter((m) => {
-      const roleOk = !memberRoleFilter || m.role === memberRoleFilter;
+      // Normalize legacy roles: owner→admin, member→onboarder for filter purposes
+      const normalizedRole =
+        m.role === "owner" ? "admin" :
+        m.role === "member" ? "onboarder" :
+        m.role;
+      const roleOk = !memberRoleFilter || normalizedRole === memberRoleFilter;
       if (!q) return roleOk;
       return roleOk && ((m.full_name ?? "").toLowerCase().includes(q) || (m.email ?? "").toLowerCase().includes(q));
     });
@@ -525,11 +590,10 @@ export default function TeamPage() {
               onChange={(e) => setMemberRoleFilter(e.target.value as Member["role"] | "")}
             >
               <option value="">All roles</option>
-              <option value="owner">Owner</option>
               <option value="admin">Admin</option>
-              <option value="member">Member</option>
               <option value="onboarder">Onboarder</option>
               <option value="reviewer">Reviewer</option>
+              <option value="external_viewer">Guest Viewer</option>
             </Select>
           </div>
 
@@ -549,9 +613,26 @@ export default function TeamPage() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="font-medium text-sm text-[var(--color-text-primary)]">{m.full_name ?? "—"}</span>
                       {isMe ? <span className="text-[10px] text-[var(--color-accent)] font-semibold uppercase tracking-wide">You</span> : null}
-                      <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{m.role}</span>
+                      <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{ROLE_LABELS[m.role as Role] ?? m.role.replace("_", " ")}</span>
                     </div>
                     <div className="mt-0.5 text-xs text-[var(--color-text-secondary)] truncate">{m.email ?? "—"}</div>
+                    {m.role === "external_viewer" && (() => {
+                      const scopeIds = memberScopes[m.user_id] ?? [];
+                      const scopeNames = scopeIds.map((id) => availableEvents.find((e) => e.id === id)?.name ?? id);
+                      return (
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                          <span>Access: {scopeNames.length > 0 ? scopeNames.join(", ") : "No events"}</span>
+                          {canAssign && (
+                            <button
+                              onClick={() => { setEditScopeUserId(m.user_id); setEditScopeEventIds(scopeIds); }}
+                              className="text-[var(--color-accent)] hover:underline"
+                            >
+                              Edit access
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
                     {stats ? (
                       <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-[var(--color-text-muted)]">
                         <span>{stats.open} open</span>
@@ -602,7 +683,31 @@ export default function TeamPage() {
                         </div>
                       </td>
                       <td className="py-3">
-                        <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{m.role}</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)] capitalize">{ROLE_LABELS[m.role as Role] ?? m.role.replace("_", " ")}</span>
+                          {m.role === "external_viewer" && (() => {
+                            const scopeIds = memberScopes[m.user_id] ?? [];
+                            const scopeNames = scopeIds.map((id) => availableEvents.find((e) => e.id === id)?.name ?? id);
+                            return (
+                              <div className="flex flex-wrap items-center gap-1">
+                                <span className="text-[11px] text-[var(--color-text-muted)]">
+                                  Access: {scopeNames.length > 0 ? scopeNames.join(", ") : "No events"}
+                                </span>
+                                {canAssign && (
+                                  <button
+                                    onClick={() => {
+                                      setEditScopeUserId(m.user_id);
+                                      setEditScopeEventIds(scopeIds);
+                                    }}
+                                    className="text-[11px] text-[var(--color-accent)] hover:underline"
+                                  >
+                                    Edit access
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </td>
                       <td className="py-3 text-center text-[var(--color-text-secondary)]">{stats.open}</td>
                       <td className="py-3 text-center text-[var(--color-text-secondary)]">{stats.in_progress}</td>
@@ -624,6 +729,57 @@ export default function TeamPage() {
           </div>
         </div>
       ) : null}
+
+      {/* ── Edit Access Modal for external_viewer ── */}
+      {editScopeUserId ? (() => {
+        const member = members.find((m) => m.user_id === editScopeUserId);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)]">
+            <div className="w-full max-w-md rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 shadow-[var(--shadow-xl)]">
+              <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Edit event access</h3>
+              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                {member?.full_name ?? member?.email ?? "This user"} — select which events they can view.
+              </p>
+              <div className="mt-4 max-h-56 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 space-y-2">
+                {availableEvents.length === 0 ? (
+                  <p className="text-sm text-[var(--color-text-muted)]">No events available.</p>
+                ) : availableEvents.map((ev) => (
+                  <label key={ev.id} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--color-text-primary)]">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
+                      checked={editScopeEventIds.includes(ev.id)}
+                      onChange={(e) => {
+                        setEditScopeEventIds((prev) =>
+                          e.target.checked ? [...prev, ev.id] : prev.filter((id) => id !== ev.id)
+                        );
+                      }}
+                    />
+                    {ev.name}
+                  </label>
+                ))}
+              </div>
+              <div className="mt-4 flex gap-2 justify-end">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => { setEditScopeUserId(null); setEditScopeEventIds([]); }}
+                  disabled={savingScopes}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => saveScopes(editScopeUserId, editScopeEventIds)}
+                  disabled={savingScopes}
+                >
+                  {savingScopes ? "Saving…" : "Save access"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })() : null}
 
       {/* ══════════════════════════════════
           TAB: TASKS
@@ -1022,7 +1178,7 @@ export default function TeamPage() {
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">{m.full_name ?? m.email ?? "—"}</span>
                                 {isMe ? <span className="text-[10px] text-[var(--color-accent)] font-semibold uppercase tracking-wide shrink-0">You</span> : null}
-                                <span className="text-xs text-[var(--color-text-muted)] capitalize shrink-0">{m.role}</span>
+                                <span className="text-xs text-[var(--color-text-muted)] shrink-0">{ROLE_LABELS[m.role as Role] ?? m.role}</span>
                               </div>
                               <div className="flex items-center gap-3 text-xs text-[var(--color-text-secondary)] shrink-0">
                                 <span>{stats.open} open</span>

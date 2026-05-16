@@ -89,6 +89,7 @@ export function computeDisplayStatus(
 ): OnboardingStatus {
   const ob = String(onboardingStatus ?? "").toLowerCase();
 
+  if (ob === "draft") return "draft";
   if (ob === "sent") return "sent";
   if (ob === "completed") return "completed";
 

@@ -12,6 +12,7 @@ type Org = {
   tier?: string | null;
   seats_limit?: number | null;
   stripe_subscription_status?: string | null;
+  stripe_account_id?: string | null;
 };
 
 type Invite = {
@@ -92,9 +93,21 @@ export default function SettingsPage() {
 
   // Invite form
   const [inviteEmail, setInviteEmail] = React.useState("");
-  const [inviteRole, setInviteRole] = React.useState<"member" | "admin">("member");
+  const [inviteRole, setInviteRole] = React.useState<"admin" | "onboarder" | "reviewer" | "external_viewer">("onboarder");
   const [inviting, setInviting] = React.useState(false);
+
+  // External viewer event scopes
+  const [availableEvents, setAvailableEvents] = React.useState<Array<{ id: string; name: string }>>([]);
+  const [selectedEventIds, setSelectedEventIds] = React.useState<string[]>([]);
+  const [eventsLoaded, setEventsLoaded] = React.useState(false);
+
+  // Per-member scope state for display and editing
+  const [memberScopes, setMemberScopes] = React.useState<Record<string, string[]>>({});
+  const [editScopeUserId, setEditScopeUserId] = React.useState<string | null>(null);
+  const [editScopeEventIds, setEditScopeEventIds] = React.useState<string[]>([]);
+  const [savingScopes, setSavingScopes] = React.useState(false);
   const [loggingOut, setLoggingOut] = React.useState(false);
+  const [stripeConnectBusy, setStripeConnectBusy] = React.useState(false);
 
   // White-label state
   const [wl, setWl] = React.useState<WhiteLabelSettings>({
@@ -239,12 +252,41 @@ export default function SettingsPage() {
     }
   }
 
+  // Load scopes for external_viewer members whenever members list changes
+  React.useEffect(() => {
+    const externalViewerIds = members
+      .filter((m) => (m.role ?? "") === "external_viewer")
+      .map((m) => (m.user_id ?? m.id ?? ""))
+      .filter(Boolean);
+    if (externalViewerIds.length > 0) {
+      loadMemberScopes(externalViewerIds);
+    }
+  }, [members]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load events when external_viewer role is selected
+  React.useEffect(() => {
+    if (inviteRole === "external_viewer") {
+      loadEvents();
+    }
+  }, [inviteRole]); // eslint-disable-line react-hooks/exhaustive-deps
+
   React.useEffect(() => {
     load();
     loadWhiteLabel();
 
     // If Stripe redirected back with success params, poll briefly until webhook updates DB.
     const params = new URLSearchParams(window.location.search);
+
+    // Handle Stripe Connect return
+    const stripeParam = params.get("stripe");
+    if (stripeParam === "connected") {
+      setPageSuccess("Stripe connected successfully.");
+      void load();
+    } else if (stripeParam === "error") {
+      const msg = params.get("message") ?? "Stripe connection failed.";
+      setPageError(msg);
+    }
+
     const billingParam = String(params.get("billing") ?? "").toLowerCase();
     const sessionId = String(params.get("session_id") ?? "").trim();
     const returnedFromStripe =
@@ -327,6 +369,59 @@ export default function SettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, org?.tier, org?.stripe_subscription_status]);
 
+  async function loadEvents() {
+    if (eventsLoaded) return;
+    try {
+      const res = await fetch("/api/events", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json().catch(() => null);
+      const evts = Array.isArray(json?.events) ? json.events : [];
+      setAvailableEvents(evts.map((e: any) => ({ id: e.id, name: e.name })));
+      setEventsLoaded(true);
+    } catch {
+      // ignore — events feature may not be enabled
+    }
+  }
+
+  async function loadMemberScopes(userIds: string[]) {
+    const results: Record<string, string[]> = {};
+    await Promise.all(
+      userIds.map(async (uid) => {
+        try {
+          const res = await fetch(`/api/team/external-viewer-scopes?user_id=${uid}`, { cache: "no-store" });
+          if (!res.ok) return;
+          const json = await res.json().catch(() => null);
+          results[uid] = Array.isArray(json?.event_ids) ? json.event_ids : [];
+        } catch {
+          // ignore
+        }
+      })
+    );
+    setMemberScopes((prev) => ({ ...prev, ...results }));
+  }
+
+  async function saveScopes(userId: string, eventIds: string[]) {
+    setSavingScopes(true);
+    setPageError(null);
+    try {
+      const res = await fetch("/api/team/external-viewer-scopes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ user_id: userId, event_ids: eventIds }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to save scopes");
+      setMemberScopes((prev) => ({ ...prev, [userId]: eventIds }));
+      setEditScopeUserId(null);
+      setEditScopeEventIds([]);
+      setPageSuccess("Access scopes updated.");
+    } catch (e: any) {
+      setPageError(e?.message ?? "Failed to save scopes");
+    } finally {
+      setSavingScopes(false);
+    }
+  }
+
   async function createInvite() {
     const email = inviteEmail.trim().toLowerCase();
 
@@ -343,6 +438,12 @@ export default function SettingsPage() {
       return;
     }
 
+    if (inviteRole === "external_viewer" && selectedEventIds.length === 0) {
+      setPageError("Select at least one event for this external viewer.");
+      setPageSuccess(null);
+      return;
+    }
+
     setInviting(true);
     setPageError(null);
     setPageSuccess(null);
@@ -352,6 +453,7 @@ export default function SettingsPage() {
       const candidates = ["/api/invites", "/api/team/invite", "/api/team/invites"];
 
       let lastErr = "Invite failed";
+      let invitedUserId: string | null = null;
       for (const url of candidates) {
         const { res, json } = await postJson(url, { email, role: inviteRole });
         if (res.status === 404) continue;
@@ -367,8 +469,10 @@ export default function SettingsPage() {
         }
 
         setCanInviteMembers(true);
+        invitedUserId = json?.invite?.user_id ?? null;
         setInviteEmail("");
-        setInviteRole("member");
+        setInviteRole("onboarder");
+        setSelectedEventIds([]);
         setPageSuccess("Invite created.");
         await load();
         return;
@@ -481,6 +585,27 @@ export default function SettingsPage() {
       await load();
     } catch (e: any) {
       setPageError(e?.message ?? "Downgrade failed");
+    }
+  }
+
+  async function disconnectStripe() {
+    setStripeConnectBusy(true);
+    setPageError(null);
+    setPageSuccess(null);
+    try {
+      const res = await fetch("/api/stripe/connect", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ disconnect: true }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to disconnect Stripe");
+      setOrg((prev) => prev ? { ...prev, stripe_account_id: null } : prev);
+      setPageSuccess("Stripe account disconnected.");
+    } catch (e: any) {
+      setPageError(e?.message ?? "Disconnect failed");
+    } finally {
+      setStripeConnectBusy(false);
     }
   }
 
@@ -1146,6 +1271,59 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Payments */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payments</CardTitle>
+          <CardDescription>
+            Connect your Stripe account to accept payments directly from exhibitors during onboarding.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!process.env.NEXT_PUBLIC_STRIPE_CONNECT_CLIENT_ID && !org?.stripe_account_id ? (
+            // No STRIPE_CONNECT_CLIENT_ID env var — show graceful note
+            // We check the public env var here; the real check happens server-side
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 text-sm text-[var(--color-text-muted)]">
+              Stripe Connect not configured. Add <code className="font-mono text-xs">STRIPE_CONNECT_CLIENT_ID</code> to your environment to enable payments.
+            </div>
+          ) : org?.stripe_account_id ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-[var(--color-success)]">✓ Stripe connected</span>
+                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-0.5 font-mono text-xs text-[var(--color-text-muted)]">
+                  {org.stripe_account_id.length > 20
+                    ? `${org.stripe_account_id.slice(0, 10)}…${org.stripe_account_id.slice(-6)}`
+                    : org.stripe_account_id}
+                </span>
+              </div>
+              <p className="text-xs text-[var(--color-text-muted)]">
+                Refunds must be processed directly in your Stripe dashboard.
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={disconnectStripe}
+                disabled={stripeConnectBusy}
+              >
+                {stripeConnectBusy ? "Disconnecting…" : "Disconnect"}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Connect Stripe to accept payments from exhibitors directly into your account.
+              </p>
+              <Button
+                onClick={() => { window.location.href = "/api/stripe/connect"; }}
+                disabled={stripeConnectBusy}
+              >
+                Connect Stripe →
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Invite */}
       <Card>
         <CardHeader>
@@ -1178,15 +1356,57 @@ export default function SettingsPage() {
                 disabled={!canInviteMembers}
                 onChange={(e) => setInviteRole(e.target.value as any)}
               >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
+                <option value="admin">Admin — full access, manage team &amp; settings</option>
+                <option value="onboarder">Onboarder — create &amp; send onboardings, manage templates</option>
+                <option value="reviewer">Reviewer — review &amp; approve submissions</option>
+                <option value="external_viewer">Guest Viewer — read-only access to specific events</option>
               </Select>
             </div>
           </div>
 
+          {inviteRole === "external_viewer" && (
+            <div className="space-y-2">
+              <Label>Which events can this person see? <span className="text-red-500">*</span></Label>
+              {availableEvents.length === 0 ? (
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  {eventsLoaded ? "No events available." : "Loading events…"}
+                </p>
+              ) : (
+                <div className="max-h-48 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 space-y-2">
+                  {availableEvents.map((ev) => (
+                    <label key={ev.id} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--color-text-primary)]">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={selectedEventIds.includes(ev.id)}
+                        onChange={(e) => {
+                          setSelectedEventIds((prev) =>
+                            e.target.checked ? [...prev, ev.id] : prev.filter((id) => id !== ev.id)
+                          );
+                        }}
+                      />
+                      {ev.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+              {selectedEventIds.length === 0 && (
+                <p className="text-xs text-[var(--color-text-muted)]">At least one event must be selected.</p>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2">
             {canInviteMembers ? (
-              <Button onClick={createInvite} disabled={inviting || !inviteEmail.trim() || (seatsLimit > 0 && seatsUsed >= seatsLimit)}>
+              <Button
+                onClick={createInvite}
+                disabled={
+                  inviting ||
+                  !inviteEmail.trim() ||
+                  (seatsLimit > 0 && seatsUsed >= seatsLimit) ||
+                  (inviteRole === "external_viewer" && selectedEventIds.length === 0)
+                }
+              >
                 {inviting ? "Creating…" : "Create invite"}
               </Button>
             ) : null}

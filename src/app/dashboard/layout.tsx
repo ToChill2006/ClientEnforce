@@ -63,8 +63,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const hasEnterpriseOnboarding = await currentOrgHasFeature("enterprise_onboarding").catch(() => false);
 
+  // Fetch current user's role for nav restriction
+  let currentUserRole: string | null = null;
+  try {
+    const { data: membershipData } = await supabase
+      .from("memberships")
+      .select("role")
+      .eq("user_id", data.user.id)
+      .limit(1)
+      .maybeSingle();
+    currentUserRole = membershipData?.role ?? null;
+  } catch {
+    // ignore
+  }
+
   return (
-    <DashboardShell fullName={fullName} email={email} initials={initials} hasEnterpriseOnboarding={hasEnterpriseOnboarding}>
+    <DashboardShell fullName={fullName} email={email} initials={initials} hasEnterpriseOnboarding={hasEnterpriseOnboarding} currentUserRole={currentUserRole}>
       <VerifyEmailBanner emailVerified={emailVerified} />
       <PageTransition>{children}</PageTransition>
     </DashboardShell>

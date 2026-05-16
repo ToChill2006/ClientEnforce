@@ -1,7 +1,7 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-export type MemberRole = "owner" | "admin" | "member" | "onboarder" | "reviewer";
+export type MemberRole = "owner" | "admin" | "member" | "onboarder" | "reviewer" | "external_viewer";
 
 type ProfileRow = {
   user_id: string;
