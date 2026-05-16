@@ -60,7 +60,12 @@ export function ChatBubble({
   const [unread, setUnread] = React.useState(0);
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
+  const openRef = React.useRef(false);
+  const seenCountRef = React.useRef(0);
   const accent = accentColor || "var(--color-accent)";
+
+  // Keep openRef in sync so the polling interval always sees the current value
+  React.useEffect(() => { openRef.current = open; }, [open]);
 
   async function fetchMessages(markRead = false) {
     try {
@@ -73,14 +78,12 @@ export function ChatBubble({
       const json = await res.json();
       const msgs: ChatMessage[] = json.messages ?? [];
       setMessages(msgs);
-      if (!markRead) {
-        // count messages from the other side that arrived since last open
-        setUnread((prev) => {
-          const newOther = msgs.filter((m) => m.sender_type !== currentSide).length;
-          return open ? 0 : newOther > prev ? newOther - prev : 0;
-        });
-      } else {
+      const otherCount = msgs.filter((m) => m.sender_type !== currentSide).length;
+      if (markRead || openRef.current) {
+        seenCountRef.current = otherCount;
         setUnread(0);
+      } else {
+        setUnread(Math.max(0, otherCount - seenCountRef.current));
       }
     } catch {
       // ignore
@@ -90,7 +93,7 @@ export function ChatBubble({
   React.useEffect(() => {
     setLoading(true);
     fetchMessages().finally(() => setLoading(false));
-    const t = setInterval(() => fetchMessages(open), 15_000);
+    const t = setInterval(() => fetchMessages(), 15_000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messagesUrl]);

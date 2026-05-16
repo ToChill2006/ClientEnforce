@@ -111,15 +111,15 @@ export async function POST(
   let clientEmail: string | null = null;
   let clientName = "there";
 
-  // Try client_full_name / client_email directly on the onboarding row
+  // Use select("*") to safely get all onboarding columns without risking unknown-column errors
   const { data: obFull } = await admin
     .from("onboardings")
-    .select("client_full_name, client_email")
+    .select("*")
     .eq("id", id)
     .maybeSingle();
   if (obFull) {
     clientEmail = (obFull as any).client_email ?? null;
-    clientName = (obFull as any).client_full_name || "there";
+    clientName = (obFull as any).client_full_name ?? (obFull as any).client_name ?? "there";
   }
 
   // Fall back to clients table if still no email
