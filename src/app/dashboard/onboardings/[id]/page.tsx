@@ -1577,15 +1577,15 @@ function ResponseItem({
 
   if (rType === "info") {
     return (
-      <li className="border-l-4 border-amber-400 bg-amber-50 px-5 py-3 dark:border-amber-500 dark:bg-amber-950/20">
+      <li className="bg-[var(--color-bg-subtle)] px-5 py-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-start gap-2">
-            <span className="mt-0.5 text-base leading-none text-amber-500">ℹ</span>
-            <div>
-              {r.label && <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">{r.label}</p>}
-              {r.prompt && <p className="text-xs text-amber-600 dark:text-amber-500">{r.prompt}</p>}
-              <span className="mt-0.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-500 dark:bg-amber-900/50 dark:text-amber-400">
-                Info only · not a requirement
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 shrink-0 text-sm leading-none text-[var(--color-text-muted)]">ℹ</span>
+            <div className="min-w-0">
+              {r.label && <p className="text-xs font-semibold text-[var(--color-text-primary)]">{r.label}</p>}
+              {r.prompt && <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">{r.prompt}</p>}
+              <span className="mt-1 inline-block rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Info only
               </span>
             </div>
           </div>

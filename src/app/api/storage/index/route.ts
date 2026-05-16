@@ -157,25 +157,46 @@ export async function GET(_req: Request) {
       .sort((a, b) => (b.updated_at ?? b.created_at ?? "").localeCompare(a.updated_at ?? a.created_at ?? ""))
       .slice(0, 500);
 
-    // Attach onboarding titles (so UI can display title under the name)
+    // Attach onboarding titles + event info
     const admin = supabaseAdmin();
     const ids = Array.from(new Set(items.map((i) => i.onboarding_id).filter(Boolean))) as string[];
+
+    const eventById = new Map<string, { name: string }>();
 
     if (ids.length) {
       const { data: onboardings } = await admin
         .from("onboardings")
-        .select("id,title")
+        .select("id,title,event_id")
         .eq("org_id", orgId)
         .in("id", ids);
 
       const titleById = new Map<string, string>();
+      const eventIdByOb = new Map<string, string>();
       for (const o of onboardings ?? []) {
-        if (o?.id) titleById.set(o.id, o.title ?? "");
+        if (o?.id) {
+          titleById.set(o.id, (o as any).title ?? "");
+          if ((o as any).event_id) eventIdByOb.set(o.id, (o as any).event_id);
+        }
+      }
+
+      // Fetch event names
+      const eventIds = Array.from(new Set(Array.from(eventIdByOb.values())));
+      if (eventIds.length) {
+        const { data: events } = await admin
+          .from("events")
+          .select("id,name")
+          .in("id", eventIds);
+        for (const ev of events ?? []) {
+          if (ev?.id) eventById.set(ev.id, { name: (ev as any).name ?? "" });
+        }
       }
 
       for (const it of items) {
         if (it.onboarding_id) {
           it.onboarding_title = titleById.get(it.onboarding_id) ?? null;
+          const evId = eventIdByOb.get(it.onboarding_id) ?? null;
+          (it as any).event_id = evId;
+          (it as any).event_name = evId ? (eventById.get(evId)?.name ?? null) : null;
         }
       }
     }
