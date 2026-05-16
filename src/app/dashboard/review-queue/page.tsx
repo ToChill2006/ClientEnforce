@@ -20,7 +20,7 @@ type QueueItem = {
   client_name: string | null;
   client_email: string | null;
   event_name: string | null;
-  client_type_name: string | null;
+  template_name: string | null;
   updated_at: string | null;
 };
 
@@ -77,10 +77,10 @@ export default function ReviewQueuePage() {
       render: (r) => <span className="text-sm text-[var(--color-text-secondary)]">{r.event_name || "—"}</span>,
     },
     {
-      key: "client_type",
-      header: "Client Type",
+      key: "template",
+      header: "Template",
       hideOnMobile: true,
-      render: (r) => r.client_type_name ? <Tag tone="info">{r.client_type_name}</Tag> : <span className="text-xs text-[var(--color-text-muted)]">—</span>,
+      render: (r) => r.template_name ? <Tag tone="info">{r.template_name}</Tag> : <span className="text-xs text-[var(--color-text-muted)]">—</span>,
     },
     {
       key: "phase",

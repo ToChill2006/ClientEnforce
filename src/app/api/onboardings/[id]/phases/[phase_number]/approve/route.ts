@@ -172,6 +172,47 @@ export async function POST(
       console.warn("[approve] no client email found for onboarding", onboardingId);
     }
 
+    // When all phases done, also notify all org admins/owners
+    if (!nextPhase) {
+      try {
+        const wl = await loadWhiteLabelForOrg(org_id);
+        const dashboardLink = `${process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com"}/dashboard/onboardings/${onboardingId}`;
+        const { data: adminMembers } = await adminClient
+          .from("memberships")
+          .select("user_id")
+          .eq("org_id", org_id)
+          .in("role", ["owner", "admin"]);
+
+        if (adminMembers?.length) {
+          const { data: adminProfiles } = await adminClient
+            .from("profiles")
+            .select("email, full_name")
+            .in("user_id", adminMembers.map((m: any) => m.user_id));
+
+          for (const profile of adminProfiles ?? []) {
+            if (!(profile as any).email) continue;
+            const { html, text } = renderClientEnforceEmail({
+              preheader: `${clientName} has completed their onboarding`,
+              eyebrow: "Onboarding complete",
+              title: `${clientName} has completed onboarding`,
+              subtitle: `For ${eventName}`,
+              paragraphs: [
+                `All phases have been reviewed and approved. ${clientName}'s onboarding for ${eventName} is now fully complete.`,
+              ],
+              primaryCta: { label: "View onboarding →", href: dashboardLink },
+              branding: wl,
+            });
+            await sendOrgEmail(org_id, {
+              to: (profile as any).email,
+              subject: `${clientName} completed their onboarding — ${eventName}`,
+              html,
+              text,
+            });
+          }
+        }
+      } catch { /* best-effort */ }
+    }
+
     // Activity feed (best-effort)
     try {
       await supabase.from("team_activity").insert({

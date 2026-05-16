@@ -25,10 +25,10 @@ export async function GET() {
       .select(`
         id, phase_number, name, deadline, status, updated_at,
         onboardings!inner(
-          id, title, client_id, event_id,
+          id, title, client_id, event_id, template_id,
           events(id, name),
           clients(id, full_name, email),
-          client_types(id, name)
+          templates(id, name)
         )
       `)
       .eq("org_id", org_id)
@@ -59,7 +59,7 @@ export async function GET() {
         client_email: ob.clients?.email ?? null,
         event_id: ob.event_id,
         event_name: ob.events?.name ?? null,
-        client_type_name: ob.client_types?.name ?? null,
+        template_name: ob.templates?.name ?? null,
       };
     });
 

@@ -282,8 +282,6 @@ export default function SidebarNav({
           label="Onboardings"
           icon={ClipboardList}
           onClose={onClose}
-          badge={pendingCount}
-          onBadgeClick={() => setPanelOpen((o) => !o)}
         />
         <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} onClose={onClose} />
         <NavItem href="/dashboard/email" label="Email" icon={Mail} onClose={onClose} />
