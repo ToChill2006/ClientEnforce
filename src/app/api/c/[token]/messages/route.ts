@@ -22,7 +22,7 @@ async function resolveOnboarding(token: string) {
   const admin = supabaseAdmin();
   const { data, error } = await admin
     .from("onboardings")
-    .select("id, org_id, title, client_full_name, client_email, client_token")
+    .select("id, org_id, title, client_token, client_id")
     .eq("client_token", token)
     .maybeSingle();
   if (error || !data) return null;
@@ -30,9 +30,8 @@ async function resolveOnboarding(token: string) {
     id: string;
     org_id: string;
     title: string | null;
-    client_full_name: string | null;
-    client_email: string | null;
     client_token: string;
+    client_id: string | null;
   };
 }
 
@@ -67,8 +66,23 @@ export async function POST(
   const parsed = PostSchema.safeParse(body);
   if (!parsed.success) return json(400, { error: "Invalid message" });
 
-  const senderName = parsed.data.sender_name || ob.client_full_name || "Client";
-  const senderEmail = parsed.data.sender_email || ob.client_email || null;
+  // Look up client name/email from clients table if needed
+  let clientName = "Client";
+  let clientEmail: string | null = null;
+  if (ob.client_id) {
+    const adminLookup = supabaseAdmin();
+    const { data: client } = await adminLookup
+      .from("clients")
+      .select("full_name, email")
+      .eq("id", ob.client_id)
+      .maybeSingle();
+    if (client) {
+      clientName = (client as any).full_name || "Client";
+      clientEmail = (client as any).email || null;
+    }
+  }
+  const senderName = parsed.data.sender_name || clientName;
+  const senderEmail = parsed.data.sender_email || clientEmail || null;
 
   const admin = supabaseAdmin();
   const { data: msg, error: insertErr } = await admin

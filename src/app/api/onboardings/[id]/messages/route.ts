@@ -19,12 +19,12 @@ const PostSchema = z.object({
 
 async function resolveOnboarding(onboardingId: string, userId: string) {
   const admin = supabaseAdmin();
-  const { data: ob } = await admin
+  const { data: ob, error: obErr } = await admin
     .from("onboardings")
-    .select("id, org_id, title, client_full_name, client_email, client_token")
+    .select("id, org_id, title, client_token, client_id")
     .eq("id", onboardingId)
     .maybeSingle();
-  if (!ob) return null;
+  if (obErr || !ob) return null;
 
   // Verify the user is a member of this org
   const { data: membership } = await admin
@@ -39,9 +39,8 @@ async function resolveOnboarding(onboardingId: string, userId: string) {
     id: string;
     org_id: string;
     title: string | null;
-    client_full_name: string | null;
-    client_email: string | null;
     client_token: string | null;
+    client_id: string | null;
   };
 }
 
@@ -107,10 +106,19 @@ export async function POST(
 
   if (insertErr) return json(400, { error: insertErr.message });
 
-  // Email the client (non-blocking)
-  const clientEmail = ob.client_email;
-  const clientName = ob.client_full_name || "there";
+  // Email the client (non-blocking) — look up client info from clients table
   const clientToken = ob.client_token;
+  let clientEmail: string | null = null;
+  let clientName = "there";
+  if (ob.client_id) {
+    const { data: client } = await admin
+      .from("clients")
+      .select("email, full_name")
+      .eq("id", ob.client_id)
+      .maybeSingle();
+    clientEmail = (client as any)?.email ?? null;
+    clientName = (client as any)?.full_name || "there";
+  }
 
   if (clientEmail) {
     const wl = await loadWhiteLabelForOrg(ob.org_id).catch(() => ({} as any));
