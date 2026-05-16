@@ -39,12 +39,27 @@ export async function GET() {
     );
   }
 
-  const { data: items, error } = await supabase
+  // Exclude jobs for event exhibitors — those use the deadline reminder rules system.
+  const { data: eventOnboardingIds } = await supabase
+    .from("onboardings")
+    .select("id")
+    .eq("org_id", profile.org_id)
+    .not("event_id", "is", null);
+
+  const excludeIds = (eventOnboardingIds ?? []).map((o: any) => o.id);
+
+  let query = supabase
     .from("followup_jobs")
     .select("id, onboarding_id, to_email, subject, due_at, status, last_error, created_at, updated_at, sent_at")
     .eq("org_id", profile.org_id)
     .order("due_at", { ascending: true })
     .limit(100);
+
+  if (excludeIds.length > 0) {
+    query = query.not("onboarding_id", "in", `(${excludeIds.join(",")})`);
+  }
+
+  const { data: items, error } = await query;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ items });

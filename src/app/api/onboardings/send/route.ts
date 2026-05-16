@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   // Load onboarding + client
   const { data: onboarding, error: onboardingErr } = await admin
     .from("onboardings")
-    .select("id, org_id, client_id, title, client_token, status")
+    .select("id, org_id, client_id, title, client_token, status, event_id, metadata")
     .eq("id", parsed.data.onboarding_id)
     .single();
 
@@ -132,6 +132,12 @@ export async function POST(req: Request) {
     .eq("id", onboarding.id);
 
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 400 });
+
+  // Event exhibitors use the deadline-based reminder rules system instead of the
+  // generic follow-up scheduler, so skip queuing for them.
+  if ((onboarding as any).event_id) {
+    return NextResponse.json({ ok: true });
+  }
 
   // Create follow-up jobs only when follow-up automation is enabled for the current plan.
   const { tier, error: tierError } = await selectOrganizationTier(admin as any, orgId);

@@ -296,7 +296,7 @@ export default function EventDetailPage() {
   const [reminderRules, setReminderRules] = React.useState<ReminderRule[]>([]);
   const [reminderModalOpen, setReminderModalOpen] = React.useState(false);
   const [newRulePhase, setNewRulePhase] = React.useState<string>("all");
-  const [newRuleDays, setNewRuleDays] = React.useState(3);
+  const [newRuleDays, setNewRuleDays] = React.useState<number[]>([3]);
   const [newRuleSubject, setNewRuleSubject] = React.useState("Action needed: deadline approaching");
   const [newRuleBody, setNewRuleBody] = React.useState("Hi {{client_name}},\n\nThis is a reminder that your {{phase_name}} deadline is on {{deadline}}.\n\nPlease log in and complete your requirements as soon as possible.\n\nThank you.");
   const [ruleSaving, setRuleSaving] = React.useState(false);
@@ -331,29 +331,33 @@ export default function EventDetailPage() {
   }
 
   async function saveReminderRule() {
+    if (newRuleDays.length === 0) return;
     setRuleSaving(true);
     try {
-      const res = await fetch("/api/reminder-rules", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          phase_number: newRulePhase === "all" ? null : parseInt(newRulePhase, 10),
-          rule_type: "deadline_based",
-          trigger_offset_days: newRuleDays,
-          subject: newRuleSubject,
-          body: newRuleBody,
-          is_active: true,
-        }),
-      });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Failed to save rule");
-      setReminderRules((prev) => [json.rule, ...prev]);
+      const results = await Promise.all(
+        newRuleDays.map((days) =>
+          fetch("/api/reminder-rules", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              phase_number: newRulePhase === "all" ? null : parseInt(newRulePhase, 10),
+              rule_type: "deadline_based",
+              trigger_offset_days: days,
+              subject: newRuleSubject,
+              body: newRuleBody,
+              is_active: true,
+            }),
+          }).then((r) => r.json())
+        )
+      );
+      const newRules = results.map((r) => r.rule).filter(Boolean);
+      setReminderRules((prev) => [...newRules, ...prev]);
       setReminderModalOpen(false);
       setNewRulePhase("all");
-      setNewRuleDays(3);
+      setNewRuleDays([3]);
       setNewRuleSubject("Action needed: deadline approaching");
       setNewRuleBody("Hi {{client_name}},\n\nThis is a reminder that your {{phase_name}} deadline is on {{deadline}}.\n\nPlease log in and complete your requirements as soon as possible.\n\nThank you.");
-      toast({ title: "Reminder rule created", variant: "success" });
+      toast({ title: `${newRules.length} reminder rule${newRules.length !== 1 ? "s" : ""} created`, variant: "success" });
     } catch (e: any) {
       toast({ title: "Error", description: e?.message, variant: "error" });
     } finally {
@@ -1311,31 +1315,49 @@ export default function EventDetailPage() {
             </FormField>
             <FormField label="Days before deadline">
               <div className="space-y-2">
-                <div className="flex gap-1.5">
-                  {[1, 3, 7, 14].map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setNewRuleDays(d)}
-                      className={cn(
-                        "rounded-[var(--radius-md)] border px-3 py-1 text-xs font-medium transition-colors",
-                        newRuleDays === d
-                          ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
-                          : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]"
-                      )}
-                    >
-                      {d}d
-                    </button>
-                  ))}
+                <p className="text-xs text-[var(--color-text-muted)]">Select one or more — a separate reminder is created for each.</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[1, 3, 7, 14, 21, 30].map((d) => {
+                    const selected = newRuleDays.includes(d);
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setNewRuleDays((prev) => selected ? prev.filter((x) => x !== d) : [...prev, d].sort((a, b) => a - b))}
+                        className={cn(
+                          "rounded-[var(--radius-md)] border px-3 py-1 text-xs font-medium transition-colors",
+                          selected
+                            ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
+                            : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]"
+                        )}
+                      >
+                        {d}d
+                      </button>
+                    );
+                  })}
                 </div>
-                <Input
-                  type="number"
-                  min={1}
-                  max={365}
-                  value={String(newRuleDays)}
-                  onChange={(e) => setNewRuleDays(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  placeholder="Custom days"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    placeholder="Custom (e.g. 10)"
+                    className="w-36"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const v = Math.max(1, Math.min(365, parseInt((e.target as HTMLInputElement).value, 10) || 0));
+                        if (v && !newRuleDays.includes(v)) setNewRuleDays((prev) => [...prev, v].sort((a, b) => a - b));
+                        (e.target as HTMLInputElement).value = "";
+                      }
+                    }}
+                  />
+                  <span className="text-xs text-[var(--color-text-muted)]">Press Enter to add</span>
+                </div>
+                {newRuleDays.length > 0 && (
+                  <div className="text-xs text-[var(--color-text-muted)]">
+                    Will create {newRuleDays.length} rule{newRuleDays.length !== 1 ? "s" : ""}: {newRuleDays.map((d) => `${d}d`).join(", ")} before deadline
+                  </div>
+                )}
               </div>
             </FormField>
           </FormGrid>
