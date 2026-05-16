@@ -1354,8 +1354,8 @@ export default function OnboardingDetailAdminPage() {
                   return (
                     <div key={ph.phase_number}>
                       {activeResponsePhase === null && (
-                        <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-1.5">
-                          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+                        <div className="border-b border-[var(--color-border)] border-l-4 border-l-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-5 py-2">
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-accent)]">
                             {ph.name ?? `Phase ${ph.phase_number}`}
                           </span>
                         </div>
@@ -1551,13 +1551,13 @@ function ResponseItem({
 
   if (rType === "heading") {
     return (
-      <li className="border-l-4 border-indigo-400 bg-indigo-50 px-5 py-2.5 dark:border-indigo-500 dark:bg-indigo-950/30">
+      <li className="border-l-4 border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-5 py-2.5 dark:border-neutral-600 dark:bg-neutral-800/40">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-secondary)]">
               {r.label || "Section"}
             </span>
-            <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-indigo-500 dark:bg-indigo-900/50 dark:text-indigo-400">
+            <span className="rounded bg-[var(--color-bg-hover)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--color-text-muted)] dark:bg-neutral-700">
               Heading
             </span>
           </div>
