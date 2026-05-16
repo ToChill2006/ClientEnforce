@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import SignatureCanvas from "react-signature-canvas";
+import { ChatBubble } from "@/components/ui/chat-bubble";
 
 type Phase = {
   id: string;
@@ -965,6 +966,16 @@ export default function PhasePortalClient({
           )}
         </main>
       </div>
+
+      {/* Chat bubble */}
+      <ChatBubble
+        messagesUrl={`/api/c/${token}/messages`}
+        postUrl={`/api/c/${token}/messages`}
+        currentSide="client"
+        accentColor={accent}
+        title="Message the team"
+        placeholder="Ask a question or flag an issue…"
+      />
     </div>
   );
 }

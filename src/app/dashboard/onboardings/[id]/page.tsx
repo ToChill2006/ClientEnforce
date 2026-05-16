@@ -28,6 +28,7 @@ import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { computeDisplayStatus, type OnboardingStatus } from "@/lib/status";
 import { cn } from "@/lib/cn";
+import { ChatBubble } from "@/components/ui/chat-bubble";
 
 type Requirement = {
   id: string;
@@ -1498,6 +1499,17 @@ export default function OnboardingDetailAdminPage() {
         confirmLabel={removingReq ? "Removing…" : "Remove"}
         destructive
       />
+
+      {/* Chat bubble — only when onboarding is loaded */}
+      {ob?.id && (
+        <ChatBubble
+          messagesUrl={`/api/onboardings/${ob.id}/messages`}
+          postUrl={`/api/onboardings/${ob.id}/messages`}
+          currentSide="admin"
+          title={`Chat with ${ob.client_name || "client"}`}
+          placeholder="Send a message to the exhibitor…"
+        />
+      )}
     </div>
   );
 }
