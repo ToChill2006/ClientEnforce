@@ -55,6 +55,7 @@ export function ChatBubble({
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [draft, setDraft] = React.useState("");
   const [sending, setSending] = React.useState(false);
+  const [sendError, setSendError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [unread, setUnread] = React.useState(0);
   const bottomRef = React.useRef<HTMLDivElement>(null);
@@ -110,18 +111,24 @@ export function ChatBubble({
     const text = draft.trim();
     if (!text || sending) return;
     setSending(true);
+    setSendError(null);
     try {
       const res = await fetch(postUrl, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ body: text }),
       });
-      if (!res.ok) return;
-      const json = await res.json();
-      if (json.message) {
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        setSendError(json?.error || `Error ${res.status}`);
+        return;
+      }
+      if (json?.message) {
         setMessages((prev) => [...prev, json.message]);
       }
       setDraft("");
+    } catch (e: any) {
+      setSendError(e?.message || "Failed to send");
     } finally {
       setSending(false);
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -211,6 +218,11 @@ export function ChatBubble({
 
           {/* Input */}
           <div className="border-t border-[var(--color-border)] px-3 py-2.5">
+            {sendError && (
+              <p className="mb-1.5 rounded-[var(--radius-sm)] bg-red-50 px-2 py-1 text-[11px] text-red-600">
+                {sendError}
+              </p>
+            )}
             <div className="flex items-end gap-2">
               <textarea
                 ref={inputRef}
