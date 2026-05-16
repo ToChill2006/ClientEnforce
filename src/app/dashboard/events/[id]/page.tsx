@@ -16,6 +16,11 @@ import {
   UserCheck,
   Tag as TagIcon,
   Download,
+  LayoutDashboard,
+  CalendarDays,
+  MapPin,
+  Clock,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -63,7 +68,7 @@ type CsvRow = {
 type Template = { id: string; name: string };
 type TeamMember = { user_id: string; email: string | null; full_name: string | null };
 
-type Tab = "add" | "exhibitors" | "templates";
+type Tab = "dashboard" | "exhibitors" | "add" | "templates";
 
 function PhaseStatusBadge({ status }: { status: string | null }) {
   if (!status) return <Tag>—</Tag>;
@@ -253,7 +258,7 @@ export default function EventDetailPage() {
 
   const [event, setEvent] = React.useState<EventData | null>(null);
   const [loadingEvent, setLoadingEvent] = React.useState(true);
-  const [tab, setTab] = React.useState<Tab>("exhibitors");
+  const [tab, setTab] = React.useState<Tab>("dashboard");
 
   // Exhibitors tab
   const [exhibitors, setExhibitors] = React.useState<ExhibitorRow[]>([]);
@@ -421,7 +426,7 @@ export default function EventDetailPage() {
   }, [eventId]);
 
   React.useEffect(() => {
-    if (tab === "exhibitors") loadExhibitors();
+    if (tab === "exhibitors" || tab === "dashboard") loadExhibitors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -614,9 +619,10 @@ export default function EventDetailPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-[var(--color-border)]">
-        {(["exhibitors", "add", "templates"] as Tab[]).map((t) => {
-          const labels: Record<Tab, string> = { add: "Add Exhibitors", exhibitors: "Exhibitors", templates: "Templates" };
+        {(["dashboard", "exhibitors", "add", "templates"] as Tab[]).map((t) => {
+          const labels: Record<Tab, string> = { dashboard: "Dashboard", add: "Add Exhibitors", exhibitors: "Exhibitors", templates: "Templates" };
           const icons: Record<Tab, React.ReactNode> = {
+            dashboard: <LayoutDashboard className="h-3.5 w-3.5" />,
             add: <Upload className="h-3.5 w-3.5" />,
             exhibitors: <Users className="h-3.5 w-3.5" />,
             templates: <LayoutTemplate className="h-3.5 w-3.5" />,
@@ -642,6 +648,149 @@ export default function EventDetailPage() {
           );
         })}
       </div>
+
+      {/* Dashboard tab */}
+      {tab === "dashboard" && (() => {
+        const total = exhibitors.length;
+        const completed = exhibitors.filter((e) => e.phase_status === "approved" || (e as any).status === "completed").length;
+        const awaitingReview = exhibitors.filter((e) => e.phase_status === "awaiting_review").length;
+        const inProgress = exhibitors.filter((e) => e.phase_status === "in_progress").length;
+        const rejected = exhibitors.filter((e) => e.phase_status === "rejected").length;
+        const notStarted = exhibitors.filter((e) => !e.phase_status || ["draft", "sent", "locked"].includes(e.phase_status)).length;
+        const completionPct = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const needsAttention = exhibitors.filter((e) => e.phase_status === "awaiting_review" || e.phase_status === "rejected");
+
+        const statCards = [
+          { label: "Total Exhibitors", value: total, color: "text-[var(--color-text-primary)]" },
+          { label: "Completed", value: completed, color: "text-green-600 dark:text-green-400" },
+          { label: "In Progress", value: inProgress, color: "text-blue-600 dark:text-blue-400" },
+          { label: "Awaiting Review", value: awaitingReview, color: "text-amber-600 dark:text-amber-400" },
+          { label: "Needs Revision", value: rejected, color: "text-red-600 dark:text-red-400" },
+          { label: "Not Started", value: notStarted, color: "text-[var(--color-text-muted)]" },
+        ];
+
+        return (
+          <div className="space-y-6">
+            {/* Event info card */}
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+              <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Event Details</div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="flex items-center gap-2.5">
+                  <CalendarDays className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Date</div>
+                    <div className="text-sm font-medium text-[var(--color-text-primary)]">
+                      {event.start_date ? `${formatDate(event.start_date)} → ${formatDate(event.end_date)}` : formatDate(event.end_date)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <MapPin className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Location</div>
+                    <div className="text-sm font-medium text-[var(--color-text-primary)]">{event.location || "—"}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Clock className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Status</div>
+                    <div className="text-sm font-medium text-[var(--color-text-primary)] capitalize">{event.status}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stat cards */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {statCards.map((s) => (
+                <div key={s.label} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">{s.label}</div>
+                  <div className={`mt-2 text-2xl font-semibold tabular-nums ${s.color}`} style={{ fontFamily: "var(--font-display)" }}>
+                    {loadingExhibitors ? <span className="text-[var(--color-text-muted)]">—</span> : s.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Overall progress */}
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-[var(--color-accent)]" />
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">Overall Progress</span>
+                </div>
+                <span className="text-sm font-semibold text-[var(--color-accent)]">{completionPct}% complete</span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
+                <div
+                  className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-500"
+                  style={{ width: `${completionPct}%` }}
+                />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-4 text-xs text-[var(--color-text-muted)]">
+                <span><span className="font-semibold text-green-600">{completed}</span> completed</span>
+                <span><span className="font-semibold text-blue-600">{inProgress}</span> in progress</span>
+                <span><span className="font-semibold text-amber-600">{awaitingReview}</span> awaiting review</span>
+                <span><span className="font-semibold text-red-600">{rejected}</span> needs revision</span>
+                <span><span className="font-semibold text-[var(--color-text-muted)]">{notStarted}</span> not started</span>
+              </div>
+            </div>
+
+            {/* Needs attention */}
+            {needsAttention.length > 0 && (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
+                <div className="border-b border-[var(--color-border)] px-5 py-3 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">Needs Attention</span>
+                  <span className="ml-auto text-xs text-[var(--color-text-muted)]">{needsAttention.length} exhibitor{needsAttention.length !== 1 ? "s" : ""}</span>
+                </div>
+                <div className="divide-y divide-[var(--color-border)]">
+                  {needsAttention.map((e) => (
+                    <a key={e.id} href={`/dashboard/onboardings/${e.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-[var(--color-bg-hover)] transition-colors">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-subtle)] text-[11px] font-bold text-[var(--color-accent)]">
+                        {(e.client_name ?? "?").charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-[var(--color-text-primary)]">{e.client_name || e.title || "—"}</div>
+                        <div className="text-xs text-[var(--color-text-muted)]">Phase {e.current_phase} · {e.phase_status?.replace(/_/g, " ")}</div>
+                      </div>
+                      <PhaseStatusBadge status={e.phase_status} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Full exhibitor list summary */}
+            {total > 0 && (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
+                <div className="border-b border-[var(--color-border)] px-5 py-3 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">All Exhibitors</span>
+                  <button onClick={() => setTab("exhibitors")} className="text-xs text-[var(--color-accent)] hover:underline">
+                    Manage →
+                  </button>
+                </div>
+                <div className="divide-y divide-[var(--color-border)]">
+                  {exhibitors.map((e) => (
+                    <a key={e.id} href={`/dashboard/onboardings/${e.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-[var(--color-bg-hover)] transition-colors">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-subtle)] text-[10px] font-bold text-[var(--color-text-secondary)]">
+                        {(e.client_name ?? "?").charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm text-[var(--color-text-primary)]">{e.client_name || e.title || "—"}</div>
+                        {e.company_name && <div className="truncate text-xs text-[var(--color-text-muted)]">{e.company_name}</div>}
+                      </div>
+                      <div className="shrink-0 text-xs text-[var(--color-text-muted)]">Phase {e.current_phase ?? 1}</div>
+                      <PhaseStatusBadge status={e.phase_status} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Add Exhibitors tab */}
       {tab === "add" && (

@@ -166,7 +166,7 @@ export async function GET(_req: Request) {
     if (ids.length) {
       const { data: onboardings } = await admin
         .from("onboardings")
-        .select("id,title,event_id")
+        .select("*")
         .eq("org_id", orgId)
         .in("id", ids);
 
@@ -174,7 +174,11 @@ export async function GET(_req: Request) {
       const eventIdByOb = new Map<string, string>();
       for (const o of onboardings ?? []) {
         if (o?.id) {
-          titleById.set(o.id, (o as any).title ?? "");
+          const displayTitle = (o as any).title
+            || (o as any).client_full_name
+            || (o as any).client_name
+            || "";
+          titleById.set(o.id, displayTitle);
           if ((o as any).event_id) eventIdByOb.set(o.id, (o as any).event_id);
         }
       }

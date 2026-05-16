@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Settings as SettingsIcon, Users, LayoutTemplate, ClipboardList, Bell, ArrowRight } from "lucide-react";
+import { Plus, Settings as SettingsIcon, Users, LayoutTemplate, ClipboardList, Bell, ArrowRight, CalendarDays, TrendingUp, AlertCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/ui/data-table";
@@ -25,6 +25,16 @@ type RecentOnboarding = {
   client_email?: string | null;
   status?: string | null;
   updated_at?: string | null;
+};
+
+type EventSummary = {
+  id: string;
+  name: string;
+  end_date: string | null;
+  location: string | null;
+  status: string;
+  exhibitor_count: number;
+  phase_status_counts: Record<string, number>;
 };
 
 type MetricsResponse = {
@@ -174,6 +184,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [metrics, setMetrics] = React.useState<MetricsResponse | null>(null);
+  const [events, setEvents] = React.useState<EventSummary[]>([]);
   const [feedbackRating, setFeedbackRating] = React.useState<number | null>(null);
   const [feedbackText, setFeedbackText] = React.useState("");
   const [feedbackSubmitting, setFeedbackSubmitting] = React.useState(false);
@@ -184,17 +195,20 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("/api/dashboard/metrics", {
-          method: "GET",
-          headers: { "content-type": "application/json" },
-          cache: "no-store",
-        });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          throw new Error(t || `Failed to load metrics (${res.status})`);
+        const [metricsRes, eventsRes] = await Promise.all([
+          fetch("/api/dashboard/metrics", { cache: "no-store" }),
+          fetch("/api/events", { cache: "no-store" }),
+        ]);
+        if (!metricsRes.ok) {
+          const t = await metricsRes.text().catch(() => "");
+          throw new Error(t || `Failed to load metrics (${metricsRes.status})`);
         }
-        const json = (await res.json()) as MetricsResponse;
+        const json = (await metricsRes.json()) as MetricsResponse;
         if (!cancelled) setMetrics(json);
+        if (eventsRes.ok) {
+          const evJson = await eventsRes.json();
+          if (!cancelled) setEvents(evJson.events ?? []);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e?.message || "Failed to load dashboard.");
       } finally {
@@ -202,9 +216,7 @@ export default function DashboardPage() {
       }
     }
     run();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   async function submitFeedback(event: React.FormEvent<HTMLFormElement>) {
@@ -299,8 +311,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Dashboard"
-        description="A snapshot of your workspace."
+        title="Overview"
+        description="Your workspace at a glance — onboardings, events, and activity."
         actions={
           <>
             <Button variant="outline" iconLeft={<SettingsIcon className="h-3.5 w-3.5" />} onClick={() => router.push("/dashboard/settings")}>
@@ -334,6 +346,69 @@ export default function DashboardPage() {
         <MetricCard label="Onboardings" value={onboardings} href="/dashboard/onboardings" icon={ClipboardList} loading={loading} />
         <MetricCard label="Follow-ups due" value={followups} href="/dashboard/followups" icon={Bell} loading={loading} />
       </div>
+
+      {/* Active Events */}
+      {(events.length > 0 || loading) && (
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-[var(--color-accent)]" />
+              <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Active Events</h2>
+            </div>
+            <Link href="/dashboard/onboardings" className="text-xs text-[var(--color-accent)] hover:underline">
+              View all →
+            </Link>
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2].map((i) => <div key={i} className="h-28 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] animate-pulse" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {events.map((ev) => {
+                const counts = ev.phase_status_counts ?? {};
+                const total = ev.exhibitor_count;
+                const completed = (counts.approved ?? 0) + (counts.completed ?? 0);
+                const awaitingReview = counts.awaiting_review ?? 0;
+                const inProgress = counts.in_progress ?? 0;
+                const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+                return (
+                  <Link
+                    key={ev.id}
+                    href={`/dashboard/events/${ev.id}`}
+                    className="group block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4 transition hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">{ev.name}</div>
+                        <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                          {ev.location && <span>{ev.location} · </span>}
+                          {ev.end_date && new Date(ev.end_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        </div>
+                      </div>
+                      <span className="shrink-0 rounded bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] font-medium capitalize text-[var(--color-text-muted)]">{ev.status}</span>
+                    </div>
+                    <div className="mt-3">
+                      <div className="mb-1 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+                        <span>{total} exhibitor{total !== 1 ? "s" : ""}</span>
+                        <span className="font-medium text-[var(--color-accent)]">{pct}%</span>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
+                        <div className="h-full rounded-full bg-[var(--color-accent)] transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="mt-1.5 flex gap-3 text-[10px] text-[var(--color-text-muted)]">
+                        {inProgress > 0 && <span className="text-blue-600">{inProgress} in progress</span>}
+                        {awaitingReview > 0 && <span className="text-amber-600">{awaitingReview} needs review</span>}
+                        {completed > 0 && <span className="text-green-600">{completed} done</span>}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Two column */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
