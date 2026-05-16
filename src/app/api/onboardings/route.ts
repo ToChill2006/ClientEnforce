@@ -364,21 +364,21 @@ export async function GET(req: Request) {
   // Prefer richer columns if they exist in your schema, but be defensive: some deployments
   // won't have denormalized fields like `client_full_name` / `client_email`.
   const selectExtendedWithDenorm =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, owner_id, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, owner_id, client_type_id, event_id, deadline";
   const selectExtendedNoDenorm =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, owner_id, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, owner_id, client_type_id, event_id, deadline";
   const selectBaseWithDenorm =
-    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email, owner_id, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email, owner_id, client_type_id, event_id, deadline";
   const selectBaseNoDenorm =
-    "id, title, status, client_token, created_at, updated_at, client_id, template_id, owner_id, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, client_id, template_id, owner_id, client_type_id, event_id, deadline";
   const selectExtendedWithDenormNoOwner =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, client_type_id, event_id, deadline";
   const selectExtendedNoDenormNoOwner =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_type_id, event_id, deadline";
   const selectBaseWithDenormNoOwner =
-    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email, client_type_id, event_id, deadline";
   const selectBaseNoDenormNoOwner =
-    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_type_id, event_id";
+    "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_type_id, event_id, deadline";
 
   const url = new URL(req.url);
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 100), 1), 500);
