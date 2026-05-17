@@ -284,13 +284,15 @@ export default function SidebarNav({
           <NavItem href="/dashboard/events" label="Events" icon={CalendarDays} onClose={onClose} />
         )}
         <NavItem href="/dashboard/onboardings" label="Onboardings" icon={ClipboardList} onClose={onClose} />
-        <NavItem
-          href="/dashboard/messages"
-          label="Messages"
-          icon={MessageSquare}
-          onClose={onClose}
-          badge={messageUnread}
-        />
+        {hasEnterpriseOnboarding && (
+          <NavItem
+            href="/dashboard/messages"
+            label="Messages"
+            icon={MessageSquare}
+            onClose={onClose}
+            badge={messageUnread}
+          />
+        )}
         <NavItem href="/dashboard/clients" label="Clients" icon={User} onClose={onClose} />
         <NavItem href="/dashboard/followups" label="Follow-ups" icon={Bell} onClose={onClose} />
       </div>

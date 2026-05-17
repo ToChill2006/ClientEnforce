@@ -97,17 +97,6 @@ type DetailPayload = {
   requirements: Requirement[];
 };
 
-type ReminderOverride = {
-  enabled: boolean;
-  days_between?: number;
-  max_reminders?: number;
-};
-
-type OrgFollowupSettings = {
-  followup_delay_days: number;
-  followup_max_count: number;
-};
-
 function normalizeRequirement(raw: any): Requirement {
   const r = raw || {};
   return {
@@ -335,9 +324,6 @@ export default function OnboardingDetailAdminPage() {
   const [reviewPanelOpen, setReviewPanelOpen] = React.useState(false);
 
   // Reminder override state
-  const [orgReminders, setOrgReminders] = React.useState<OrgFollowupSettings | null>(null);
-  const [reminderOverride, setReminderOverride] = React.useState<ReminderOverride | null>(null);
-  const [remindersSaving, setRemindersSaving] = React.useState(false);
 
   // Deadline state
   const [deadlineEditing, setDeadlineEditing] = React.useState(false);
@@ -680,56 +666,6 @@ export default function OnboardingDetailAdminPage() {
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
-
-  // Load org-level follow-up schedule (non-fatal if forbidden).
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/cron/followups/settings", { cache: "no-store" });
-        if (!res.ok) return;
-        const j = await res.json();
-        if (j?.settings) {
-          setOrgReminders({
-            followup_delay_days: j.settings.followup_delay_days,
-            followup_max_count: j.settings.followup_max_count,
-          });
-        }
-      } catch {
-        // ignore
-      }
-    })();
-  }, []);
-
-  // Hydrate override from onboarding metadata when loaded.
-  React.useEffect(() => {
-    const meta = payload?.onboarding?.metadata;
-    const r = meta && typeof meta === "object" ? (meta as any).reminders : null;
-    if (r && typeof r === "object") {
-      setReminderOverride({
-        enabled: !!r.enabled,
-        days_between: typeof r.days_between === "number" ? r.days_between : undefined,
-        max_reminders: typeof r.max_reminders === "number" ? r.max_reminders : undefined,
-      });
-    }
-  }, [payload]);
-
-  async function saveReminderOverride(next: ReminderOverride | null) {
-    try {
-      setRemindersSaving(true);
-      const res = await fetch(`/api/onboardings/${encodeURIComponent(params.id)}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reminder_override: next }),
-      });
-      if (!res.ok) throw new Error((await res.text().catch(() => "")) || "Save failed");
-      setReminderOverride(next);
-      toast({ title: "Reminder schedule saved", variant: "success" });
-    } catch (e: any) {
-      toast({ title: "Save failed", description: e?.message, variant: "error" });
-    } finally {
-      setRemindersSaving(false);
-    }
-  }
 
   // Check current user's permission for ad-hoc controls via Supabase browser client
   React.useEffect(() => {
@@ -1296,85 +1232,6 @@ export default function OnboardingDetailAdminPage() {
         </Card>
       </div>
 
-      {/* Reminder schedule */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <CardTitle>Reminders</CardTitle>
-              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
-                {orgReminders
-                  ? `Default: remind every ${orgReminders.followup_delay_days} day${orgReminders.followup_delay_days === 1 ? "" : "s"}, up to ${orgReminders.followup_max_count} time${orgReminders.followup_max_count === 1 ? "" : "s"}.`
-                  : "Org default follow-up schedule applies."}
-              </p>
-            </div>
-            <label className="flex shrink-0 cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                className="accent-[var(--color-accent)]"
-                checked={!!reminderOverride?.enabled}
-                disabled={remindersSaving}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    const next: ReminderOverride = {
-                      enabled: true,
-                      days_between: reminderOverride?.days_between ?? orgReminders?.followup_delay_days ?? 3,
-                      max_reminders: reminderOverride?.max_reminders ?? orgReminders?.followup_max_count ?? 3,
-                    };
-                    setReminderOverride(next);
-                  } else {
-                    void saveReminderOverride(null);
-                  }
-                }}
-              />
-              <span className="text-xs text-[var(--color-text-secondary)]">Override for this onboarding</span>
-            </label>
-          </div>
-        </CardHeader>
-        {reminderOverride?.enabled && (
-          <CardContent>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="flex flex-col gap-1 text-xs">
-                <span className="text-[var(--color-text-muted)]">Days between reminders</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={90}
-                  value={reminderOverride.days_between ?? 3}
-                  onChange={(e) =>
-                    setReminderOverride({
-                      ...reminderOverride,
-                      days_between: Math.max(1, Math.min(90, parseInt(e.target.value || "1", 10) || 1)),
-                    })
-                  }
-                  className="h-9 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 text-sm"
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs">
-                <span className="text-[var(--color-text-muted)]">Max reminders</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={20}
-                  value={reminderOverride.max_reminders ?? 3}
-                  onChange={(e) =>
-                    setReminderOverride({
-                      ...reminderOverride,
-                      max_reminders: Math.max(0, Math.min(20, parseInt(e.target.value || "0", 10) || 0)),
-                    })
-                  }
-                  className="h-9 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 text-sm"
-                />
-              </label>
-            </div>
-            <div className="mt-3 flex justify-end">
-              <Button size="sm" loading={remindersSaving} onClick={() => saveReminderOverride(reminderOverride)}>
-                Save schedule
-              </Button>
-            </div>
-          </CardContent>
-        )}
-      </Card>
 
       {/* Responses */}
       <Card>

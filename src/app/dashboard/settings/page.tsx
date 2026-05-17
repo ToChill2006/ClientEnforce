@@ -13,6 +13,7 @@ type Org = {
   seats_limit?: number | null;
   stripe_subscription_status?: string | null;
   stripe_account_id?: string | null;
+  feature_flags?: Record<string, unknown> | null;
 };
 
 type Invite = {
@@ -1271,7 +1272,8 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Payments */}
+      {/* Payments — enterprise only */}
+      {org?.feature_flags?.enterprise_onboarding === true && (
       <Card>
         <CardHeader>
           <CardTitle>Payments</CardTitle>
@@ -1323,6 +1325,7 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Invite */}
       <Card>
@@ -1359,12 +1362,14 @@ export default function SettingsPage() {
                 <option value="admin">Admin — full access, manage team &amp; settings</option>
                 <option value="onboarder">Onboarder — create &amp; send onboardings, manage templates</option>
                 <option value="reviewer">Reviewer — review &amp; approve submissions</option>
-                <option value="external_viewer">Guest Viewer — read-only access to specific events</option>
+                {org?.feature_flags?.enterprise_onboarding === true && (
+                  <option value="external_viewer">Guest Viewer — read-only access to specific events</option>
+                )}
               </Select>
             </div>
           </div>
 
-          {inviteRole === "external_viewer" && (
+          {inviteRole === "external_viewer" && org?.feature_flags?.enterprise_onboarding === true && (
             <div className="space-y-2">
               <Label>Which events can this person see? <span className="text-red-500">*</span></Label>
               {availableEvents.length === 0 ? (

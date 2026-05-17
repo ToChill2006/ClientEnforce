@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 import { PageHeader } from "@/components/ui/page-header";
-import { Plus, CreditCard } from "lucide-react";
+import { Plus } from "lucide-react";
 
 // ─── Reminder rule types ──────────────────────────────────────────────────────
 
@@ -52,7 +52,6 @@ type RequirementType =
   | "multiple_choice"
   | "checkbox"   // Feature 6: completion checkbox
   | "heading"    // Feature 7: visual section heading
-  | "payment"   // Feature 5: Stripe payment requirement
   | "info";     // Read-only description / info block
 
 type Requirement = {
@@ -74,10 +73,6 @@ type Requirement = {
   include_other?: boolean;
   // Feature 5: multi-line textarea instead of single-line input
   multiline?: boolean;
-  // Payment type fields
-  payment_amount?: number | null;
-  payment_currency?: string | null;
-  payment_description?: string | null;
   info_content?: string | null;   // content for the info/description block type
   // Conditional visibility. Hidden when condition not met.
   visible_if?: {
@@ -124,7 +119,6 @@ const VALID_TYPES: RequirementType[] = [
   "multiple_choice",
   "checkbox",
   "heading",
-  "payment",
   "info",
 ];
 
@@ -164,11 +158,6 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
         }
         if (type === "text") {
           base.multiline = Boolean(r?.multiline);
-        }
-        if (type === "payment") {
-          base.payment_amount = typeof r?.payment_amount === "number" ? r.payment_amount : (r?.payment_amount ? Number(r.payment_amount) : null);
-          base.payment_currency = r?.payment_currency ?? "GBP";
-          base.payment_description = r?.payment_description ?? null;
         }
         if (type === "info") {
           base.info_content = r?.info_content ?? r?.value_text ?? null;
@@ -226,7 +215,6 @@ const TYPE_LABELS: Record<RequirementType, string> = {
   multiple_choice: "Multiple choice",
   checkbox: "Completion checkbox",
   heading: "Section heading",
-  payment: "Payment",
   info: "Info / Description",
 };
 
@@ -238,7 +226,6 @@ export default function TemplatesPage() {
   const [items, setItems] = React.useState<TemplateRow[]>([]);
   const [selected, setSelected] = React.useState<TemplateDetail | null>(null);
   const [name, setName] = React.useState("");
-  const [orgStripeAccountId, setOrgStripeAccountId] = React.useState<string | null | undefined>(undefined);
   const [loading, setLoading] = React.useState(true);
   const [upgradeMessage, setUpgradeMessage] = React.useState<string | null>(null);
   const [detailCache, setDetailCache] = React.useState<Record<string, TemplateDetail>>({});
@@ -261,14 +248,6 @@ export default function TemplatesPage() {
 
   React.useEffect(() => {
     fetch("/api/events").then((r) => { if (r.ok) setHasEnterpriseFlag(true); }).catch(() => {});
-    // Load org to check if Stripe Connect is configured
-    fetch("/api/team", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((json) => {
-        const accountId = json?.org?.stripe_account_id ?? null;
-        setOrgStripeAccountId(accountId);
-      })
-      .catch(() => setOrgStripeAccountId(null));
   }, []);
 
   // ── Data loading ────────────────────────────────────────────────────────────
@@ -735,7 +714,6 @@ export default function TemplatesPage() {
                 updateReq={updateReq}
                 uploadAttachment={uploadAttachment}
                 hasEnterpriseFlag={hasEnterpriseFlag}
-                orgStripeAccountId={orgStripeAccountId}
               />
             )}
 
@@ -797,7 +775,6 @@ function PhaseAwareRequirements({
   updateReq,
   uploadAttachment,
   hasEnterpriseFlag,
-  orgStripeAccountId,
 }: {
   selected: TemplateDetail;
   activePhase: number;
@@ -807,7 +784,6 @@ function PhaseAwareRequirements({
   updateReq: (idx: number, patch: Partial<Requirement>) => void;
   uploadAttachment: (idx: number, file: File) => void;
   hasEnterpriseFlag: boolean;
-  orgStripeAccountId?: string | null;
 }) {
   const allReqs = selected.definition.requirements;
   const phases = selected.definition.phases ?? [];
@@ -981,7 +957,6 @@ function PhaseAwareRequirements({
         onUpdate={handleUpdate}
         onDelete={handleDelete}
         onUploadAttachment={handleUpload}
-        orgStripeAccountId={orgStripeAccountId}
       />
 
       {/* Add requirement */}
@@ -1435,7 +1410,6 @@ function RequirementList({
   onUpdate,
   onDelete,
   onUploadAttachment,
-  orgStripeAccountId,
 }: {
   requirements: Requirement[];
   uploadingIdx: Record<number, boolean>;
@@ -1443,7 +1417,6 @@ function RequirementList({
   onUpdate: (idx: number, patch: Partial<Requirement>) => void;
   onDelete: (idx: number) => void;
   onUploadAttachment: (idx: number, file: File) => void;
-  orgStripeAccountId?: string | null;
 }) {
   const [dragIdx, setDragIdx] = React.useState<number | null>(null);
   const [overIdx, setOverIdx] = React.useState<number | null>(null);
@@ -1511,7 +1484,6 @@ function RequirementList({
             onUpdate={(patch) => onUpdate(idx, patch)}
             onDelete={() => onDelete(idx)}
             onUploadAttachment={(file) => onUploadAttachment(idx, file)}
-            orgStripeAccountId={orgStripeAccountId}
           />
         </div>
       ))}
@@ -1529,7 +1501,6 @@ function RequirementEditor({
   onUpdate,
   onDelete,
   onUploadAttachment,
-  orgStripeAccountId,
 }: {
   idx: number;
   r: Requirement;
@@ -1538,7 +1509,6 @@ function RequirementEditor({
   onUpdate: (patch: Partial<Requirement>) => void;
   onDelete: () => void;
   onUploadAttachment: (file: File) => void;
-  orgStripeAccountId?: string | null;
 }) {
   const isHeading = r.type === "heading";
   const isInfo = r.type === "info";
@@ -1579,29 +1549,21 @@ function RequirementEditor({
           value={r.type}
           onChange={(e) => {
             const type = e.target.value as RequirementType;
-            if (type === "payment" && !orgStripeAccountId) return; // guard: shouldn't happen but safety
             const patch: Partial<Requirement> = { type };
             if (type !== "file") { patch.attachment_path = null; patch.file_mode = undefined; patch.link_url = null; }
             if (type !== "multiple_choice") { patch.options = undefined; patch.allow_multi_select = undefined; patch.include_other = undefined; }
             if (type !== "text") { patch.multiline = undefined; }
-            if (type !== "payment") { patch.payment_amount = undefined; patch.payment_currency = undefined; patch.payment_description = undefined; }
             if (type !== "info") { patch.info_content = undefined; }
             if (type === "info" || type === "heading") { patch.is_required = false; }
             if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
             if (type === "file") patch.file_mode = "upload";
             if (type === "heading") patch.is_required = false;
-            if (type === "payment") { patch.payment_currency = r.payment_currency ?? "GBP"; patch.is_required = true; }
             onUpdate(patch);
           }}
         >
-          {(Object.keys(TYPE_LABELS) as RequirementType[]).map((t) => {
-            const isPaymentDisabled = t === "payment" && !orgStripeAccountId;
-            return (
-              <option key={t} value={t} disabled={isPaymentDisabled}>
-                {TYPE_LABELS[t]}{isPaymentDisabled ? " (Connect Stripe in Settings → Payments)" : ""}
-              </option>
-            );
-          })}
+          {(Object.keys(TYPE_LABELS) as RequirementType[]).map((t) => (
+            <option key={t} value={t}>{TYPE_LABELS[t]}</option>
+          ))}
         </select>
 
         {/* Label */}
@@ -1630,7 +1592,7 @@ function RequirementEditor({
       </div>
 
       {/* ── Sub-options (only when needed) ── */}
-      {(r.type === "file" || r.type === "text" || r.type === "multiple_choice" || r.type === "payment" || r.type === "info") ? (
+      {(r.type === "file" || r.type === "text" || r.type === "multiple_choice" || r.type === "info") ? (
         <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 flex flex-col gap-2">
 
           {/* File: template mode toggle + input */}
@@ -1675,52 +1637,6 @@ function RequirementEditor({
           ) : null}
 
           {/* Payment: amount, currency, description */}
-          {r.type === "payment" ? (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-3.5 w-3.5 shrink-0 text-[var(--color-accent)]" />
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">Payment details</span>
-              </div>
-              <div className="flex flex-wrap items-end gap-2">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Amount</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={r.payment_amount ?? ""}
-                    onChange={(e) => onUpdate({ payment_amount: e.target.value ? Number(e.target.value) : null })}
-                    placeholder="e.g. 500.00"
-                    className="w-32 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Currency</label>
-                  <select
-                    className="rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1.5 text-xs text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
-                    value={r.payment_currency ?? "GBP"}
-                    onChange={(e) => onUpdate({ payment_currency: e.target.value })}
-                  >
-                    <option value="GBP">GBP</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="SEK">SEK</option>
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Description (optional)</label>
-                <textarea
-                  value={r.payment_description ?? ""}
-                  onChange={(e) => onUpdate({ payment_description: e.target.value || null })}
-                  placeholder="Describe what the payment is for…"
-                  rows={2}
-                  className="w-full rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none resize-none"
-                />
-              </div>
-            </div>
-          ) : null}
-
           {/* Info: description content editor */}
           {r.type === "info" ? (
             <div className="flex flex-col gap-1">

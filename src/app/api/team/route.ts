@@ -104,7 +104,7 @@ export async function GET() {
 
   const { data: orgMeta, error: oErr } = await admin
     .from("organizations")
-    .select("seats_limit, stripe_subscription_status, stripe_account_id")
+    .select("seats_limit, stripe_subscription_status, stripe_account_id, feature_flags")
     .eq("id", profile.org_id)
     .single();
 
