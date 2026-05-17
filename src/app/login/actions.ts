@@ -148,11 +148,10 @@ export async function verifyCodeAction(formData: FormData) {
   // 4. Mark code as used
   await admin.from("login_verifications").update({ used: true }).eq("id", verif.id);
 
-  // 5. Generate a one-time magic link for this email (no email sent — admin API only returns the link)
+  // 5. Generate a one-time token via admin (does NOT send any email)
   const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
     type: "magiclink",
     email,
-    options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://clientenforce.com"}${next}` },
   });
 
   if (linkErr || !linkData?.properties?.hashed_token) {
@@ -160,7 +159,19 @@ export async function verifyCodeAction(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent("Sign-in failed. Please try again.")}&next=${encodeURIComponent(next)}`);
   }
 
-  // 6. Redirect to the auth callback which will verify the token and set the session cookie
-  const callbackUrl = `/auth/callback?token_hash=${encodeURIComponent(linkData.properties.hashed_token)}&type=magiclink&next=${encodeURIComponent(next)}`;
-  redirect(callbackUrl);
+  // 6. Verify the token server-side so the session cookie is set on the server
+  //    (using supabaseServer gives access to the cookie store — the browser never touches this)
+  const supabase = await supabaseServer();
+  const { error: sessionErr } = await supabase.auth.verifyOtp({
+    token_hash: linkData.properties.hashed_token,
+    type: "magiclink",
+  });
+
+  if (sessionErr) {
+    console.error("[login] verifyOtp failed", sessionErr.message);
+    redirect(`/login?error=${encodeURIComponent("Sign-in failed. Please try again.")}&next=${encodeURIComponent(next)}`);
+  }
+
+  // 7. Session cookie is now set — go straight to dashboard
+  redirect(next);
 }
