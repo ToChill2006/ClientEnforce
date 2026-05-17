@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   // Load onboarding + client
   const { data: onboarding, error: onboardingErr } = await admin
     .from("onboardings")
-    .select("id, org_id, client_id, title, client_token, status, event_id, metadata")
+    .select("id, org_id, client_id, title, client_token, status, event_id")
     .eq("id", parsed.data.onboarding_id)
     .single();
 
@@ -158,8 +158,8 @@ export async function POST(req: Request) {
       let maxCount = Math.max(0, Number(orgSettings?.followup_max_count ?? 1));
       const sendHour = Math.min(23, Math.max(0, Number(orgSettings?.followup_send_hour ?? 9)));
 
-      // Per-onboarding override — stored in onboardings.metadata.reminders
-      const meta = (onboarding as any).metadata;
+      // Per-onboarding override — stored in onboardings.metadata.reminders (column may not exist yet)
+      const meta = (onboarding as any).metadata ?? null;
       const override = meta && typeof meta === "object" ? (meta as any).reminders : null;
       if (override && typeof override === "object" && override.enabled) {
         if (typeof override.days_between === "number" && override.days_between >= 1) {

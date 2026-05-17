@@ -419,9 +419,10 @@ export default function TemplatesPage() {
   async function saveSelected() {
     if (!selected || saving) return;
 
-    // Validate labels (headings and all other types need a non-empty label)
+    // Validate labels (info blocks don't need a label; all other types do)
     for (let i = 0; i < selected.definition.requirements.length; i += 1) {
       const r = selected.definition.requirements[i];
+      if (r.type === "info") continue;
       if (!r.label?.trim()) {
         notify({
           title: "Validation error",
