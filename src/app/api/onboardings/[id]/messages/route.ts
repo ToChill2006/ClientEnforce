@@ -8,6 +8,7 @@ import { sendOrgEmail } from "@/lib/send-email";
 import { renderClientEnforceEmail } from "@/lib/email-template";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
 import { appOrigin } from "@/lib/app-url";
+import { logAudit } from "@/lib/audit";
 
 function json(status: number, body: any) {
   return NextResponse.json(body, { status });
@@ -124,6 +125,17 @@ export async function POST(
     .single();
 
   if (insertErr) return json(400, { error: insertErr.message });
+
+  logAudit({
+    org_id: ob.org_id,
+    actor_user_id: user.id,
+    actor_email: user.email ?? null,
+    action: "message.sent",
+    entity_type: "onboarding",
+    entity_id: id,
+    onboarding_id: id,
+    metadata: { from: "admin" },
+  });
 
   // Email the client (non-blocking) — try denormalized columns first, fall back to clients table
   const clientToken = ob.client_token;

@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
+import { requireRole, getOrgId, HttpError, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { logAudit } from "@/lib/audit";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -37,6 +38,8 @@ export async function POST(
 
     const role = await requireRole();
     if (!roleHasPermission(role as any, "onboardings_review")) return err(403, "Forbidden");
+
+    const profile = await requireProfile();
 
     // Verify onboarding belongs to caller's org
     const { data: onboarding, error: obErr } = await supabase
@@ -122,6 +125,17 @@ export async function POST(
       .single();
 
     if (insertErr) return err(400, insertErr.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "requirement.created",
+      entity_type: "requirement",
+      entity_id: (newReq as any).id,
+      onboarding_id: onboardingId,
+      metadata: { label, type },
+    });
     return NextResponse.json({ requirement: newReq }, { status: 201 });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);

@@ -4,6 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { getExternalViewerEventIds } from "@/lib/external-viewer";
+import { logAudit } from "@/lib/audit";
 import { randomUUID } from "crypto";
 import {
   maxActiveOnboardingsForTier,
@@ -1182,6 +1183,23 @@ export async function POST(req: Request) {
   } catch {
     // Best-effort only.
   }
+
+  // Resolve client email for the audit log (best-effort)
+  let clientEmailForAudit: string | null = null;
+  try {
+    const { data: clientRow } = await supabase.from("clients").select("email").eq("id", client_id).eq("org_id", org_id).maybeSingle();
+    clientEmailForAudit = (clientRow as any)?.email ?? null;
+  } catch { /* best-effort */ }
+
+  logAudit({
+    org_id,
+    actor_user_id: user.id,
+    action: "onboarding.created",
+    entity_type: "onboarding",
+    entity_id: onboarding.id,
+    onboarding_id: onboarding.id,
+    metadata: { title, client_email: clientEmailForAudit },
+  });
 
   // Onboarding stays as "draft" — admin sends manually via /api/onboardings/send
   return NextResponse.json({ ok: true, onboarding });

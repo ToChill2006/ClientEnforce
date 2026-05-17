@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
+import { requireRole, getOrgId, HttpError, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { logAudit } from "@/lib/audit";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -61,6 +62,7 @@ export async function PATCH(
     const role = await requireRole();
     if (!roleHasPermission(role as any, "onboardings_review")) return err(403, "Forbidden");
 
+    const profile = await requireProfile();
     const { req: existing, notFound } = await getOrgScopedRequirement(supabase, onboardingId, reqId, org_id);
     if (notFound || !existing) return err(404, "Requirement not found");
 
@@ -94,6 +96,16 @@ export async function PATCH(
       .single();
 
     if (updateErr) return err(400, updateErr.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "requirement.updated",
+      entity_type: "requirement",
+      entity_id: reqId,
+      onboarding_id: onboardingId,
+    });
     return NextResponse.json({ requirement: updated });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);
@@ -117,6 +129,7 @@ export async function DELETE(
     const role = await requireRole();
     if (!roleHasPermission(role as any, "onboardings_review")) return err(403, "Forbidden");
 
+    const profile = await requireProfile();
     const { req: existing, notFound } = await getOrgScopedRequirement(supabase, onboardingId, reqId, org_id);
     if (notFound || !existing) return err(404, "Requirement not found");
 
@@ -153,6 +166,16 @@ export async function DELETE(
       .eq("onboarding_id", onboardingId);
 
     if (deleteErr) return err(400, deleteErr.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "requirement.deleted",
+      entity_type: "requirement",
+      entity_id: reqId,
+      onboarding_id: onboardingId,
+    });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);

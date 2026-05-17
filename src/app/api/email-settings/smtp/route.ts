@@ -4,6 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
+import { logAudit } from "@/lib/audit";
 
 const PASSWORD_MASK = "••••••••";
 
@@ -105,5 +106,13 @@ export async function PATCH(req: Request) {
   }
 
   if (error) return json(400, { error: error.message });
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "smtp_settings.updated",
+    entity_type: "org",
+  });
   return json(200, { ok: true });
 }

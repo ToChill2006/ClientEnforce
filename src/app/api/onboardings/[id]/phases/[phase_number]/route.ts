@@ -3,7 +3,8 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { supabaseServer } from "@/lib/supabase-server";
-import { getOrgId } from "@/lib/rbac";
+import { getOrgId, requireProfile } from "@/lib/rbac";
+import { logAudit } from "@/lib/audit";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -27,6 +28,7 @@ export async function PATCH(
     const org_id = await getOrgId();
     if (!org_id) return err(403, "No organization");
 
+    const profile = await requireProfile();
     const body = await req.json().catch(() => null);
     if (!body || !("deadline" in body)) return err(400, "deadline field required");
 
@@ -41,6 +43,15 @@ export async function PATCH(
       .eq("phase_number", phaseNumber);
 
     if (error) return err(400, error.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      action: "phase.deadline_set",
+      entity_type: "phase",
+      onboarding_id: onboardingId,
+      metadata: { phase_number: phaseNumber, deadline },
+    });
     return NextResponse.json({ ok: true, deadline });
   } catch (e: any) {
     return err(500, e?.message || "Internal error");

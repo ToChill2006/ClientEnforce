@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied, selectOrganizationTier } from "@/lib/plan-enforcement";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -84,5 +85,13 @@ export async function POST(req: Request) {
   const merged = { ...((existing as any)?.white_label_settings ?? {}), logo_url: logoUrl };
   await admin.from("organizations").update({ white_label_settings: merged } as any).eq("id", profile.org_id);
 
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "white_label.logo_uploaded",
+    entity_type: "org",
+  });
   return NextResponse.json({ ok: true, logo_url: logoUrl });
 }

@@ -5,6 +5,7 @@ import { sendOrgEmail } from "@/lib/send-email";
 import { renderClientEnforceEmail } from "@/lib/email-template";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
 import { appOrigin } from "@/lib/app-url";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -117,6 +118,16 @@ export async function POST(
     .single();
 
   if (insertErr) return json(400, { error: insertErr.message });
+
+  logAudit({
+    org_id: ob.org_id,
+    actor_user_id: null,
+    action: "message.sent",
+    entity_type: "onboarding",
+    entity_id: ob.id,
+    onboarding_id: ob.id,
+    metadata: { from: "client", onboarding_id: ob.id },
+  });
 
   // Email org admins (non-blocking)
   const { data: admins } = await admin

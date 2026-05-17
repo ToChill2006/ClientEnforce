@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -172,6 +173,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: removeErr.message }, { status: 400 });
     }
 
+    logAudit({
+      org_id: orgId,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      action: "file.deleted",
+      entity_type: "file",
+      metadata: { path: objectPath, bucket, kind },
+    });
     return NextResponse.json({
       ok: true,
       kind,

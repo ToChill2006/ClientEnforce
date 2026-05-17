@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requirePermission, HttpError } from "@/lib/rbac";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { logAudit } from "@/lib/audit";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -76,6 +77,15 @@ export async function POST(req: Request) {
       .single();
 
     if (error) return err(400, error.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      action: "reminder_rule.created",
+      entity_type: "reminder_rule",
+      entity_id: (rule as any).id,
+      metadata: { rule_type: parsed.data.rule_type, trigger_offset_days: parsed.data.trigger_offset_days },
+    });
     return NextResponse.json({ rule }, { status: 201 });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);

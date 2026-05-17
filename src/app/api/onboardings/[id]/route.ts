@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
+import { logAudit } from "@/lib/audit";
 
 function jsonError(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
@@ -111,6 +112,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         .maybeSingle();
     }
     if (upd.error) return jsonError(400, upd.error.message || "Failed to save reminders override");
+    logAudit({
+      org_id,
+      actor_user_id: user.id,
+      action: "onboarding.updated",
+      entity_type: "onboarding",
+      entity_id: id,
+      onboarding_id: id,
+      metadata: { field: "reminder_override" },
+    });
     return NextResponse.json({ ok: true, item: upd.data });
   }
 
@@ -121,6 +131,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .eq("org_id", org_id)
       .eq("id", id);
     if (error) return jsonError(400, error.message || "Failed to update owner");
+    logAudit({
+      org_id,
+      actor_user_id: user.id,
+      action: "onboarding.updated",
+      entity_type: "onboarding",
+      entity_id: id,
+      onboarding_id: id,
+      metadata: { field: "owner_id", owner_id: parsed.data.owner_id },
+    });
     return NextResponse.json({ ok: true });
   }
 
@@ -131,6 +150,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .eq("org_id", org_id)
       .eq("id", id);
     if (error) return jsonError(400, error.message || "Failed to update client type");
+    logAudit({
+      org_id,
+      actor_user_id: user.id,
+      action: "onboarding.updated",
+      entity_type: "onboarding",
+      entity_id: id,
+      onboarding_id: id,
+      metadata: { field: "client_type_id", client_type_id: parsed.data.client_type_id },
+    });
     return NextResponse.json({ ok: true });
   }
 
@@ -141,6 +169,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .eq("org_id", org_id)
       .eq("id", id);
     if (error) return jsonError(400, error.message || "Failed to update deadline");
+    logAudit({
+      org_id,
+      actor_user_id: user.id,
+      action: "onboarding.updated",
+      entity_type: "onboarding",
+      entity_id: id,
+      onboarding_id: id,
+      metadata: { field: "deadline", deadline: parsed.data.deadline },
+    });
     return NextResponse.json({ ok: true });
   }
 
@@ -167,6 +204,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (error) return jsonError(400, error.message || "Failed to archive onboarding");
   if (!item) return jsonError(404, "Onboarding not found");
 
+  logAudit({
+    org_id,
+    actor_user_id: user.id,
+    action: "onboarding.updated",
+    entity_type: "onboarding",
+    entity_id: id,
+    onboarding_id: id,
+    metadata: { field: "status", status: parsed.data.status },
+  });
   return NextResponse.json({ ok: true, item });
 }
 
@@ -196,5 +242,13 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   if (error) return jsonError(400, error.message || "Failed to delete onboarding");
   if (!item) return jsonError(404, "Onboarding not found");
 
+  logAudit({
+    org_id,
+    actor_user_id: user.id,
+    action: "onboarding.deleted",
+    entity_type: "onboarding",
+    entity_id: id,
+    onboarding_id: id,
+  });
   return NextResponse.json({ ok: true });
 }

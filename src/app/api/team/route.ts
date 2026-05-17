@@ -4,6 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
+import { logAudit } from "@/lib/audit";
 import {
   adminLimitMessage,
   permissionDenied,
@@ -251,5 +252,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "team.updated",
+    entity_type: "team",
+    metadata: { action: "invite_sent", invited_email: email, role: inviteRole },
+  });
   return NextResponse.json({ invite });
 }

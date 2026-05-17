@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requirePermission, HttpError } from "@/lib/rbac";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { logAudit } from "@/lib/audit";
 
 const PatchSchema = z.object({
   phase_number: z.number().int().positive().nullable().optional(),
@@ -68,6 +69,14 @@ export async function PATCH(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      action: "reminder_rule.updated",
+      entity_type: "reminder_rule",
+      entity_id: id,
+    });
     return NextResponse.json({ rule });
   } catch (e: any) {
     if (e instanceof HttpError) {
@@ -114,6 +123,14 @@ export async function DELETE(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      action: "reminder_rule.deleted",
+      entity_type: "reminder_rule",
+      entity_id: id,
+    });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     if (e instanceof HttpError) {

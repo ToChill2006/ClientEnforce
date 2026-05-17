@@ -4,6 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
+import { logAudit } from "@/lib/audit";
 
 const PatchSchema = z.object({
   email_subject_template: z.string().max(200).nullable().optional(),
@@ -76,5 +77,14 @@ export async function PATCH(req: Request) {
   }
 
   if (error) return json(400, { error: error.message });
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "email_settings.updated",
+    entity_type: "org",
+    metadata: Object.fromEntries(Object.entries(parsed.data).filter(([, v]) => v !== undefined)) as Record<string, unknown>,
+  });
   return json(200, { ok: true });
 }

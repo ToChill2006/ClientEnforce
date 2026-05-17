@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { createClient } from "@supabase/supabase-js";
+import { logAudit } from "@/lib/audit";
 
 function supabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -451,6 +452,14 @@ export async function POST(req: Request) {
       if (updateErr) return jsonError(500, updateErr.message);
     }
 
+    logAudit({
+      org_id: invite.org_id,
+      actor_user_id: authedUser.id,
+      actor_email: authedUser.email ?? null,
+      action: "team.invite_accepted",
+      entity_type: "team",
+      metadata: { role: invite.role },
+    });
     return NextResponse.json({ ok: true, org_id: invite.org_id, invite_status: invite.status });
   } catch (e: any) {
     return jsonError(500, e?.message || "Unexpected error");

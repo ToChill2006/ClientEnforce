@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { logAudit } from "@/lib/audit";
 
 function jsonError(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
@@ -90,6 +91,16 @@ export async function POST(req: Request) {
   }
 
   await admin.from("onboardings").update({ updated_at: nowIso }).eq("id", onboarding.id);
+
+  logAudit({
+    org_id: onboarding.org_id,
+    actor_user_id: null,
+    action: "file.removed",
+    entity_type: "requirement",
+    entity_id: requirement_id,
+    onboarding_id: onboarding.id,
+    metadata: { path: pathToRemove },
+  });
 
   return NextResponse.json({ ok: true, file_paths: remaining, completed: isComplete });
 }

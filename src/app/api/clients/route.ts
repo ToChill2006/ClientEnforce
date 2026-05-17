@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
+import { logAudit } from "@/lib/audit";
 
 function isMissingColumnError(err: any, column: string) {
   const msg = String(err?.message || err || "").toLowerCase();
@@ -107,6 +108,16 @@ export async function POST(req: Request) {
   }
 
   const created = (result as any).data;
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "client.created",
+    entity_type: "client",
+    entity_id: created.id,
+    metadata: { email: created.email, full_name: created.full_name, company_name: created.company_name ?? null },
+  });
   return NextResponse.json(
     { item: { ...created, company_name: created.company_name ?? null, name: created.full_name ?? null } },
     { status: 201 }
@@ -178,6 +189,16 @@ export async function PUT(req: Request) {
   }
 
   const updated = (result as any).data;
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "client.updated",
+    entity_type: "client",
+    entity_id: id,
+    metadata: { email: updated.email, full_name: updated.full_name },
+  });
   return NextResponse.json({
     item: { ...updated, company_name: updated.company_name ?? null, name: updated.full_name ?? null },
   });
@@ -217,5 +238,14 @@ export async function DELETE(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "client.deleted",
+    entity_type: "client",
+    entity_id: id,
+  });
   return NextResponse.json({ ok: true });
 }

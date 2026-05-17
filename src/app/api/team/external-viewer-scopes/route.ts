@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireRole, requireProfile } from "@/lib/rbac";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -94,6 +95,15 @@ export async function POST(req: Request) {
       if (insError) return err(400, insError.message);
     }
 
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "team.scopes_updated",
+      entity_type: "team",
+      metadata: { user_id, event_ids },
+    });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return err(500, e?.message || "Internal error");

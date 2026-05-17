@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile } from "@/lib/rbac";
 import { requirePermission, HttpError } from "@/lib/rbac";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { logAudit } from "@/lib/audit";
 
 const CreateSchema = z.object({
   phase_number: z.number().int().positive().nullable().optional(),
@@ -110,6 +111,15 @@ export async function POST(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      action: "reminder_rule.created",
+      entity_type: "reminder_rule",
+      entity_id: (rule as any).id,
+      metadata: { template_id: templateId, rule_type: parsed.data.rule_type, trigger_offset_days: parsed.data.trigger_offset_days },
+    });
     return NextResponse.json({ rule }, { status: 201 });
   } catch (e: any) {
     if (e instanceof HttpError) {

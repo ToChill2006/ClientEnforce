@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
-import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
+import { requireRole, getOrgId, HttpError, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { logAudit } from "@/lib/audit";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -31,6 +32,7 @@ export async function PATCH(
     const role = await requireRole();
     if (!roleHasPermission(role as any, "client_types_write")) return err(403, "Forbidden");
 
+    const profile = await requireProfile();
     const body = await req.json().catch(() => null);
     const parsed = UpdateClientType.safeParse(body);
     if (!parsed.success) return err(400, "Invalid payload");
@@ -44,6 +46,15 @@ export async function PATCH(
       .single();
 
     if (error) return err(400, error.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "client_type.updated",
+      entity_type: "client_type",
+      entity_id: id,
+    });
     return NextResponse.json({ client_type: data });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);
@@ -66,6 +77,8 @@ export async function DELETE(
 
     const role = await requireRole();
     if (!roleHasPermission(role as any, "client_types_write")) return err(403, "Forbidden");
+
+    const profile = await requireProfile();
 
     // Check for references
     const { count: obCount } = await supabase
@@ -91,6 +104,15 @@ export async function DELETE(
       .eq("org_id", org_id);
 
     if (error) return err(400, error.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "client_type.deleted",
+      entity_type: "client_type",
+      entity_id: id,
+    });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);

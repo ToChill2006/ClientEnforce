@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
-import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
+import { requireRole, getOrgId, HttpError, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
 import { getExternalViewerEventIds } from "@/lib/external-viewer";
+import { logAudit } from "@/lib/audit";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -96,6 +97,7 @@ export async function POST(req: Request) {
     const role = await requireRole();
     if (!roleHasPermission(role as any, "events_write")) return err(403, "Forbidden");
 
+    const profile = await requireProfile();
     const body = await req.json().catch(() => null);
     const parsed = CreateEvent.safeParse(body);
     if (!parsed.success) return err(400, "Invalid payload");
@@ -114,6 +116,16 @@ export async function POST(req: Request) {
       .single();
 
     if (error) return err(400, error.message);
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "event.created",
+      entity_type: "event",
+      entity_id: (data as any).id,
+      metadata: { name: parsed.data.name },
+    });
     return NextResponse.json({ event: data }, { status: 201 });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);

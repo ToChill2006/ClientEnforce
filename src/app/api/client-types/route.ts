@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
-import { requireRole, getOrgId, HttpError } from "@/lib/rbac";
+import { requireRole, getOrgId, HttpError, requireProfile } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { currentOrgHasFeature } from "@/lib/feature-flags";
+import { logAudit } from "@/lib/audit";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
     const role = await requireRole();
     if (!roleHasPermission(role as any, "client_types_write")) return err(403, "Forbidden");
 
+    const profile = await requireProfile();
     const body = await req.json().catch(() => null);
     const parsed = CreateClientType.safeParse(body);
     if (!parsed.success) return err(400, "Invalid payload");
@@ -70,6 +72,15 @@ export async function POST(req: Request) {
       if (error.message.toLowerCase().includes("unique")) return err(409, "A client type with that name already exists");
       return err(400, error.message);
     }
+    logAudit({
+      org_id: profile.org_id,
+      actor_user_id: profile.user_id,
+      actor_email: profile.email,
+      actor_role: role,
+      action: "client_type.created",
+      entity_type: "client_type",
+      entity_id: (data as any).id,
+    });
     return NextResponse.json({ client_type: data }, { status: 201 });
   } catch (e: any) {
     if (e instanceof HttpError) return err(e.status, e.message);

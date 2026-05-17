@@ -5,6 +5,7 @@ import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied, selectOrganizationTier } from "@/lib/plan-enforcement";
 import { addDomainToVercel, removeDomainFromVercel } from "@/lib/vercel-domains";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -131,6 +132,16 @@ export async function PATCH(req: Request) {
     .eq("id", profile.org_id);
 
   if (writeErr) return NextResponse.json({ error: writeErr.message }, { status: 400 });
+
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "white_label.updated",
+    entity_type: "org",
+    metadata: { fields: Object.keys(patch) },
+  });
 
   // Sync custom domain with Vercel when it changes
   const oldDomain = oldSettings.custom_domain?.trim().toLowerCase() || null;

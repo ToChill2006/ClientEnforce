@@ -148,6 +148,8 @@ export async function GET(req: Request) {
     return {
       ...event,
       actor_user_id: actorId,
+      actor_email: event.actor_email ?? null,
+      actor_role: event.actor_role ?? null,
       actor: actorLabel,
     };
   });

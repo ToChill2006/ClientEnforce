@@ -7,6 +7,7 @@ import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
 import { sendOrgEmail } from "@/lib/send-email";
 import { appOrigin } from "@/lib/app-url";
+import { logAudit } from "@/lib/audit";
 
 const CreateTask = z.object({
   assigned_to: z.string().uuid(),
@@ -120,6 +121,16 @@ export async function POST(req: Request) {
     // Notification failure never blocks the response
   }
 
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "task.created",
+    entity_type: "task",
+    entity_id: inserted.id,
+    metadata: { title, assignee_id: assigned_to },
+  });
   return NextResponse.json({ ok: true, id: inserted.id, item: inserted });
 }
 
@@ -152,6 +163,16 @@ export async function PATCH(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!updated) return NextResponse.json({ error: "Task not found or not permitted" }, { status: 404 });
 
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "task.updated",
+    entity_type: "task",
+    entity_id: id,
+    metadata: patch as Record<string, unknown>,
+  });
   return NextResponse.json({ ok: true });
 }
 
@@ -183,5 +204,14 @@ export async function DELETE(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!deleted) return NextResponse.json({ error: "Task not found" }, { status: 404 });
 
+  logAudit({
+    org_id: profile.org_id,
+    actor_user_id: profile.user_id,
+    actor_email: profile.email,
+    actor_role: role,
+    action: "task.deleted",
+    entity_type: "task",
+    entity_id: id,
+  });
   return NextResponse.json({ ok: true });
 }
