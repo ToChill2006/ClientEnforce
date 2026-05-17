@@ -234,9 +234,9 @@ export default function ReportsPage() {
                 ) : (
                   <div className="space-y-5">
                     <FunnelBar label="Draft" count={draft} total={totalOnboardings} color="bg-[var(--color-text-muted)]" />
-                    <FunnelBar label="Sent" count={sent} total={totalOnboardings} color="bg-blue-400" />
-                    <FunnelBar label="In progress" count={in_progress} total={totalOnboardings} color="bg-amber-400" />
-                    <FunnelBar label="Submitted" count={submitted} total={totalOnboardings} color="bg-[var(--color-accent)]" />
+                    <FunnelBar label="Sent" count={sent} total={totalOnboardings} color="bg-[var(--color-accent)]" />
+                    <FunnelBar label="In progress" count={in_progress} total={totalOnboardings} color="bg-[var(--color-warning)]" />
+                    <FunnelBar label="Submitted" count={submitted} total={totalOnboardings} color="bg-[var(--color-success)]" />
                   </div>
                 )}
               </CardContent>

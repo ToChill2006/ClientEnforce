@@ -673,7 +673,7 @@ export default function SettingsPage() {
       ) : null}
 
       {pageSuccess ? (
-        <div className="rounded-[var(--radius-sm)] border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div className="rounded-[var(--radius-sm)] border border-[var(--color-success-subtle)] bg-[var(--color-success-subtle)] px-4 py-3 text-sm text-[var(--color-success)]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="font-medium">Success</div>

@@ -101,7 +101,7 @@ function NavItem({ href, label, icon: Icon, onClose, badge = 0, onBadgeClick }: 
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-1 mt-4 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)] first:mt-0">
+    <p className="mb-0.5 mt-5 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)] first:mt-0">
       {children}
     </p>
   );
@@ -154,7 +154,7 @@ function NotificationPanel({
   return (
     <div
       ref={panelRef}
-      className="absolute left-[228px] top-0 z-50 w-72 rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-xl)] overflow-hidden"
+      className="absolute left-0 top-0 z-50 w-[min(18rem,90vw)] rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-xl)] overflow-hidden lg:left-[228px]"
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-2.5">

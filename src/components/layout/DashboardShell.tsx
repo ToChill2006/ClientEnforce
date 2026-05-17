@@ -210,7 +210,7 @@ export default function DashboardShell({ children, fullName, email, initials, ha
 
         {/* Main */}
         <div className="lg:pl-[220px]">
-          <main className="min-h-screen px-4 pb-10 pt-[calc(3.5rem+1.5rem)] lg:px-8 lg:pt-[calc(3.5rem+1.75rem)]">
+          <main className="min-h-screen px-4 pb-16 pt-[calc(3.5rem+1.25rem)] sm:px-6 sm:pb-10 lg:px-8 lg:pt-[calc(3.5rem+1.75rem)]">
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
         </div>

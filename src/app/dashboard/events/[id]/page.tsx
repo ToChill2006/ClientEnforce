@@ -771,10 +771,10 @@ export default function EventDetailPage() {
 
         const statCards = [
           { label: "Total Exhibitors", value: total, color: "text-[var(--color-text-primary)]" },
-          { label: "Completed", value: completed, color: "text-green-600 dark:text-green-400" },
-          { label: "In Progress", value: inProgress, color: "text-blue-600 dark:text-blue-400" },
-          { label: "Awaiting Review", value: awaitingReview, color: "text-amber-600 dark:text-amber-400" },
-          { label: "Needs Revision", value: rejected, color: "text-red-600 dark:text-red-400" },
+          { label: "Completed", value: completed, color: "text-[var(--color-success)]" },
+          { label: "In Progress", value: inProgress, color: "text-[var(--color-accent)]" },
+          { label: "Awaiting Review", value: awaitingReview, color: "text-[var(--color-warning)]" },
+          { label: "Needs Revision", value: rejected, color: "text-[var(--color-danger)]" },
           { label: "Not Started", value: notStarted, color: "text-[var(--color-text-muted)]" },
         ];
 
@@ -883,10 +883,10 @@ export default function EventDetailPage() {
                 />
               </div>
               <div className="mt-3 flex flex-wrap gap-4 text-xs text-[var(--color-text-muted)]">
-                <span><span className="font-semibold text-green-600">{completed}</span> completed</span>
-                <span><span className="font-semibold text-blue-600">{inProgress}</span> in progress</span>
-                <span><span className="font-semibold text-amber-600">{awaitingReview}</span> awaiting review</span>
-                <span><span className="font-semibold text-red-600">{rejected}</span> needs revision</span>
+                <span><span className="font-semibold text-[var(--color-success)]">{completed}</span> completed</span>
+                <span><span className="font-semibold text-[var(--color-accent)]">{inProgress}</span> in progress</span>
+                <span><span className="font-semibold text-[var(--color-warning)]">{awaitingReview}</span> awaiting review</span>
+                <span><span className="font-semibold text-[var(--color-danger)]">{rejected}</span> needs revision</span>
                 <span><span className="font-semibold text-[var(--color-text-muted)]">{notStarted}</span> not started</span>
               </div>
             </div>
@@ -895,7 +895,7 @@ export default function EventDetailPage() {
             {needsAttention.length > 0 && (
               <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
                 <div className="border-b border-[var(--color-border)] px-5 py-3 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertCircle className="h-4 w-4 text-[var(--color-warning)]" />
                   <span className="text-sm font-semibold text-[var(--color-text-primary)]">Needs Attention</span>
                   <span className="ml-auto text-xs text-[var(--color-text-muted)]">{needsAttention.length} exhibitor{needsAttention.length !== 1 ? "s" : ""}</span>
                 </div>

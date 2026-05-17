@@ -17,7 +17,13 @@ import {
   X as XIcon,
   Plus,
   CalendarDays,
+  MoreHorizontal,
+  CheckCheck,
+  Clock,
+  Ban,
+  Minus,
 } from "lucide-react";
+import { Menu, MenuItem, MenuDivider } from "@/components/ui/menu";
 import { DeadlineBadge, DeadlinePill } from "@/components/ui/deadline-badge";
 import { supabaseBrowser } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -929,12 +935,12 @@ export default function OnboardingDetailAdminPage() {
   return (
     <div className="space-y-6">
       {ob?.status === "draft" && (
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="flex items-center justify-between gap-4 rounded-[var(--radius-lg)] border border-[var(--color-warning-subtle)] bg-[var(--color-warning-subtle)] px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <span className="text-amber-500 text-lg">✏️</span>
+            <Pencil className="h-4 w-4 shrink-0 text-[var(--color-warning)]" />
             <div>
-              <p className="text-sm font-semibold text-amber-800">Draft — not yet sent to client</p>
-              <p className="text-xs text-amber-600 mt-0.5">Add or remove requirements below, then click <strong>Send invite</strong> when ready.</p>
+              <p className="text-sm font-semibold text-[var(--color-warning)]">Draft — not yet sent</p>
+              <p className="text-xs text-[var(--color-warning)] opacity-80 mt-0.5">Add or remove requirements, then send invite when ready.</p>
             </div>
           </div>
           <Button size="sm" iconLeft={<Send className="h-3.5 w-3.5" />} loading={sending} onClick={sendEmail}>
@@ -1012,37 +1018,40 @@ export default function OnboardingDetailAdminPage() {
                 {ob?.status === "draft" ? "Send invite" : "Send"}
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              iconLeft={<Download className="h-3.5 w-3.5" />}
-              loading={downloadingPdf}
-              onClick={downloadPdf}
-            >
-              PDF
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              iconLeft={<Download className="h-3.5 w-3.5" />}
-              onClick={() => { window.location.href = `/api/onboardings/${params.id}/export`; }}
-            >
-              Export CSV
-            </Button>
             {statusKey === "submitted" && (
               <Button size="sm" iconLeft={<Lock className="h-3.5 w-3.5" />} onClick={() => setConfirmLock(true)}>
                 Lock
               </Button>
             )}
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"
-              onClick={() => setConfirmDelete(true)}
-              iconLeft={<Trash2 className="h-3.5 w-3.5" />}
+            <Menu
+              align="end"
+              trigger={
+                <Button variant="outline" size="sm" iconLeft={<MoreHorizontal className="h-3.5 w-3.5" />}>
+                  More
+                </Button>
+              }
             >
-              Delete
-            </Button>
+              <MenuItem
+                iconLeft={<Download className="h-3.5 w-3.5" />}
+                onSelect={downloadPdf}
+              >
+                Download PDF
+              </MenuItem>
+              <MenuItem
+                iconLeft={<Download className="h-3.5 w-3.5" />}
+                onSelect={() => { window.location.href = `/api/onboardings/${params.id}/export`; }}
+              >
+                Export CSV
+              </MenuItem>
+              <MenuDivider />
+              <MenuItem
+                iconLeft={<Trash2 className="h-3.5 w-3.5" />}
+                onSelect={() => setConfirmDelete(true)}
+                destructive
+              >
+                Delete
+              </MenuItem>
+            </Menu>
           </>
         }
       />
@@ -1067,13 +1076,14 @@ export default function OnboardingDetailAdminPage() {
                 approved: "bg-[var(--color-success-subtle)] text-[var(--color-success)] border-[var(--color-success)]",
                 rejected: "bg-[var(--color-danger-subtle)] text-[var(--color-danger)] border-[var(--color-danger)]",
               };
-              const statusLabel: Record<string, string> = { locked: "Locked", in_progress: "In Progress", awaiting_review: "Awaiting Review", approved: "Approved", rejected: "Rejected" };
-              const statusIcon: Record<string, string> = { approved: "✓", locked: "🔒", awaiting_review: "⏳", rejected: "✗", in_progress: "●" };
+              const statusLabel: Record<string, string> = { locked: "Locked", in_progress: "In progress", awaiting_review: "In review", approved: "Approved", rejected: "Rejected" };
+              const statusIconMap: Record<string, React.ComponentType<{ className?: string }>> = { approved: CheckCheck, locked: Lock, awaiting_review: Clock, rejected: Ban, in_progress: Minus };
+              const StatusIcon = statusIconMap[ph.status] ?? Minus;
               return (
                 <React.Fragment key={ph.id}>
                   {idx > 0 && <span className="mt-3 text-[var(--color-text-muted)]">→</span>}
                   <div className={`inline-flex flex-col items-start gap-1 rounded-[var(--radius-md)] border px-3 py-2 text-xs font-medium ${statusColors[ph.status] ?? statusColors.locked}`}>
-                    <span className="font-semibold">{statusIcon[ph.status] ?? ""} {ph.name}</span>
+                    <span className="flex items-center gap-1.5 font-semibold"><StatusIcon className="h-3 w-3 shrink-0" />{ph.name}</span>
                     <span className="opacity-70">{statusLabel[ph.status] ?? ph.status}</span>
                     {/* Phase deadline */}
                     {phaseDeadlineEditing === ph.phase_number ? (

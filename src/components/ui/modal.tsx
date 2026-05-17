@@ -58,7 +58,7 @@ export function Modal({
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4 py-8 sm:items-center sm:py-12">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto px-3 pb-safe-bottom pt-8 sm:items-center sm:px-4 sm:py-12">
       <div
         className="fixed inset-0 bg-[var(--color-overlay)] animate-overlay-in"
         onClick={() => dismissOnBackdrop && onClose()}
@@ -68,7 +68,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative w-full rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-lg)] animate-dialog-in",
+          "relative w-full rounded-t-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-lg)] animate-dialog-in sm:rounded-[var(--radius-xl)]",
           sizeWidths[size]
         )}
       >
@@ -99,7 +99,7 @@ export function Modal({
           {children}
         </div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-[var(--color-border)] px-5 py-3">
+          <div className="flex flex-col-reverse gap-2 border-t border-[var(--color-border)] px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
             {footer}
           </div>
         )}

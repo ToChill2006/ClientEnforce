@@ -386,34 +386,29 @@ export default function FollowupsPage() {
         }
       />
 
-      {alert?.variant === "success" ? (
-        <div className="flex items-start justify-between gap-3 rounded-[var(--radius-md)] border border-[color-mix(in_oklab,var(--color-success)_25%,transparent)] bg-[var(--color-success-subtle)] px-3 py-2 text-sm text-[var(--color-success)]">
-          <div>
-            <div className="font-medium">{alert.title}</div>
-            {alert.description && <div className="mt-0.5 text-xs opacity-90">{alert.description}</div>}
+      {alert && (
+        alert.variant === "success" ? (
+          <div className="flex items-start justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-success-subtle)] bg-[var(--color-success-subtle)] px-3 py-2.5 text-sm text-[var(--color-success)]">
+            <div>
+              <div className="font-medium">{alert.title}</div>
+              {alert.description && <div className="mt-0.5 text-xs opacity-90">{alert.description}</div>}
+            </div>
+            <button type="button" className="shrink-0 text-xs opacity-60 hover:opacity-100" onClick={() => setAlert(null)} aria-label="Dismiss">✕</button>
           </div>
-          <button
-            type="button"
-            className="text-xs opacity-70 hover:opacity-100"
-            onClick={() => setAlert(null)}
-            aria-label="Dismiss"
-          >
-            ✕
-          </button>
-        </div>
-      ) : alert ? (
-        <RejectionBanner
-          kind={
-            /plan|upgrade/i.test(`${alert.title} ${alert.description ?? ""}`)
-              ? "plan"
-              : /permission/i.test(alert.title)
-              ? "permission"
-              : "error"
-          }
-          message={alert.description ? `${alert.title}: ${alert.description}` : alert.title}
-          onDismiss={() => setAlert(null)}
-        />
-      ) : null}
+        ) : (
+          <RejectionBanner
+            kind={
+              /plan|upgrade/i.test(`${alert.title} ${alert.description ?? ""}`)
+                ? "plan"
+                : /permission/i.test(alert.title)
+                ? "permission"
+                : "error"
+            }
+            message={alert.description ? `${alert.title}: ${alert.description}` : alert.title}
+            onDismiss={() => setAlert(null)}
+          />
+        )
+      )}
 
       <Card>
         <CardHeader>

@@ -221,7 +221,7 @@ export function DataTable<T>({
                       scope="col"
                       style={{ width: col.width }}
                       className={cn(
-                        "px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]",
+                        "px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]",
                         col.align === "right" && "text-right",
                         col.align === "center" && "text-center",
                         col.align !== "right" && col.align !== "center" && "text-left",
@@ -261,7 +261,7 @@ export function DataTable<T>({
                   <tr key={`sk-${i}`} className="border-t border-[var(--color-border)]">
                     {selectable && <td className="px-3 py-3" />}
                     {columns.map((c) => (
-                      <td key={c.key} className={cn("px-3 py-3", c.hideOnMobile && "hidden md:table-cell")}>
+                      <td key={c.key} className={cn("px-4 py-3", c.hideOnMobile && "hidden md:table-cell")}>
                         <div className="h-3.5 w-24 rounded-[var(--radius-xs)] bg-[var(--color-bg-muted)] animate-pulse" />
                       </td>
                     ))}
@@ -319,7 +319,7 @@ export function DataTable<T>({
                           <td
                             key={col.key}
                             className={cn(
-                              "px-3 py-3 align-middle text-sm text-[var(--color-text-primary)]",
+                              "px-4 py-3.5 align-middle text-sm text-[var(--color-text-primary)]",
                               col.align === "right" && "text-right",
                               col.align === "center" && "text-center",
                               col.hideOnMobile && "hidden md:table-cell",
@@ -331,7 +331,7 @@ export function DataTable<T>({
                         );
                       })}
                       {rowActions && (
-                        <td className="px-2 text-right align-middle">{rowActions(row)}</td>
+                        <td className="px-3 text-right align-middle">{rowActions(row)}</td>
                       )}
                     </tr>
                   );

@@ -310,7 +310,7 @@ export default function MessagesPage() {
           {/* Input */}
           <div className="border-t border-[var(--color-border)] bg-[var(--color-panel)] px-5 py-3">
             {sendError && (
-              <p className="mb-2 rounded-[var(--radius-sm)] bg-red-50 px-2 py-1 text-[11px] text-red-600">{sendError}</p>
+              <p className="mb-2 rounded-[var(--radius-sm)] bg-[var(--color-danger-subtle)] px-2 py-1 text-[11px] text-[var(--color-danger)]">{sendError}</p>
             )}
             <div className="flex items-end gap-2">
               <textarea

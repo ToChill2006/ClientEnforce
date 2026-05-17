@@ -405,9 +405,9 @@ export default function DashboardPage() {
                         <div className="h-full rounded-full bg-[var(--color-accent)] transition-all" style={{ width: `${pct}%` }} />
                       </div>
                       <div className="mt-1.5 flex gap-3 text-[10px] text-[var(--color-text-muted)]">
-                        {inProgress > 0 && <span className="text-blue-600">{inProgress} in progress</span>}
-                        {awaitingReview > 0 && <span className="text-amber-600">{awaitingReview} needs review</span>}
-                        {completed > 0 && <span className="text-green-600">{completed} done</span>}
+                        {inProgress > 0 && <span className="text-[var(--color-accent)]">{inProgress} in progress</span>}
+                        {awaitingReview > 0 && <span className="text-[var(--color-warning)]">{awaitingReview} needs review</span>}
+                        {completed > 0 && <span className="text-[var(--color-success)]">{completed} done</span>}
                       </div>
                     </div>
                   </Link>
