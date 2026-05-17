@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireProfile, requireRole } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
+import { sendOrgEmail } from "@/lib/send-email";
+import { appOrigin } from "@/lib/app-url";
 
 const CreateTask = z.object({
   assigned_to: z.string().uuid(),
@@ -81,6 +84,40 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Send email notification to assignee (best-effort, non-blocking)
+  try {
+    const admin = supabaseAdmin();
+    const { data: assigneeProfile } = await admin
+      .from("profiles")
+      .select("email, full_name")
+      .eq("user_id", assigned_to)
+      .maybeSingle();
+
+    if (assigneeProfile?.email) {
+      const { data: assignerProfile } = await admin
+        .from("profiles")
+        .select("full_name, email")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+
+      const assignerName = assignerProfile?.full_name ?? assignerProfile?.email ?? "A team member";
+      const origin = appOrigin();
+      const taskUrl = `${origin}/dashboard/team`;
+      const dueText = parsed.data.due_at
+        ? ` · Due ${new Date(parsed.data.due_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+        : "";
+
+      await sendOrgEmail(profile.org_id, {
+        to: assigneeProfile.email,
+        subject: `New task assigned: ${title}`,
+        text: `${assignerName} assigned you a task.\n\nTask: ${title}${dueText}\n\nView it at ${taskUrl}`,
+        html: `<p><strong>${assignerName}</strong> assigned you a task.</p><p><strong>${title}</strong>${dueText}</p>${description ? `<p style="color:#666">${description}</p>` : ""}<p><a href="${taskUrl}">View task →</a></p>`,
+      });
+    }
+  } catch {
+    // Notification failure never blocks the response
+  }
 
   return NextResponse.json({ ok: true, id: inserted.id, item: inserted });
 }

@@ -280,12 +280,10 @@ export default function SidebarNav({
       <SectionLabel>Main</SectionLabel>
       <div className="flex flex-col gap-0.5">
         <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} onClose={onClose} />
-        <NavItem
-          href="/dashboard/onboardings"
-          label="Onboardings"
-          icon={ClipboardList}
-          onClose={onClose}
-        />
+        {hasEnterpriseOnboarding && (
+          <NavItem href="/dashboard/events" label="Events" icon={CalendarDays} onClose={onClose} />
+        )}
+        <NavItem href="/dashboard/onboardings" label="Onboardings" icon={ClipboardList} onClose={onClose} />
         <NavItem
           href="/dashboard/messages"
           label="Messages"
@@ -293,14 +291,13 @@ export default function SidebarNav({
           onClose={onClose}
           badge={messageUnread}
         />
-        <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} onClose={onClose} />
-        <NavItem href="/dashboard/email" label="Email" icon={Mail} onClose={onClose} />
         <NavItem href="/dashboard/clients" label="Clients" icon={User} onClose={onClose} />
+        <NavItem href="/dashboard/followups" label="Follow-ups" icon={Bell} onClose={onClose} />
       </div>
 
       {hasEnterpriseOnboarding && (
         <>
-          <SectionLabel>Enterprise</SectionLabel>
+          <SectionLabel>Review</SectionLabel>
           <div className="flex flex-col gap-0.5">
             <NavItem
               href="/dashboard/review-queue"
@@ -314,22 +311,23 @@ export default function SidebarNav({
         </>
       )}
 
-      <SectionLabel>Workflow</SectionLabel>
+      <SectionLabel>Manage</SectionLabel>
       <div className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard/followups" label="Follow-ups" icon={Bell} onClose={onClose} />
-        <NavItem href="/dashboard/storage" label="Files & Signatures" icon={FolderOpen} onClose={onClose} />
+        <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} onClose={onClose} />
+        <NavItem href="/dashboard/email" label="Email" icon={Mail} onClose={onClose} />
       </div>
 
       <SectionLabel>Team</SectionLabel>
       <div className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard/team" label="Team members" icon={Users} onClose={onClose} />
+        <NavItem href="/dashboard/team" label="Team" icon={Users} onClose={onClose} />
         <NavItem href="/dashboard/settings" label="Settings" icon={Settings} onClose={onClose} />
       </div>
 
       <SectionLabel>More</SectionLabel>
       <div className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard/audit" label="Activity & Timeline" icon={Clock} onClose={onClose} />
         <NavItem href="/dashboard/reports" label="Reports" icon={BarChart2} onClose={onClose} />
+        <NavItem href="/dashboard/storage" label="Files & Signatures" icon={FolderOpen} onClose={onClose} />
+        <NavItem href="/dashboard/audit" label="Activity & Timeline" icon={Clock} onClose={onClose} />
         <NavItem href="/dashboard/support" label="Help & Support" icon={LifeBuoy} onClose={onClose} />
       </div>
     </nav>
