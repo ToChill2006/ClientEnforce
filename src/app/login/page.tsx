@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { sendOtpAction, verifyOtpAction } from "./actions";
+import { loginAction, verifyCodeAction } from "./actions";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,10 +65,12 @@ export default async function LoginPage({
           <>
             <div className="mb-6 text-center">
               <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
-                Check your email
+                Check your inbox
               </h1>
               <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
-                We sent a 6-digit code to <span className="font-medium text-[var(--color-text-primary)]">{prefillEmail}</span>
+                We emailed a 6-digit code to{" "}
+                <span className="font-medium text-[var(--color-text-primary)]">{prefillEmail}</span>.
+                Enter it below to sign in.
               </p>
             </div>
 
@@ -80,10 +82,10 @@ export default async function LoginPage({
                   </div>
                 ) : null}
 
-                <form action={verifyOtpAction} className="flex flex-col gap-4">
+                <form action={verifyCodeAction} className="flex flex-col gap-4">
                   <input type="hidden" name="next" value={next} />
                   <input type="hidden" name="email" value={prefillEmail} />
-                  <FormField label="Verification code" htmlFor="token" required>
+                  <FormField label="6-digit code" htmlFor="token" required>
                     <Input
                       id="token"
                       name="token"
@@ -94,22 +96,22 @@ export default async function LoginPage({
                       maxLength={6}
                       required
                       autoFocus
-                      className="text-center text-2xl tracking-[0.4em] text-base"
-                      style={{ fontSize: "20px", letterSpacing: "0.4em" }}
+                      className="text-center tracking-[0.4em]"
+                      style={{ fontSize: "22px", letterSpacing: "0.4em" }}
                     />
                   </FormField>
-                  <AuthSubmitButton>Verify & log in</AuthSubmitButton>
+                  <AuthSubmitButton>Verify & sign in</AuthSubmitButton>
                 </form>
               </CardContent>
             </Card>
 
             <p className="mt-5 text-center text-sm text-[var(--color-text-secondary)]">
-              Wrong email?{" "}
+              Didn&apos;t receive it? Check your spam, or{" "}
               <Link
                 href={`/login?next=${encodeURIComponent(next)}`}
                 className="font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
               >
-                Try again
+                try again
               </Link>
             </p>
           </>
@@ -120,7 +122,7 @@ export default async function LoginPage({
                 Log in to ClientEnforce
               </h1>
               <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
-                Enter your email and we&apos;ll send you a sign-in code.
+                Manage your client onboarding workspace.
               </p>
             </div>
 
@@ -128,7 +130,7 @@ export default async function LoginPage({
               <CardContent className="flex flex-col gap-4 p-5 sm:p-6">
                 {created ? (
                   <div className="rounded-[var(--radius-md)] border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-                    Account created — enter your email to log in.
+                    Account created — log in to continue.
                   </div>
                 ) : null}
 
@@ -144,7 +146,7 @@ export default async function LoginPage({
                   </div>
                 ) : null}
 
-                <form action={sendOtpAction} className="flex flex-col gap-4">
+                <form action={loginAction} className="flex flex-col gap-4">
                   <input type="hidden" name="next" value={next} />
                   <FormField label="Email" htmlFor="email" required>
                     <Input
@@ -154,12 +156,33 @@ export default async function LoginPage({
                       autoComplete="email"
                       required
                       autoFocus
-                      defaultValue={prefillEmail}
                       className="text-base"
                       style={{ fontSize: "16px" }}
                     />
                   </FormField>
-                  <AuthSubmitButton>Send sign-in code</AuthSubmitButton>
+                  <FormField
+                    label={
+                      <div className="flex w-full items-center justify-between gap-3">
+                        <span>Password</span>
+                        <Link href="/forgot-password" className="text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                          Forgot password?
+                        </Link>
+                      </div>
+                    }
+                    htmlFor="password"
+                    required
+                  >
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                      className="text-base"
+                      style={{ fontSize: "16px" }}
+                    />
+                  </FormField>
+                  <AuthSubmitButton>Log in</AuthSubmitButton>
                 </form>
               </CardContent>
             </Card>

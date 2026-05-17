@@ -1,3 +1,19 @@
+-- ── Login verification codes (2FA via Resend) ────────────────────────────────
+-- Stores hashed 6-digit codes generated after password verification.
+-- Code is sent by Resend; once verified the row is marked used and deleted.
+CREATE TABLE IF NOT EXISTS public.login_verifications (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT NOT NULL,
+  code_hash TEXT NOT NULL,   -- SHA-256 hex of the 6-digit code
+  attempts INT NOT NULL DEFAULT 0,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS login_verifications_email_idx ON public.login_verifications (email, expires_at DESC);
+ALTER TABLE public.login_verifications ENABLE ROW LEVEL SECURITY;
+-- Only service role accesses this table.
+
 -- ── Cron lock table ──────────────────────────────────────────────────────────
 -- Prevents concurrent cron runs from sending duplicate emails.
 CREATE TABLE IF NOT EXISTS public.cron_locks (
