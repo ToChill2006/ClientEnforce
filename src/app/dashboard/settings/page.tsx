@@ -1129,7 +1129,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="wl_accent">Accent colour</Label>
+                  <Label htmlFor="wl_accent">Button & link colour</Label>
                   <div className="flex items-center gap-2">
                     <input
                       id="wl_accent"
@@ -1145,7 +1145,7 @@ export default function SettingsPage() {
                       className="flex-1"
                     />
                   </div>
-                  <p className="text-xs text-[var(--color-text-muted)]">Hex colour for buttons and progress bars on the client portal.</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">Controls buttons, progress bars, checkboxes, and interactive highlights in the client portal.</p>
                 </div>
 
                 <div className="space-y-1">
@@ -1161,11 +1161,11 @@ export default function SettingsPage() {
                     <Input
                       value={wl.heading_color}
                       onChange={(e) => setWl((v) => ({ ...v, heading_color: e.target.value }))}
-                      placeholder="Defaults to accent colour"
+                      placeholder="Defaults to button colour"
                       className="flex-1"
                     />
                   </div>
-                  <p className="text-xs text-[var(--color-text-muted)]">Colour for section heading banners in the client portal. Leave blank to use the accent colour.</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">Controls section header strips and phase title text. Leave blank to inherit the button colour.</p>
                 </div>
 
                 <div className="space-y-3 sm:col-span-2">
