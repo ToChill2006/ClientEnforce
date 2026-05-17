@@ -321,7 +321,6 @@ export default function OnboardingDetailAdminPage() {
   const [payload, setPayload] = React.useState<DetailPayload | null>(null);
   const [progress, setProgress] = React.useState(0);
   const [locking, setLocking] = React.useState(false);
-  const [downloadingPdf, setDownloadingPdf] = React.useState(false);
   const [sending, setSending] = React.useState(false);
   const [confirmLock, setConfirmLock] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
@@ -659,32 +658,6 @@ export default function OnboardingDetailAdminPage() {
     }
   }
 
-  async function downloadPdf() {
-    try {
-      if (!params?.id) return;
-      setDownloadingPdf(true);
-      const filenameBase = (payload?.onboarding?.title || "onboarding").trim() || "onboarding";
-      const safeName = filenameBase.replace(/[^a-z0-9\-_ ]/gi, "").replace(/\s+/g, " ").trim().slice(0, 80);
-      const url = `/api/onboardings/pdf?onboarding_id=${encodeURIComponent(String(params.id))}`;
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error((await res.text().catch(() => "")) || `PDF export failed (${res.status})`);
-      const blob = await res.blob();
-      if (!blob || blob.size === 0) throw new Error("Empty PDF response");
-      const objUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objUrl;
-      a.download = `${safeName || "onboarding"}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(objUrl);
-      toast({ title: "PDF downloaded", variant: "success" });
-    } catch (e: any) {
-      toast({ title: "PDF failed", description: e?.message, variant: "error" });
-    } finally {
-      setDownloadingPdf(false);
-    }
-  }
 
   async function copyClientLink() {
     if (!payload?.onboarding?.client_link) {
@@ -1031,12 +1004,6 @@ export default function OnboardingDetailAdminPage() {
                 </Button>
               }
             >
-              <MenuItem
-                iconLeft={<Download className="h-3.5 w-3.5" />}
-                onSelect={downloadPdf}
-              >
-                Download PDF
-              </MenuItem>
               <MenuItem
                 iconLeft={<Download className="h-3.5 w-3.5" />}
                 onSelect={() => { window.location.href = `/api/onboardings/${params.id}/export`; }}
