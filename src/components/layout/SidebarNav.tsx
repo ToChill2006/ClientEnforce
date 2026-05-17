@@ -280,9 +280,6 @@ export default function SidebarNav({
       <SectionLabel>Main</SectionLabel>
       <div className="flex flex-col gap-0.5">
         <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} onClose={onClose} />
-        {hasEnterpriseOnboarding && (
-          <NavItem href="/dashboard/events" label="Events" icon={CalendarDays} onClose={onClose} />
-        )}
         <NavItem href="/dashboard/onboardings" label="Onboardings" icon={ClipboardList} onClose={onClose} />
         {hasEnterpriseOnboarding && (
           <NavItem
