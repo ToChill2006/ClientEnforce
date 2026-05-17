@@ -280,7 +280,8 @@ export default function StoragePage() {
   const [items, setItems] = React.useState<Item[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [err, setErr] = React.useState<string | null>(null);
-  const [mode, setMode] = React.useState<"events" | "solo">("events");
+  const [isEnterprise, setIsEnterprise] = React.useState(false);
+  const [mode, setMode] = React.useState<"events" | "solo">("solo");
 
   const [previewingPath, setPreviewingPath] = React.useState<string | null>(null);
   const [downloadingPath, setDownloadingPath] = React.useState<string | null>(null);
@@ -310,7 +311,12 @@ export default function StoragePage() {
     }
   }
 
-  React.useEffect(() => { load(); }, []);
+  React.useEffect(() => {
+    load();
+    fetch("/api/events", { cache: "no-store" })
+      .then((r) => { if (r.ok) { setIsEnterprise(true); setMode("events"); } })
+      .catch(() => {});
+  }, []);
 
   React.useEffect(() => {
     return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
@@ -451,7 +457,7 @@ export default function StoragePage() {
 
       {/* Mode tabs */}
       <div className="flex gap-1 border-b border-[var(--color-border)]">
-        {(["events", "solo"] as const).map((m) => (
+        {(["events", "solo"] as const).filter((m) => m === "solo" || isEnterprise).map((m) => (
           <button
             key={m}
             onClick={() => setMode(m)}
