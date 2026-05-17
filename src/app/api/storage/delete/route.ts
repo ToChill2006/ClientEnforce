@@ -12,8 +12,13 @@ const BodySchema = z.object({
   type: z.enum(["file", "signature"]).optional(),
 });
 
-function parseBucketAndObjectPath(pathParam: string, bucketParam?: string | null) {
+function parseBucketAndObjectPath(pathParam: string, bucketParam?: string | null): { bucket: string; objectPath: string; invalid?: boolean } {
   const raw = decodeURIComponent(pathParam).trim();
+
+  // Block path traversal and dangerous characters
+  if (raw.includes("..") || raw.includes("//") || /[<>|*?]/.test(raw)) {
+    return { bucket: "", objectPath: "", invalid: true };
+  }
 
   const objectMarker = "/storage/v1/object/";
   if (raw.includes(objectMarker)) {
@@ -92,7 +97,11 @@ export async function POST(req: Request) {
     }
 
     const orgIdRaw = orgId.startsWith("org_") ? orgId.slice("org_".length) : orgId;
-    const { bucket: parsedBucket, objectPath } = parseBucketAndObjectPath(parsed.data.path, parsed.data.bucket);
+    const parsed2 = parseBucketAndObjectPath(parsed.data.path, parsed.data.bucket);
+    if (parsed2.invalid) {
+      return NextResponse.json({ error: "Invalid path" }, { status: 400 });
+    }
+    const { bucket: parsedBucket, objectPath } = parsed2;
     let bucket = parsedBucket;
 
     if (!parsed.data.bucket && bucket === "clientenforce-uploads" && objectPath.startsWith(`${orgIdRaw}/`)) {

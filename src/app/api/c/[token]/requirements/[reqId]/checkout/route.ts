@@ -65,7 +65,7 @@ export async function POST(
     return json(404, { error: "Organisation not found" });
   }
 
-  if (!org.stripe_account_id) {
+  if (!org.stripe_account_id || !/^acct_[a-zA-Z0-9]+$/.test(org.stripe_account_id)) {
     return json(400, { error: "Payment temporarily unavailable. Please contact support." });
   }
 

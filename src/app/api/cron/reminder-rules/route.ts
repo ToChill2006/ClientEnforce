@@ -17,6 +17,31 @@ export async function GET(req: Request) {
   let processed = 0;
   let sent = 0;
 
+  // Acquire cron lock — prevents duplicate runs if Vercel fires twice in parallel.
+  const lockName = "reminder-rules";
+  const lockUntil = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10-minute lock
+  try {
+    const { error: lockErr } = await admin.from("cron_locks").upsert(
+      { job_name: lockName, locked_at: new Date().toISOString(), locked_until: lockUntil },
+      { onConflict: "job_name", ignoreDuplicates: false }
+    );
+    if (!lockErr) {
+      // Verify the lock isn't stale from a previous run
+      const { data: existingLock } = await admin
+        .from("cron_locks")
+        .select("locked_until")
+        .eq("job_name", lockName)
+        .maybeSingle();
+      if (existingLock && new Date(existingLock.locked_until) > new Date(Date.now() + 9 * 60 * 1000)) {
+        // Lock was acquired by another instance within the last minute
+        console.log("[reminder-rules] lock held by concurrent run, skipping");
+        return NextResponse.json({ skipped: true, reason: "concurrent_run" });
+      }
+    }
+  } catch {
+    // cron_locks table may not exist yet — proceed without locking
+  }
+
   try {
     // 1. Load orgs that have enterprise_onboarding enabled
     const { data: orgs, error: orgsErr } = await admin
@@ -154,8 +179,13 @@ export async function GET(req: Request) {
     }
   } catch (err: any) {
     console.error("[reminder-rules cron] Fatal error:", err?.message);
+    // Release lock on error so the next scheduled run can proceed
+    try { await admin.from("cron_locks").delete().eq("job_name", lockName); } catch { /* ignore */ }
     return NextResponse.json({ error: err?.message }, { status: 500 });
   }
+
+  // Release lock
+  try { await admin.from("cron_locks").delete().eq("job_name", lockName); } catch { /* ignore */ }
 
   return NextResponse.json({ processed, sent });
 }

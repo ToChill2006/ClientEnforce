@@ -7,6 +7,39 @@ const FormSchema = z.object({
   requirement_id: z.string().uuid(),
 });
 
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+const ALLOWED_MIME_TYPES = new Set([
+  // Documents
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain",
+  "text/csv",
+  // Images
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/svg+xml",
+  "image/heic",
+  "image/heif",
+  // Archives
+  "application/zip",
+  "application/x-zip-compressed",
+]);
+
+function isSafeFilename(name: string): boolean {
+  // Reject path traversal and dangerous extensions
+  if (name.includes("..") || name.includes("/") || name.includes("\\")) return false;
+  const dangerous = /\.(exe|bat|cmd|sh|ps1|msi|dll|com|scr|vbs|jar|php|py|rb|pl)$/i;
+  return !dangerous.test(name);
+}
+
 function jsonError(status: number, message: string, details?: any) {
   return NextResponse.json({ error: message, details }, { status });
 }
@@ -42,6 +75,19 @@ export async function POST(req: Request) {
 
   if (!(file instanceof File)) {
     return jsonError(400, "Missing file");
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return jsonError(400, `File too large. Maximum size is 25 MB.`);
+  }
+
+  const mimeType = (file.type || "").toLowerCase();
+  if (!mimeType || !ALLOWED_MIME_TYPES.has(mimeType)) {
+    return jsonError(400, `Unsupported file type: ${mimeType || "unknown"}. Please upload a PDF, image, or Office document.`);
+  }
+
+  if (!isSafeFilename(file.name)) {
+    return jsonError(400, "Invalid file name.");
   }
 
   const { data: onboarding, error: onboardingErr } = await admin

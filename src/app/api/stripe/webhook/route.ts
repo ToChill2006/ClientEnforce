@@ -269,15 +269,19 @@ export async function POST(req: Request) {
       // ── Payment requirement checkout ──────────────────────────────────────
       const requirementId = session.metadata?.requirement_id as string | undefined;
       if (requirementId) {
-        // Idempotency check
-        const { data: alreadyProcessed } = await supabaseAdmin
+        // Claim idempotency slot FIRST — unique constraint on event id prevents concurrent processing.
+        // If another instance already claimed it, the insert returns a conflict and we bail.
+        const { error: claimErr } = await supabaseAdmin
           .from("processed_webhook_events")
-          .select("id")
-          .eq("id", event.id)
-          .maybeSingle();
+          .insert({ id: event.id, processed_at: new Date().toISOString() });
 
-        if (alreadyProcessed?.id) {
-          console.log("[stripe-webhook] already processed payment event", event.id);
+        if (claimErr) {
+          // Duplicate key = already processed (or concurrent duplicate — either way, skip)
+          if (claimErr.code === "23505" || String(claimErr.message).includes("duplicate") || String(claimErr.message).includes("unique")) {
+            console.log("[stripe-webhook] already processed payment event", event.id);
+          } else {
+            console.error("[stripe-webhook] idempotency claim failed", claimErr.message);
+          }
           return NextResponse.json({ received: true });
         }
 
@@ -315,13 +319,6 @@ export async function POST(req: Request) {
             // team_activity is optional
           }
         }
-
-        // Mark event as processed (idempotency)
-        await supabaseAdmin
-          .from("processed_webhook_events")
-          .insert({ id: event.id, processed_at: new Date().toISOString() })
-          .onConflict("id")
-          .ignore();
 
         return NextResponse.json({ received: true });
       }

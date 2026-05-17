@@ -41,7 +41,8 @@ export async function GET(req: Request) {
     .from("team_tasks")
     .select("id, org_id, created_by, assigned_to, title, description, status, due_at, created_at, updated_at")
     .eq("org_id", profile.org_id)
-    .order("updated_at", { ascending: false });
+    .order("updated_at", { ascending: false })
+    .limit(500);
 
   if (status) q = q.eq("status", status);
 

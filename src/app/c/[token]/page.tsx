@@ -550,7 +550,7 @@ export default async function ClientTokenPage({
                   </>
                 )}
               </div>
-              <div className="tabular-nums">Token: {token.slice(0, 8)}…</div>
+              <div className="tabular-nums">Secure link</div>
             </div>
           </div>
         </div>
