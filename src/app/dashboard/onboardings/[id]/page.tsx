@@ -1139,14 +1139,6 @@ export default function OnboardingDetailAdminPage() {
                           Unlock
                         </button>
                       )}
-                      {ph.status === "in_progress" && (
-                        <button
-                          className="rounded border border-[var(--color-warning)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-warning)] hover:bg-[var(--color-warning-subtle)]"
-                          onClick={() => openReviewPanel(ph.phase_number)}
-                        >
-                          Review →
-                        </button>
-                      )}
                       {(ph.status === "approved" || ph.status === "rejected") && (
                         <button
                           className="rounded border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
