@@ -96,12 +96,14 @@ export default async function PhasePortalPage({
 
   const clientName = (onboarding as any).clients?.full_name ?? "Exhibitor";
   const eventName = (onboarding as any).events?.name ?? null;
+  const companyName = (onboarding as any).title ?? null;
 
   return (
     <PhasePortalClient
       token={token}
       onboardingId={(onboarding as any).id}
       clientName={clientName}
+      companyName={companyName}
       eventName={eventName}
       phases={phases as any[]}
       currentPhase={currentPhase}

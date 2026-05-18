@@ -49,6 +49,7 @@ interface Props {
   token: string;
   onboardingId: string;
   clientName: string;
+  companyName: string | null;
   eventName: string | null;
   phases: Phase[];
   currentPhase: Phase;
@@ -64,6 +65,7 @@ export default function PhasePortalClient({
   token,
   onboardingId,
   clientName,
+  companyName,
   eventName,
   phases,
   currentPhase,
@@ -340,8 +342,11 @@ export default function PhasePortalClient({
               )}
             </div>
           </div>
-          <div className="shrink-0">
-            <span className="hidden sm:block text-sm text-gray-500">{clientName}</span>
+          <div className="shrink-0 text-right">
+            <div className="text-sm font-medium text-gray-700 hidden sm:block">{clientName}</div>
+            {companyName && (
+              <div className="text-xs text-gray-400 hidden sm:block truncate max-w-[180px]">{companyName}</div>
+            )}
           </div>
         </div>
       </header>
