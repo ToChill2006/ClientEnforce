@@ -732,13 +732,16 @@ export default function PhasePortalClient({
                     <div
                       key={req.id}
                       className={cn(
-                        "rounded-2xl bg-white border shadow-sm px-4 sm:px-5 py-4 transition",
-                        needsRevision ? "border-red-200" : "border-gray-100"
+                        "rounded-2xl bg-white border shadow-md overflow-hidden transition",
+                        needsRevision ? "border-red-200" : "border-gray-200"
                       )}
                       style={needsRevision ? { borderLeft: "3px solid #ef4444" } : undefined}
                     >
-                      {/* Label row */}
-                      <div className="flex items-center gap-2 mb-3">
+                      {/* Label header strip */}
+                      <div className={cn(
+                        "flex items-center gap-2 px-4 sm:px-5 py-2.5 border-b",
+                        needsRevision ? "bg-red-50 border-red-100" : "bg-gray-50 border-gray-200"
+                      )}>
                         <label className={cn("text-sm font-semibold", needsRevision ? "text-red-700" : "text-gray-800")}>
                           {req.label}
                         </label>
@@ -751,6 +754,9 @@ export default function PhasePortalClient({
                           </span>
                         )}
                       </div>
+
+                      {/* Field body */}
+                      <div className="px-4 sm:px-5 py-4">
 
                       {/* Reviewer feedback */}
                       {needsRevision && (
@@ -957,6 +963,7 @@ export default function PhasePortalClient({
                       {saving === req.id && (
                         <p className="mt-1 text-[11px] text-gray-400">Saving…</p>
                       )}
+                      </div>{/* end field body */}
                     </div>
                   );
                     })}
