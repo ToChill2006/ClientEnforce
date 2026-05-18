@@ -126,6 +126,27 @@ export async function GET(req: Request) {
     actorMap = merged;
   }
 
+  // For null-actor events (client portal actions), look up client name from onboardings
+  const clientOnboardingIds = Array.from(
+    new Set(
+      events
+        .filter((e: any) => !(e.actor_user_id ?? e.user_id) && e.onboarding_id)
+        .map((e: any) => e.onboarding_id)
+    )
+  );
+
+  let clientNameMap = new Map<string, string>();
+  if (clientOnboardingIds.length > 0) {
+    const { data: onboardings } = await admin
+      .from("onboardings")
+      .select("id, client_name, client_email")
+      .in("id", clientOnboardingIds);
+    for (const o of onboardings ?? []) {
+      const label = o.client_name || o.client_email || null;
+      if (label) clientNameMap.set(o.id, label);
+    }
+  }
+
   const enrichedEvents = events.map((event: any) => {
     const actorId = event.actor_user_id ?? event.user_id ?? null;
     const actorProfile = actorId ? actorMap.get(actorId) : null;
@@ -143,6 +164,11 @@ export async function GET(req: Request) {
     // Last resort: keep the UI populated with a short id.
     if (!actorLabel && actorId) {
       actorLabel = actorId.slice(0, 8);
+    }
+
+    // For client portal actions (no actor_user_id), use the client's name from the onboarding
+    if (!actorLabel && !actorId && event.onboarding_id) {
+      actorLabel = clientNameMap.get(event.onboarding_id) ?? event.actor_email ?? null;
     }
 
     return {

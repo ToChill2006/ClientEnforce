@@ -62,7 +62,26 @@ export async function GET() {
   const { data: items, error } = await query;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ items });
+
+  // Enrich with client info from onboardings
+  const onboardingIds = Array.from(new Set((items ?? []).map((j: any) => j.onboarding_id).filter(Boolean)));
+  let clientMap = new Map<string, { client_name: string | null; client_email: string | null; title: string | null }>();
+  if (onboardingIds.length > 0) {
+    const { data: onboardings } = await supabase
+      .from("onboardings")
+      .select("id, client_name, client_email, title")
+      .in("id", onboardingIds);
+    for (const o of onboardings ?? []) {
+      clientMap.set(o.id, { client_name: o.client_name, client_email: o.client_email, title: o.title });
+    }
+  }
+
+  const enriched = (items ?? []).map((j: any) => {
+    const info = clientMap.get(j.onboarding_id);
+    return { ...j, client_name: info?.client_name ?? null, client_email: info?.client_email ?? null, onboarding_title: info?.title ?? null };
+  });
+
+  return NextResponse.json({ items: enriched });
 }
 
 export async function PATCH(req: Request) {
