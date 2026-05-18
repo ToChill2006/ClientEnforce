@@ -165,7 +165,7 @@ export default function MessagesPage() {
   const totalUnread = conversations.reduce((s, c) => s + c.unread_count, 0);
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden -mx-6 -mt-6">
+    <div className="flex overflow-hidden -mx-4 -mt-5 sm:-mx-6 lg:-mx-8 lg:-mt-7" style={{ height: "calc(100vh - 3.5rem)" }}>
       {/* Left: conversation list */}
       <div className="flex w-[300px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-panel)]">
         {/* Header */}
