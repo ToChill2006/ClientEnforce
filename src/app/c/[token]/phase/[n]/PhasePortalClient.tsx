@@ -363,16 +363,8 @@ export default function PhasePortalClient({
                 )}
                 style={
                   isActive
-                    ? { backgroundColor: accent, color: "#fff" }
-                    : ph.status === "approved"
-                    ? { backgroundColor: "#dcfce7", color: "#15803d" }
-                    : ph.status === "awaiting_review"
-                    ? { backgroundColor: "#fef9c3", color: "#854d0e" }
-                    : ph.status === "rejected"
-                    ? { backgroundColor: "#fee2e2", color: "#991b1b" }
-                    : ph.status === "locked"
-                    ? { backgroundColor: "#f3f4f6", color: "#9ca3af" }
-                    : { backgroundColor: accentSubtle, color: heading }
+                    ? { color: heading, outline: `2.5px solid ${accent}`, outlineOffset: "1px" }
+                    : { color: heading }
                 }
               >
                 {isDone && <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>}
@@ -422,19 +414,11 @@ export default function PhasePortalClient({
                   <button
                     key={ph.id}
                     onClick={() => router.push(`/c/${token}/phase/${ph.phase_number}`)}
-                    className="w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all hover:brightness-95"
+                    className="w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all"
                     style={
                       isActive
-                        ? { backgroundColor: accent, color: "#fff" }
-                        : ph.status === "approved"
-                        ? { backgroundColor: "#dcfce7", color: "#15803d" }
-                        : ph.status === "awaiting_review"
-                        ? { backgroundColor: "#fef9c3", color: "#854d0e" }
-                        : ph.status === "rejected"
-                        ? { backgroundColor: "#fee2e2", color: "#991b1b" }
-                        : ph.status === "locked"
-                        ? { backgroundColor: "#f3f4f6", color: "#9ca3af" }
-                        : { backgroundColor: `${accent}18`, color: heading }
+                        ? { color: heading, outline: `2.5px solid ${accent}`, outlineOffset: "1px" }
+                        : { color: heading }
                     }
                   >
                     <span className="truncate">{ph.name}</span>
