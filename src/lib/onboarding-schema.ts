@@ -18,7 +18,8 @@ export const RequirementTypeSchema = z.enum([
 
 export const TemplateRequirementSchema = z.object({
   type: RequirementTypeSchema,
-  label: z.string().trim().min(1),
+  // heading and info blocks may have an empty label
+  label: z.string().trim(),
   is_required: z.boolean().default(true),
   sort_order: z.number().int().nonnegative().default(0),
   phase_number: z.number().int().positive().optional(),

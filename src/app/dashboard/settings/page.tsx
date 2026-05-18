@@ -1395,7 +1395,6 @@ export default function SettingsPage() {
                 onClick={createInvite}
                 disabled={
                   inviting ||
-                  !inviteEmail.trim() ||
                   (seatsLimit > 0 && seatsUsed >= seatsLimit) ||
                   (inviteRole === "external_viewer" && selectedEventIds.length === 0)
                 }
