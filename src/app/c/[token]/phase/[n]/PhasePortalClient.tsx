@@ -361,11 +361,18 @@ export default function PhasePortalClient({
                   "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
                   !isAccessible && "opacity-50"
                 )}
-                style={isActive
-                  ? { backgroundColor: accent, color: "#fff" }
-                  : isDone
-                  ? { backgroundColor: "#dcfce7", color: "#15803d" }
-                  : { backgroundColor: accentSubtle, color: heading }
+                style={
+                  isActive
+                    ? { backgroundColor: accent, color: "#fff" }
+                    : ph.status === "approved"
+                    ? { backgroundColor: "#dcfce7", color: "#15803d" }
+                    : ph.status === "awaiting_review"
+                    ? { backgroundColor: "#fef9c3", color: "#854d0e" }
+                    : ph.status === "rejected"
+                    ? { backgroundColor: "#fee2e2", color: "#991b1b" }
+                    : ph.status === "locked"
+                    ? { backgroundColor: "#f3f4f6", color: "#9ca3af" }
+                    : { backgroundColor: accentSubtle, color: heading }
                 }
               >
                 {isDone && <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>}
@@ -415,14 +422,23 @@ export default function PhasePortalClient({
                   <button
                     key={ph.id}
                     onClick={() => router.push(`/c/${token}/phase/${ph.phase_number}`)}
-                    className={cn(
-                      "w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all",
-                      isLocked && "opacity-50"
-                    )}
-                    style={isActive ? { backgroundColor: accent, color: "#fff" } : undefined}
+                    className="w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all hover:brightness-95"
+                    style={
+                      isActive
+                        ? { backgroundColor: accent, color: "#fff" }
+                        : ph.status === "approved"
+                        ? { backgroundColor: "#dcfce7", color: "#15803d" }
+                        : ph.status === "awaiting_review"
+                        ? { backgroundColor: "#fef9c3", color: "#854d0e" }
+                        : ph.status === "rejected"
+                        ? { backgroundColor: "#fee2e2", color: "#991b1b" }
+                        : ph.status === "locked"
+                        ? { backgroundColor: "#f3f4f6", color: "#9ca3af" }
+                        : { backgroundColor: `${accent}18`, color: heading }
+                    }
                   >
-                    <span className={isActive ? "text-white" : "text-gray-600"}>{ph.name}</span>
-                    <span className={cn("shrink-0", isActive ? "text-white/80" : "text-gray-400")}>
+                    <span className="truncate">{ph.name}</span>
+                    <span className="shrink-0 opacity-70">
                       {ph.status === "approved" && (
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
                       )}
@@ -433,7 +449,7 @@ export default function PhasePortalClient({
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
                       )}
                       {ph.status === "rejected" && (
-                        <span className="text-[11px] font-bold text-red-500">!</span>
+                        <span className="text-[11px] font-bold">!</span>
                       )}
                     </span>
                   </button>
