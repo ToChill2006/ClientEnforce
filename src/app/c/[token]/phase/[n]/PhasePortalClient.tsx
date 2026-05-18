@@ -340,14 +340,8 @@ export default function PhasePortalClient({
               )}
             </div>
           </div>
-          <div className="shrink-0 flex items-center gap-2">
-            <div
-              className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-sm"
-              style={{ backgroundColor: accent }}
-            >
-              {clientName.charAt(0).toUpperCase()}
-            </div>
-            <span className="hidden sm:block text-sm text-gray-500">Hi, {clientName}</span>
+          <div className="shrink-0">
+            <span className="hidden sm:block text-sm text-gray-500">{clientName}</span>
           </div>
         </div>
       </header>
@@ -362,11 +356,10 @@ export default function PhasePortalClient({
             return (
               <button
                 key={ph.id}
-                onClick={() => isAccessible && router.push(`/c/${token}/phase/${ph.phase_number}`)}
-                disabled={!isAccessible}
+                onClick={() => router.push(`/c/${token}/phase/${ph.phase_number}`)}
                 className={cn(
                   "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
-                  !isAccessible && "opacity-35 cursor-not-allowed"
+                  !isAccessible && "opacity-50"
                 )}
                 style={isActive
                   ? { backgroundColor: accent, color: "#fff" }
@@ -375,7 +368,8 @@ export default function PhasePortalClient({
                   : { backgroundColor: accentSubtle, color: heading }
                 }
               >
-                {isDone ? "✓ " : ph.status === "locked" ? "🔒 " : ""}
+                {isDone && <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>}
+                {ph.status === "locked" && <svg className="h-3 w-3 shrink-0 opacity-60" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>}
                 {ph.name}
               </button>
             );
@@ -416,34 +410,32 @@ export default function PhasePortalClient({
             <nav className="p-2 space-y-0.5">
               {phases.map((ph) => {
                 const isActive = ph.phase_number === currentPhase.phase_number;
-                const isAccessible = ph.status !== "locked";
-                const statusIcon =
-                  ph.status === "approved" ? "✓" :
-                  ph.status === "locked" ? "🔒" :
-                  ph.status === "awaiting_review" ? "⏳" :
-                  ph.status === "rejected" ? "!" : null;
+                const isLocked = ph.status === "locked";
                 return (
                   <button
                     key={ph.id}
-                    onClick={() => isAccessible && router.push(`/c/${token}/phase/${ph.phase_number}`)}
-                    disabled={!isAccessible}
+                    onClick={() => router.push(`/c/${token}/phase/${ph.phase_number}`)}
                     className={cn(
                       "w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all",
-                      !isAccessible && "opacity-40 cursor-not-allowed"
+                      isLocked && "opacity-50"
                     )}
-                    style={isActive
-                      ? { backgroundColor: accent, color: "#fff" }
-                      : isAccessible
-                      ? undefined
-                      : undefined
-                    }
+                    style={isActive ? { backgroundColor: accent, color: "#fff" } : undefined}
                   >
                     <span className={isActive ? "text-white" : "text-gray-600"}>{ph.name}</span>
-                    {statusIcon && (
-                      <span className={cn("text-xs shrink-0", isActive ? "text-white/80" : "text-gray-400")}>
-                        {statusIcon}
-                      </span>
-                    )}
+                    <span className={cn("shrink-0", isActive ? "text-white/80" : "text-gray-400")}>
+                      {ph.status === "approved" && (
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
+                      )}
+                      {ph.status === "locked" && (
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                      )}
+                      {ph.status === "awaiting_review" && (
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                      )}
+                      {ph.status === "rejected" && (
+                        <span className="text-[11px] font-bold text-red-500">!</span>
+                      )}
+                    </span>
                   </button>
                 );
               })}
@@ -476,7 +468,8 @@ export default function PhasePortalClient({
                   const text = days <= 0 ? "text-red-700 font-semibold" : days <= 3 ? "text-amber-700 font-semibold" : days <= 7 ? "text-yellow-700" : "text-blue-700";
                   return (
                     <div className={cn("mt-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs", bg, text)}>
-                      📅 {label}
+                      <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 1v3M11 1v3M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                      {label}
                     </div>
                   );
                 })()}
@@ -488,7 +481,7 @@ export default function PhasePortalClient({
                 effectiveStatus === "rejected" ? "bg-red-100 text-red-700" :
                 "bg-gray-100 text-gray-500"
               )}>
-                {effectiveStatus === "approved" ? "✓ Approved" :
+                {effectiveStatus === "approved" ? "Approved" :
                  effectiveStatus === "awaiting_review" ? "Reviewing" :
                  effectiveStatus === "rejected" ? "Changes needed" :
                  effectiveStatus === "in_progress" ? "In Progress" : "Locked"}
@@ -520,7 +513,9 @@ export default function PhasePortalClient({
           {/* Status banners */}
           {effectiveStatus === "awaiting_review" && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-start gap-3">
-              <span className="text-2xl mt-0.5">⏳</span>
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <svg className="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+              </div>
               <div>
                 <p className="font-semibold text-amber-800">Submitted — awaiting review</p>
                 <p className="text-sm text-amber-700 mt-0.5">Your submission has been received. We'll be in touch soon.</p>
@@ -530,9 +525,11 @@ export default function PhasePortalClient({
 
           {effectiveStatus === "approved" && (
             <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">
-              <span className="text-2xl mt-0.5">✅</span>
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100">
+                <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
+              </div>
               <div>
-                <p className="font-semibold text-green-800">Phase approved!</p>
+                <p className="font-semibold text-green-800">Phase approved</p>
                 <p className="text-sm text-green-700 mt-0.5">
                   {nextPhase ? "You can now proceed to the next phase." : "All phases complete — your onboarding is done!"}
                 </p>
@@ -542,7 +539,9 @@ export default function PhasePortalClient({
 
           {effectiveStatus === "rejected" && (
             <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 flex items-start gap-3">
-              <span className="text-2xl mt-0.5">📝</span>
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100">
+                <svg className="h-4 w-4 text-red-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" d="M4 4l8 8M12 4l-8 8"/></svg>
+              </div>
               <div>
                 <p className="font-semibold text-red-800">Changes requested</p>
                 {currentPhase.reviewer_note && (
@@ -561,26 +560,65 @@ export default function PhasePortalClient({
 
           {paymentToast && (
             <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-center gap-3">
-              <span className="text-xl">✅</span>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100">
+                <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
+              </div>
               <p className="font-semibold text-green-800">{paymentToast}</p>
             </div>
           )}
 
           {/* Locked state */}
           {isLocked ? (
-            <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-12 text-center">
-              <div className="text-5xl mb-4">🔒</div>
-              <p className="text-lg font-semibold text-gray-700">This phase is locked</p>
-              <p className="mt-1 text-sm text-gray-400">
-                It will unlock once Phase {currentPhase.phase_number - 1} is approved.
-              </p>
-              <button
-                onClick={() => router.push(`/c/${token}/phase/${currentPhase.phase_number - 1}`)}
-                className="mt-5 text-sm font-semibold hover:underline"
-                style={{ color: accent }}
-              >
-                ← Go to Phase {currentPhase.phase_number - 1}
-              </button>
+            <div className="space-y-3">
+              <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-8 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+                  <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                </div>
+                <p className="text-base font-semibold text-gray-700">This phase is locked</p>
+                <p className="mt-1 text-sm text-gray-400">
+                  It will unlock once Phase {currentPhase.phase_number - 1} is approved.
+                </p>
+                <button
+                  onClick={() => router.push(`/c/${token}/phase/${currentPhase.phase_number - 1}`)}
+                  className="mt-4 text-sm font-semibold hover:underline"
+                  style={{ color: accent }}
+                >
+                  Go to Phase {currentPhase.phase_number - 1}
+                </button>
+              </div>
+              {/* Preview of what's in this locked phase */}
+              {bodyGroups.length > 0 && (
+                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200/60 flex items-center gap-2">
+                    <svg className="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" d="M8 3v1M3.5 5.5l.7.7M12.5 5.5l-.7.7M2 10h1M13 10h1M8 5a5 5 0 11-4.9 4h9.8A5 5 0 018 5z"/></svg>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preview — what's in this phase</span>
+                  </div>
+                  <div className="px-4 py-3 space-y-2 opacity-60 pointer-events-none select-none">
+                    {bodyGroups.slice(0, 6).map((item, gi) => {
+                      if (item.type === "group") {
+                        const { heading: hReq } = item.data;
+                        return hReq ? (
+                          <div key={hReq.id ?? `g-${gi}`} className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">
+                            {hReq.label}
+                          </div>
+                        ) : null;
+                      }
+                      const req = item.data;
+                      return (
+                        <div key={req.id} className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
+                          <span className="text-xs text-gray-600 font-medium truncate">{req.label || "Field"}</span>
+                          {req.is_required && <span className="text-[10px] text-gray-400 shrink-0">Required</span>}
+                        </div>
+                      );
+                    })}
+                    {bodyGroups.length > 6 && (
+                      <p className="text-xs text-gray-400 text-center py-1">
+                        +{bodyGroups.length - 6} more fields
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -633,7 +671,9 @@ export default function PhasePortalClient({
                         : null;
                       return (
                         <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 text-lg">✓</div>
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
+                            <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
+                          </div>
                           <div>
                             <p className="text-sm font-semibold text-green-700">Paid {fmtAmount}{paidDate ? ` on ${paidDate}` : ""}</p>
                             <p className="text-xs text-gray-400 mt-0.5">Receipt sent to your email.</p>
@@ -645,7 +685,9 @@ export default function PhasePortalClient({
                     if (payStatus === "pending") {
                       return (
                         <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 text-lg">⏳</div>
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                            <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                          </div>
                           <div>
                             <p className="text-sm font-semibold text-amber-700">Processing payment…</p>
                             <p className="text-xs text-gray-400 mt-0.5">Please wait while we confirm.</p>
@@ -747,7 +789,6 @@ export default function PhasePortalClient({
                                     </div>
                                   ))}
                                   <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50 px-4 py-4 text-sm font-semibold text-red-600 hover:bg-red-100 transition">
-                                    <span>📎</span>
                                     {busyByReq[req.id] ? "Uploading…" : "Choose replacement file"}
                                     <input type="file" className="sr-only" disabled={busyByReq[req.id]} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(req.id, f); e.currentTarget.value = ""; }} />
                                   </label>
@@ -758,7 +799,7 @@ export default function PhasePortalClient({
                             <>
                               {(filePaths[req.id] ?? (req.file_path ? [req.file_path] : [])).map((path) => (
                                 <div key={path} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5">
-                                  <span className="text-gray-400">📄</span>
+                                  <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" d="M3 2h7l3 3v9H3V2zM10 2v3h3"/></svg>
                                   <span className="flex-1 truncate text-sm text-gray-700">{path.split("/").pop()}</span>
                                   {!isReadOnly && (
                                     <button onClick={() => removeFile(req.id, path)} className="text-xs text-gray-300 hover:text-red-500 transition font-medium">
@@ -769,7 +810,6 @@ export default function PhasePortalClient({
                               ))}
                               {!isReadOnly && (
                                 <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-4 text-sm transition hover:bg-gray-100">
-                                  <span className="text-gray-400">📎</span>
                                   <span className="font-semibold text-gray-600">
                                     {busyByReq[req.id] ? "Uploading…" : "Choose file"}
                                   </span>
@@ -927,7 +967,7 @@ export default function PhasePortalClient({
               {/* Submit / action bar */}
               <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5">
                 {effectiveStatus === "awaiting_review" ? (
-                  <p className="text-sm text-gray-500 text-center">⏳ Your submission is under review — we'll be in touch.</p>
+                  <p className="text-sm text-gray-500 text-center">Your submission is under review — we'll be in touch.</p>
                 ) : effectiveStatus === "approved" ? (
                   <div className="text-center">
                     {nextPhase && nextPhase.status !== "locked" ? (
@@ -940,7 +980,7 @@ export default function PhasePortalClient({
                       </button>
                     ) : !nextPhase ? (
                       <div>
-                        <p className="text-lg font-bold" style={{ color: heading }}>🎉 All done — thank you!</p>
+                        <p className="text-lg font-bold" style={{ color: heading }}>All done — thank you!</p>
                         <p className="mt-1 text-sm text-gray-400">Your onboarding is complete.</p>
                       </div>
                     ) : null}

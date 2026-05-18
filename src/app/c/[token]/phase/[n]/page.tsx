@@ -1,9 +1,32 @@
 import * as React from "react";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { orgHasFeatureAdmin } from "@/lib/feature-flags";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
 import PhasePortalClient from "./PhasePortalClient";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ token: string; n: string }>;
+}): Promise<Metadata> {
+  const { token } = await params;
+  const admin = supabaseAdmin();
+  const { data: onboarding } = await admin
+    .from("onboardings")
+    .select("org_id")
+    .eq("client_token", token)
+    .maybeSingle();
+  if (!onboarding?.org_id) return {};
+  const wl = await loadWhiteLabelForOrg(String(onboarding.org_id)).catch(() => null);
+  const logoUrl = wl?.logo_url?.trim() || null;
+  const brandName = wl?.brand_name?.trim() || undefined;
+  return {
+    title: brandName,
+    icons: logoUrl ? [{ rel: "icon", url: logoUrl }, { rel: "apple-touch-icon", url: logoUrl }] : undefined,
+  };
+}
 
 export default async function PhasePortalPage({
   params,

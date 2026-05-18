@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
@@ -52,6 +52,7 @@ type RequirementType =
   | "multiple_choice"
   | "checkbox"   // Feature 6: completion checkbox
   | "heading"    // Feature 7: visual section heading
+  | "payment"
   | "info";     // Read-only description / info block
 
 type Requirement = {
@@ -73,7 +74,11 @@ type Requirement = {
   include_other?: boolean;
   // Feature 5: multi-line textarea instead of single-line input
   multiline?: boolean;
-  info_content?: string | null;   // content for the info/description block type
+  info_content?: string | null;
+  // payment type
+  payment_amount?: number | null;
+  payment_currency?: string | null;
+  payment_description?: string | null;
   // Conditional visibility. Hidden when condition not met.
   visible_if?: {
     depends_on_label: string;
@@ -118,6 +123,7 @@ const VALID_TYPES: RequirementType[] = [
   "signature",
   "multiple_choice",
   "checkbox",
+  "payment",
   "heading",
   "info",
 ];
@@ -162,6 +168,11 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
         if (type === "info") {
           base.info_content = r?.info_content ?? r?.value_text ?? null;
           base.is_required = false;
+        }
+        if (type === "payment") {
+          base.payment_amount = r?.payment_amount != null ? Number(r.payment_amount) : null;
+          base.payment_currency = r?.payment_currency ?? "GBP";
+          base.payment_description = r?.payment_description ?? null;
         }
 
         // Phase assignment
@@ -214,6 +225,7 @@ const TYPE_LABELS: Record<RequirementType, string> = {
   signature: "Signature",
   multiple_choice: "Multiple choice",
   checkbox: "Completion checkbox",
+  payment: "Payment (Stripe)",
   heading: "Section heading",
   info: "Info / Description",
 };
@@ -1554,9 +1566,11 @@ function RequirementEditor({
             if (type !== "multiple_choice") { patch.options = undefined; patch.allow_multi_select = undefined; patch.include_other = undefined; }
             if (type !== "text") { patch.multiline = undefined; }
             if (type !== "info") { patch.info_content = undefined; }
+            if (type !== "payment") { patch.payment_amount = null; patch.payment_currency = null; patch.payment_description = null; }
             if (type === "info" || type === "heading") { patch.is_required = false; }
             if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
             if (type === "file") patch.file_mode = "upload";
+            if (type === "payment" && !r.payment_currency) patch.payment_currency = "GBP";
             if (type === "heading") patch.is_required = false;
             onUpdate(patch);
           }}
@@ -1592,7 +1606,7 @@ function RequirementEditor({
       </div>
 
       {/* ── Sub-options (only when needed) ── */}
-      {(r.type === "file" || r.type === "text" || r.type === "multiple_choice" || r.type === "info") ? (
+      {(r.type === "file" || r.type === "text" || r.type === "multiple_choice" || r.type === "info" || r.type === "payment") ? (
         <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 flex flex-col gap-2">
 
           {/* File: template mode toggle + input */}
@@ -1637,6 +1651,61 @@ function RequirementEditor({
           ) : null}
 
           {/* Payment: amount, currency, description */}
+          {r.type === "payment" ? (
+            <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Amount</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={r.payment_amount != null ? String(r.payment_amount) : ""}
+                    onChange={(e) => onUpdate({ payment_amount: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="e.g. 250.00"
+                    className="text-xs py-1"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Currency</label>
+                  <Select
+                    value={r.payment_currency ?? "GBP"}
+                    onChange={(e) => onUpdate({ payment_currency: e.target.value })}
+                    className="text-xs py-1"
+                  >
+                    <option value="GBP">GBP — British Pound</option>
+                    <option value="USD">USD — US Dollar</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="CAD">CAD — Canadian Dollar</option>
+                    <option value="AUD">AUD — Australian Dollar</option>
+                    <option value="CHF">CHF — Swiss Franc</option>
+                    <option value="JPY">JPY — Japanese Yen</option>
+                    <option value="SGD">SGD — Singapore Dollar</option>
+                    <option value="HKD">HKD — Hong Kong Dollar</option>
+                    <option value="SEK">SEK — Swedish Krona</option>
+                    <option value="NOK">NOK — Norwegian Krone</option>
+                    <option value="DKK">DKK — Danish Krone</option>
+                    <option value="NZD">NZD — New Zealand Dollar</option>
+                    <option value="MXN">MXN — Mexican Peso</option>
+                    <option value="BRL">BRL — Brazilian Real</option>
+                    <option value="INR">INR — Indian Rupee</option>
+                    <option value="ZAR">ZAR — South African Rand</option>
+                    <option value="AED">AED — UAE Dirham</option>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Description (optional)</label>
+                <Input
+                  value={r.payment_description ?? ""}
+                  onChange={(e) => onUpdate({ payment_description: e.target.value || null })}
+                  placeholder="e.g. Exhibitor booth fee"
+                  className="text-xs py-1"
+                />
+              </div>
+            </div>
+          ) : null}
+
           {/* Info: description content editor */}
           {r.type === "info" ? (
             <div className="flex flex-col gap-1">

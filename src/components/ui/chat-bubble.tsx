@@ -177,26 +177,38 @@ export function ChatBubble({
 
   return (
     <>
-      {/* Floating button */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Open messages"
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
-        style={{ backgroundColor: accent, color: "#fff" }}
-      >
-        {open ? (
-          <X className="h-6 w-6" />
-        ) : (
-          <div className="relative">
-            <MessageCircle className="h-6 w-6" />
-            {unread > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                {unread > 9 ? "9+" : unread}
-              </span>
+      {/* Floating button + label */}
+      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5">
+        {!open && (
+          <div className="flex flex-col items-end gap-1 pointer-events-none">
+            <div className="rounded-full bg-white border border-gray-200 shadow-md px-3 py-1.5 text-xs font-semibold text-gray-600 whitespace-nowrap">
+              Need help?
+            </div>
+            {unread === 0 && (
+              <div className="text-[10px] text-gray-400">Message the team</div>
             )}
           </div>
         )}
-      </button>
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Open messages"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+          style={{ backgroundColor: accent, color: "#fff" }}
+        >
+          {open ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <div className="relative">
+              <MessageCircle className="h-6 w-6" />
+              {unread > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </div>
+          )}
+        </button>
+      </div>
 
       {/* Chat panel */}
       {open && (
