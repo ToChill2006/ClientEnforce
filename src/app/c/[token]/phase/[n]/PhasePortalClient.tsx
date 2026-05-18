@@ -306,7 +306,7 @@ export default function PhasePortalClient({
   const bodyGroups = firstIsGroup ? allGroups.slice(1) : allGroups;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fb]" style={style}>
+    <div className="min-h-screen bg-[#f0f2f5]" style={style}>
 
       {/* Brand accent strip */}
       <div className="h-1.5 w-full" style={{ backgroundColor: accent }} />
@@ -389,7 +389,7 @@ export default function PhasePortalClient({
 
         {/* Sidebar */}
         <aside className="hidden lg:block lg:w-56 lg:shrink-0">
-          <div className="sticky top-6 rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+          <div className="sticky top-6 rounded-2xl bg-white border border-gray-200 shadow-md overflow-hidden">
             {/* Progress header */}
             <div className="px-4 py-4 border-b border-gray-50" style={{ backgroundColor: accentSubtle }}>
               <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: heading }}>
@@ -447,7 +447,7 @@ export default function PhasePortalClient({
         <main className="flex-1 space-y-3 sm:space-y-4 pb-4 sm:pb-0">
 
           {/* Phase title card — optionally absorbs first heading/info group */}
-          <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+          <div className="rounded-2xl bg-white border border-gray-200 shadow-md overflow-hidden">
             <div className="h-1 w-full" style={{ backgroundColor: accent }} />
             <div className="px-4 py-4 sm:px-6 sm:py-5 flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -570,7 +570,7 @@ export default function PhasePortalClient({
           {/* Locked state */}
           {isLocked ? (
             <div className="space-y-3">
-              <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-8 text-center">
+              <div className="rounded-2xl bg-white border border-gray-200 shadow-md px-6 py-8 text-center">
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
                   <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
                 </div>
@@ -631,7 +631,7 @@ export default function PhasePortalClient({
                       if (item.type === "group") {
                         const { heading: hReq, infos } = item.data;
                         return (
-                          <div key={hReq?.id ?? `group-${gi}`} className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+                          <div key={hReq?.id ?? `group-${gi}`} className="rounded-2xl bg-white border border-gray-200 shadow-md overflow-hidden">
                             {hReq && (
                               <div className="px-4 sm:px-5 py-3 border-b border-gray-100" style={{ borderLeft: `4px solid ${accent}`, backgroundColor: `${accent}10` }}>
                                 <h3 className="text-sm font-bold" style={{ color: heading }}>
@@ -670,7 +670,7 @@ export default function PhasePortalClient({
                         ? new Date(req.payment_paid_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })
                         : null;
                       return (
-                        <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
+                        <div key={req.id} className="rounded-2xl bg-white border border-gray-200 shadow-md px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
                             <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
                           </div>
@@ -684,7 +684,7 @@ export default function PhasePortalClient({
 
                     if (payStatus === "pending") {
                       return (
-                        <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
+                        <div key={req.id} className="rounded-2xl bg-white border border-gray-200 shadow-md px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
                             <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
                           </div>
@@ -697,7 +697,7 @@ export default function PhasePortalClient({
                     }
 
                     return (
-                      <div key={req.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5">
+                      <div key={req.id} className="rounded-2xl bg-white border border-gray-200 shadow-md px-4 sm:px-6 py-4 sm:py-5">
                         <div className="flex items-baseline gap-1.5 mb-1">
                           <label className="text-sm font-semibold text-gray-800">{req.label}</label>
                           {req.is_required && <span className="text-xs font-semibold" style={{ color: accent }}>*</span>}
@@ -798,7 +798,7 @@ export default function PhasePortalClient({
                           ) : (
                             <>
                               {(filePaths[req.id] ?? (req.file_path ? [req.file_path] : [])).map((path) => (
-                                <div key={path} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5">
+                                <div key={path} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5">
                                   <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" d="M3 2h7l3 3v9H3V2zM10 2v3h3"/></svg>
                                   <span className="flex-1 truncate text-sm text-gray-700">{path.split("/").pop()}</span>
                                   {!isReadOnly && (
@@ -866,7 +866,7 @@ export default function PhasePortalClient({
                                 key={opt}
                                 className={cn(
                                   "flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition",
-                                  isSelected ? "border-transparent shadow-sm" : "border-gray-100 bg-gray-50 hover:bg-gray-100",
+                                  isSelected ? "border-transparent shadow-sm" : "border-gray-200 bg-gray-50 hover:bg-gray-100",
                                   isReadOnly && "cursor-default"
                                 )}
                                 style={isSelected ? { backgroundColor: accentSubtle, borderColor: accent } : undefined}
@@ -902,7 +902,7 @@ export default function PhasePortalClient({
                       ) : req.type === "checkbox" ? (
                         <label className={cn(
                           "flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition",
-                          Boolean(answers[req.id] ?? req.value_text) ? "border-transparent shadow-sm" : "border-gray-100 bg-gray-50 hover:bg-gray-100",
+                          Boolean(answers[req.id] ?? req.value_text) ? "border-transparent shadow-sm" : "border-gray-200 bg-gray-50 hover:bg-gray-100",
                           isReadOnly && "cursor-default"
                         )}
                           style={Boolean(answers[req.id] ?? req.value_text) ? { backgroundColor: accentSubtle, borderColor: accent } : undefined}
@@ -965,7 +965,7 @@ export default function PhasePortalClient({
               })()}
 
               {/* Submit / action bar */}
-              <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 sm:px-6 py-4 sm:py-5">
+              <div className="rounded-2xl bg-white border border-gray-200 shadow-md px-4 sm:px-6 py-4 sm:py-5">
                 {effectiveStatus === "awaiting_review" ? (
                   <p className="text-sm text-gray-500 text-center">Your submission is under review — we'll be in touch.</p>
                 ) : effectiveStatus === "approved" ? (
