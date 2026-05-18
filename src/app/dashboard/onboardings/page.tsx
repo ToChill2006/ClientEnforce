@@ -823,8 +823,8 @@ export default function OnboardingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Onboardings"
-        description="Create, track, and send client onboarding links. Progress updates automatically."
+        title={hasEnterpriseFlag ? "Events" : "Onboardings"}
+        description={hasEnterpriseFlag ? "Manage events and bulk-onboard exhibitors. Progress updates automatically." : "Create, track, and send client onboarding links. Progress updates automatically."}
         actions={
           <>
             {activeTab === "solo" && (

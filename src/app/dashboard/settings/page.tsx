@@ -450,36 +450,24 @@ export default function SettingsPage() {
     setPageSuccess(null);
 
     try {
-      // Try a few common endpoints (your repo has evolved; this keeps it robust)
-      const candidates = ["/api/invites", "/api/team/invite", "/api/team/invites"];
+      const { res, json } = await postJson("/api/team/invite", { email, role: inviteRole });
 
-      let lastErr = "Invite failed";
-      let invitedUserId: string | null = null;
-      for (const url of candidates) {
-        const { res, json } = await postJson(url, { email, role: inviteRole });
-        if (res.status === 404) continue;
-        if (!res.ok) {
-          if (res.status === 403) {
-            setCanInviteMembers(false);
-            setPageError("Permission required: You do not have access to invite team members.");
-            setPageSuccess(null);
-            return;
-          }
-          lastErr = json?.error || res.statusText || "Invite failed";
-          break;
+      if (!res.ok) {
+        if (res.status === 403) {
+          setCanInviteMembers(false);
+          setPageError(json?.error || "Permission required: You do not have access to invite team members.");
+          setPageSuccess(null);
+          return;
         }
-
-        setCanInviteMembers(true);
-        invitedUserId = json?.invite?.user_id ?? null;
-        setInviteEmail("");
-        setInviteRole("onboarder");
-        setSelectedEventIds([]);
-        setPageSuccess("Invite created.");
-        await load();
-        return;
+        throw new Error(json?.error || res.statusText || "Invite failed");
       }
 
-      throw new Error(lastErr);
+      setCanInviteMembers(true);
+      setInviteEmail("");
+      setInviteRole("onboarder");
+      setSelectedEventIds([]);
+      setPageSuccess("Invite sent — they'll receive an email with a link to join.");
+      await load();
     } catch (e: any) {
       setPageError(e?.message ?? "Invite failed");
       setPageSuccess(null);

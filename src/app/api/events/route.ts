@@ -55,15 +55,14 @@ export async function GET() {
     if (eventIds.length > 0) {
       const { data: onboardings } = await supabase
         .from("onboardings")
-        .select("id, event_id, phase_status")
+        .select("id, event_id, status")
         .in("event_id", eventIds);
 
       if (onboardings) {
         for (const o of onboardings as any[]) {
           if (!countsByEvent[o.event_id]) countsByEvent[o.event_id] = { total: 0, by_status: {} };
           countsByEvent[o.event_id].total++;
-          // Count by exhibitor's current phase_status (not by individual phases)
-          const s = o.phase_status ?? "draft";
+          const s = o.status ?? "draft";
           countsByEvent[o.event_id].by_status[s] = (countsByEvent[o.event_id].by_status[s] ?? 0) + 1;
         }
       }
