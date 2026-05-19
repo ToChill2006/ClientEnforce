@@ -352,17 +352,22 @@ export default function OnboardingDetailAdminPage() {
   const [activityLoading, setActivityLoading] = React.useState(false);
   const [activityLoaded, setActivityLoaded] = React.useState(false);
   const [activityOpen, setActivityOpen] = React.useState(false);
+  const [activityError, setActivityError] = React.useState<string | null>(null);
 
   async function loadActivity(onboardingId: string) {
     if (activityLoading) return;
     setActivityLoading(true);
+    setActivityError(null);
     try {
       const res = await fetch(`/api/audit?onboarding_id=${onboardingId}`, { cache: "no-store" });
-      if (!res.ok) return;
       const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        setActivityError(json?.error || "Could not load activity.");
+        return;
+      }
       setActivityEvents(json?.events ?? []);
       setActivityLoaded(true);
-    } catch { /* ignore */ } finally { setActivityLoading(false); }
+    } catch { setActivityError("Could not load activity."); } finally { setActivityLoading(false); }
   }
 
   // Preview state
@@ -1403,25 +1408,30 @@ export default function OnboardingDetailAdminPage() {
               <div className="flex h-24 items-center justify-center">
                 <Clock className="h-4 w-4 animate-spin text-[var(--color-text-muted)]" />
               </div>
+            ) : activityError ? (
+              <p className="py-6 text-center text-xs text-[var(--color-text-muted)]">{activityError}</p>
             ) : activityEvents.length === 0 ? (
               <p className="py-6 text-center text-xs text-[var(--color-text-muted)]">No activity recorded yet.</p>
             ) : (
               <ol className="relative mt-2 space-y-0 border-l border-[var(--color-border)] ml-3">
                 {activityEvents.map((ev: any) => {
-                  const actor = ev.actor_name || ev.actor_email || "System";
+                  const actor = ev.actor || ev.actor_email || "System";
+                  const meta = ev.metadata ?? {};
+                  const phaseNum = meta.phase_number ?? meta.phase ?? ev.phase_number ?? null;
+                  const note = meta.note ?? meta.reviewer_note ?? null;
                   const time = new Date(ev.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
                   return (
                     <li key={ev.id} className="relative pl-5 pb-4">
                       <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border-2 border-[var(--color-panel)] bg-[var(--color-accent)]" />
                       <div className="flex flex-wrap items-baseline gap-1.5">
                         <span className="text-xs font-medium text-[var(--color-text-primary)]">{actor}</span>
-                        <span className="text-xs text-[var(--color-text-secondary)]">{ev.action?.replace(/_/g, " ") ?? "performed an action"}</span>
-                        {ev.phase_number != null && (
-                          <span className="text-[10px] rounded-full bg-[var(--color-bg-subtle)] px-1.5 py-0.5 text-[var(--color-text-muted)]">Phase {ev.phase_number}</span>
+                        <span className="text-xs text-[var(--color-text-secondary)]">{ev.action?.replace(/[._]/g, " ") ?? "performed an action"}</span>
+                        {phaseNum != null && (
+                          <span className="text-[10px] rounded-full bg-[var(--color-bg-subtle)] px-1.5 py-0.5 text-[var(--color-text-muted)]">Phase {phaseNum}</span>
                         )}
                       </div>
-                      {ev.details && typeof ev.details === "object" && ev.details.note && (
-                        <p className="mt-0.5 text-xs text-[var(--color-text-muted)] italic">"{ev.details.note}"</p>
+                      {note && (
+                        <p className="mt-0.5 text-xs text-[var(--color-text-muted)] italic">"{note}"</p>
                       )}
                       <time className="mt-0.5 block text-[10px] text-[var(--color-text-muted)]">{time}</time>
                     </li>
