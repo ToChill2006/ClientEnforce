@@ -871,7 +871,6 @@ export default function EventDetailPage() {
     }
 
     const tplNames = new Set(templates.map((t) => t.name.toLowerCase()));
-    const fallbackTemplate = templates[0]?.name ?? "";
 
     const rows: CsvRow[] = lines.slice(1).map((line) => {
       const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
@@ -880,10 +879,7 @@ export default function EventDetailPage() {
       const template_name = tplIdx !== -1 ? (cols[tplIdx] ?? "") : "";
       const company_name = companyIdx !== -1 ? cols[companyIdx] : undefined;
 
-      // Use provided template name, or fall back to first template
-      const resolvedTemplate = template_name || fallbackTemplate;
       const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      const validTpl = !resolvedTemplate || tplNames.has(resolvedTemplate.toLowerCase());
 
       let _error: string | undefined;
       if (!validEmail) _error = "Invalid email";
@@ -893,11 +889,11 @@ export default function EventDetailPage() {
       return {
         email,
         full_name,
-        template_name: resolvedTemplate,
+        template_name,
         company_name,
         _valid: !_error,
         _error,
-        _template: resolvedTemplate || undefined,
+        _template: template_name || undefined,
       };
     }).filter((r) => r.email || r.full_name);
 
@@ -916,7 +912,7 @@ export default function EventDetailPage() {
     e.target.value = "";
   }
 
-  async function runImport() {
+  async function runImport(sendInvites = false) {
     setImporting(true);
     setConfirmImportOpen(false);
     try {
@@ -924,11 +920,17 @@ export default function EventDetailPage() {
       const res = await fetch(`/api/events/${eventId}/bulk-import`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ rows: validRows.map(({ email, full_name, template_name, company_name }) => ({ email, full_name, template_name, company_name })) }),
+        body: JSON.stringify({
+          rows: validRows.map(({ email, full_name, template_name, company_name }) => ({ email, full_name, template_name, company_name })),
+          send_invites: sendInvites,
+        }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Import failed");
-      toast({ title: `Invited ${json.created} exhibitors`, variant: "success" });
+      toast({
+        title: sendInvites ? `Invited ${json.created} exhibitors` : `Added ${json.created} exhibitors as drafts`,
+        variant: "success",
+      });
       setCsvRows([]);
       setCsvParsed(false);
       setTab("exhibitors");
@@ -1394,13 +1396,23 @@ export default function EventDetailPage() {
                   <span className="text-[var(--color-success)]"><CheckCircle2 className="mr-1 inline h-3.5 w-3.5" />{validCount} valid</span>
                   {invalidCount > 0 && <span className="text-[var(--color-danger)]"><AlertCircle className="mr-1 inline h-3.5 w-3.5" />{invalidCount} invalid (will skip)</span>}
                 </div>
-                <Button
-                  disabled={validCount === 0 || importing}
-                  onClick={() => setConfirmImportOpen(true)}
-                  loading={importing}
-                >
-                  Send Invites ({validCount})
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    disabled={validCount === 0 || importing}
+                    onClick={() => setConfirmImportOpen(true)}
+                    loading={importing}
+                  >
+                    Send Invites ({validCount})
+                  </Button>
+                  <Button
+                    disabled={validCount === 0 || importing}
+                    onClick={() => runImport(false)}
+                    loading={importing}
+                  >
+                    Add as Drafts ({validCount})
+                  </Button>
+                </div>
               </div>
 
               <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
@@ -1421,7 +1433,7 @@ export default function EventDetailPage() {
                         <td className="px-3 py-2 text-[var(--color-text-muted)]">{i + 1}</td>
                         <td className="px-3 py-2">{row.email}</td>
                         <td className="px-3 py-2">{row.full_name}</td>
-                        <td className="px-3 py-2">{row.template_name}</td>
+                        <td className="px-3 py-2 text-[var(--color-text-muted)]">{row.template_name || <span className="italic">none</span>}</td>
                         <td className="px-3 py-2">
                           {row._valid
                             ? <span className="text-[var(--color-success)]">✓</span>
@@ -1952,12 +1964,12 @@ export default function EventDetailPage() {
         open={confirmImportOpen}
         onClose={() => setConfirmImportOpen(false)}
         title="Send invites?"
-        description={`This will send invite emails to ${validCount} exhibitor${validCount === 1 ? "" : "s"}. This cannot be undone.`}
+        description={`This will send invite emails to ${validCount} exhibitor${validCount === 1 ? "" : "s"} immediately. You can also add them as drafts first and send invites later.`}
         size="sm"
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirmImportOpen(false)}>Cancel</Button>
-            <Button onClick={runImport} loading={importing}>Send {validCount} invites</Button>
+            <Button onClick={() => runImport(true)} loading={importing}>Send {validCount} invites</Button>
           </>
         }
       >{null}</Modal>

@@ -27,6 +27,7 @@ const RowSchema = z.object({
 
 const ImportPayload = z.object({
   rows: z.array(RowSchema).min(1).max(500),
+  send_invites: z.boolean().optional().default(false),
 });
 
 type QueuedEmail = {
@@ -157,17 +158,6 @@ export async function POST(
       templateByName[(t.name as string).toLowerCase()] = t.id as string;
     }
 
-    // Fallback template (first created)
-    const { data: fallbackTpl } = await supabase
-      .from("templates")
-      .select("id")
-      .eq("org_id", org_id)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    const fallbackTemplateId = (fallbackTpl as any)?.id ?? null;
-
     // Fetch org portal base for invite links
     let portalBase = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://clientenforce.com";
     try {
@@ -189,11 +179,15 @@ export async function POST(
       const row = parsed.data.rows[i];
       try {
         const templateKey = (row.template_name ?? "").toLowerCase();
-        const templateId = (templateKey ? templateByName[templateKey] : null) ?? fallbackTemplateId;
-        if (!templateId) {
-          failed.push({ row_index: i, error: `No template found${row.template_name ? `: "${row.template_name}"` : " — create a template first"}` });
-          continue;
+        let templateId: string | null = null;
+        if (templateKey) {
+          templateId = templateByName[templateKey] ?? null;
+          if (!templateId) {
+            failed.push({ row_index: i, error: `Unknown template: "${row.template_name}"` });
+            continue;
+          }
         }
+        // No template_name provided — onboarding created without a template (assigned later)
 
         const email = row.email.trim().toLowerCase();
         const fullName = row.full_name.trim();
@@ -242,11 +236,11 @@ export async function POST(
 
         const onboardingId = (onboarding as any).id as string;
 
-        const { data: tplRow } = await admin
+        const { data: tplRow } = templateId ? await admin
           .from("templates")
           .select("definition")
           .eq("id", templateId)
-          .single();
+          .single() : { data: null };
 
         if (tplRow) {
           const def = (tplRow as any).definition as any;
@@ -325,29 +319,31 @@ export async function POST(
       }
     }
 
-    // Phase 2: send all invite emails in one batch (chunked at 100), then mark as sent
-    try {
-      await sendBatchInvites(org_id, event.name as string, emailQueue);
-      // Mark all successfully created onboardings as sent
-      if (created.length > 0) {
-        await admin.from("onboardings")
-          .update({ status: "sent", updated_at: new Date().toISOString() })
-          .in("id", created);
-      }
-    } catch { /* Don't fail the import if email batch errors */ }
+    // Phase 2: send invite emails only if requested
+    if (parsed.data.send_invites && emailQueue.length > 0) {
+      try {
+        await sendBatchInvites(org_id, event.name as string, emailQueue);
+        // Mark all successfully created onboardings as sent
+        if (created.length > 0) {
+          await admin.from("onboardings")
+            .update({ status: "sent", updated_at: new Date().toISOString() })
+            .in("id", created);
+        }
+      } catch { /* Don't fail the import if email batch errors */ }
 
-    // Write activity feed entry
-    try {
-      await supabase.from("team_activity").insert({
-        org_id,
-        actor_user_id: userData.user.id,
-        actor_kind: "user",
-        verb: "invited",
-        subject_kind: "event",
-        subject_id: eventId,
-        context: { event_id: eventId, event_name: event.name, count: created.length },
-      });
-    } catch { /* best-effort */ }
+      // Write activity feed entry for invites
+      try {
+        await supabase.from("team_activity").insert({
+          org_id,
+          actor_user_id: userData.user.id,
+          actor_kind: "user",
+          verb: "invited",
+          subject_kind: "event",
+          subject_id: eventId,
+          context: { event_id: eventId, event_name: event.name, count: created.length },
+        });
+      } catch { /* best-effort */ }
+    }
 
     return NextResponse.json({ created: created.length, failed });
   } catch (e: any) {
