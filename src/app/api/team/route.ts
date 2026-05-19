@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireProfile, requireRole } from "@/lib/rbac";
+import { requireProfile, requireRole, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import {
@@ -16,6 +16,7 @@ import {
 export const runtime = "nodejs";
 
 export async function GET() {
+  try {
   const supabase = await supabaseServer();
   const admin = supabaseAdmin();
   const { data: userData } = await supabase.auth.getUser();
@@ -117,6 +118,10 @@ export async function GET() {
   };
 
   return NextResponse.json({ members: members ?? [], invites: invites ?? [], org });
+  } catch (e: any) {
+    const status = e instanceof HttpError ? e.status : 500;
+    return NextResponse.json({ error: e?.message || "Internal error" }, { status });
+  }
 }
 
 function makeInviteToken() {
