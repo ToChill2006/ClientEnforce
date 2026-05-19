@@ -242,6 +242,31 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   if (error) return jsonError(400, error.message || "Failed to delete onboarding");
   if (!item) return jsonError(404, "Onboarding not found");
 
+  // Purge storage files for this onboarding from both buckets
+  try {
+    const { supabaseAdmin } = await import("@/lib/supabase-admin");
+    const admin = supabaseAdmin();
+    const orgRaw = org_id.startsWith("org_") ? org_id.slice(4) : org_id;
+
+    const deletePrefix = async (bucket: string, prefix: string) => {
+      const { data } = await admin.storage.from(bucket).list(prefix, { limit: 500 });
+      const paths = (data ?? []).filter((f: any) => f.name).map((f: any) => `${prefix}/${f.name}`);
+      if (paths.length > 0) await admin.storage.from(bucket).remove(paths);
+    };
+
+    const uploadPrefix = `org_${orgRaw}/onboarding_${id}`;
+    const sigPrefixNew = `org_${orgRaw}/${id}`;
+    const sigPrefixLegacy = `${orgRaw}/${id}`;
+
+    await Promise.allSettled([
+      deletePrefix("clientenforce-uploads", uploadPrefix),
+      deletePrefix("clientenforce-signatures", sigPrefixNew),
+      deletePrefix("clientenforce-signatures", sigPrefixLegacy),
+    ]);
+  } catch {
+    // Non-fatal: onboarding is already deleted; log but don't fail
+  }
+
   logAudit({
     org_id,
     actor_user_id: user.id,

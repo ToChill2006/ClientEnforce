@@ -314,6 +314,7 @@ export default function OnboardingDetailAdminPage() {
   const [confirmLock, setConfirmLock] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
+  const [deleteFileCount, setDeleteFileCount] = React.useState<number | null>(null);
 
   // Phase strip + review panel state
   const [phases, setPhases] = React.useState<any[]>([]);
@@ -972,7 +973,18 @@ export default function OnboardingDetailAdminPage() {
               <MenuDivider />
               <MenuItem
                 iconLeft={<Trash2 className="h-3.5 w-3.5" />}
-                onSelect={() => setConfirmDelete(true)}
+                onSelect={async () => {
+                  setDeleteFileCount(null);
+                  setConfirmDelete(true);
+                  try {
+                    const r = await fetch("/api/storage/index", { cache: "no-store" });
+                    if (r.ok) {
+                      const j = await r.json().catch(() => null);
+                      const count = (j?.items ?? []).filter((it: any) => it.onboarding_id === ob?.id).length;
+                      setDeleteFileCount(count);
+                    }
+                  } catch { /* ignore */ }
+                }}
                 destructive
               >
                 Delete
@@ -1495,7 +1507,13 @@ export default function OnboardingDetailAdminPage() {
         onClose={() => (deleting ? null : setConfirmDelete(false))}
         onConfirm={deleteOnboarding}
         title="Delete onboarding?"
-        description="This permanently removes the onboarding and all uploaded responses. It cannot be undone."
+        description={
+          deleteFileCount === null
+            ? "This permanently removes the onboarding and all uploaded files. It cannot be undone."
+            : deleteFileCount > 0
+              ? `This will permanently delete the onboarding and ${deleteFileCount} uploaded file${deleteFileCount !== 1 ? "s" : ""} from storage. This cannot be undone.`
+              : "This permanently removes the onboarding record. No uploaded files were found. It cannot be undone."
+        }
         confirmLabel={deleting ? "Deleting…" : "Delete"}
         destructive
       />

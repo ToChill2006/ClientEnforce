@@ -625,6 +625,7 @@ export default function EventDetailPage() {
   const [selectedFileIds, setSelectedFileIds] = React.useState<Set<string>>(new Set());
   const [previewFile, setPreviewFile] = React.useState<FileItem | null>(null);
   const [bulkDownloading, setBulkDownloading] = React.useState(false);
+  const [bulkDeleting, setBulkDeleting] = React.useState(false);
 
   function toggleFile(id: string) {
     setSelectedFileIds((prev) => {
@@ -659,6 +660,33 @@ export default function EventDetailPage() {
       }
     } finally {
       setBulkDownloading(false);
+    }
+  }
+
+  async function bulkDeleteFiles() {
+    const selected = eventFiles.filter((f) => selectedFileIds.has(f.id));
+    if (selected.length === 0) return;
+    if (!window.confirm(`Permanently delete ${selected.length} file${selected.length !== 1 ? "s" : ""}? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    const failed: string[] = [];
+    try {
+      for (const f of selected) {
+        const res = await fetch("/api/storage/delete", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ path: f.path, bucket: f.path.split(":")[0] || "clientenforce-uploads" }),
+        });
+        if (!res.ok) failed.push(f.name || f.path.split("/").pop() || f.path);
+      }
+      if (failed.length > 0) {
+        toast({ title: `${failed.length} file${failed.length !== 1 ? "s" : ""} could not be deleted`, variant: "error" });
+      }
+      const deletedIds = new Set(selected.filter((f) => !failed.includes(f.name || f.path.split("/").pop() || f.path)).map((f) => f.id));
+      setEventFiles((prev) => prev.filter((f) => !deletedIds.has(f.id)));
+      setSelectedFileIds(new Set());
+      if (failed.length === 0) toast({ title: `${selected.length} file${selected.length !== 1 ? "s" : ""} deleted`, variant: "success" });
+    } finally {
+      setBulkDeleting(false);
     }
   }
 
@@ -1806,8 +1834,8 @@ export default function EventDetailPage() {
 
             {/* Search + bulk action bar */}
             {!filesLoading && eventFiles.length > 0 && (
-              <div className="flex gap-2">
-                <div className="relative flex-1">
+              <div className="flex flex-wrap gap-2">
+                <div className="relative flex-1 min-w-[160px]">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
                   <input
                     type="text"
@@ -1817,6 +1845,18 @@ export default function EventDetailPage() {
                     className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] py-2 pl-8 pr-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                   />
                 </div>
+                {/* Select all toggle */}
+                <button
+                  onClick={() => {
+                    const allIds = eventFiles.map((f) => f.id);
+                    const allSelected = allIds.every((id) => selectedFileIds.has(id));
+                    if (allSelected) setSelectedFileIds(new Set());
+                    else setSelectedFileIds(new Set(allIds));
+                  }}
+                  className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors whitespace-nowrap"
+                >
+                  {eventFiles.every((f) => selectedFileIds.has(f.id)) ? "Deselect all" : "Select all"}
+                </button>
                 {selCount > 0 && (
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">{selCount} selected</span>
@@ -1826,7 +1866,16 @@ export default function EventDetailPage() {
                       loading={bulkDownloading}
                       iconLeft={<Download className="h-3.5 w-3.5" />}
                     >
-                      Download all
+                      Download
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={bulkDeleteFiles}
+                      loading={bulkDeleting}
+                      iconLeft={<Trash2 className="h-3.5 w-3.5" />}
+                    >
+                      Delete
                     </Button>
                     <button
                       onClick={() => setSelectedFileIds(new Set())}
