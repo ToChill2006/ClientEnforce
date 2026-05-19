@@ -862,39 +862,42 @@ export default function EventDetailPage() {
     const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/^"|"$/g, ""));
     const emailIdx = headers.indexOf("email");
     const nameIdx = headers.indexOf("full_name");
-    const tplIdx = headers.indexOf("template_name");
+    const tplIdx = headers.indexOf("template_name"); // optional
     const companyIdx = headers.indexOf("company_name");
 
-    if (emailIdx === -1 || nameIdx === -1 || tplIdx === -1) {
-      toast({ title: "Invalid CSV", description: "Required columns: email, full_name, template_name", variant: "error" });
+    if (emailIdx === -1 || nameIdx === -1) {
+      toast({ title: "Invalid CSV", description: "Required columns: email, full_name. Optional: template_name, company_name", variant: "error" });
       return;
     }
 
     const tplNames = new Set(templates.map((t) => t.name.toLowerCase()));
+    const fallbackTemplate = templates[0]?.name ?? "";
 
     const rows: CsvRow[] = lines.slice(1).map((line) => {
       const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
       const email = cols[emailIdx] ?? "";
       const full_name = cols[nameIdx] ?? "";
-      const template_name = cols[tplIdx] ?? "";
+      const template_name = tplIdx !== -1 ? (cols[tplIdx] ?? "") : "";
       const company_name = companyIdx !== -1 ? cols[companyIdx] : undefined;
 
+      // Use provided template name, or fall back to first template
+      const resolvedTemplate = template_name || fallbackTemplate;
       const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      const validTpl = tplNames.has(template_name.toLowerCase());
+      const validTpl = !resolvedTemplate || tplNames.has(resolvedTemplate.toLowerCase());
 
       let _error: string | undefined;
       if (!validEmail) _error = "Invalid email";
       else if (!full_name) _error = "Missing name";
-      else if (!validTpl) _error = `Unknown template: "${template_name}"`;
+      else if (template_name && !tplNames.has(template_name.toLowerCase())) _error = `Unknown template: "${template_name}"`;
 
       return {
         email,
         full_name,
-        template_name,
+        template_name: resolvedTemplate,
         company_name,
         _valid: !_error,
         _error,
-        _template: template_name || undefined,
+        _template: resolvedTemplate || undefined,
       };
     }).filter((r) => r.email || r.full_name);
 
@@ -1374,7 +1377,7 @@ export default function EventDetailPage() {
             <Upload className="mx-auto mb-3 h-8 w-8 text-[var(--color-text-muted)]" />
             <div className="text-sm font-medium text-[var(--color-text-primary)]">Upload CSV</div>
             <div className="mt-1 text-xs text-[var(--color-text-muted)]">
-              Required columns: <code>email</code>, <code>full_name</code>, <code>template_name</code>. Optional: <code>company_name</code>
+              Required: <code>email</code>, <code>full_name</code>. Optional: <code>template_name</code>, <code>company_name</code>
             </div>
             <label className="mt-4 inline-block cursor-pointer">
               <span className="inline-flex h-9 items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 text-sm font-medium text-white hover:opacity-90">

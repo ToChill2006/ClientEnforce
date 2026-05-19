@@ -21,7 +21,7 @@ function err(status: number, msg: string) {
 const RowSchema = z.object({
   email: z.string().email(),
   full_name: z.string().min(1),
-  template_name: z.string().min(1),
+  template_name: z.string().optional().nullable(),
   company_name: z.string().optional().nullable(),
 });
 
@@ -188,9 +188,10 @@ export async function POST(
     for (let i = 0; i < parsed.data.rows.length; i++) {
       const row = parsed.data.rows[i];
       try {
-        const templateId = templateByName[row.template_name.toLowerCase()] ?? fallbackTemplateId;
+        const templateKey = (row.template_name ?? "").toLowerCase();
+        const templateId = (templateKey ? templateByName[templateKey] : null) ?? fallbackTemplateId;
         if (!templateId) {
-          failed.push({ row_index: i, error: `Template not found: "${row.template_name}"` });
+          failed.push({ row_index: i, error: `No template found${row.template_name ? `: "${row.template_name}"` : " — create a template first"}` });
           continue;
         }
 
