@@ -51,6 +51,7 @@ interface Props {
   clientName: string;
   companyName: string | null;
   eventName: string | null;
+  eventDeadline: string | null;
   phases: Phase[];
   currentPhase: Phase;
   requirements: Requirement[];
@@ -67,6 +68,7 @@ export default function PhasePortalClient({
   clientName,
   companyName,
   eventName,
+  eventDeadline,
   phases,
   currentPhase,
   requirements,
@@ -463,13 +465,15 @@ export default function PhasePortalClient({
                 <h1 className="text-xl sm:text-2xl font-bold leading-tight" style={{ color: heading }}>
                   {currentPhase.name}
                 </h1>
-                {currentPhase.deadline && (() => {
-                  const days = Math.ceil((new Date(currentPhase.deadline).setHours(23,59,59,999) - Date.now()) / 86400000);
+                {(() => {
+                  const deadline = currentPhase.deadline || eventDeadline;
+                  if (!deadline) return null;
+                  const days = Math.ceil((new Date(deadline).setHours(23,59,59,999) - Date.now()) / 86400000);
                   const label = days < 0
                     ? `Overdue by ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"}`
                     : days === 0
                     ? "Due today"
-                    : `Due ${new Date(currentPhase.deadline).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${days} day${days === 1 ? "" : "s"} left`;
+                    : `Due ${new Date(deadline).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${days} day${days === 1 ? "" : "s"} left`;
                   const bg = days <= 0 ? "bg-red-50 border-red-200" : days <= 3 ? "bg-amber-50 border-amber-200" : days <= 7 ? "bg-yellow-50 border-yellow-200" : "bg-blue-50 border-blue-200";
                   const text = days <= 0 ? "text-red-700 font-semibold" : days <= 3 ? "text-amber-700 font-semibold" : days <= 7 ? "text-yellow-700" : "text-blue-700";
                   return (
