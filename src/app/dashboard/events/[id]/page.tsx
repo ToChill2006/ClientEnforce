@@ -27,6 +27,12 @@ import {
   X,
   ToggleLeft,
   ToggleRight,
+  Clipboard,
+  FileText,
+  PenLine,
+  Eye,
+  MessageSquarePlus,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -76,7 +82,26 @@ type CsvRow = {
 type Template = { id: string; name: string };
 type TeamMember = { user_id: string; email: string | null; full_name: string | null };
 
-type Tab = "dashboard" | "exhibitors" | "add" | "templates";
+type Tab = "dashboard" | "exhibitors" | "add" | "templates" | "planning" | "files";
+
+type BoardPost = {
+  id: string;
+  author_name: string | null;
+  body: string | null;
+  file_path: string | null;
+  file_name: string | null;
+  created_at: string;
+};
+
+type FileItem = {
+  id: string;
+  onboarding_title: string | null;
+  type: string;
+  path: string;
+  name: string;
+  created_at: string | null;
+  updated_at: string | null;
+};
 
 function PhaseStatusBadge({ status }: { status: string | null }) {
   if (!status) return <Tag>—</Tag>;
@@ -386,6 +411,64 @@ export default function EventDetailPage() {
     } catch { /* ignore */ }
   }
 
+  // Planning board
+  const [boardPosts, setBoardPosts] = React.useState<BoardPost[]>([]);
+  const [boardLoading, setBoardLoading] = React.useState(false);
+  const [boardDraft, setBoardDraft] = React.useState("");
+  const [boardPosting, setBoardPosting] = React.useState(false);
+
+  async function loadBoard() {
+    setBoardLoading(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/board`, { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json().catch(() => null);
+      setBoardPosts(json?.posts ?? []);
+    } catch { /* ignore */ } finally { setBoardLoading(false); }
+  }
+
+  async function postToBoard() {
+    const text = boardDraft.trim();
+    if (!text || boardPosting) return;
+    setBoardPosting(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/board`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body: text }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to post");
+      setBoardPosts((prev) => [json.post, ...prev]);
+      setBoardDraft("");
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message, variant: "error" });
+    } finally { setBoardPosting(false); }
+  }
+
+  async function deleteBoardPost(postId: string) {
+    if (!window.confirm("Delete this post?")) return;
+    try {
+      await fetch(`/api/events/${eventId}/board?post_id=${postId}`, { method: "DELETE" });
+      setBoardPosts((prev) => prev.filter((p) => p.id !== postId));
+    } catch { /* ignore */ }
+  }
+
+  // Event files
+  const [eventFiles, setEventFiles] = React.useState<FileItem[]>([]);
+  const [filesLoading, setFilesLoading] = React.useState(false);
+
+  async function loadEventFiles() {
+    setFilesLoading(true);
+    try {
+      const res = await fetch("/api/storage/index", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json().catch(() => null);
+      const all: any[] = json?.items ?? [];
+      setEventFiles(all.filter((it) => it.event_id === eventId));
+    } catch { /* ignore */ } finally { setFilesLoading(false); }
+  }
+
   // Templates (for single-add form and CSV preview)
   const [templates, setTemplates] = React.useState<Template[]>([]);
 
@@ -536,6 +619,8 @@ export default function EventDetailPage() {
   React.useEffect(() => {
     if (tab === "exhibitors" || tab === "dashboard") loadExhibitors();
     if (tab === "dashboard") loadReminderRules();
+    if (tab === "planning") loadBoard();
+    if (tab === "files") loadEventFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -727,14 +812,16 @@ export default function EventDetailPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-[var(--color-border)]">
-        {(["dashboard", "exhibitors", "add", "templates"] as Tab[]).map((t) => {
-          const labels: Record<Tab, string> = { dashboard: "Dashboard", add: "Add Exhibitors", exhibitors: "Exhibitors", templates: "Templates" };
+      <div className="flex gap-1 border-b border-[var(--color-border)] overflow-x-auto">
+        {(["dashboard", "exhibitors", "planning", "files", "add", "templates"] as Tab[]).map((t) => {
+          const labels: Record<Tab, string> = { dashboard: "Dashboard", add: "Add Exhibitors", exhibitors: "Exhibitors", templates: "Templates", planning: "Planning Board", files: "Files" };
           const icons: Record<Tab, React.ReactNode> = {
             dashboard: <LayoutDashboard className="h-3.5 w-3.5" />,
             add: <Upload className="h-3.5 w-3.5" />,
             exhibitors: <Users className="h-3.5 w-3.5" />,
             templates: <LayoutTemplate className="h-3.5 w-3.5" />,
+            planning: <Clipboard className="h-3.5 w-3.5" />,
+            files: <FileText className="h-3.5 w-3.5" />,
           };
           return (
             <button
@@ -1268,6 +1355,144 @@ export default function EventDetailPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Planning Board tab */}
+      {tab === "planning" && (
+        <div className="space-y-4">
+          {/* Post composer */}
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <MessageSquarePlus className="h-4 w-4 text-[var(--color-accent)]" />
+              <span className="text-sm font-medium text-[var(--color-text-primary)]">Post a note or update</span>
+            </div>
+            <textarea
+              value={boardDraft}
+              onChange={(e) => setBoardDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); postToBoard(); } }}
+              rows={3}
+              placeholder="Share a note, update, or important information with your team…"
+              className="w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            />
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <span className="text-[10px] text-[var(--color-text-muted)]">⌘+Enter to post</span>
+              <Button size="sm" onClick={postToBoard} loading={boardPosting} disabled={!boardDraft.trim()} iconLeft={<Paperclip className="h-3.5 w-3.5" />}>
+                Post
+              </Button>
+            </div>
+          </div>
+
+          {/* Posts list */}
+          {boardLoading ? (
+            <div className="flex h-24 items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
+            </div>
+          ) : boardPosts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] py-12 text-center">
+              <Clipboard className="mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
+              <p className="text-sm font-medium text-[var(--color-text-secondary)]">No posts yet</p>
+              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Post notes and important info for your team above.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {boardPosts.map((post) => (
+                <div key={post.id} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-accent)] text-[11px] font-bold text-white">
+                        {(post.author_name || "?").charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-xs font-medium text-[var(--color-text-primary)]">{post.author_name ?? "Team member"}</span>
+                      <span className="text-[10px] text-[var(--color-text-muted)]">
+                        {new Date(post.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        {" "}
+                        {new Date(post.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => deleteBoardPost(post.id)}
+                      className="opacity-0 group-hover:opacity-100 rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-danger-subtle)] hover:text-[var(--color-danger)] transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {post.body && (
+                    <p className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{post.body}</p>
+                  )}
+                  {post.file_path && (
+                    <div className="mt-2 flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                      <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                      {post.file_name ?? post.file_path.split("/").pop()}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Files tab */}
+      {tab === "files" && (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
+          <div className="border-b border-[var(--color-border)] px-4 py-3 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text-primary)]">Event Files</p>
+              <p className="text-xs text-[var(--color-text-muted)]">All files uploaded by exhibitors for this event</p>
+            </div>
+            {!filesLoading && (
+              <span className="text-xs text-[var(--color-text-muted)]">{eventFiles.length} file{eventFiles.length !== 1 ? "s" : ""}</span>
+            )}
+          </div>
+          {filesLoading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
+            </div>
+          ) : eventFiles.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
+              <p className="text-sm font-medium text-[var(--color-text-secondary)]">No files yet</p>
+              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Files uploaded by exhibitors will appear here.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--color-border)]">
+              {eventFiles.map((f) => {
+                const isSignature = f.type === "signature";
+                const displayName = f.name || f.path.split("/").pop() || f.path;
+                return (
+                  <div key={f.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors group">
+                    <span className="shrink-0 text-[var(--color-text-muted)]">
+                      {isSignature ? <PenLine className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm text-[var(--color-text-primary)]">{displayName}</p>
+                      {f.onboarding_title && (
+                        <p className="truncate text-xs text-[var(--color-text-muted)]">{f.onboarding_title}</p>
+                      )}
+                    </div>
+                    <Tag tone={isSignature ? "accent" : "info"} className="shrink-0">
+                      {isSignature ? "Signature" : "File"}
+                    </Tag>
+                    {f.updated_at && (
+                      <span className="shrink-0 text-xs text-[var(--color-text-muted)]">
+                        {new Date(f.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </span>
+                    )}
+                    <a
+                      href={`/api/storage/download?path=${encodeURIComponent(f.path)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-all"
+                    >
+                      <Eye className="h-3 w-3" /> View
+                    </a>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

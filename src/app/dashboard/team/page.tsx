@@ -40,7 +40,7 @@ type Me = {
   email: string | null;
 };
 
-type Tab = "members" | "tasks" | "workload" | "activity";
+type Tab = "members" | "tasks" | "workload" | "activity" | "chat";
 
 // ─── Priority helpers ─────────────────────────────────────────────────────────
 // Priority is encoded as a prefix in the description: "[P:high] rest of text"
@@ -554,7 +554,7 @@ export default function TeamPage() {
 
       {/* Tab bar */}
       <div className="flex gap-1 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-1">
-        {(["members", "tasks", "workload", "activity"] as Tab[]).map((t) => (
+        {(["members", "tasks", "workload", "activity", "chat"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -1261,6 +1261,153 @@ export default function TeamPage() {
           TAB: ACTIVITY
           ══════════════════════════════════ */}
       {tab === "activity" ? <ActivityFeedTab /> : null}
+
+      {/* ══════════════════════════════════
+          TAB: CHAT
+          ══════════════════════════════════ */}
+      {tab === "chat" ? <TeamChatTab /> : null}
+    </div>
+  );
+}
+
+// ─── Team Chat Tab ────────────────────────────────────────────────────────────
+
+type TeamMessage = {
+  id: string;
+  sender_name: string | null;
+  user_id: string | null;
+  body: string;
+  created_at: string;
+};
+
+function TeamChatTab() {
+  const [messages, setMessages] = React.useState<TeamMessage[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [draft, setDraft] = React.useState("");
+  const [sending, setSending] = React.useState(false);
+  const bottomRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+
+  async function load() {
+    try {
+      const res = await fetch("/api/team/chat", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json().catch(() => null);
+      setMessages(json?.messages ?? []);
+    } catch { /* ignore */ } finally { setLoading(false); }
+  }
+
+  React.useEffect(() => {
+    load();
+    const t = setInterval(load, 15_000);
+    return () => clearInterval(t);
+  }, []);
+
+  React.useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function send() {
+    const text = draft.trim();
+    if (!text || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch("/api/team/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body: text }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) return;
+      setMessages((prev) => [...prev, json.message]);
+      setDraft("");
+      setTimeout(() => inputRef.current?.focus(), 50);
+    } catch { /* ignore */ } finally { setSending(false); }
+  }
+
+  function formatTime(iso: string) {
+    const d = new Date(iso);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+    if (diffDays === 0) return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    if (diffDays === 1) return `Yesterday ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
+
+  return (
+    <div className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden" style={{ height: "520px" }}>
+      {/* Header */}
+      <div className="flex items-center gap-2 border-b border-[var(--color-border)] px-4 py-3">
+        <div className="flex h-2 w-2 rounded-full bg-[var(--color-success)]" />
+        <span className="text-sm font-semibold text-[var(--color-text-primary)]">Team Chat</span>
+        <span className="ml-auto text-xs text-[var(--color-text-muted)]">Internal — visible to team members only</span>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        {loading ? (
+          <div className="flex h-full items-center justify-center">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent" />
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <div className="mb-2 text-3xl opacity-20">💬</div>
+            <p className="text-sm font-medium text-[var(--color-text-secondary)]">No messages yet</p>
+            <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Start a conversation with your team.</p>
+          </div>
+        ) : (
+          messages.map((m) => (
+            <div key={m.id} className="flex items-end gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[11px] font-bold text-white">
+                {(m.sender_name || "?").charAt(0).toUpperCase()}
+              </div>
+              <div className="flex max-w-[70%] flex-col gap-0.5 items-start">
+                <span className="px-1 text-[10px] font-medium text-[var(--color-text-muted)]">{m.sender_name ?? "Team member"}</span>
+                <div className="rounded-2xl rounded-bl-sm bg-[var(--color-bg-subtle)] px-3 py-2 text-sm leading-relaxed text-[var(--color-text-primary)]">
+                  {m.body}
+                </div>
+                <span className="px-1 text-[10px] text-[var(--color-text-muted)]">{formatTime(m.created_at)}</span>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div className="border-t border-[var(--color-border)] px-4 py-3">
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={inputRef}
+            rows={1}
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              e.target.style.height = "auto";
+              e.target.style.height = Math.min(e.target.scrollHeight, 96) + "px";
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+            }}
+            placeholder="Message the team…"
+            className="flex-1 resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] overflow-hidden"
+            style={{ minHeight: "38px", maxHeight: "96px" }}
+          />
+          <button
+            onClick={send}
+            disabled={!draft.trim() || sending}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-white transition-opacity disabled:opacity-40"
+            aria-label="Send"
+          >
+            {sending ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none"><path d="M14 2L2 7l5 1.5M14 2l-5 12-1.5-5M14 2L7 8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            )}
+          </button>
+        </div>
+        <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">Enter to send · Shift+Enter for new line</p>
+      </div>
     </div>
   );
 }
