@@ -71,7 +71,7 @@ export default async function PhasePortalPage({
   {
     const { data, error } = await admin
       .from("onboarding_requirements")
-      .select("id, type, label, is_required, sort_order, value_text, value_json, file_path, file_paths, signature_path, options, phase_number, review_status, reviewer_comment, metadata, payment_amount, payment_currency, payment_description, payment_status, payment_paid_at, payment_stripe_payment_intent_id")
+      .select("id, type, label, is_required, sort_order, value_text, file_path, file_paths, signature_path, options, phase_number, review_status, reviewer_comment, metadata, payment_amount, payment_currency, payment_description, payment_status, payment_paid_at, payment_stripe_payment_intent_id")
       .eq("onboarding_id", (onboarding as any).id)
       .order("sort_order", { ascending: true });
     if (!error) {
@@ -80,7 +80,7 @@ export default async function PhasePortalPage({
       // Fallback: drop columns that may not exist in the schema
       const { data: fallback } = await admin
         .from("onboarding_requirements")
-        .select("id, type, label, is_required, sort_order, value_text, file_path, signature_path, options, phase_number, review_status, reviewer_comment")
+        .select("id, type, label, is_required, sort_order, value_text, file_path, signature_path, options, phase_number, review_status, reviewer_comment, metadata")
         .eq("onboarding_id", (onboarding as any).id)
         .order("sort_order", { ascending: true });
       requirements = fallback;

@@ -20,7 +20,6 @@ type Requirement = {
   label: string | null;
   is_required: boolean | null;
   value_text: string | null;
-  value_json: any;
   file_path: string | null;
   file_paths: string[] | null;
   signature_path: string | null;
