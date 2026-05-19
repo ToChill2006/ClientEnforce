@@ -2032,6 +2032,7 @@ type AdHocFields = {
   options?: string[];
   allow_multi_select?: boolean;
   include_other?: boolean;
+  info_content?: string;
 };
 
 function typeIcon(type: string) {
@@ -2055,9 +2056,7 @@ const FIELD_TYPES = [
   { value: "file", label: "File upload" },
   { value: "signature", label: "Signature" },
   { value: "multiple_choice", label: "Multiple choice" },
-  { value: "select", label: "Dropdown select" },
   { value: "checkbox", label: "Checkbox" },
-  { value: "date", label: "Date" },
   { value: "heading", label: "Heading / section" },
   { value: "info", label: "Info block" },
 ] as const;
@@ -2085,6 +2084,7 @@ function AdHocRequirementModal({
   const [options, setOptions] = React.useState<string[]>([""]);
   const [allowMultiSelect, setAllowMultiSelect] = React.useState(false);
   const [includeOther, setIncludeOther] = React.useState(false);
+  const [infoContent, setInfoContent] = React.useState("");
 
   React.useEffect(() => {
     if (!open) return;
@@ -2095,6 +2095,7 @@ function AdHocRequirementModal({
       setOptions(editingReq.options?.length ? editingReq.options : [""]);
       setAllowMultiSelect(!!(editingReq as any).metadata?.allow_multi_select);
       setIncludeOther(!!(editingReq as any).metadata?.include_other);
+      setInfoContent((editingReq as any).value_text ?? "");
     } else {
       setLabel("");
       setType("text");
@@ -2102,12 +2103,13 @@ function AdHocRequirementModal({
       setOptions([""]);
       setAllowMultiSelect(false);
       setIncludeOther(false);
+      setInfoContent("");
     }
   }, [open, editingReq]);
 
-  const hasOptions = type === "multiple_choice" || type === "select";
+  const hasOptions = type === "multiple_choice";
   const isDisplay = type === "heading" || type === "info";
-  const canSave = label.trim().length > 0;
+  const canSave = type === "info" ? true : label.trim().length > 0;
 
   function handleSave() {
     if (!canSave) return;
@@ -2119,6 +2121,7 @@ function AdHocRequirementModal({
       options: cleanOptions,
       allow_multi_select: type === "multiple_choice" ? allowMultiSelect : undefined,
       include_other: type === "multiple_choice" ? includeOther : undefined,
+      info_content: type === "info" ? infoContent : undefined,
     });
   }
 
@@ -2140,18 +2143,49 @@ function AdHocRequirementModal({
       }
     >
       <div className="space-y-4">
-        {/* Label */}
+        {/* Type selector */}
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Label</label>
-          <input
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            autoFocus
-            placeholder="e.g. Company registration number"
+          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Field type</label>
+          <select
+            value={type}
+            onChange={(e) => { setType(e.target.value); setOptions([""]); setAllowMultiSelect(false); setIncludeOther(false); setInfoContent(""); }}
             className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-          />
+          >
+            {FIELD_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
         </div>
+
+        {/* Label (not needed for info blocks) */}
+        {type !== "info" && (
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Label</label>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              autoFocus={type !== "info"}
+              placeholder="e.g. Company registration number"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            />
+          </div>
+        )}
+
+        {/* Info block content */}
+        {type === "info" && (
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Info text</label>
+            <textarea
+              rows={4}
+              autoFocus
+              value={infoContent}
+              onChange={(e) => setInfoContent(e.target.value)}
+              placeholder="Text shown to the client…"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] resize-none"
+            />
+          </div>
+        )}
 
         {/* Required toggle */}
         {!isDisplay && (

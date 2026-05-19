@@ -16,11 +16,12 @@ const ALLOWED_TYPES = ["text", "textarea", "file", "signature", "select", "headi
 const PostSchema = z.object({
   phase_number: z.number().int().min(1),
   type: z.enum(ALLOWED_TYPES),
-  label: z.string().min(1),
+  label: z.string().optional().default(""),
   is_required: z.boolean(),
   options: z.array(z.string()).optional(),
   allow_multi_select: z.boolean().optional(),
   include_other: z.boolean().optional(),
+  info_content: z.string().optional(),
 });
 
 export async function POST(
@@ -56,7 +57,7 @@ export async function POST(
     const parsed = PostSchema.safeParse(body);
     if (!parsed.success) return err(400, "Invalid payload: " + parsed.error.issues.map((i) => i.message).join(", "));
 
-    const { phase_number, type, label, is_required, options, allow_multi_select, include_other } = parsed.data;
+    const { phase_number, type, label, is_required, options, allow_multi_select, include_other, info_content } = parsed.data;
 
     // Check if this phase is locked for editing
     const { data: phaseRow } = await supabase
@@ -113,13 +114,14 @@ export async function POST(
         org_id,
         phase_number,
         type,
-        label,
-        is_required,
+        label: label || "",
+        is_required: type === "info" ? false : is_required,
         options: options ?? null,
         metadata,
         sort_order: nextSortOrder,
         is_ad_hoc: true,
         created_by: userId,
+        ...(type === "info" && info_content ? { value_text: info_content } : {}),
       })
       .select("*")
       .single();
