@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, RefreshCw, Search, Pencil, Trash2, Copy } from "lucide-react";
+import { Plus, RefreshCw, Search, Pencil, Trash2, Copy, Trash } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +58,11 @@ export default function ClientsPage() {
   const [savingClientId, setSavingClientId] = React.useState<string | null>(null);
   const [deletingClientId, setDeletingClientId] = React.useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = React.useState<Client | null>(null);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  const [confirmBulkDelete, setConfirmBulkDelete] = React.useState(false);
+  const [bulkDeleting, setBulkDeleting] = React.useState(false);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 200);
@@ -231,6 +236,35 @@ export default function ClientsPage() {
     }
   }
 
+  async function bulkDelete() {
+    setBulkDeleting(true);
+    let deleted = 0;
+    const failed: string[] = [];
+    for (const id of selectedIds) {
+      try {
+        let res = await fetch(`/api/clients/${id}`, { method: "DELETE" });
+        if (res.status === 404 || res.status === 405) {
+          res = await fetch("/api/clients", {
+            method: "DELETE",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
+        }
+        if (!res.ok) { failed.push(id); continue; }
+        deleted++;
+      } catch { failed.push(id); }
+    }
+    setClients((prev) => prev.filter((c) => !selectedIds.includes(c.id) || failed.includes(c.id)));
+    setSelectedIds([]);
+    setConfirmBulkDelete(false);
+    setBulkDeleting(false);
+    if (failed.length === 0) {
+      toast({ title: `${deleted} client${deleted === 1 ? "" : "s"} deleted`, variant: "success" });
+    } else {
+      toast({ title: `${deleted} deleted, ${failed.length} failed`, variant: "error" });
+    }
+  }
+
   async function copyEmail(emailText: string) {
     try {
       await navigator.clipboard.writeText(emailText);
@@ -373,6 +407,20 @@ export default function ClientsPage() {
         rowActions={rowActions}
         defaultSort={{ key: "updated", dir: "desc" }}
         csvExport={{ filename: "clients" }}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkBar={(ids) => (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"
+            iconLeft={<Trash className="h-3.5 w-3.5" />}
+            onClick={() => setConfirmBulkDelete(true)}
+          >
+            Delete {ids.length} client{ids.length === 1 ? "" : "s"}
+          </Button>
+        )}
         empty={
           <div className="py-12 text-center">
             <div className="text-sm font-semibold text-[var(--color-text-primary)]">No clients found</div>
@@ -458,6 +506,16 @@ export default function ClientsPage() {
           ) : null
         }
         confirmLabel="Delete"
+        destructive
+      />
+
+      <ConfirmModal
+        open={confirmBulkDelete}
+        onClose={() => setConfirmBulkDelete(false)}
+        onConfirm={bulkDelete}
+        title={`Delete ${selectedIds.length} client${selectedIds.length === 1 ? "" : "s"}?`}
+        description={`This permanently deletes ${selectedIds.length} client record${selectedIds.length === 1 ? "" : "s"} and cannot be undone.`}
+        confirmLabel={bulkDeleting ? "Deleting…" : "Delete all"}
         destructive
       />
     </div>
