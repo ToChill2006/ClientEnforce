@@ -706,7 +706,9 @@ export default function SettingsPage() {
         <CardContent className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
             <div className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Tier</div>
-            <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">{org?.tier ?? "—"}</div>
+            <div className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">
+              {org?.tier === "business" ? "Enterprise DreamHack" : org?.tier ?? "—"}
+            </div>
           </div>
 
           <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">

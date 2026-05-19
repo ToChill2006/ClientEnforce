@@ -3,7 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 const FormSchema = z.object({
-  token: z.string().min(8),
+  token: z.string().min(16).max(128),
   requirement_id: z.string().uuid(),
 });
 
@@ -36,7 +36,7 @@ const ALLOWED_MIME_TYPES = new Set([
 function isSafeFilename(name: string): boolean {
   // Reject path traversal and dangerous extensions
   if (name.includes("..") || name.includes("/") || name.includes("\\")) return false;
-  const dangerous = /\.(exe|bat|cmd|sh|ps1|msi|dll|com|scr|vbs|jar|php|py|rb|pl)$/i;
+  const dangerous = /\.(exe|bat|cmd|sh|ps1|msi|dll|com|scr|vbs|jar|php|asp|aspx|jsp|py|rb|pl|node|cgi|htaccess|htpasswd)$/i;
   return !dangerous.test(name);
 }
 

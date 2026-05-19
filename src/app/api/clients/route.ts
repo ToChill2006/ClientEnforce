@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const url = new URL(req.url);
-  const q = (url.searchParams.get("q") || "").trim().toLowerCase();
+  const q = (url.searchParams.get("q") || "").trim().toLowerCase().slice(0, 200);
 
   const buildQuery = (sel: string) => {
     let query = supabase
