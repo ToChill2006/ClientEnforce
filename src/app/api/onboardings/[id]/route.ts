@@ -232,6 +232,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           row.payment_status = "not_paid";
         }
         if (reqType === "info") row.value_text = it.info_content ?? null;
+        if (reqType === "multiple_choice") {
+          const meta: Record<string, unknown> = {};
+          if (it.allow_multi_select) meta.allow_multi_select = true;
+          if (it.include_other) meta.include_other = true;
+          if (Object.keys(meta).length > 0) row.metadata = meta;
+        }
         return row;
       });
       await admin.from("onboarding_requirements").insert(reqRows);

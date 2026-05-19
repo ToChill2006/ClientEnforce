@@ -272,6 +272,13 @@ export async function POST(
               if (reqType === "info") {
                 row.value_text = it.info_content ?? null;
               }
+              // Multiple choice: persist allow_multi_select / include_other in metadata
+              if (reqType === "multiple_choice") {
+                const meta: Record<string, unknown> = {};
+                if (it.allow_multi_select) meta.allow_multi_select = true;
+                if (it.include_other) meta.include_other = true;
+                if (Object.keys(meta).length > 0) row.metadata = meta;
+              }
               return row;
             });
             await admin.from("onboarding_requirements").insert(reqRows);
