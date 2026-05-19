@@ -2153,20 +2153,6 @@ function AdHocRequirementModal({
           />
         </div>
 
-        {/* Type */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Field type</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-          >
-            {FIELD_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
-        </div>
-
         {/* Required toggle */}
         {!isDisplay && (
           <label className="flex cursor-pointer items-center gap-2.5 text-sm">
