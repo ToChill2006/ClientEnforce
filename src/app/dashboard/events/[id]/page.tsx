@@ -283,6 +283,63 @@ function SingleExhibitorForm({
   );
 }
 
+function ExhibitorFilesGroup({ name, files }: { name: string; files: FileItem[] }) {
+  const [open, setOpen] = React.useState(true);
+  return (
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors text-left"
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[11px] font-bold text-white">
+            {name.charAt(0).toUpperCase()}
+          </div>
+          <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{name}</span>
+          <span className="shrink-0 rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] text-[var(--color-text-muted)]">
+            {files.length} file{files.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <span className="shrink-0 text-[var(--color-text-muted)] text-xs">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="divide-y divide-[var(--color-border)] border-t border-[var(--color-border)]">
+          {files.map((f) => {
+            const isSignature = f.type === "signature";
+            const displayName = f.name || f.path.split("/").pop() || f.path;
+            return (
+              <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-bg-hover)] transition-colors group">
+                <span className="shrink-0 text-[var(--color-text-muted)]">
+                  {isSignature ? <PenLine className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-[var(--color-text-primary)]">{displayName}</p>
+                </div>
+                <Tag tone={isSignature ? "accent" : "info"} className="shrink-0">
+                  {isSignature ? "Signature" : "File"}
+                </Tag>
+                {f.updated_at && (
+                  <span className="shrink-0 text-xs text-[var(--color-text-muted)]">
+                    {new Date(f.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                  </span>
+                )}
+                <a
+                  href={`/api/storage/download?path=${encodeURIComponent(f.path)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-all"
+                >
+                  <Eye className="h-3 w-3" /> View
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -416,6 +473,8 @@ export default function EventDetailPage() {
   const [boardLoading, setBoardLoading] = React.useState(false);
   const [boardDraft, setBoardDraft] = React.useState("");
   const [boardPosting, setBoardPosting] = React.useState(false);
+  const [boardFile, setBoardFile] = React.useState<File | null>(null);
+  const boardFileInputRef = React.useRef<HTMLInputElement>(null);
 
   async function loadBoard() {
     setBoardLoading(true);
@@ -429,18 +488,33 @@ export default function EventDetailPage() {
 
   async function postToBoard() {
     const text = boardDraft.trim();
-    if (!text || boardPosting) return;
+    if ((!text && !boardFile) || boardPosting) return;
     setBoardPosting(true);
     try {
+      let filePath: string | null = null;
+      let fileName: string | null = null;
+
+      if (boardFile) {
+        const fd = new FormData();
+        fd.append("file", boardFile);
+        const upRes = await fetch(`/api/events/${eventId}/board/upload`, { method: "POST", body: fd });
+        const upJson = await upRes.json().catch(() => null);
+        if (!upRes.ok) throw new Error(upJson?.error || "File upload failed");
+        filePath = upJson.file_path;
+        fileName = upJson.file_name;
+      }
+
       const res = await fetch(`/api/events/${eventId}/board`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body: text }),
+        body: JSON.stringify({ body: text || null, file_path: filePath, file_name: fileName }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Failed to post");
       setBoardPosts((prev) => [json.post, ...prev]);
       setBoardDraft("");
+      setBoardFile(null);
+      if (boardFileInputRef.current) boardFileInputRef.current.value = "";
     } catch (e: any) {
       toast({ title: "Error", description: e?.message, variant: "error" });
     } finally { setBoardPosting(false); }
@@ -1377,9 +1451,38 @@ export default function EventDetailPage() {
               placeholder="Share a note, update, or important information with your team…"
               className="w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
             />
+            {boardFile && (
+              <div className="mt-2 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5">
+                <Paperclip className="h-3 w-3 shrink-0 text-[var(--color-accent)]" />
+                <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-secondary)]">{boardFile.name}</span>
+                <button
+                  type="button"
+                  onClick={() => { setBoardFile(null); if (boardFileInputRef.current) boardFileInputRef.current.value = ""; }}
+                  className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
             <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="text-[10px] text-[var(--color-text-muted)]">⌘+Enter to post</span>
-              <Button size="sm" onClick={postToBoard} loading={boardPosting} disabled={!boardDraft.trim()} iconLeft={<Paperclip className="h-3.5 w-3.5" />}>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => boardFileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                >
+                  <Paperclip className="h-3 w-3" /> Attach file
+                </button>
+                <input
+                  ref={boardFileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.gif,.txt"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) setBoardFile(f); }}
+                />
+                <span className="text-[10px] text-[var(--color-text-muted)]">⌘+Enter to post</span>
+              </div>
+              <Button size="sm" onClick={postToBoard} loading={boardPosting} disabled={!boardDraft.trim() && !boardFile}>
                 Post
               </Button>
             </div>
@@ -1424,10 +1527,15 @@ export default function EventDetailPage() {
                     <p className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{post.body}</p>
                   )}
                   {post.file_path && (
-                    <div className="mt-2 flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                    <a
+                      href={`/api/storage/download?path=${encodeURIComponent(post.file_path)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-accent)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                    >
                       <Paperclip className="h-3.5 w-3.5 shrink-0" />
                       {post.file_name ?? post.file_path.split("/").pop()}
-                    </div>
+                    </a>
                   )}
                 </div>
               ))}
@@ -1437,66 +1545,42 @@ export default function EventDetailPage() {
       )}
 
       {/* Files tab */}
-      {tab === "files" && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
-          <div className="border-b border-[var(--color-border)] px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text-primary)]">Event Files</p>
-              <p className="text-xs text-[var(--color-text-muted)]">All files uploaded by exhibitors for this event</p>
+      {tab === "files" && (() => {
+        // Group by exhibitor (onboarding_title)
+        const grouped = new Map<string, FileItem[]>();
+        for (const f of eventFiles) {
+          const key = f.onboarding_title || "Unknown exhibitor";
+          if (!grouped.has(key)) grouped.set(key, []);
+          grouped.get(key)!.push(f);
+        }
+        const groups = Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1 pb-1">
+              <div>
+                <p className="text-sm font-semibold text-[var(--color-text-primary)]">Event Files</p>
+                <p className="text-xs text-[var(--color-text-muted)]">All files uploaded by exhibitors, grouped by company</p>
+              </div>
+              {!filesLoading && <span className="text-xs text-[var(--color-text-muted)]">{eventFiles.length} file{eventFiles.length !== 1 ? "s" : ""} · {groups.length} exhibitor{groups.length !== 1 ? "s" : ""}</span>}
             </div>
-            {!filesLoading && (
-              <span className="text-xs text-[var(--color-text-muted)]">{eventFiles.length} file{eventFiles.length !== 1 ? "s" : ""}</span>
+            {filesLoading ? (
+              <div className="flex h-32 items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
+              </div>
+            ) : groups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-border)] py-12 text-center">
+                <FileText className="mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
+                <p className="text-sm font-medium text-[var(--color-text-secondary)]">No files yet</p>
+                <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Files uploaded by exhibitors will appear here.</p>
+              </div>
+            ) : (
+              groups.map(([exhibitorName, files]) => (
+                <ExhibitorFilesGroup key={exhibitorName} name={exhibitorName} files={files} />
+              ))
             )}
           </div>
-          {filesLoading ? (
-            <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
-            </div>
-          ) : eventFiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
-              <p className="text-sm font-medium text-[var(--color-text-secondary)]">No files yet</p>
-              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Files uploaded by exhibitors will appear here.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-[var(--color-border)]">
-              {eventFiles.map((f) => {
-                const isSignature = f.type === "signature";
-                const displayName = f.name || f.path.split("/").pop() || f.path;
-                return (
-                  <div key={f.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors group">
-                    <span className="shrink-0 text-[var(--color-text-muted)]">
-                      {isSignature ? <PenLine className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm text-[var(--color-text-primary)]">{displayName}</p>
-                      {f.onboarding_title && (
-                        <p className="truncate text-xs text-[var(--color-text-muted)]">{f.onboarding_title}</p>
-                      )}
-                    </div>
-                    <Tag tone={isSignature ? "accent" : "info"} className="shrink-0">
-                      {isSignature ? "Signature" : "File"}
-                    </Tag>
-                    {f.updated_at && (
-                      <span className="shrink-0 text-xs text-[var(--color-text-muted)]">
-                        {new Date(f.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                      </span>
-                    )}
-                    <a
-                      href={`/api/storage/download?path=${encodeURIComponent(f.path)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-all"
-                    >
-                      <Eye className="h-3 w-3" /> View
-                    </a>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
       {/* Confirm import modal */}
       <Modal

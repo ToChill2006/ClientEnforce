@@ -19,15 +19,24 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabase
       .from("team_activity")
-      .select("*, profiles(full_name, email)")
+      .select("*")
       .eq("org_id", org_id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (error) return err(400, error.message);
+    if (error) return err(500, error.message);
+
+    // Enrich actor names from profiles
+    const admin = (await import("@/lib/supabase-admin")).supabaseAdmin();
+    const actorIds = Array.from(new Set((data ?? []).map((i: any) => i.actor_user_id).filter(Boolean)));
+    const profileMap = new Map<string, string>();
+    if (actorIds.length > 0) {
+      const { data: profiles } = await admin.from("profiles").select("user_id, full_name, email").in("user_id", actorIds);
+      for (const p of profiles ?? []) profileMap.set(p.user_id, p.full_name || p.email || "Someone");
+    }
 
     const items = (data ?? []).map((item: any) => {
-      const actorName = item.profiles?.full_name || item.profiles?.email || "Someone";
+      const actorName = (item.actor_user_id ? profileMap.get(item.actor_user_id) : null) || "Someone";
       const ctx = item.context ?? {};
 
       let message = "";
