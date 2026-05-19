@@ -531,6 +531,7 @@ export default function EventDetailPage() {
   // Event files
   const [eventFiles, setEventFiles] = React.useState<FileItem[]>([]);
   const [filesLoading, setFilesLoading] = React.useState(false);
+  const [filesSearch, setFilesSearch] = React.useState("");
 
   async function loadEventFiles() {
     setFilesLoading(true);
@@ -1553,26 +1554,42 @@ export default function EventDetailPage() {
           if (!grouped.has(key)) grouped.set(key, []);
           grouped.get(key)!.push(f);
         }
-        const groups = Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+        const q = filesSearch.trim().toLowerCase();
+        const allGroups = Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+        const groups = q ? allGroups.filter(([name]) => name.toLowerCase().includes(q)) : allGroups;
         return (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1 pb-1">
+          <div className="space-y-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-1">
               <div>
                 <p className="text-sm font-semibold text-[var(--color-text-primary)]">Event Files</p>
                 <p className="text-xs text-[var(--color-text-muted)]">All files uploaded by exhibitors, grouped by company</p>
               </div>
-              {!filesLoading && <span className="text-xs text-[var(--color-text-muted)]">{eventFiles.length} file{eventFiles.length !== 1 ? "s" : ""} · {groups.length} exhibitor{groups.length !== 1 ? "s" : ""}</span>}
+              {!filesLoading && <span className="text-xs text-[var(--color-text-muted)] shrink-0">{eventFiles.length} file{eventFiles.length !== 1 ? "s" : ""} · {allGroups.length} exhibitor{allGroups.length !== 1 ? "s" : ""}</span>}
             </div>
+            {!filesLoading && eventFiles.length > 0 && (
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  type="text"
+                  value={filesSearch}
+                  onChange={(e) => setFilesSearch(e.target.value)}
+                  placeholder="Search company…"
+                  className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] py-2 pl-8 pr-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                />
+              </div>
+            )}
             {filesLoading ? (
               <div className="flex h-32 items-center justify-center">
                 <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
               </div>
-            ) : groups.length === 0 ? (
+            ) : groups.length === 0 && eventFiles.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-border)] py-12 text-center">
                 <FileText className="mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
                 <p className="text-sm font-medium text-[var(--color-text-secondary)]">No files yet</p>
                 <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Files uploaded by exhibitors will appear here.</p>
               </div>
+            ) : groups.length === 0 ? (
+              <p className="py-8 text-center text-sm text-[var(--color-text-muted)]">No companies match "{filesSearch}"</p>
             ) : (
               groups.map(([exhibitorName, files]) => (
                 <ExhibitorFilesGroup key={exhibitorName} name={exhibitorName} files={files} />
