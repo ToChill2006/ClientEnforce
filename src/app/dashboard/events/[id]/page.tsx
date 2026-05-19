@@ -283,15 +283,41 @@ function SingleExhibitorForm({
   );
 }
 
-function ExhibitorFilesGroup({ name, files }: { name: string; files: FileItem[] }) {
+function ExhibitorFilesGroup({
+  name,
+  files,
+  selectedIds,
+  onToggle,
+  onToggleAll,
+  onPreview,
+}: {
+  name: string;
+  files: FileItem[];
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  onToggleAll: (ids: string[], select: boolean) => void;
+  onPreview: (f: FileItem) => void;
+}) {
   const [open, setOpen] = React.useState(true);
+  const allSelected = files.length > 0 && files.every((f) => selectedIds.has(f.id));
+  const someSelected = files.some((f) => selectedIds.has(f.id));
+
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-[var(--color-bg-hover)] transition-colors text-left"
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-2 px-3 py-3 hover:bg-[var(--color-bg-hover)] transition-colors">
+        {/* Group-level checkbox */}
+        <input
+          type="checkbox"
+          checked={allSelected}
+          ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+          onChange={(e) => onToggleAll(files.map((f) => f.id), e.target.checked)}
+          onClick={(e) => e.stopPropagation()}
+          className="h-3.5 w-3.5 shrink-0 cursor-pointer rounded accent-[var(--color-accent)]"
+        />
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="flex flex-1 items-center gap-2.5 min-w-0 text-left"
+        >
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[11px] font-bold text-white">
             {name.charAt(0).toUpperCase()}
           </div>
@@ -299,38 +325,58 @@ function ExhibitorFilesGroup({ name, files }: { name: string; files: FileItem[] 
           <span className="shrink-0 rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] text-[var(--color-text-muted)]">
             {files.length} file{files.length !== 1 ? "s" : ""}
           </span>
-        </div>
-        <span className="shrink-0 text-[var(--color-text-muted)] text-xs">{open ? "▲" : "▼"}</span>
-      </button>
+        </button>
+        <span className="shrink-0 text-[var(--color-text-muted)] text-xs" onClick={() => setOpen((o) => !o)}>{open ? "▲" : "▼"}</span>
+      </div>
       {open && (
         <div className="divide-y divide-[var(--color-border)] border-t border-[var(--color-border)]">
           {files.map((f) => {
             const isSignature = f.type === "signature";
             const displayName = f.name || f.path.split("/").pop() || f.path;
+            const isSelected = selectedIds.has(f.id);
             return (
-              <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-bg-hover)] transition-colors group">
+              <div
+                key={f.id}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 transition-colors group",
+                  isSelected ? "bg-[var(--color-accent-subtle,#f0f4ff)]" : "hover:bg-[var(--color-bg-hover)]"
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => onToggle(f.id)}
+                  className="h-3.5 w-3.5 shrink-0 cursor-pointer rounded accent-[var(--color-accent)]"
+                />
                 <span className="shrink-0 text-[var(--color-text-muted)]">
                   {isSignature ? <PenLine className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm text-[var(--color-text-primary)]">{displayName}</p>
                 </div>
-                <Tag tone={isSignature ? "accent" : "info"} className="shrink-0">
+                <Tag tone={isSignature ? "accent" : "info"} className="shrink-0 hidden sm:inline-flex">
                   {isSignature ? "Signature" : "File"}
                 </Tag>
                 {f.updated_at && (
-                  <span className="shrink-0 text-xs text-[var(--color-text-muted)]">
+                  <span className="shrink-0 text-xs text-[var(--color-text-muted)] hidden sm:inline">
                     {new Date(f.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                   </span>
                 )}
-                <a
-                  href={`/api/storage/download?path=${encodeURIComponent(f.path)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-all"
-                >
-                  <Eye className="h-3 w-3" /> View
-                </a>
+                {/* Per-row actions */}
+                <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => onPreview(f)}
+                    className="flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                  >
+                    <Eye className="h-3 w-3" /> Preview
+                  </button>
+                  <a
+                    href={`/api/storage/download?path=${encodeURIComponent(f.path)}&download=1`}
+                    className="flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                  >
+                    <Download className="h-3 w-3" /> Download
+                  </a>
+                </div>
               </div>
             );
           })}
@@ -532,6 +578,45 @@ export default function EventDetailPage() {
   const [eventFiles, setEventFiles] = React.useState<FileItem[]>([]);
   const [filesLoading, setFilesLoading] = React.useState(false);
   const [filesSearch, setFilesSearch] = React.useState("");
+  const [selectedFileIds, setSelectedFileIds] = React.useState<Set<string>>(new Set());
+  const [previewFile, setPreviewFile] = React.useState<FileItem | null>(null);
+  const [bulkDownloading, setBulkDownloading] = React.useState(false);
+
+  function toggleFile(id: string) {
+    setSelectedFileIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleFileGroup(ids: string[], select: boolean) {
+    setSelectedFileIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) select ? next.add(id) : next.delete(id);
+      return next;
+    });
+  }
+
+  async function bulkDownload() {
+    const selected = eventFiles.filter((f) => selectedFileIds.has(f.id));
+    if (selected.length === 0) return;
+    setBulkDownloading(true);
+    try {
+      for (const f of selected) {
+        const a = document.createElement("a");
+        a.href = `/api/storage/download?path=${encodeURIComponent(f.path)}&download=1`;
+        a.download = f.name || f.path.split("/").pop() || "file";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        // Small delay so browser doesn't block multiple downloads
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    } finally {
+      setBulkDownloading(false);
+    }
+  }
 
   async function loadEventFiles() {
     setFilesLoading(true);
@@ -1557,6 +1642,7 @@ export default function EventDetailPage() {
         const q = filesSearch.trim().toLowerCase();
         const allGroups = Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
         const groups = q ? allGroups.filter(([name]) => name.toLowerCase().includes(q)) : allGroups;
+        const selCount = selectedFileIds.size;
         return (
           <div className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-1">
@@ -1566,18 +1652,43 @@ export default function EventDetailPage() {
               </div>
               {!filesLoading && <span className="text-xs text-[var(--color-text-muted)] shrink-0">{eventFiles.length} file{eventFiles.length !== 1 ? "s" : ""} · {allGroups.length} exhibitor{allGroups.length !== 1 ? "s" : ""}</span>}
             </div>
+
+            {/* Search + bulk action bar */}
             {!filesLoading && eventFiles.length > 0 && (
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
-                <input
-                  type="text"
-                  value={filesSearch}
-                  onChange={(e) => setFilesSearch(e.target.value)}
-                  placeholder="Search company…"
-                  className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] py-2 pl-8 pr-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-                />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                  <input
+                    type="text"
+                    value={filesSearch}
+                    onChange={(e) => setFilesSearch(e.target.value)}
+                    placeholder="Search company…"
+                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] py-2 pl-8 pr-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                  />
+                </div>
+                {selCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">{selCount} selected</span>
+                    <Button
+                      size="sm"
+                      onClick={bulkDownload}
+                      loading={bulkDownloading}
+                      iconLeft={<Download className="h-3.5 w-3.5" />}
+                    >
+                      Download all
+                    </Button>
+                    <button
+                      onClick={() => setSelectedFileIds(new Set())}
+                      className="rounded p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+                      title="Clear selection"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
+
             {filesLoading ? (
               <div className="flex h-32 items-center justify-center">
                 <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
@@ -1592,12 +1703,46 @@ export default function EventDetailPage() {
               <p className="py-8 text-center text-sm text-[var(--color-text-muted)]">No companies match "{filesSearch}"</p>
             ) : (
               groups.map(([exhibitorName, files]) => (
-                <ExhibitorFilesGroup key={exhibitorName} name={exhibitorName} files={files} />
+                <ExhibitorFilesGroup
+                  key={exhibitorName}
+                  name={exhibitorName}
+                  files={files}
+                  selectedIds={selectedFileIds}
+                  onToggle={toggleFile}
+                  onToggleAll={toggleFileGroup}
+                  onPreview={setPreviewFile}
+                />
               ))
             )}
           </div>
         );
       })()}
+
+      {/* File preview modal */}
+      {previewFile && (
+        <Modal
+          open={!!previewFile}
+          onClose={() => setPreviewFile(null)}
+          title={previewFile.name || previewFile.path.split("/").pop() || "Preview"}
+          size="xl"
+        >
+          <div className="flex flex-col gap-3">
+            <iframe
+              src={`/api/storage/preview?path=${encodeURIComponent(previewFile.path)}`}
+              title="File preview"
+              className="h-[70vh] w-full rounded-[var(--radius-md)] border border-[var(--color-border)]"
+            />
+            <div className="flex justify-end">
+              <a
+                href={`/api/storage/download?path=${encodeURIComponent(previewFile.path)}&download=1`}
+                className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+              >
+                <Download className="h-3.5 w-3.5" /> Download
+              </a>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Confirm import modal */}
       <Modal
