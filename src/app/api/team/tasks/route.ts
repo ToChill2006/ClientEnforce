@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireProfile, requireRole } from "@/lib/rbac";
+import { requireProfile, requireRole, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
 import { sendOrgEmail } from "@/lib/send-email";
@@ -25,6 +25,7 @@ const UpdateTask = z.object({
 });
 
 export async function GET(req: Request) {
+  try {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -51,6 +52,10 @@ export async function GET(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ tasks: tasks ?? [] });
+  } catch (e: any) {
+    const status = e instanceof HttpError ? e.status : 500;
+    return NextResponse.json({ error: e?.message || "Internal error" }, { status });
+  }
 }
 
 export async function POST(req: Request) {

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
-import { requireProfile, requireRole } from "@/lib/rbac";
+import { requireProfile, requireRole, HttpError } from "@/lib/rbac";
 import { roleHasPermission } from "@/lib/permissions";
 import { permissionDenied } from "@/lib/plan-enforcement";
 
 export async function GET() {
+  try {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
   if (!data.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -60,4 +61,8 @@ export async function GET() {
   });
 
   return NextResponse.json({ members: items });
+  } catch (e: any) {
+    const status = e instanceof HttpError ? e.status : 500;
+    return NextResponse.json({ error: e?.message || "Internal error" }, { status });
+  }
 }
