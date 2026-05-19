@@ -23,10 +23,7 @@ import {
   TrendingUp,
   Bell,
   Plus,
-  Pencil,
   X,
-  ToggleLeft,
-  ToggleRight,
   Clipboard,
   FileText,
   PenLine,
@@ -424,105 +421,6 @@ export default function EventDetailPage() {
   // Delete event
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
 
-  // Submission deadline editing
-  const [deadlineEditing, setDeadlineEditing] = React.useState(false);
-  const [deadlineValue, setDeadlineValue] = React.useState("");
-  const [deadlineSaving, setDeadlineSaving] = React.useState(false);
-
-  // Reminder rules
-  type ReminderRule = { id: string; phase_number: number | null; trigger_offset_days: number; subject: string; body: string; is_active: boolean };
-  const [reminderRules, setReminderRules] = React.useState<ReminderRule[]>([]);
-  const [reminderModalOpen, setReminderModalOpen] = React.useState(false);
-  const [newRulePhase, setNewRulePhase] = React.useState<string>("all");
-  const [newRuleDays, setNewRuleDays] = React.useState<number[]>([3]);
-  const [newRuleSubject, setNewRuleSubject] = React.useState("Action needed: deadline approaching");
-  const [newRuleBody, setNewRuleBody] = React.useState("Hi {{client_name}},\n\nThis is a reminder that your {{phase_name}} deadline is on {{deadline}}.\n\nPlease log in and complete your requirements as soon as possible.\n\nThank you.");
-  const [ruleSaving, setRuleSaving] = React.useState(false);
-
-  async function saveEventDeadline(value: string) {
-    setDeadlineSaving(true);
-    try {
-      const res = await fetch(`/api/events/${eventId}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ submission_deadline: value || null }),
-      });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Failed to save deadline");
-      setEvent((prev) => prev ? { ...prev, submission_deadline: value || null } : prev);
-      toast({ title: "Deadline saved", variant: "success" });
-    } catch (e: any) {
-      toast({ title: "Error", description: e?.message, variant: "error" });
-    } finally {
-      setDeadlineSaving(false);
-      setDeadlineEditing(false);
-    }
-  }
-
-  async function loadReminderRules() {
-    try {
-      const res = await fetch("/api/reminder-rules", { cache: "no-store" });
-      if (!res.ok) return;
-      const json = await res.json().catch(() => null);
-      setReminderRules(json?.rules ?? []);
-    } catch { /* enterprise feature may not be enabled */ }
-  }
-
-  async function saveReminderRule() {
-    if (newRuleDays.length === 0) return;
-    setRuleSaving(true);
-    try {
-      const results = await Promise.all(
-        newRuleDays.map((days) =>
-          fetch("/api/reminder-rules", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              phase_number: newRulePhase === "all" ? null : parseInt(newRulePhase, 10),
-              rule_type: "deadline_based",
-              trigger_offset_days: days,
-              subject: newRuleSubject,
-              body: newRuleBody,
-              is_active: true,
-            }),
-          }).then((r) => r.json())
-        )
-      );
-      const newRules = results.map((r) => r.rule).filter(Boolean);
-      setReminderRules((prev) => [...newRules, ...prev]);
-      setReminderModalOpen(false);
-      setNewRulePhase("all");
-      setNewRuleDays([3]);
-      setNewRuleSubject("Action needed: deadline approaching");
-      setNewRuleBody("Hi {{client_name}},\n\nThis is a reminder that your {{phase_name}} deadline is on {{deadline}}.\n\nPlease log in and complete your requirements as soon as possible.\n\nThank you.");
-      toast({ title: `${newRules.length} reminder rule${newRules.length !== 1 ? "s" : ""} created`, variant: "success" });
-    } catch (e: any) {
-      toast({ title: "Error", description: e?.message, variant: "error" });
-    } finally {
-      setRuleSaving(false);
-    }
-  }
-
-  async function toggleReminderRule(rule: ReminderRule) {
-    try {
-      const res = await fetch(`/api/reminder-rules/${rule.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ is_active: !rule.is_active }),
-      });
-      if (!res.ok) return;
-      setReminderRules((prev) => prev.map((r) => r.id === rule.id ? { ...r, is_active: !r.is_active } : r));
-    } catch { /* ignore */ }
-  }
-
-  async function deleteReminderRule(id: string) {
-    try {
-      const res = await fetch(`/api/reminder-rules/${id}`, { method: "DELETE" });
-      if (!res.ok) return;
-      setReminderRules((prev) => prev.filter((r) => r.id !== id));
-      toast({ title: "Rule deleted", variant: "success" });
-    } catch { /* ignore */ }
-  }
 
   // Planning board
   const [boardPosts, setBoardPosts] = React.useState<BoardPost[]>([]);
@@ -850,7 +748,6 @@ export default function EventDetailPage() {
 
   React.useEffect(() => {
     if (tab === "exhibitors" || tab === "dashboard") loadExhibitors();
-    if (tab === "dashboard") loadReminderRules();
     if (tab === "planning") loadBoard();
     if (tab === "files") loadEventFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1135,45 +1032,13 @@ export default function EventDetailPage() {
                   <CalendarDays className="h-4 w-4 shrink-0 text-[var(--color-accent)] mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">Submission Deadline</div>
-                    {deadlineEditing ? (
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <input
-                          type="date"
-                          value={deadlineValue}
-                          onChange={(e) => setDeadlineValue(e.target.value)}
-                          className="w-36 rounded border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-xs text-[var(--color-text-primary)]"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") saveEventDeadline(deadlineValue);
-                            if (e.key === "Escape") setDeadlineEditing(false);
-                          }}
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => saveEventDeadline(deadlineValue)}
-                          disabled={deadlineSaving}
-                          className="rounded bg-[var(--color-accent)] px-2 py-0.5 text-[10px] text-white disabled:opacity-50"
-                        >
-                          {deadlineSaving ? "…" : "Save"}
-                        </button>
-                        <button onClick={() => setDeadlineEditing(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        {event.submission_deadline ? (
-                          <DeadlineBadge deadline={event.submission_deadline} />
-                        ) : (
-                          <span className="text-xs text-[var(--color-text-muted)]">Not set</span>
-                        )}
-                        <button
-                          onClick={() => { setDeadlineValue(event.submission_deadline ?? ""); setDeadlineEditing(true); }}
-                          className="rounded p-0.5 text-[var(--color-text-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)]"
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
+                    <div className="mt-0.5">
+                      {event.submission_deadline ? (
+                        <DeadlineBadge deadline={event.submission_deadline} />
+                      ) : (
+                        <span className="text-xs text-[var(--color-text-muted)]">—</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1280,52 +1145,6 @@ export default function EventDetailPage() {
               </div>
             )}
 
-            {/* Reminder rules */}
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
-              <div className="border-b border-[var(--color-border)] px-5 py-3 flex items-center gap-2">
-                <Bell className="h-4 w-4 text-[var(--color-accent)]" />
-                <span className="text-sm font-semibold text-[var(--color-text-primary)]">Deadline Reminders</span>
-                <span className="ml-auto text-xs text-[var(--color-text-muted)]">Auto-sent before deadlines</span>
-                <button
-                  onClick={() => setReminderModalOpen(true)}
-                  className="ml-2 flex items-center gap-1 rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-1 text-xs font-medium text-white hover:opacity-90"
-                >
-                  <Plus className="h-3 w-3" /> Add reminder
-                </button>
-              </div>
-              {reminderRules.length === 0 ? (
-                <div className="px-5 py-8 text-center text-sm text-[var(--color-text-muted)]">
-                  No reminder rules yet. Add one to automatically notify exhibitors before their deadline.
-                </div>
-              ) : (
-                <div className="divide-y divide-[var(--color-border)]">
-                  {reminderRules.map((rule) => (
-                    <div key={rule.id} className="flex items-center gap-3 px-5 py-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-[var(--color-text-primary)]">{rule.subject}</div>
-                        <div className="text-xs text-[var(--color-text-muted)]">
-                          {rule.phase_number ? `Phase ${rule.phase_number}` : "All phases"} · {rule.trigger_offset_days}d before deadline
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => toggleReminderRule(rule)}
-                        className={cn("text-[var(--color-text-muted)] hover:text-[var(--color-accent)]", rule.is_active && "text-[var(--color-accent)]")}
-                        title={rule.is_active ? "Disable" : "Enable"}
-                      >
-                        {rule.is_active ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
-                      </button>
-                      <button
-                        onClick={() => deleteReminderRule(rule.id)}
-                        className="text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
-                        title="Delete rule"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Full exhibitor list summary */}
             {total > 0 && (
@@ -1951,102 +1770,6 @@ export default function EventDetailPage() {
         </Modal>
       )}
 
-      {/* Add reminder rule modal */}
-      <Modal
-        open={reminderModalOpen}
-        onClose={() => setReminderModalOpen(false)}
-        title="Add deadline reminder"
-        size="md"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setReminderModalOpen(false)}>Cancel</Button>
-            <Button loading={ruleSaving} disabled={!newRuleSubject.trim() || !newRuleBody.trim()} onClick={saveReminderRule}>
-              Save reminder
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <FormGrid className="grid-cols-2">
-            <FormField label="Phase">
-              <Select value={newRulePhase} onChange={(e) => setNewRulePhase(e.target.value)}>
-                <option value="all">All phases</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={String(n)}>Phase {n}</option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Days before deadline">
-              <div className="space-y-2">
-                <p className="text-xs text-[var(--color-text-muted)]">Select one or more — a separate reminder is created for each.</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {[1, 3, 7, 14, 21, 30].map((d) => {
-                    const selected = newRuleDays.includes(d);
-                    return (
-                      <button
-                        key={d}
-                        type="button"
-                        onClick={() => setNewRuleDays((prev) => selected ? prev.filter((x) => x !== d) : [...prev, d].sort((a, b) => a - b))}
-                        className={cn(
-                          "rounded-[var(--radius-md)] border px-3 py-1 text-xs font-medium transition-colors",
-                          selected
-                            ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
-                            : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]"
-                        )}
-                      >
-                        {d}d
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={365}
-                    placeholder="Custom (e.g. 10)"
-                    className="w-36"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const v = Math.max(1, Math.min(365, parseInt((e.target as HTMLInputElement).value, 10) || 0));
-                        if (v && !newRuleDays.includes(v)) setNewRuleDays((prev) => [...prev, v].sort((a, b) => a - b));
-                        (e.target as HTMLInputElement).value = "";
-                      }
-                    }}
-                  />
-                  <span className="text-xs text-[var(--color-text-muted)]">Press Enter to add</span>
-                </div>
-                {newRuleDays.length > 0 && (
-                  <div className="text-xs text-[var(--color-text-muted)]">
-                    Will create {newRuleDays.length} rule{newRuleDays.length !== 1 ? "s" : ""}: {newRuleDays.map((d) => `${d}d`).join(", ")} before deadline
-                  </div>
-                )}
-              </div>
-            </FormField>
-          </FormGrid>
-          <FormField label="Email subject">
-            <Input
-              value={newRuleSubject}
-              onChange={(e) => setNewRuleSubject(e.target.value)}
-              placeholder="Action needed: deadline approaching"
-            />
-          </FormField>
-          <FormField label="Email body">
-            <textarea
-              value={newRuleBody}
-              onChange={(e) => setNewRuleBody(e.target.value)}
-              rows={6}
-              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-              placeholder="Email body…"
-            />
-          </FormField>
-          <div className="text-xs text-[var(--color-text-muted)]">
-            Available variables: <code className="bg-[var(--color-bg-subtle)] px-1 py-0.5 rounded">{"{{client_name}}"}</code>{" "}
-            <code className="bg-[var(--color-bg-subtle)] px-1 py-0.5 rounded">{"{{phase_name}}"}</code>{" "}
-            <code className="bg-[var(--color-bg-subtle)] px-1 py-0.5 rounded">{"{{deadline}}"}</code>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

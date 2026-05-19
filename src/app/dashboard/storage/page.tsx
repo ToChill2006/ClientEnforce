@@ -92,6 +92,8 @@ function FileRow({
   previewingPath,
   downloadingPath,
   deletingId,
+  selected,
+  onSelect,
 }: {
   it: Item;
   onPreview: (path: string, name: string) => void;
@@ -100,6 +102,8 @@ function FileRow({
   previewingPath: string | null;
   downloadingPath: string | null;
   deletingId: string | null;
+  selected?: boolean;
+  onSelect?: (id: string, checked: boolean) => void;
 }) {
   const path = itemPath(it);
   const name = inferName(it, path);
@@ -108,7 +112,16 @@ function FileRow({
   const date = formatDate(it.updated_at ?? it.created_at);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-bg-hover)] transition-colors group">
+    <div className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-bg-hover)] transition-colors group", selected && "bg-[var(--color-accent-subtle)]")}>
+      {onSelect && (
+        <input
+          type="checkbox"
+          checked={!!selected}
+          onChange={(e) => onSelect(it.id, e.target.checked)}
+          onClick={(e) => e.stopPropagation()}
+          className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--color-accent)]"
+        />
+      )}
       <span className="shrink-0 text-[var(--color-text-muted)]">
         {kind === "signature" ? <PenLine className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
       </span>
@@ -157,6 +170,8 @@ function OnboardingSection({
   previewingPath,
   downloadingPath,
   deletingId,
+  selectedIds,
+  onSelect,
 }: {
   onboardingId: string;
   title: string;
@@ -167,6 +182,8 @@ function OnboardingSection({
   previewingPath: string | null;
   downloadingPath: string | null;
   deletingId: string | null;
+  selectedIds?: Set<string>;
+  onSelect?: (id: string, checked: boolean) => void;
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -203,6 +220,8 @@ function OnboardingSection({
               previewingPath={previewingPath}
               downloadingPath={downloadingPath}
               deletingId={deletingId}
+              selected={selectedIds?.has(it.id)}
+              onSelect={onSelect}
             />
           ))}
         </div>
@@ -222,6 +241,8 @@ function EventSection({
   previewingPath,
   downloadingPath,
   deletingId,
+  selectedIds,
+  onSelect,
 }: {
   eventName: string;
   onboardings: { id: string; title: string; files: Item[] }[];
@@ -231,6 +252,8 @@ function EventSection({
   previewingPath: string | null;
   downloadingPath: string | null;
   deletingId: string | null;
+  selectedIds?: Set<string>;
+  onSelect?: (id: string, checked: boolean) => void;
 }) {
   const [open, setOpen] = React.useState(false);
   const totalFiles = onboardings.reduce((s, o) => s + o.files.length, 0);
@@ -265,6 +288,8 @@ function EventSection({
               previewingPath={previewingPath}
               downloadingPath={downloadingPath}
               deletingId={deletingId}
+              selectedIds={selectedIds}
+              onSelect={onSelect}
             />
           ))}
         </div>
@@ -287,6 +312,10 @@ export default function StoragePage() {
   const [downloadingPath, setDownloadingPath] = React.useState<string | null>(null);
   const [deletingItemId, setDeletingItemId] = React.useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = React.useState<Item | null>(null);
+
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = React.useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = React.useState(false);
 
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
@@ -435,7 +464,52 @@ export default function StoragePage() {
     return Array.from(byOb.entries()).map(([id, ob]) => ({ id, title: ob.title, files: ob.files }));
   }, [soloItems]);
 
-  const sharedProps = { onPreview: openPreview, onDownload: downloadFile, onDelete: setConfirmDelete, previewingPath, downloadingPath, deletingId: deletingItemId };
+  function handleSelect(id: string, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  function handleSelectAll() {
+    const allIds = items.map((it) => it.id);
+    if (selectedIds.size === allIds.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allIds));
+    }
+  }
+
+  async function bulkDelete() {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const toDelete = items.filter((it) => selectedIds.has(it.id));
+      await Promise.all(
+        toDelete.map(async (it) => {
+          const path = itemPath(it);
+          if (!path) return;
+          await fetch("/api/storage/delete", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ path, bucket: it.bucket ?? undefined, type: itemKind(it) }),
+          });
+        })
+      );
+      setItems((prev) => prev.filter((it) => !selectedIds.has(it.id)));
+      setSelectedIds(new Set());
+      toast({ title: `${toDelete.length} file${toDelete.length !== 1 ? "s" : ""} deleted`, variant: "success" });
+    } catch (e: any) {
+      toast({ title: "Bulk delete failed", description: e?.message, variant: "error" });
+    } finally {
+      setBulkDeleting(false);
+      setConfirmBulkDelete(false);
+    }
+  }
+
+  const sharedProps = { onPreview: openPreview, onDownload: downloadFile, onDelete: setConfirmDelete, previewingPath, downloadingPath, deletingId: deletingItemId, selectedIds, onSelect: handleSelect };
 
   return (
     <div className="space-y-6">
@@ -443,11 +517,39 @@ export default function StoragePage() {
         title="Files & Signatures"
         description="Browse uploaded files and signatures by event or onboarding."
         actions={
-          <Button variant="outline" size="sm" iconLeft={<RefreshCw className="h-3.5 w-3.5" />} onClick={load} disabled={loading}>
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              disabled={loading || items.length === 0}
+            >
+              {selectedIds.size === items.length && items.length > 0 ? "Deselect all" : "Select all"}
+            </Button>
+            <Button variant="outline" size="sm" iconLeft={<RefreshCw className="h-3.5 w-3.5" />} onClick={load} disabled={loading}>
+              Refresh
+            </Button>
+          </div>
         }
       />
+
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-2.5 shadow-sm">
+          <span className="text-sm font-medium text-[var(--color-text-primary)]">{selectedIds.size} selected</span>
+          <div className="flex-1" />
+          <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>Deselect</Button>
+          <Button
+            size="sm"
+            variant="danger"
+            iconLeft={<Trash2 className="h-3.5 w-3.5" />}
+            loading={bulkDeleting}
+            onClick={() => setConfirmBulkDelete(true)}
+          >
+            Delete {selectedIds.size} file{selectedIds.size !== 1 ? "s" : ""}
+          </Button>
+        </div>
+      )}
 
       {err && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-sm text-[var(--color-danger)]">
@@ -537,6 +639,17 @@ export default function StoragePage() {
         title={`Delete ${confirmDelete ? itemKind(confirmDelete) : "item"}?`}
         description={confirmDelete ? <>This permanently deletes <b>{inferName(confirmDelete, itemPath(confirmDelete))}</b> and cannot be undone.</> : null}
         confirmLabel="Delete"
+        destructive
+      />
+
+      {/* Bulk delete confirm */}
+      <ConfirmModal
+        open={confirmBulkDelete}
+        onClose={() => setConfirmBulkDelete(false)}
+        onConfirm={bulkDelete}
+        title={`Delete ${selectedIds.size} file${selectedIds.size !== 1 ? "s" : ""}?`}
+        description={<>This permanently deletes <b>{selectedIds.size}</b> selected file{selectedIds.size !== 1 ? "s" : ""} and cannot be undone.</>}
+        confirmLabel="Delete all"
         destructive
       />
     </div>

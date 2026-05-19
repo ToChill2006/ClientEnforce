@@ -92,6 +92,7 @@ function BulkTab({ hasFlag }: { hasFlag: boolean }) {
   const [endDate, setEndDate] = React.useState("");
   const [startDate, setStartDate] = React.useState("");
   const [location, setLocation] = React.useState("");
+  const [submissionDeadline, setSubmissionDeadline] = React.useState("");
   const [formErr, setFormErr] = React.useState<string | null>(null);
 
   async function loadEvents() {
@@ -135,17 +136,18 @@ function BulkTab({ hasFlag }: { hasFlag: boolean }) {
     setFormErr(null);
     if (!name.trim()) return setFormErr("Event name is required.");
     if (!endDate) return setFormErr("End date is required.");
+    if (!submissionDeadline) return setFormErr("Submission deadline is required.");
     setCreating(true);
     try {
       const res = await fetch("/api/events", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), end_date: endDate, start_date: startDate || null, location: location.trim() || null }),
+        body: JSON.stringify({ name: name.trim(), end_date: endDate, start_date: startDate || null, location: location.trim() || null, submission_deadline: submissionDeadline }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Failed to create event");
       setCreateOpen(false);
-      setName(""); setEndDate(""); setStartDate(""); setLocation("");
+      setName(""); setEndDate(""); setStartDate(""); setLocation(""); setSubmissionDeadline("");
       toast({ title: "Event created", variant: "success" });
       router.push(`/dashboard/events/${json.event.id}`);
     } catch (err: any) {
@@ -244,6 +246,9 @@ function BulkTab({ hasFlag }: { hasFlag: boolean }) {
               <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </FormField>
           </FormGrid>
+          <FormField label="Submission deadline" required hint="All onboardings for this event will use this date for automated reminders.">
+            <Input type="date" value={submissionDeadline} onChange={(e) => setSubmissionDeadline(e.target.value)} />
+          </FormField>
           <FormField label="Location">
             <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dallas, TX" />
           </FormField>

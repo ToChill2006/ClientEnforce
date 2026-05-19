@@ -118,5 +118,11 @@ export async function signupAction(formData: FormData) {
     }
   });
 
-  redirect("/dashboard?welcome=1");
+  // If a `next` param was passed (e.g. /invite/[token]), redirect there so the
+  // invite page can auto-accept on first load instead of requiring a second click.
+  const nextRaw = String(formData.get("next") || "").trim();
+  const safeNext =
+    nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : null;
+
+  redirect(safeNext ?? "/dashboard?welcome=1");
 }

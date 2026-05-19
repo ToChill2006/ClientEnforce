@@ -243,6 +243,8 @@ export default function SidebarNav({
   messageUnread?: number;
 }) {
   const isExternalViewer = currentUserRole === "external_viewer";
+  const isOnboarder = currentUserRole === "onboarder" || currentUserRole === "member";
+  const isReviewer = currentUserRole === "reviewer";
   const [panelOpen, setPanelOpen] = React.useState(false);
   const badgeAnchorRef = React.useRef<HTMLElement | null>(null);
   const navRef = React.useRef<HTMLElement | null>(null);
@@ -254,13 +256,74 @@ export default function SidebarNav({
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <SectionLabel>Main</SectionLabel>
         <div className="flex flex-col gap-0.5">
-          <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} onClose={onClose} />
           {hasEnterpriseOnboarding && (
             <NavItem href="/dashboard/events" label="Events" icon={CalendarDays} onClose={onClose} />
           )}
         </div>
         <SectionLabel>More</SectionLabel>
         <div className="flex flex-col gap-0.5">
+          <NavItem href="/dashboard/support" label="Help & Support" icon={LifeBuoy} onClose={onClose} />
+        </div>
+      </nav>
+    );
+  }
+
+  if (isReviewer) {
+    return (
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <SectionLabel>Main</SectionLabel>
+        <div className="flex flex-col gap-0.5">
+          <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} onClose={onClose} />
+          <NavItem href="/dashboard/onboardings" label={hasEnterpriseOnboarding ? "Events" : "Onboardings"} icon={ClipboardList} onClose={onClose} />
+        </div>
+        {hasEnterpriseOnboarding && (
+          <>
+            <SectionLabel>Review</SectionLabel>
+            <div className="flex flex-col gap-0.5">
+              <NavItem
+                href="/dashboard/review-queue"
+                label="Review Queue"
+                icon={ShieldCheck}
+                onClose={onClose}
+                badge={pendingCount}
+                onBadgeClick={() => setPanelOpen((o) => !o)}
+              />
+            </div>
+          </>
+        )}
+        <SectionLabel>More</SectionLabel>
+        <div className="flex flex-col gap-0.5">
+          <NavItem href="/dashboard/support" label="Help & Support" icon={LifeBuoy} onClose={onClose} />
+        </div>
+      </nav>
+    );
+  }
+
+  if (isOnboarder) {
+    return (
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <SectionLabel>Main</SectionLabel>
+        <div className="flex flex-col gap-0.5">
+          <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} onClose={onClose} />
+          <NavItem href="/dashboard/onboardings" label={hasEnterpriseOnboarding ? "Events" : "Onboardings"} icon={ClipboardList} onClose={onClose} />
+          {hasEnterpriseOnboarding && (
+            <NavItem
+              href="/dashboard/messages"
+              label="Messages"
+              icon={MessageSquare}
+              onClose={onClose}
+              badge={messageUnread}
+            />
+          )}
+          <NavItem href="/dashboard/clients" label="Clients" icon={User} onClose={onClose} />
+        </div>
+        <SectionLabel>Manage</SectionLabel>
+        <div className="flex flex-col gap-0.5">
+          <NavItem href="/dashboard/templates" label="Templates" icon={LayoutTemplate} onClose={onClose} />
+        </div>
+        <SectionLabel>More</SectionLabel>
+        <div className="flex flex-col gap-0.5">
+          <NavItem href="/dashboard/storage" label="Files & Signatures" icon={FolderOpen} onClose={onClose} />
           <NavItem href="/dashboard/support" label="Help & Support" icon={LifeBuoy} onClose={onClose} />
         </div>
       </nav>

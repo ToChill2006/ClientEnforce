@@ -16,6 +16,7 @@ const CreateEvent = z.object({
   end_date: z.string().min(1),
   start_date: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
+  submission_deadline: z.string().optional().nullable(),
 });
 
 export async function GET() {
@@ -109,6 +110,7 @@ export async function POST(req: Request) {
         end_date: parsed.data.end_date,
         start_date: parsed.data.start_date ?? null,
         location: parsed.data.location ?? null,
+        submission_deadline: parsed.data.submission_deadline ?? null,
         created_by_user_id: userData.user.id,
       })
       .select("*")
