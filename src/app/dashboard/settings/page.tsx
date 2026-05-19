@@ -1347,6 +1347,7 @@ export default function SettingsPage() {
                 disabled={!canInviteMembers}
                 onChange={(e) => setInviteRole(e.target.value as any)}
               >
+                <option value="member">Member — standard access</option>
                 <option value="admin">Admin — full access, manage team &amp; settings</option>
                 <option value="onboarder">Onboarder — create &amp; send onboardings, manage templates</option>
                 <option value="reviewer">Reviewer — review &amp; approve submissions</option>
