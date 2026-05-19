@@ -51,6 +51,7 @@ const PatchSchema = z.union([
   z.object({ owner_id: z.string().uuid().nullable() }),
   z.object({ client_type_id: z.string().uuid().nullable() }),
   z.object({ deadline: z.string().nullable() }),
+  z.object({ template_id: z.string().uuid() }),
 ]);
 
 type ResponseError = { message?: string | null };
@@ -177,6 +178,99 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       entity_id: id,
       onboarding_id: id,
       metadata: { field: "deadline", deadline: parsed.data.deadline },
+    });
+    return NextResponse.json({ ok: true });
+  }
+
+  if ("template_id" in parsed.data) {
+    const admin = supabaseAdmin();
+    const templateId = parsed.data.template_id;
+
+    // Verify template belongs to the org
+    const { data: tpl, error: tplErr } = await admin
+      .from("templates")
+      .select("id, name, definition")
+      .eq("id", templateId)
+      .eq("org_id", org_id)
+      .single();
+    if (tplErr || !tpl) return jsonError(404, "Template not found");
+
+    // Update the onboarding's template_id
+    const { error: updErr } = await admin
+      .from("onboardings")
+      .update({ template_id: templateId, updated_at: now })
+      .eq("org_id", org_id)
+      .eq("id", id);
+    if (updErr) return jsonError(400, updErr.message || "Failed to update template");
+
+    // Delete any existing requirements + phases so we start fresh from the template
+    await admin.from("onboarding_requirements").delete().eq("onboarding_id", id);
+    await admin.from("onboarding_phases").delete().eq("onboarding_id", id);
+
+    // Insert requirements from template definition
+    const def = (tpl as any).definition as any;
+    const reqs: any[] = def?.requirements ?? def?.fields ?? [];
+    if (reqs.length > 0) {
+      const reqRows = reqs.map((it: any, idx: number) => {
+        const reqType = it.type ?? "text";
+        const row: Record<string, any> = {
+          org_id,
+          onboarding_id: id,
+          type: reqType,
+          label: it.label ?? `Field ${idx + 1}`,
+          is_required: (reqType === "heading" || reqType === "info") ? false : Boolean(it.is_required ?? false),
+          sort_order: Number(it.sort_order ?? idx),
+          phase_number: typeof it.phase_number === "number" ? it.phase_number : null,
+          options: it.options ?? null,
+          created_at: now,
+          updated_at: now,
+        };
+        if (reqType === "payment") {
+          row.payment_amount = it.payment_amount != null ? Number(it.payment_amount) : null;
+          row.payment_currency = it.payment_currency ?? null;
+          row.payment_description = it.payment_description ?? null;
+          row.payment_status = "not_paid";
+        }
+        if (reqType === "info") row.value_text = it.info_content ?? null;
+        return row;
+      });
+      await admin.from("onboarding_requirements").insert(reqRows);
+    }
+
+    // Insert phases from template definition
+    const phaseDefs: any[] = def?.phases ?? [];
+    if (phaseDefs.length > 0) {
+      const phaseRows = phaseDefs.map((p: any, idx: number) => ({
+        org_id,
+        onboarding_id: id,
+        phase_number: p.number ?? idx + 1,
+        name: p.name ?? `Phase ${p.number ?? idx + 1}`,
+        deadline: null,
+        status: idx === 0 ? "in_progress" : "locked",
+        created_at: now,
+        updated_at: now,
+      }));
+      await admin.from("onboarding_phases").insert(phaseRows);
+    } else {
+      await admin.from("onboarding_phases").insert({
+        org_id,
+        onboarding_id: id,
+        phase_number: 1,
+        name: "Onboarding",
+        status: "in_progress",
+        created_at: now,
+        updated_at: now,
+      });
+    }
+
+    logAudit({
+      org_id,
+      actor_user_id: user.id,
+      action: "onboarding.updated",
+      entity_type: "onboarding",
+      entity_id: id,
+      onboarding_id: id,
+      metadata: { field: "template_id", template_id: templateId, template_name: (tpl as any).name },
     });
     return NextResponse.json({ ok: true });
   }

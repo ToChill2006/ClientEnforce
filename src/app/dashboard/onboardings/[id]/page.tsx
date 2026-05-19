@@ -326,6 +326,12 @@ export default function OnboardingDetailAdminPage() {
 
   // Reminder override state
 
+  // Template assign state
+  const [orgTemplates, setOrgTemplates] = React.useState<{ id: string; name: string }[]>([]);
+  const [templateSelectId, setTemplateSelectId] = React.useState("");
+  const [templateSaving, setTemplateSaving] = React.useState(false);
+  const [templateSelectOpen, setTemplateSelectOpen] = React.useState(false);
+
   // Deadline state
   const [deadlineEditing, setDeadlineEditing] = React.useState(false);
   const [deadlineValue, setDeadlineValue] = React.useState("");
@@ -687,6 +693,11 @@ export default function OnboardingDetailAdminPage() {
     loadProgress();
     loadPhases();
     const t = window.setInterval(() => loadProgress(), 20_000);
+    // Fetch org templates for the template picker
+    fetch("/api/templates", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((j) => { if (Array.isArray(j?.items)) setOrgTemplates(j.items); })
+      .catch(() => {});
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
@@ -717,6 +728,29 @@ export default function OnboardingDetailAdminPage() {
       }
     })();
   }, []);
+
+  async function assignTemplate() {
+    if (!templateSelectId) return;
+    setTemplateSaving(true);
+    try {
+      const res = await fetch(`/api/onboardings/${encodeURIComponent(params.id)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ template_id: templateSelectId }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "Save failed");
+      toast({ title: "Template applied", variant: "success" });
+      setTemplateSelectOpen(false);
+      setTemplateSelectId("");
+      // Reload everything — requirements and phases just got replaced
+      await loadDetail();
+      await loadPhases();
+    } catch (e: any) {
+      toast({ title: "Failed to apply template", description: e?.message, variant: "error" });
+    } finally {
+      setTemplateSaving(false);
+    }
+  }
 
   async function saveOverallDeadline() {
     setDeadlineSaving(true);
@@ -1245,7 +1279,48 @@ export default function OnboardingDetailAdminPage() {
           </CardHeader>
           <CardContent className="space-y-2.5 text-sm">
             <DetailRow label="Owner" value={ob?.owner_name || "Unassigned"} />
-            <DetailRow label="Template" value={ob?.template_name || "Default"} />
+            <DetailRow
+              label="Template"
+              value={
+                ob?.template_id ? (
+                  <span>{ob.template_name || "Default"}</span>
+                ) : templateSelectOpen ? (
+                  <div className="flex items-center gap-1.5">
+                    <select
+                      className="h-7 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-2 text-xs"
+                      value={templateSelectId}
+                      onChange={(e) => setTemplateSelectId(e.target.value)}
+                      autoFocus
+                    >
+                      <option value="">Select template…</option>
+                      {orgTemplates.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={assignTemplate}
+                      disabled={!templateSelectId || templateSaving}
+                      className="rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-2 py-0.5 text-xs font-medium text-white disabled:opacity-50"
+                    >
+                      {templateSaving ? "Saving…" : "Apply"}
+                    </button>
+                    <button
+                      onClick={() => { setTemplateSelectOpen(false); setTemplateSelectId(""); }}
+                      className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setTemplateSelectOpen(true)}
+                    className="flex items-center gap-1 text-xs text-[var(--color-accent)] hover:underline"
+                  >
+                    <span className="text-base leading-none">+</span> Add template
+                  </button>
+                )
+              }
+            />
             <DetailRow label="Created" value={formatDate(ob?.created_at)} />
             <DetailRow
               label="ID"

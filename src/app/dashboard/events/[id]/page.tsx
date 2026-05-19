@@ -1398,14 +1398,6 @@ export default function EventDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="secondary"
-                    disabled={validCount === 0 || importing}
-                    onClick={() => setConfirmImportOpen(true)}
-                    loading={importing}
-                  >
-                    Send Invites ({validCount})
-                  </Button>
-                  <Button
                     disabled={validCount === 0 || importing}
                     onClick={() => runImport(false)}
                     loading={importing}
@@ -1958,21 +1950,6 @@ export default function EventDetailPage() {
           </div>
         </Modal>
       )}
-
-      {/* Confirm import modal */}
-      <Modal
-        open={confirmImportOpen}
-        onClose={() => setConfirmImportOpen(false)}
-        title="Send invites?"
-        description={`This will send invite emails to ${validCount} exhibitor${validCount === 1 ? "" : "s"} immediately. You can also add them as drafts first and send invites later.`}
-        size="sm"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setConfirmImportOpen(false)}>Cancel</Button>
-            <Button onClick={() => runImport(true)} loading={importing}>Send {validCount} invites</Button>
-          </>
-        }
-      >{null}</Modal>
 
       {/* Add reminder rule modal */}
       <Modal
