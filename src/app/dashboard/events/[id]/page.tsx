@@ -33,6 +33,13 @@ import {
   Eye,
   MessageSquarePlus,
   Paperclip,
+  Pin,
+  PinOff,
+  AlertTriangle,
+  CheckSquare,
+  StickyNote,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -90,6 +97,9 @@ type BoardPost = {
   body: string | null;
   file_path: string | null;
   file_name: string | null;
+  priority: "normal" | "high" | "urgent";
+  post_type: "note" | "alert" | "decision" | "file";
+  pinned: boolean;
   created_at: string;
 };
 
@@ -520,6 +530,8 @@ export default function EventDetailPage() {
   const [boardDraft, setBoardDraft] = React.useState("");
   const [boardPosting, setBoardPosting] = React.useState(false);
   const [boardFile, setBoardFile] = React.useState<File | null>(null);
+  const [boardPriority, setBoardPriority] = React.useState<"normal" | "high" | "urgent">("normal");
+  const [boardType, setBoardType] = React.useState<"note" | "alert" | "decision" | "file">("note");
   const boardFileInputRef = React.useRef<HTMLInputElement>(null);
 
   async function loadBoard() {
@@ -553,13 +565,28 @@ export default function EventDetailPage() {
       const res = await fetch(`/api/events/${eventId}/board`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body: text || null, file_path: filePath, file_name: fileName }),
+        body: JSON.stringify({
+          body: text || null,
+          file_path: filePath,
+          file_name: fileName,
+          priority: boardPriority,
+          post_type: boardFile && !text ? "file" : boardType,
+        }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Failed to post");
-      setBoardPosts((prev) => [json.post, ...prev]);
+      // Insert pinned posts at the top; others after any pinned ones
+      setBoardPosts((prev) => {
+        const newPost = json.post as BoardPost;
+        if (newPost.pinned) return [newPost, ...prev];
+        const firstUnpinned = prev.findIndex((p) => !p.pinned);
+        if (firstUnpinned === -1) return [...prev, newPost];
+        return [...prev.slice(0, firstUnpinned), newPost, ...prev.slice(firstUnpinned)];
+      });
       setBoardDraft("");
       setBoardFile(null);
+      setBoardPriority("normal");
+      setBoardType("note");
       if (boardFileInputRef.current) boardFileInputRef.current.value = "";
     } catch (e: any) {
       toast({ title: "Error", description: e?.message, variant: "error" });
@@ -569,8 +596,25 @@ export default function EventDetailPage() {
   async function deleteBoardPost(postId: string) {
     if (!window.confirm("Delete this post?")) return;
     try {
-      await fetch(`/api/events/${eventId}/board?post_id=${postId}`, { method: "DELETE" });
-      setBoardPosts((prev) => prev.filter((p) => p.id !== postId));
+      const res = await fetch(`/api/events/${eventId}/board?post_id=${postId}`, { method: "DELETE" });
+      if (res.ok) setBoardPosts((prev) => prev.filter((p) => p.id !== postId));
+      else toast({ title: "Could not delete post", variant: "error" });
+    } catch { /* ignore */ }
+  }
+
+  async function togglePinPost(post: BoardPost) {
+    try {
+      const res = await fetch(`/api/events/${eventId}/board?post_id=${post.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ pinned: !post.pinned }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) return;
+      setBoardPosts((prev) => {
+        const updated = prev.map((p) => p.id === post.id ? { ...p, pinned: !post.pinned } : p);
+        return [...updated.filter((p) => p.pinned), ...updated.filter((p) => !p.pinned)];
+      });
     } catch { /* ignore */ }
   }
 
@@ -1521,114 +1565,221 @@ export default function EventDetailPage() {
       )}
 
       {/* Planning Board tab */}
-      {tab === "planning" && (
-        <div className="space-y-4">
-          {/* Post composer */}
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
-            <div className="mb-2 flex items-center gap-2">
-              <MessageSquarePlus className="h-4 w-4 text-[var(--color-accent)]" />
-              <span className="text-sm font-medium text-[var(--color-text-primary)]">Post a note or update</span>
-            </div>
-            <textarea
-              value={boardDraft}
-              onChange={(e) => setBoardDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); postToBoard(); } }}
-              rows={3}
-              placeholder="Share a note, update, or important information with your team…"
-              className="w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-            />
-            {boardFile && (
-              <div className="mt-2 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5">
-                <Paperclip className="h-3 w-3 shrink-0 text-[var(--color-accent)]" />
-                <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-secondary)]">{boardFile.name}</span>
-                <button
-                  type="button"
-                  onClick={() => { setBoardFile(null); if (boardFileInputRef.current) boardFileInputRef.current.value = ""; }}
-                  className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            <div className="mt-2 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => boardFileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
-                >
-                  <Paperclip className="h-3 w-3" /> Attach file
-                </button>
-                <input
-                  ref={boardFileInputRef}
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.gif,.txt"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) setBoardFile(f); }}
-                />
-                <span className="text-[10px] text-[var(--color-text-muted)]">⌘+Enter to post</span>
-              </div>
-              <Button size="sm" onClick={postToBoard} loading={boardPosting} disabled={!boardDraft.trim() && !boardFile}>
-                Post
-              </Button>
-            </div>
-          </div>
+      {tab === "planning" && (() => {
+        function relTime(iso: string) {
+          const diff = Date.now() - new Date(iso).getTime();
+          const m = Math.floor(diff / 60000);
+          if (m < 1) return "just now";
+          if (m < 60) return `${m}m ago`;
+          const h = Math.floor(m / 60);
+          if (h < 24) return `${h}h ago`;
+          const d = Math.floor(h / 24);
+          if (d < 7) return `${d}d ago`;
+          return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        }
 
-          {/* Posts list */}
-          {boardLoading ? (
-            <div className="flex h-24 items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
-            </div>
-          ) : boardPosts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] py-12 text-center">
-              <Clipboard className="mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
-              <p className="text-sm font-medium text-[var(--color-text-secondary)]">No posts yet</p>
-              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Post notes and important info for your team above.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {boardPosts.map((post) => (
-                <div key={post.id} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-accent)] text-[11px] font-bold text-white">
-                        {(post.author_name || "?").charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-xs font-medium text-[var(--color-text-primary)]">{post.author_name ?? "Team member"}</span>
-                      <span className="text-[10px] text-[var(--color-text-muted)]">
-                        {new Date(post.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                        {" "}
-                        {new Date(post.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                    </div>
+        const typeConfig = {
+          note:     { icon: <StickyNote className="h-3.5 w-3.5" />,    label: "Note",     color: "text-[var(--color-text-muted)]",   bg: "bg-[var(--color-bg-subtle)]" },
+          alert:    { icon: <AlertTriangle className="h-3.5 w-3.5" />, label: "Alert",    color: "text-orange-600",                  bg: "bg-orange-50" },
+          decision: { icon: <CheckSquare className="h-3.5 w-3.5" />,   label: "Decision", color: "text-emerald-600",                 bg: "bg-emerald-50" },
+          file:     { icon: <Paperclip className="h-3.5 w-3.5" />,     label: "File",     color: "text-[var(--color-accent)]",       bg: "bg-[var(--color-accent-subtle,#f0f4ff)]" },
+        };
+
+        const priorityConfig = {
+          normal: { border: "border-l-[var(--color-border)]",  badge: null },
+          high:   { border: "border-l-orange-400",             badge: <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">High</span> },
+          urgent: { border: "border-l-red-500",                badge: <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">Urgent</span> },
+        };
+
+        const pinnedPosts = boardPosts.filter((p) => p.pinned);
+        const regularPosts = boardPosts.filter((p) => !p.pinned);
+
+        return (
+          <div className="space-y-5">
+            {/* Composer */}
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden shadow-[var(--shadow-sm)]">
+              {/* Type picker */}
+              <div className="flex border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+                {(["note", "alert", "decision", "file"] as const).map((t) => {
+                  const cfg = typeConfig[t];
+                  const active = boardType === t;
+                  return (
                     <button
-                      onClick={() => deleteBoardPost(post.id)}
-                      className="opacity-0 group-hover:opacity-100 rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-danger-subtle)] hover:text-[var(--color-danger)] transition-colors"
-                      title="Delete"
+                      key={t}
+                      onClick={() => { setBoardType(t); if (t === "file") boardFileInputRef.current?.click(); }}
+                      className={cn(
+                        "flex flex-1 items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors",
+                        active ? `${cfg.bg} ${cfg.color} border-b-2 border-b-current` : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]"
+                      )}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      {cfg.icon} <span className="hidden sm:inline">{cfg.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="p-4">
+                <textarea
+                  value={boardDraft}
+                  onChange={(e) => setBoardDraft(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); postToBoard(); } }}
+                  rows={3}
+                  placeholder={
+                    boardType === "alert" ? "Describe the alert or issue…" :
+                    boardType === "decision" ? "Record a decision made by the team…" :
+                    boardType === "file" ? "Add a note about this file (optional)…" :
+                    "Share a note or update with your team…"
+                  }
+                  className="w-full resize-none bg-transparent text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none"
+                />
+
+                {boardFile && (
+                  <div className="mt-2 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5">
+                    <Paperclip className="h-3 w-3 shrink-0 text-[var(--color-accent)]" />
+                    <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-secondary)]">{boardFile.name}</span>
+                    <span className="shrink-0 text-[10px] text-[var(--color-text-muted)]">{(boardFile.size / 1024 / 1024).toFixed(1)} MB</span>
+                    <button type="button" onClick={() => { setBoardFile(null); if (boardFileInputRef.current) boardFileInputRef.current.value = ""; }} className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition-colors">
+                      <X className="h-3 w-3" />
                     </button>
                   </div>
-                  {post.body && (
-                    <p className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{post.body}</p>
-                  )}
-                  {post.file_path && (
-                    <a
-                      href={`/api/storage/download?path=${encodeURIComponent(post.file_path)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-accent)] hover:bg-[var(--color-bg-hover)] transition-colors"
-                    >
-                      <Paperclip className="h-3.5 w-3.5 shrink-0" />
-                      {post.file_name ?? post.file_path.split("/").pop()}
-                    </a>
-                  )}
+                )}
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    {/* Priority picker */}
+                    <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-0.5 gap-0.5">
+                      {(["normal", "high", "urgent"] as const).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setBoardPriority(p)}
+                          className={cn(
+                            "rounded-[var(--radius-sm)] px-2 py-1 text-[10px] font-medium capitalize transition-colors",
+                            boardPriority === p
+                              ? p === "urgent" ? "bg-red-500 text-white" : p === "high" ? "bg-orange-400 text-white" : "bg-[var(--color-panel)] text-[var(--color-text-primary)] shadow-sm"
+                              : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+                          )}
+                        >{p}</button>
+                      ))}
+                    </div>
+                    {/* Attach */}
+                    <button type="button" onClick={() => boardFileInputRef.current?.click()} className="flex items-center gap-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors">
+                      <Paperclip className="h-3.5 w-3.5" />
+                    </button>
+                    <input ref={boardFileInputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.gif,.txt,.zip,.mp4,.mov" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setBoardFile(f); setBoardType("file"); } }} />
+                    <span className="text-[10px] text-[var(--color-text-muted)] hidden sm:inline">⌘+Enter</span>
+                  </div>
+                  <Button size="sm" onClick={postToBoard} loading={boardPosting} disabled={!boardDraft.trim() && !boardFile}>
+                    Post
+                  </Button>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Loading */}
+            {boardLoading ? (
+              <div className="flex h-24 items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-[var(--color-text-muted)]" />
+              </div>
+            ) : boardPosts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] py-14 text-center">
+                <Clipboard className="mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
+                <p className="text-sm font-medium text-[var(--color-text-secondary)]">Nothing posted yet</p>
+                <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Use the composer above to post notes, alerts, decisions, or files.</p>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {/* Pinned section */}
+                {pinnedPosts.length > 0 && (
+                  <div>
+                    <div className="mb-2 flex items-center gap-1.5 px-1">
+                      <Pin className="h-3 w-3 text-[var(--color-accent)]" />
+                      <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Pinned</span>
+                    </div>
+                    <div className="space-y-2">
+                      {pinnedPosts.map((post) => {
+                        const tc = typeConfig[post.post_type ?? "note"];
+                        const pc = priorityConfig[post.priority ?? "normal"];
+                        return (
+                          <div key={post.id} className={cn("group relative flex gap-0 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-sm)]")}>
+                            {/* Priority strip */}
+                            <div className={cn("w-1 shrink-0", post.priority === "urgent" ? "bg-red-500" : post.priority === "high" ? "bg-orange-400" : "bg-[var(--color-border)]")} />
+                            <div className="flex-1 p-4">
+                              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className={cn("flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium", tc.bg, tc.color)}>{tc.icon}{tc.label}</span>
+                                  {pc.badge}
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-accent)] text-[10px] font-bold text-white">{(post.author_name || "?").charAt(0).toUpperCase()}</span>
+                                  <span className="text-xs font-medium text-[var(--color-text-primary)]">{post.author_name ?? "Team member"}</span>
+                                  <span className="text-[10px] text-[var(--color-text-muted)]">{relTime(post.created_at)}</span>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-1">
+                                  <button onClick={() => togglePinPost(post)} title="Unpin" className="rounded p-1 text-[var(--color-accent)] hover:bg-[var(--color-bg-hover)] transition-colors"><PinOff className="h-3.5 w-3.5" /></button>
+                                  <button onClick={() => deleteBoardPost(post.id)} title="Delete" className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-danger-subtle)] hover:text-[var(--color-danger)] transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                                </div>
+                              </div>
+                              {post.body && <p className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{post.body}</p>}
+                              {post.file_path && (
+                                <a href={`/api/storage/download?path=${encodeURIComponent(post.file_path)}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5 text-xs text-[var(--color-accent)] hover:bg-[var(--color-bg-hover)] transition-colors">
+                                  <Paperclip className="h-3 w-3 shrink-0" />{post.file_name ?? post.file_path.split("/").pop()}
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Regular posts */}
+                {regularPosts.length > 0 && (
+                  <div>
+                    {pinnedPosts.length > 0 && (
+                      <div className="mb-2 flex items-center gap-1.5 px-1">
+                        <MessageSquarePlus className="h-3 w-3 text-[var(--color-text-muted)]" />
+                        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Feed</span>
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      {regularPosts.map((post) => {
+                        const tc = typeConfig[post.post_type ?? "note"];
+                        const pc = priorityConfig[post.priority ?? "normal"];
+                        return (
+                          <div key={post.id} className="group relative flex gap-0 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]">
+                            {/* Priority strip */}
+                            <div className={cn("w-1 shrink-0", post.priority === "urgent" ? "bg-red-500" : post.priority === "high" ? "bg-orange-400" : "bg-transparent")} />
+                            <div className="flex-1 p-4">
+                              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className={cn("flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium", tc.bg, tc.color)}>{tc.icon}{tc.label}</span>
+                                  {pc.badge}
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-accent)] text-[10px] font-bold text-white">{(post.author_name || "?").charAt(0).toUpperCase()}</span>
+                                  <span className="text-xs font-medium text-[var(--color-text-primary)]">{post.author_name ?? "Team member"}</span>
+                                  <span className="text-[10px] text-[var(--color-text-muted)]">{relTime(post.created_at)}</span>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button onClick={() => togglePinPost(post)} title="Pin to top" className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-accent)] transition-colors"><Pin className="h-3.5 w-3.5" /></button>
+                                  <button onClick={() => deleteBoardPost(post.id)} title="Delete" className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-danger-subtle)] hover:text-[var(--color-danger)] transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                                </div>
+                              </div>
+                              {post.body && <p className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{post.body}</p>}
+                              {post.file_path && (
+                                <a href={`/api/storage/download?path=${encodeURIComponent(post.file_path)}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5 text-xs text-[var(--color-accent)] hover:bg-[var(--color-bg-hover)] transition-colors">
+                                  <Paperclip className="h-3 w-3 shrink-0" />{post.file_name ?? post.file_path.split("/").pop()}
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Files tab */}
       {tab === "files" && (() => {

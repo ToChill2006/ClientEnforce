@@ -18,7 +18,7 @@ const ALLOWED_MIME_TYPES = new Set([
   "text/plain",
 ]);
 
-const MAX_SIZE = 25 * 1024 * 1024;
+const MAX_SIZE = 100 * 1024 * 1024;
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
