@@ -101,6 +101,7 @@ export default function PhasePortalClient({
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [submitted, setSubmitted] = React.useState(false);
   const [busyByReq, setBusyByReq] = React.useState<Record<string, boolean>>({});
+  const [otherOpen, setOtherOpen] = React.useState<Record<string, boolean>>({});
   const [replacedReqs, setReplacedReqs] = React.useState<Record<string, string>>({});
   const [filePaths, setFilePaths] = React.useState<Record<string, string[]>>(() => {
     const m: Record<string, string[]> = {};
@@ -870,121 +871,18 @@ export default function PhasePortalClient({
                         </div>
 
                       ) : req.type === "multiple_choice" && req.options ? (
-                        (() => {
-                          const allowMulti = Boolean(req.metadata?.allow_multi_select);
-                          const includeOther = Boolean(req.metadata?.include_other);
-                          // Multi-select: value stored as JSON array string; single: plain string
-                          const selectedSet: Set<string> = (() => {
-                            if (!allowMulti) return new Set<string>();
-                            const raw = answers[req.id] ?? req.value_text ?? "";
-                            try { const p = JSON.parse(raw); if (Array.isArray(p)) return new Set<string>(p); } catch {}
-                            return raw ? new Set<string>([raw]) : new Set<string>();
-                          })();
-                          const currentOther = (() => {
-                            if (!includeOther) return "";
-                            const raw = answers[req.id] ?? req.value_text ?? "";
-                            if (allowMulti) {
-                              try { const p = JSON.parse(raw); if (Array.isArray(p)) { const o = p.find((v: string) => !req.options!.includes(v)); return o ?? ""; } } catch {}
-                            } else {
-                              return req.options!.includes(raw) ? "" : raw;
-                            }
-                            return "";
-                          })();
-
-                          const allOpts = [...req.options, ...(includeOther ? ["__other__"] : [])];
-
-                          return (
-                            <div className="space-y-2">
-                              {allOpts.map((opt) => {
-                                const isOther = opt === "__other__";
-                                const isSelected = allowMulti
-                                  ? (isOther ? currentOther !== "" : selectedSet.has(opt))
-                                  : (isOther ? currentOther !== "" : (answers[req.id] ?? req.value_text) === opt);
-
-                                function toggle() {
-                                  if (isReadOnly) return;
-                                  if (allowMulti) {
-                                    const next = new Set(selectedSet);
-                                    if (isOther) {
-                                      // handled by the text input below
-                                    } else {
-                                      isSelected ? next.delete(opt) : next.add(opt);
-                                      const arr = Array.from(next);
-                                      if (currentOther) arr.push(currentOther);
-                                      const v = JSON.stringify(arr);
-                                      setAnswers((p) => ({ ...p, [req.id]: v }));
-                                      saveAnswer(req.id, v);
-                                    }
-                                  } else {
-                                    if (isOther) return; // text input handles this
-                                    setAnswers((p) => ({ ...p, [req.id]: opt }));
-                                    saveAnswer(req.id, opt);
-                                  }
-                                }
-
-                                return (
-                                  <div key={opt}>
-                                    <label
-                                      className={cn(
-                                        "flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition",
-                                        isSelected ? "border-transparent shadow-sm" : "border-gray-200 bg-gray-50 hover:bg-gray-100",
-                                        isReadOnly && "cursor-default"
-                                      )}
-                                      style={isSelected ? { backgroundColor: accentSubtle, borderColor: accent } : undefined}
-                                      onClick={!isOther ? toggle : undefined}
-                                    >
-                                      {allowMulti ? (
-                                        <div
-                                          className="h-4 w-4 shrink-0 rounded border-2 flex items-center justify-center transition"
-                                          style={isSelected ? { borderColor: accent, backgroundColor: accent } : { borderColor: "#d1d5db" }}
-                                        >
-                                          {isSelected && <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                                        </div>
-                                      ) : (
-                                        <div
-                                          className="h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center transition"
-                                          style={isSelected ? { borderColor: accent, backgroundColor: accent } : { borderColor: "#d1d5db" }}
-                                        >
-                                          {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
-                                        </div>
-                                      )}
-                                      <span className={cn("text-sm font-medium", isSelected ? "" : "text-gray-700")}
-                                        style={isSelected ? { color: heading } : undefined}>
-                                        {isOther ? "Other…" : opt}
-                                      </span>
-                                    </label>
-                                    {isOther && (isSelected || currentOther) && (
-                                      <input
-                                        type="text"
-                                        placeholder="Please specify…"
-                                        value={currentOther}
-                                        disabled={isReadOnly}
-                                        className="mt-1.5 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-300 outline-none"
-                                        onChange={(e) => {
-                                          if (isReadOnly) return;
-                                          const otherVal = e.target.value;
-                                          if (allowMulti) {
-                                            const arr = Array.from(selectedSet).filter((v) => req.options!.includes(v));
-                                            if (otherVal) arr.push(otherVal);
-                                            const v = JSON.stringify(arr);
-                                            setAnswers((p) => ({ ...p, [req.id]: v }));
-                                          } else {
-                                            setAnswers((p) => ({ ...p, [req.id]: otherVal }));
-                                          }
-                                        }}
-                                        onBlur={(e) => {
-                                          if (!isReadOnly) saveAnswer(req.id, answers[req.id] ?? "");
-                                        }}
-                                        onFocus={(e) => { e.target.style.borderColor = accent; e.target.style.backgroundColor = "#fff"; }}
-                                        onBlurCapture={(e) => { e.target.style.borderColor = ""; e.target.style.backgroundColor = ""; }}
-                                      />
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })()
+                        <MultiChoiceField
+                          req={req}
+                          answers={answers}
+                          setAnswers={setAnswers}
+                          saveAnswer={saveAnswer}
+                          isReadOnly={isReadOnly}
+                          accent={accent}
+                          accentSubtle={accentSubtle}
+                          heading={heading}
+                          otherOpen={otherOpen}
+                          setOtherOpen={setOtherOpen}
+                        />
 
                       ) : req.type === "checkbox" ? (
                         <label className={cn(
@@ -1128,6 +1026,150 @@ export default function PhasePortalClient({
         title="Message the team"
         placeholder="Ask a question or flag an issue…"
       />
+    </div>
+  );
+}
+
+function MultiChoiceField({
+  req, answers, setAnswers, saveAnswer, isReadOnly,
+  accent, accentSubtle, heading, otherOpen, setOtherOpen,
+}: {
+  req: { id: string; options: string[] | null; metadata?: { allow_multi_select?: boolean; include_other?: boolean } | null; value_text: string | null };
+  answers: Record<string, string>;
+  setAnswers: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  saveAnswer: (reqId: string, value: string) => void;
+  isReadOnly: boolean;
+  accent: string;
+  accentSubtle: string;
+  heading: string;
+  otherOpen: Record<string, boolean>;
+  setOtherOpen: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+}) {
+  const allowMulti = Boolean(req.metadata?.allow_multi_select);
+  const includeOther = Boolean(req.metadata?.include_other);
+  const raw = answers[req.id] ?? req.value_text ?? "";
+
+  // Parse current selected set (for multi) or single value
+  const selectedSet: Set<string> = React.useMemo(() => {
+    if (!allowMulti) return new Set<string>();
+    try { const p = JSON.parse(raw); if (Array.isArray(p)) return new Set<string>(p as string[]); } catch {}
+    return raw ? new Set<string>([raw]) : new Set<string>();
+  }, [raw, allowMulti]);
+
+  // Extract any "other" text value (a value that isn't in the options list)
+  const otherText: string = React.useMemo(() => {
+    if (!includeOther) return "";
+    if (allowMulti) {
+      try { const p = JSON.parse(raw); if (Array.isArray(p)) { const v = (p as string[]).find((x) => !(req.options ?? []).includes(x)); return v ?? ""; } } catch {}
+    } else {
+      return (req.options ?? []).includes(raw) ? "" : raw;
+    }
+    return "";
+  }, [raw, allowMulti, includeOther, req.options]);
+
+  const isOtherVisible = otherOpen[req.id] ?? otherText !== "";
+
+  function commitMulti(nextSet: Set<string>, nextOtherText: string) {
+    const arr = Array.from(nextSet).filter((v) => (req.options ?? []).includes(v));
+    if (nextOtherText) arr.push(nextOtherText);
+    const v = JSON.stringify(arr);
+    setAnswers((p) => ({ ...p, [req.id]: v }));
+    saveAnswer(req.id, v);
+  }
+
+  function toggleOpt(opt: string) {
+    if (isReadOnly) return;
+    if (allowMulti) {
+      const next = new Set(selectedSet);
+      selectedSet.has(opt) ? next.delete(opt) : next.add(opt);
+      commitMulti(next, otherText);
+    } else {
+      setAnswers((p) => ({ ...p, [req.id]: opt }));
+      saveAnswer(req.id, opt);
+    }
+  }
+
+  function toggleOther() {
+    if (isReadOnly) return;
+    const opening = !isOtherVisible;
+    setOtherOpen((p) => ({ ...p, [req.id]: opening }));
+    if (!opening && otherText) {
+      // Clear the other value
+      if (allowMulti) {
+        commitMulti(selectedSet, "");
+      } else {
+        setAnswers((p) => ({ ...p, [req.id]: "" }));
+        saveAnswer(req.id, "");
+      }
+    }
+  }
+
+  const allOpts = [...(req.options ?? []), ...(includeOther ? ["__other__"] : [])];
+
+  return (
+    <div className="space-y-2">
+      {allOpts.map((opt) => {
+        const isOtherOpt = opt === "__other__";
+        const isSelected = isOtherOpt
+          ? isOtherVisible
+          : allowMulti ? selectedSet.has(opt) : raw === opt;
+
+        return (
+          <div key={opt}>
+            <button
+              type="button"
+              disabled={isReadOnly}
+              onClick={() => isOtherOpt ? toggleOther() : toggleOpt(opt)}
+              className={cn(
+                "w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition",
+                isSelected ? "border-transparent shadow-sm" : "border-gray-200 bg-gray-50 hover:bg-gray-100",
+                isReadOnly && "cursor-default opacity-80"
+              )}
+              style={isSelected ? { backgroundColor: accentSubtle, borderColor: accent } : undefined}
+            >
+              {allowMulti ? (
+                <div className="h-4 w-4 shrink-0 rounded border-2 flex items-center justify-center transition"
+                  style={isSelected ? { borderColor: accent, backgroundColor: accent } : { borderColor: "#d1d5db" }}>
+                  {isSelected && <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                </div>
+              ) : (
+                <div className="h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center transition"
+                  style={isSelected ? { borderColor: accent, backgroundColor: accent } : { borderColor: "#d1d5db" }}>
+                  {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                </div>
+              )}
+              <span className="text-sm font-medium" style={isSelected ? { color: heading } : { color: "#374151" }}>
+                {isOtherOpt ? "Other…" : opt}
+              </span>
+            </button>
+
+            {isOtherOpt && isOtherVisible && (
+              <input
+                type="text"
+                placeholder="Please specify…"
+                autoFocus
+                value={otherText}
+                disabled={isReadOnly}
+                className="mt-1.5 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-300 outline-none"
+                onChange={(e) => {
+                  if (isReadOnly) return;
+                  const v = e.target.value;
+                  if (allowMulti) {
+                    commitMulti(selectedSet, v);
+                  } else {
+                    setAnswers((p) => ({ ...p, [req.id]: v }));
+                  }
+                }}
+                onBlur={(e) => {
+                  if (!isReadOnly) saveAnswer(req.id, answers[req.id] ?? "");
+                }}
+                onFocus={(e) => { e.target.style.borderColor = accent; e.target.style.backgroundColor = "#fff"; }}
+                onBlurCapture={(e) => { e.target.style.borderColor = ""; e.target.style.backgroundColor = ""; }}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

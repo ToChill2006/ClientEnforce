@@ -2109,7 +2109,7 @@ function AdHocRequirementModal({
 
   const hasOptions = type === "multiple_choice";
   const isDisplay = type === "heading" || type === "info";
-  const canSave = type === "info" ? true : label.trim().length > 0;
+  const canSave = type === "info" ? (label.trim().length > 0 || infoContent.trim().length > 0) : label.trim().length > 0;
 
   function handleSave() {
     if (!canSave) return;
@@ -2157,20 +2157,20 @@ function AdHocRequirementModal({
           </select>
         </div>
 
-        {/* Label (not needed for info blocks) */}
-        {type !== "info" && (
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Label</label>
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              autoFocus={type !== "info"}
-              placeholder="e.g. Company registration number"
-              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-            />
-          </div>
-        )}
+        {/* Label */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+            Label{type === "info" ? <span className="ml-1 font-normal text-[var(--color-text-muted)]">(optional)</span> : null}
+          </label>
+          <input
+            type="text"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            autoFocus
+            placeholder={type === "info" ? "Section title (optional)" : "e.g. Company registration number"}
+            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+          />
+        </div>
 
         {/* Info block content */}
         {type === "info" && (
@@ -2178,7 +2178,6 @@ function AdHocRequirementModal({
             <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Info text</label>
             <textarea
               rows={4}
-              autoFocus
               value={infoContent}
               onChange={(e) => setInfoContent(e.target.value)}
               placeholder="Text shown to the client…"
