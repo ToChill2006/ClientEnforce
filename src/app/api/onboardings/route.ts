@@ -1132,23 +1132,30 @@ export async function POST(req: Request) {
             const phaseDefs: any[] = defObj.phases ?? [];
             let eventEndDate: string | null = null;
 
+            let eventSubmissionDeadline: string | null = null;
             if (event_id) {
               const { data: eventRow } = await supabase
                 .from("events")
-                .select("end_date")
+                .select("end_date, submission_deadline")
                 .eq("id", event_id)
                 .maybeSingle();
               eventEndDate = (eventRow as any)?.end_date ?? null;
+              eventSubmissionDeadline = (eventRow as any)?.submission_deadline ?? null;
             }
 
+            const eventBase = eventSubmissionDeadline ?? eventEndDate;
             const nowIso = new Date().toISOString();
             if (phaseDefs.length > 0) {
               const phaseRows = phaseDefs.map((p: any, idx: number) => {
                 let deadline: string | null = null;
-                if (eventEndDate && typeof p.default_deadline_offset_days === "number") {
-                  const d = new Date(eventEndDate);
+                if (p.deadline) {
+                  deadline = p.deadline;
+                } else if (eventBase && typeof p.default_deadline_offset_days === "number") {
+                  const d = new Date(eventBase);
                   d.setDate(d.getDate() + p.default_deadline_offset_days);
                   deadline = d.toISOString().split("T")[0];
+                } else if (eventBase) {
+                  deadline = typeof eventBase === "string" ? eventBase.split("T")[0] : null;
                 }
                 return {
                   org_id,

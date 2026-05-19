@@ -134,7 +134,7 @@ export async function POST(
     // Verify event belongs to org
     const { data: event, error: eventErr } = await supabase
       .from("events")
-      .select("id, name, end_date")
+      .select("id, name, end_date, submission_deadline")
       .eq("id", eventId)
       .eq("org_id", org_id)
       .single();
@@ -226,6 +226,7 @@ export async function POST(
             status: "draft",
             client_token: token,
             event_id: eventId,
+            deadline: (event as any).submission_deadline ?? null,
             created_by_user_id: userData.user.id,
             updated_at: new Date().toISOString(),
           })
@@ -286,13 +287,19 @@ export async function POST(
 
           const phaseDefs: any[] = def?.phases ?? [];
           const now = new Date().toISOString();
+          const eventBase = (event as any).submission_deadline ?? event.end_date ?? null;
           if (phaseDefs.length > 0) {
             const phaseRows = phaseDefs.map((p: any, idx: number) => {
               let deadline: string | null = null;
-              if (event.end_date && typeof p.default_deadline_offset_days === "number") {
-                const d = new Date(event.end_date as string);
+              // Prefer explicit date on template phase, fall back to event base + offset
+              if (p.deadline) {
+                deadline = p.deadline;
+              } else if (eventBase && typeof p.default_deadline_offset_days === "number") {
+                const d = new Date(eventBase as string);
                 d.setDate(d.getDate() + p.default_deadline_offset_days);
                 deadline = d.toISOString().split("T")[0];
+              } else if (eventBase) {
+                deadline = typeof eventBase === "string" ? eventBase.split("T")[0] : null;
               }
               return {
                 org_id,

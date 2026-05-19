@@ -90,6 +90,7 @@ type Requirement = {
 type PhaseDef = {
   number: number;
   name: string;
+  deadline?: string | null;
   default_deadline_offset_days?: number;
 };
 
@@ -199,6 +200,7 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
         .map((p: any) => ({
           number: p.number,
           name: typeof p.name === "string" ? p.name : `Phase ${p.number}`,
+          deadline: typeof p.deadline === "string" ? p.deadline : null,
           default_deadline_offset_days: typeof p.default_deadline_offset_days === "number" ? p.default_deadline_offset_days : undefined,
         }))
     : [];
@@ -860,12 +862,12 @@ function PhaseAwareRequirements({
       // First "Add phase" click: assign all existing reqs to phase 1, create phases 1 & 2
       newReqs = allReqs.map((r) => ({ ...r, phase_number: 1 }));
       newPhases = [
-        { number: 1, name: "Phase 1", default_deadline_offset_days: -60 },
-        { number: 2, name: "Phase 2", default_deadline_offset_days: -30 },
+        { number: 1, name: "Phase 1", deadline: null },
+        { number: 2, name: "Phase 2", deadline: null },
       ];
       setActivePhase(1);
     } else {
-      newPhases = [...phases, { number: nextNum, name: `Phase ${nextNum}`, default_deadline_offset_days: -14 }];
+      newPhases = [...phases, { number: nextNum, name: `Phase ${nextNum}`, deadline: null }];
       setActivePhase(nextNum);
     }
     setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, phases: newPhases, requirements: newReqs } });
@@ -942,16 +944,13 @@ function PhaseAwareRequirements({
               className="text-sm"
             />
           </FormField>
-          <FormField label="Days before event end (negative)" className="w-44">
+          <FormField label="Phase deadline" className="w-44">
             <Input
-              type="number"
-              value={currentPhaseObj.default_deadline_offset_days ?? ""}
+              type="date"
+              value={currentPhaseObj.deadline ?? ""}
               onChange={(e) =>
-                updatePhase(activePhase, {
-                  default_deadline_offset_days: e.target.value ? parseInt(e.target.value, 10) : undefined,
-                })
+                updatePhase(activePhase, { deadline: e.target.value || null })
               }
-              placeholder="e.g. -30"
               className="text-sm"
             />
           </FormField>

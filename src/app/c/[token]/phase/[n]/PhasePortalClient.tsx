@@ -361,12 +361,14 @@ export default function PhasePortalClient({
             const isActive = ph.phase_number === currentPhase.phase_number;
             const isAccessible = ph.status !== "locked";
             const isDone = ph.status === "approved";
+            const mobDeadline = ph.deadline || eventDeadline;
+            const mobDays = mobDeadline ? Math.ceil((new Date(mobDeadline).setHours(23,59,59,999) - Date.now()) / 86400000) : null;
             return (
               <button
                 key={ph.id}
                 onClick={() => router.push(`/c/${token}/phase/${ph.phase_number}`)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
+                  "flex shrink-0 flex-col items-start rounded-xl px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
                   !isAccessible && "opacity-50"
                 )}
                 style={
@@ -375,9 +377,19 @@ export default function PhasePortalClient({
                     : { color: heading }
                 }
               >
-                {isDone && <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>}
-                {ph.status === "locked" && <svg className="h-3 w-3 shrink-0 opacity-60" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>}
-                {ph.name}
+                <span className="flex items-center gap-1.5">
+                  {isDone && <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>}
+                  {ph.status === "locked" && <svg className="h-3 w-3 shrink-0 opacity-60" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>}
+                  {ph.name}
+                </span>
+                {mobDays !== null && (
+                  <span className={cn(
+                    "mt-0.5 text-[9px] font-normal",
+                    mobDays < 0 ? "text-red-400" : mobDays <= 3 ? "text-amber-400" : "text-gray-400"
+                  )}>
+                    {mobDays < 0 ? `Overdue` : mobDays === 0 ? "Due today" : new Date(mobDeadline!).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -417,33 +429,44 @@ export default function PhasePortalClient({
             <nav className="p-2 space-y-0.5">
               {phases.map((ph) => {
                 const isActive = ph.phase_number === currentPhase.phase_number;
-                const isLocked = ph.status === "locked";
+                const phDeadline = ph.deadline || eventDeadline;
+                const phDays = phDeadline ? Math.ceil((new Date(phDeadline).setHours(23,59,59,999) - Date.now()) / 86400000) : null;
                 return (
                   <button
                     key={ph.id}
                     onClick={() => router.push(`/c/${token}/phase/${ph.phase_number}`)}
-                    className="w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all"
+                    className="w-full flex flex-col gap-0.5 rounded-xl px-3 py-2 text-left transition-all"
                     style={
                       isActive
                         ? { color: heading, outline: `2.5px solid ${accent}`, outlineOffset: "1px" }
                         : { color: heading }
                     }
                   >
-                    <span className="truncate">{ph.name}</span>
-                    <span className="shrink-0 opacity-70">
-                      {ph.status === "approved" && (
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
-                      )}
-                      {ph.status === "locked" && (
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-                      )}
-                      {ph.status === "awaiting_review" && (
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-                      )}
-                      {ph.status === "rejected" && (
-                        <span className="text-[11px] font-bold">!</span>
-                      )}
-                    </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium">{ph.name}</span>
+                      <span className="shrink-0 opacity-70">
+                        {ph.status === "approved" && (
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
+                        )}
+                        {ph.status === "locked" && (
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                        )}
+                        {ph.status === "awaiting_review" && (
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                        )}
+                        {ph.status === "rejected" && (
+                          <span className="text-[11px] font-bold">!</span>
+                        )}
+                      </span>
+                    </div>
+                    {phDays !== null && (
+                      <span className={cn(
+                        "text-[10px] font-medium",
+                        phDays < 0 ? "text-red-500" : phDays <= 3 ? "text-amber-500" : "text-gray-400"
+                      )}>
+                        {phDays < 0 ? `Overdue ${Math.abs(phDays)}d` : phDays === 0 ? "Due today" : `Due ${new Date(phDeadline!).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`}
+                      </span>
+                    )}
                   </button>
                 );
               })}
