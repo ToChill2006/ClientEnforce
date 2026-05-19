@@ -326,6 +326,12 @@ export default function OnboardingDetailAdminPage() {
 
   // Reminder override state
 
+  // Owner assign state
+  const [teamMembers, setTeamMembers] = React.useState<{ user_id: string; full_name: string | null; email: string | null }[]>([]);
+  const [ownerSelectOpen, setOwnerSelectOpen] = React.useState(false);
+  const [ownerSelectId, setOwnerSelectId] = React.useState("");
+  const [ownerSaving, setOwnerSaving] = React.useState(false);
+
   // Template assign state
   const [orgTemplates, setOrgTemplates] = React.useState<{ id: string; name: string }[]>([]);
   const [templateSelectId, setTemplateSelectId] = React.useState("");
@@ -698,6 +704,11 @@ export default function OnboardingDetailAdminPage() {
       .then((r) => r.ok ? r.json() : null)
       .then((j) => { if (Array.isArray(j?.items)) setOrgTemplates(j.items); })
       .catch(() => {});
+    // Fetch team members for owner picker
+    fetch("/api/team/members", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((j) => { if (Array.isArray(j?.members)) setTeamMembers(j.members); })
+      .catch(() => {});
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
@@ -728,6 +739,27 @@ export default function OnboardingDetailAdminPage() {
       }
     })();
   }, []);
+
+  async function assignOwner() {
+    setOwnerSaving(true);
+    try {
+      const res = await fetch(`/api/onboardings/${encodeURIComponent(params.id)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ owner_id: ownerSelectId || null }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "Save failed");
+      const member = teamMembers.find((m) => m.user_id === ownerSelectId);
+      const name = member ? (member.full_name || member.email || "Unknown") : null;
+      setPayload((prev) => prev ? { ...prev, onboarding: { ...prev.onboarding, owner_id: ownerSelectId || null, owner_name: name } } : prev);
+      setOwnerSelectOpen(false);
+      toast({ title: "Owner updated", variant: "success" });
+    } catch (e: any) {
+      toast({ title: "Failed to update owner", description: e?.message, variant: "error" });
+    } finally {
+      setOwnerSaving(false);
+    }
+  }
 
   async function assignTemplate() {
     if (!templateSelectId) return;
@@ -1278,7 +1310,49 @@ export default function OnboardingDetailAdminPage() {
             <CardTitle>Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5 text-sm">
-            <DetailRow label="Owner" value={ob?.owner_name || "Unassigned"} />
+            <DetailRow
+              label="Owner"
+              value={
+                ownerSelectOpen ? (
+                  <div className="flex items-center gap-1.5">
+                    <select
+                      className="h-7 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-2 text-xs"
+                      value={ownerSelectId}
+                      onChange={(e) => setOwnerSelectId(e.target.value)}
+                      autoFocus
+                    >
+                      <option value="">Unassigned</option>
+                      {teamMembers.map((m) => (
+                        <option key={m.user_id} value={m.user_id}>
+                          {m.full_name || m.email || m.user_id}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={assignOwner}
+                      disabled={ownerSaving}
+                      className="rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-2 py-0.5 text-xs font-medium text-white disabled:opacity-50"
+                    >
+                      {ownerSaving ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setOwnerSelectOpen(false)}
+                      className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setOwnerSelectId(ob?.owner_id || ""); setOwnerSelectOpen(true); }}
+                    className="flex items-center gap-1 text-[var(--color-text-primary)] hover:underline"
+                  >
+                    {ob?.owner_name || <span className="text-[var(--color-text-muted)]">Unassigned</span>}
+                    <span className="ml-1 text-[0.65rem] text-[var(--color-text-muted)]">✎</span>
+                  </button>
+                )
+              }
+            />
             <DetailRow
               label="Template"
               value={
