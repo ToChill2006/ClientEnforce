@@ -862,12 +862,12 @@ function PhaseAwareRequirements({
       // First "Add phase" click: assign all existing reqs to phase 1, create phases 1 & 2
       newReqs = allReqs.map((r) => ({ ...r, phase_number: 1 }));
       newPhases = [
-        { number: 1, name: "Phase 1", deadline: null },
-        { number: 2, name: "Phase 2", deadline: null },
+        { number: 1, name: "Phase 1", default_deadline_offset_days: -60 },
+        { number: 2, name: "Phase 2", default_deadline_offset_days: -30 },
       ];
       setActivePhase(1);
     } else {
-      newPhases = [...phases, { number: nextNum, name: `Phase ${nextNum}`, deadline: null }];
+      newPhases = [...phases, { number: nextNum, name: `Phase ${nextNum}`, default_deadline_offset_days: -14 }];
       setActivePhase(nextNum);
     }
     setSelected((prev) => prev && { ...prev, definition: { ...prev.definition, phases: newPhases, requirements: newReqs } });
@@ -944,13 +944,16 @@ function PhaseAwareRequirements({
               className="text-sm"
             />
           </FormField>
-          <FormField label="Phase deadline" className="w-44">
+          <FormField label="Days before deadline" className="w-44">
             <Input
-              type="date"
-              value={currentPhaseObj.deadline ?? ""}
+              type="number"
+              value={currentPhaseObj.default_deadline_offset_days ?? ""}
               onChange={(e) =>
-                updatePhase(activePhase, { deadline: e.target.value || null })
+                updatePhase(activePhase, {
+                  default_deadline_offset_days: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                })
               }
+              placeholder="e.g. -30"
               className="text-sm"
             />
           </FormField>
