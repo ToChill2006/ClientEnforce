@@ -243,19 +243,47 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       await admin.from("onboarding_requirements").insert(reqRows);
     }
 
+    // Resolve event deadline for phase deadline calculation
+    const { data: obRow } = await admin
+      .from("onboardings")
+      .select("event_id, deadline")
+      .eq("id", id)
+      .single();
+    let eventBase: string | null = (obRow as any)?.deadline ?? null;
+    if (!eventBase && (obRow as any)?.event_id) {
+      const { data: evRow } = await admin
+        .from("events")
+        .select("submission_deadline, end_date")
+        .eq("id", (obRow as any).event_id)
+        .single();
+      eventBase = (evRow as any)?.submission_deadline ?? (evRow as any)?.end_date ?? null;
+    }
+
     // Insert phases from template definition
     const phaseDefs: any[] = def?.phases ?? [];
     if (phaseDefs.length > 0) {
-      const phaseRows = phaseDefs.map((p: any, idx: number) => ({
-        org_id,
-        onboarding_id: id,
-        phase_number: p.number ?? idx + 1,
-        name: p.name ?? `Phase ${p.number ?? idx + 1}`,
-        deadline: null,
-        status: idx === 0 ? "in_progress" : "locked",
-        created_at: now,
-        updated_at: now,
-      }));
+      const phaseRows = phaseDefs.map((p: any, idx: number) => {
+        let deadline: string | null = null;
+        if (p.deadline) {
+          deadline = p.deadline;
+        } else if (eventBase && typeof p.default_deadline_offset_days === "number") {
+          const d = new Date(eventBase);
+          d.setDate(d.getDate() + p.default_deadline_offset_days);
+          deadline = d.toISOString().split("T")[0];
+        } else if (eventBase) {
+          deadline = eventBase.split("T")[0];
+        }
+        return {
+          org_id,
+          onboarding_id: id,
+          phase_number: p.number ?? idx + 1,
+          name: p.name ?? `Phase ${p.number ?? idx + 1}`,
+          deadline,
+          status: idx === 0 ? "in_progress" : "locked",
+          created_at: now,
+          updated_at: now,
+        };
+      });
       await admin.from("onboarding_phases").insert(phaseRows);
     } else {
       await admin.from("onboarding_phases").insert({
@@ -263,6 +291,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         onboarding_id: id,
         phase_number: 1,
         name: "Onboarding",
+        deadline: eventBase ? eventBase.split("T")[0] : null,
         status: "in_progress",
         created_at: now,
         updated_at: now,

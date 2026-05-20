@@ -1235,7 +1235,6 @@ export default function EventDetailPage() {
                       <th className="px-3 py-2 text-left font-medium">Name</th>
                       <th className="px-3 py-2 text-left font-medium">Template</th>
                       <th className="px-3 py-2 text-left font-medium">Status</th>
-                      <th className="px-3 py-2 text-left font-medium">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--color-border)]">
