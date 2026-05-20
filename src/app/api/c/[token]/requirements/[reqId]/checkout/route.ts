@@ -82,13 +82,27 @@ export async function POST(
   const origin = appOrigin();
   const baseUrl = `${origin}/c/${token}/phase/${phaseNumber}`;
 
-  // 5. Create Stripe Checkout Session
+  // 5. Check if connected account has transfers capability
+  let useConnect = false;
+  if (org.stripe_account_id) {
+    try {
+      const acct = await stripe.accounts.retrieve(org.stripe_account_id);
+      const caps = (acct as any).capabilities ?? {};
+      useConnect = caps.transfers === "active" || caps.legacy_payments === "active";
+    } catch {
+      useConnect = false;
+    }
+  }
+
+  // 6. Create Stripe Checkout Session
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      payment_intent_data: {
-        transfer_data: { destination: org.stripe_account_id },
-      },
+      ...(useConnect ? {
+        payment_intent_data: {
+          transfer_data: { destination: org.stripe_account_id! },
+        },
+      } : {}),
       line_items: [
         {
           price_data: {
@@ -111,7 +125,7 @@ export async function POST(
       },
     });
 
-    // 6. Update requirement with session id and set status to pending
+    // 7. Update requirement with session id and set status to pending
     await admin
       .from("onboarding_requirements")
       .update({
