@@ -1395,6 +1395,7 @@ export default function OnboardingDetailAdminPage() {
                             draftMode={isDraftOnboarding}
                             onEdit={openEditReq}
                             onRemove={(req) => setConfirmRemoveReq(req)}
+                            onboardingId={params.id}
                           />
                         ))}
                       </ul>
@@ -1437,6 +1438,7 @@ export default function OnboardingDetailAdminPage() {
                   phaseEditable={false}
                   onEdit={openEditReq}
                   onRemove={(req) => setConfirmRemoveReq(req)}
+                  onboardingId={params.id}
                 />
               ))}
             </ul>
@@ -1623,6 +1625,7 @@ function ResponseItem({
   draftMode = false,
   onEdit,
   onRemove,
+  onboardingId,
 }: {
   r: Requirement;
   onPreview: (ref: string, bucket: string, name: string) => void;
@@ -1632,6 +1635,7 @@ function ResponseItem({
   draftMode?: boolean;
   onEdit?: (req: Requirement) => void;
   onRemove?: (req: Requirement) => void;
+  onboardingId?: string;
 }) {
   const rType = (r.type ?? r.kind ?? "").toLowerCase();
   const preview = valuePreview(r);
@@ -1731,12 +1735,16 @@ function ResponseItem({
                   on {new Date(payPaidAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })}
                 </span>
               )}
-              {payStatus === "pending" && (
+              {(payStatus === "pending" || payStatus === "not_paid") && onboardingId && (r as any).payment_stripe_session_id && (
                 <button
                   className="text-xs text-[var(--color-accent)] hover:underline"
-                  onClick={() => window.location.reload()}
+                  onClick={async () => {
+                    const res = await fetch(`/api/onboardings/${onboardingId}/requirements/${r.id}/verify-payment`, { method: "POST" });
+                    const data = await res.json();
+                    if (data.status === "paid") window.location.reload();
+                  }}
                 >
-                  Refresh ↻
+                  Verify payment ↻
                 </button>
               )}
             </div>
