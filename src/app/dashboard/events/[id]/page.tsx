@@ -1002,7 +1002,7 @@ export default function EventDetailPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-[var(--color-border)] overflow-x-auto">
+      <div className="flex gap-0.5 border-b border-[var(--color-border)] overflow-x-auto scrollbar-none -mx-1 px-1">
         {(["dashboard", "exhibitors", "planning", "guide", "files", "add", "templates"] as Tab[]).map((t) => {
           const labels: Record<Tab, string> = { dashboard: "Dashboard", add: "Add Exhibitors", exhibitors: "Exhibitors", templates: "Templates", planning: "Planning Board", files: "Files", guide: "Exhibitor Guide" };
           const icons: Record<Tab, React.ReactNode> = {
@@ -1019,15 +1019,16 @@ export default function EventDetailPage() {
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors sm:px-4",
                 tab === t
                   ? "border-[var(--color-accent)] text-[var(--color-accent)]"
                   : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
               )}
             >
-              {icons[t]} {labels[t]}
+              {icons[t]}
+              <span className="hidden sm:inline">{labels[t]}</span>
               {t === "exhibitors" && exhibitors.length > 0 && (
-                <span className="ml-1 rounded-full bg-[var(--color-bg-subtle)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
+                <span className="ml-0.5 rounded-full bg-[var(--color-bg-subtle)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
                   {exhibitors.length}
                 </span>
               )}
@@ -1170,13 +1171,13 @@ export default function EventDetailPage() {
                   <span className="text-sm font-semibold text-[var(--color-text-primary)]">Exhibitor Deadlines</span>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
+                  <table className="w-full min-w-[400px] text-xs">
                     <thead className="bg-[var(--color-bg-subtle)]">
                       <tr>
-                        <th className="px-5 py-2.5 text-left font-medium text-[var(--color-text-muted)]">Exhibitor</th>
-                        <th className="px-5 py-2.5 text-left font-medium text-[var(--color-text-muted)]">Phase</th>
-                        <th className="px-5 py-2.5 text-left font-medium text-[var(--color-text-muted)]">Deadline</th>
-                        <th className="px-5 py-2.5 text-left font-medium text-[var(--color-text-muted)]">Status</th>
+                        <th className="px-4 py-2.5 text-left font-medium text-[var(--color-text-muted)] sm:px-5">Exhibitor</th>
+                        <th className="px-4 py-2.5 text-left font-medium text-[var(--color-text-muted)] sm:px-5">Phase</th>
+                        <th className="px-4 py-2.5 text-left font-medium text-[var(--color-text-muted)] sm:px-5">Deadline</th>
+                        <th className="px-4 py-2.5 text-left font-medium text-[var(--color-text-muted)] sm:px-5">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--color-border)]">
@@ -1284,7 +1285,7 @@ export default function EventDetailPage() {
               </div>
 
               <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
-                <table className="w-full text-xs">
+                <table className="w-full min-w-[480px] text-xs">
                   <thead className="bg-[var(--color-bg-subtle)]">
                     <tr>
                       <th className="px-3 py-2 text-left font-medium">#</th>
@@ -1889,7 +1890,7 @@ function SectionEditor({
   return (
     <div className="group relative rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-sm)]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-2.5">
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] px-3 py-2 sm:px-4 sm:py-2.5">
         <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
           <GripVertical className="h-3.5 w-3.5 shrink-0" />
           <span className="font-medium uppercase tracking-wide">
@@ -2189,12 +2190,12 @@ function ExhibitorGuideBuilder({
   return (
     <div className="space-y-5">
       {/* Header bar */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Exhibitor Guide</h2>
           <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Build the guide page that exhibitors will see in their portal.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             href={`/guide/${eventId}`}
             target="_blank"
@@ -2264,7 +2265,7 @@ function ExhibitorGuideBuilder({
           <p className="text-xs font-medium text-[var(--color-accent)]">Public guide URL</p>
           <p className="truncate text-xs text-[var(--color-text-secondary)]">{guideUrl}</p>
         </div>
-        <p className="shrink-0 text-xs text-[var(--color-text-muted)]">Shown in every client portal for this event.</p>
+        <p className="hidden sm:block shrink-0 text-xs text-[var(--color-text-muted)]">Shown in every client portal for this event.</p>
       </div>
 
       {/* Sections */}

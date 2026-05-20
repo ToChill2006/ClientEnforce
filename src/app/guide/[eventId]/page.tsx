@@ -75,7 +75,7 @@ function SectionBlock({ section }: { section: GuideSection }) {
 
   if (section.type === "text") {
     return (
-      <div className="mb-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
         {section.title && <h3 className="mb-2 text-sm font-semibold text-gray-800">{section.title}</h3>}
         <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{section.content}</div>
       </div>
@@ -91,7 +91,7 @@ function SectionBlock({ section }: { section: GuideSection }) {
     };
     const cls = colorMap[section.color || "blue"] || colorMap.blue;
     return (
-      <div className={`mb-4 rounded-xl border p-5 ${cls}`}>
+      <div className={`mb-4 rounded-xl border p-4 sm:p-5 ${cls}`}>
         {section.title && <h3 className="mb-1.5 text-sm font-semibold">{section.title}</h3>}
         <div className="whitespace-pre-wrap text-sm leading-relaxed">{section.content}</div>
       </div>
@@ -106,13 +106,13 @@ function SectionBlock({ section }: { section: GuideSection }) {
             <h3 className="text-sm font-semibold text-gray-800">{section.title}</h3>
           </div>
         )}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+          <table className="w-full min-w-[480px] text-sm">
             {section.headers && section.headers.length > 0 && (
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   {section.headers.map((h, i) => (
-                    <th key={i} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th key={i} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">
                       {h}
                     </th>
                   ))}
@@ -186,7 +186,7 @@ export default async function ExhibitorGuidePage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-3xl px-3 py-6 sm:px-6 sm:py-10">
         <GuideHero guide={guide} eventName={eventName} />
         {guide.intro && guide.hero_image && (
           <p className="mb-6 -mt-2 text-sm leading-relaxed text-gray-600">{guide.intro}</p>

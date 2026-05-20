@@ -1324,7 +1324,7 @@ export default function OnboardingDetailAdminPage() {
           <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">What the client has submitted so far.</p>
         </CardHeader>
         {phases.length > 0 && (
-          <div className="flex gap-1 border-b border-[var(--color-border)] px-5 pt-3 pb-0">
+          <div className="flex gap-1 overflow-x-auto scrollbar-none border-b border-[var(--color-border)] px-5 pt-3 pb-0">
             <button
               onClick={() => setActiveResponsePhase(null)}
               className={[

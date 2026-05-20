@@ -854,19 +854,19 @@ export default function OnboardingsPage() {
 
       {/* Solo / Bulk tab bar — only visible when enterprise flag is on */}
       {hasEnterpriseFlag && (
-        <div className="flex gap-1 border-b border-[var(--color-border)]">
+        <div className="flex gap-0.5 overflow-x-auto scrollbar-none border-b border-[var(--color-border)]">
           {(["bulk", "solo"] as const).map((t) => (
             <button
               key={t}
               onClick={() => { setActiveTab(t); localStorage.setItem("onboardings_tab", t); }}
               className={cn(
-                "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+                "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors sm:px-4",
                 activeTab === t
                   ? "border-[var(--color-accent)] text-[var(--color-accent)]"
                   : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
               )}
             >
-              {t === "solo" ? "Solo Onboardings" : <><CalendarDays className="h-3.5 w-3.5" /> Bulk Onboardings (Events)</>}
+              {t === "solo" ? "Solo Onboardings" : <><CalendarDays className="h-3.5 w-3.5" /><span>Bulk Onboardings (Events)</span></>}
             </button>
           ))}
         </div>
