@@ -1734,7 +1734,7 @@ function ResponseItem({
               {payStatus === "pending" && (
                 <button
                   className="text-xs text-[var(--color-accent)] hover:underline"
-                  onClick={() => load()}
+                  onClick={() => loadDetail()}
                 >
                   Refresh ↻
                 </button>
