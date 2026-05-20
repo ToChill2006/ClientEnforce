@@ -16,7 +16,7 @@ const UpdateEvent = z.object({
   end_date: z.string().optional().nullable(),
   start_date: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
-  status: z.enum(["planning", "active", "closed", "archived"]).optional(),
+  status: z.enum(["planning", "active", "in_progress", "completed", "closed", "archived"]).optional(),
   submission_deadline: z.string().optional().nullable(),
 });
 

@@ -89,8 +89,14 @@ export default function EventsPage() {
                       )}
                     </div>
                   </div>
-                  <span className="shrink-0 rounded bg-[var(--color-bg-subtle)] px-2 py-0.5 text-[10px] font-medium capitalize text-[var(--color-text-muted)]">
-                    {ev.status}
+                  <span className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-medium ${
+                    ev.status === "completed" ? "bg-[var(--color-success-subtle,#d1fae5)] text-[var(--color-success,#059669)]" :
+                    ev.status === "in_progress" ? "bg-[var(--color-accent-subtle,#dbeafe)] text-[var(--color-accent,#2563eb)]" :
+                    "bg-[var(--color-bg-subtle)] text-[var(--color-text-muted)]"
+                  }`}>
+                    {ev.status === "in_progress" ? "In Progress" :
+                     ev.status === "completed" ? "Completed" :
+                     ev.status.charAt(0).toUpperCase() + ev.status.slice(1)}
                   </span>
                 </div>
 

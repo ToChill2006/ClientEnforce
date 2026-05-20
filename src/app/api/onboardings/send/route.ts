@@ -133,9 +133,10 @@ export async function POST(req: Request) {
 
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 400 });
 
-  // Event exhibitors use the deadline-based reminder rules system instead of the
-  // generic follow-up scheduler, so skip queuing for them.
+  // Sync event status (best-effort)
   if ((onboarding as any).event_id) {
+    const { syncEventStatus } = await import("@/lib/sync-event-status");
+    syncEventStatus((onboarding as any).event_id).catch(() => {});
     return NextResponse.json({ ok: true });
   }
 

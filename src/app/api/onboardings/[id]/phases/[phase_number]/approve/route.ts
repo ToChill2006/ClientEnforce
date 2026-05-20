@@ -7,6 +7,7 @@ import { currentOrgHasFeature } from "@/lib/feature-flags";
 import { sendOrgEmail } from "@/lib/send-email";
 import { renderClientEnforceEmail } from "@/lib/email-template";
 import { loadWhiteLabelForOrg } from "@/lib/white-label";
+import { syncEventStatus } from "@/lib/sync-event-status";
 
 function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
@@ -93,6 +94,16 @@ export async function POST(
         .from("onboardings")
         .update({ status: "completed", updated_at: now })
         .eq("id", onboardingId);
+    }
+
+    // Sync event status (best-effort)
+    const { data: obForEvent } = await supabase
+      .from("onboardings")
+      .select("event_id")
+      .eq("id", onboardingId)
+      .single();
+    if ((obForEvent as any)?.event_id) {
+      syncEventStatus((obForEvent as any).event_id).catch(() => {});
     }
 
     // Fetch onboarding + client for emails
