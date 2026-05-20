@@ -137,13 +137,25 @@ export default function PhasePortalClient({
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paidReqId = params.get("paid");
+    const cancelledReqId = params.get("payment_cancelled");
+
+    const url = new URL(window.location.href);
+
     if (paidReqId) {
       setPaymentStatuses((prev) => ({ ...prev, [paidReqId]: "paid" }));
       setPaymentToast("Payment received — thank you!");
-      const url = new URL(window.location.href);
       url.searchParams.delete("paid");
       window.history.replaceState({}, "", url.toString());
       setTimeout(() => setPaymentToast(null), 4000);
+    }
+
+    if (cancelledReqId) {
+      // Reset local state immediately so the pay button is available again
+      setPaymentStatuses((prev) => ({ ...prev, [cancelledReqId]: "not_paid" }));
+      url.searchParams.delete("payment_cancelled");
+      window.history.replaceState({}, "", url.toString());
+      // Also reset in DB so it isn't stuck as "pending"
+      fetch(`/api/c/${token}/requirements/${cancelledReqId}/cancel`, { method: "POST" }).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -734,14 +746,26 @@ export default function PhasePortalClient({
 
                     if (payStatus === "pending") {
                       return (
-                        <div key={req.id} className="rounded-2xl bg-white border border-gray-200 shadow-md px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
-                            <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                        <div key={req.id} className="rounded-2xl bg-white border border-gray-200 shadow-md px-4 sm:px-6 py-4 sm:py-5">
+                          <div className="flex items-baseline gap-1.5 mb-1">
+                            <label className="text-sm font-semibold text-gray-800">{req.label}</label>
+                            {req.is_required && <span className="text-xs font-semibold" style={{ color: accent }}>*</span>}
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold text-amber-700">Processing payment…</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Please wait while we confirm.</p>
-                          </div>
+                          {req.payment_description && (
+                            <p className="text-sm text-gray-500 mb-3">{req.payment_description}</p>
+                          )}
+                          <p className="text-xs text-amber-600 mb-3">Your previous session was not completed. Click below to try again.</p>
+                          {!isReadOnly && (
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => initiatePayment(req.id)}
+                              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm hover:opacity-90 disabled:opacity-40 transition"
+                              style={{ backgroundColor: accent }}
+                            >
+                              {isBusy ? "Redirecting…" : `Pay ${fmtAmount} →`}
+                            </button>
+                          )}
                         </div>
                       );
                     }

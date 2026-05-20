@@ -117,7 +117,7 @@ export async function POST(
         },
       ],
       success_url: `${baseUrl}?paid=${reqId}`,
-      cancel_url: baseUrl,
+      cancel_url: `${baseUrl}?payment_cancelled=${reqId}`,
       metadata: {
         onboarding_id: onboarding.id,
         requirement_id: reqId,

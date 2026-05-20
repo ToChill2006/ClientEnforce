@@ -1705,10 +1705,10 @@ function ResponseItem({
       "neutral";
 
     const statusLabel =
-      payStatus === "paid" ? "Paid ✓" :
-      payStatus === "pending" ? "Pending" :
-      payStatus === "failed" ? "Failed" :
-      "Not paid";
+      payStatus === "paid" ? `Paid ${fmtAmount} ✓` :
+      payStatus === "pending" ? `Awaiting payment — ${fmtAmount}` :
+      payStatus === "failed" ? "Payment failed" :
+      `Not paid — ${fmtAmount}`;
 
     return (
       <li className="px-5 py-4">
@@ -1726,13 +1726,18 @@ function ResponseItem({
             )}
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Tag tone={statusTone}>{statusLabel}</Tag>
-              {payAmount != null && (
-                <span className="text-xs text-[var(--color-text-secondary)]">{fmtAmount}</span>
-              )}
               {payStatus === "paid" && payPaidAt && (
                 <span className="text-xs text-[var(--color-text-muted)]">
                   on {new Date(payPaidAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })}
                 </span>
+              )}
+              {payStatus === "pending" && (
+                <button
+                  className="text-xs text-[var(--color-accent)] hover:underline"
+                  onClick={() => load()}
+                >
+                  Refresh ↻
+                </button>
               )}
             </div>
           </div>
