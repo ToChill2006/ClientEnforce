@@ -18,6 +18,7 @@ const UpdateEvent = z.object({
   location: z.string().optional().nullable(),
   status: z.enum(["planning", "active", "in_progress", "completed", "closed", "archived"]).optional(),
   submission_deadline: z.string().optional().nullable(),
+  exhibitor_guide: z.any().optional(),
 });
 
 export async function PATCH(

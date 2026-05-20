@@ -56,6 +56,8 @@ interface Props {
   currentPhase: Phase;
   requirements: Requirement[];
   whiteLabel: WhiteLabel;
+  guideUrl?: string | null;
+  guideTitle?: string | null;
 }
 
 function cn(...classes: (string | undefined | false | null)[]) {
@@ -73,6 +75,8 @@ export default function PhasePortalClient({
   currentPhase,
   requirements,
   whiteLabel,
+  guideUrl,
+  guideTitle,
 }: Props) {
   const router = useRouter();
 
@@ -496,6 +500,32 @@ export default function PhasePortalClient({
 
         {/* Main */}
         <main className="flex-1 space-y-3 sm:space-y-4 pb-4 sm:pb-0">
+
+          {/* Exhibitor guide banner */}
+          {guideUrl && (
+            <a
+              href={guideUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm hover:shadow-md transition-shadow no-underline"
+            >
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: accent + "22" }}
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: accent }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Exhibitor Guide</p>
+                <p className="truncate text-sm font-medium text-gray-800">{guideTitle || "View exhibitor guide"}</p>
+              </div>
+              <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+            </a>
+          )}
 
           {/* Phase title card — optionally absorbs first heading/info group */}
           <div className="rounded-2xl bg-white border border-gray-200 shadow-md overflow-hidden">

@@ -37,6 +37,16 @@ import {
   StickyNote,
   ChevronDown,
   ChevronUp,
+  BookOpen,
+  GripVertical,
+  ExternalLink,
+  Copy,
+  Table2,
+  Type,
+  Info,
+  Image,
+  Minus,
+  Heading,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -49,6 +59,21 @@ import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import { DeadlineBadge, DeadlinePill } from "@/components/ui/deadline-badge";
 
+type GuideSection =
+  | { id: string; type: "heading"; title: string }
+  | { id: string; type: "text"; title?: string; content: string }
+  | { id: string; type: "info_box"; title?: string; content: string; color?: "blue" | "yellow" | "green" | "red" }
+  | { id: string; type: "table"; title?: string; headers: string[]; rows: string[][] }
+  | { id: string; type: "image"; url: string; alt?: string; caption?: string }
+  | { id: string; type: "divider" };
+
+type GuideData = {
+  title: string;
+  hero_image?: string | null;
+  intro?: string | null;
+  sections: GuideSection[];
+};
+
 type EventData = {
   id: string;
   name: string;
@@ -58,6 +83,7 @@ type EventData = {
   location: string | null;
   status: string;
   exhibitor_count?: number;
+  exhibitor_guide?: GuideData | null;
 };
 
 type ExhibitorRow = {
@@ -86,7 +112,7 @@ type CsvRow = {
 type Template = { id: string; name: string };
 type TeamMember = { user_id: string; email: string | null; full_name: string | null };
 
-type Tab = "dashboard" | "exhibitors" | "add" | "templates" | "planning" | "files";
+type Tab = "dashboard" | "exhibitors" | "add" | "templates" | "planning" | "files" | "guide";
 
 type BoardPost = {
   id: string;
@@ -421,6 +447,10 @@ export default function EventDetailPage() {
   // Delete event
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
 
+  // Exhibitor Guide
+  const [guideSaving, setGuideSaving] = React.useState(false);
+  const [guideData, setGuideData] = React.useState<GuideData | null>(null);
+  const [guideEditingId, setGuideEditingId] = React.useState<string | null>(null);
 
   // Planning board
   const [boardPosts, setBoardPosts] = React.useState<BoardPost[]>([]);
@@ -615,10 +645,36 @@ export default function EventDetailPage() {
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Failed to load event");
       setEvent(json.event);
+      const g = json.event?.exhibitor_guide;
+      if (g && typeof g === "object") {
+        setGuideData(g as GuideData);
+      } else {
+        setGuideData({ title: json.event?.name ? `${json.event.name} — Exhibitor Guide` : "Exhibitor Guide", hero_image: null, intro: null, sections: [] });
+      }
     } catch (e: any) {
       toast({ title: "Error", description: e?.message, variant: "error" });
     } finally {
       setLoadingEvent(false);
+    }
+  }
+
+  async function saveGuide(guide: GuideData) {
+    setGuideSaving(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ exhibitor_guide: guide }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Failed to save guide");
+      setGuideData(guide);
+      setEvent((prev) => prev ? { ...prev, exhibitor_guide: guide } : prev);
+      toast({ title: "Guide saved", variant: "success" });
+    } catch (e: any) {
+      toast({ title: "Error saving guide", description: e?.message, variant: "error" });
+    } finally {
+      setGuideSaving(false);
     }
   }
 
@@ -947,8 +1003,8 @@ export default function EventDetailPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-[var(--color-border)] overflow-x-auto">
-        {(["dashboard", "exhibitors", "planning", "files", "add", "templates"] as Tab[]).map((t) => {
-          const labels: Record<Tab, string> = { dashboard: "Dashboard", add: "Add Exhibitors", exhibitors: "Exhibitors", templates: "Templates", planning: "Planning Board", files: "Files" };
+        {(["dashboard", "exhibitors", "planning", "guide", "files", "add", "templates"] as Tab[]).map((t) => {
+          const labels: Record<Tab, string> = { dashboard: "Dashboard", add: "Add Exhibitors", exhibitors: "Exhibitors", templates: "Templates", planning: "Planning Board", files: "Files", guide: "Exhibitor Guide" };
           const icons: Record<Tab, React.ReactNode> = {
             dashboard: <LayoutDashboard className="h-3.5 w-3.5" />,
             add: <Upload className="h-3.5 w-3.5" />,
@@ -956,6 +1012,7 @@ export default function EventDetailPage() {
             templates: <LayoutTemplate className="h-3.5 w-3.5" />,
             planning: <Clipboard className="h-3.5 w-3.5" />,
             files: <FileText className="h-3.5 w-3.5" />,
+            guide: <BookOpen className="h-3.5 w-3.5" />,
           };
           return (
             <button
@@ -1769,6 +1826,512 @@ export default function EventDetailPage() {
         </Modal>
       )}
 
+      {/* Exhibitor Guide tab */}
+      {tab === "guide" && guideData && (
+        <ExhibitorGuideBuilder
+          eventId={eventId}
+          guide={guideData}
+          saving={guideSaving}
+          editingId={guideEditingId}
+          setEditingId={setGuideEditingId}
+          onSave={saveGuide}
+        />
+      )}
+
+    </div>
+  );
+}
+
+// ─── Exhibitor Guide Builder ───────────────────────────────────────────────────
+
+function newId() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+const SECTION_TYPES: Array<{ type: GuideSection["type"]; label: string; icon: React.ReactNode }> = [
+  { type: "heading", label: "Heading", icon: <Heading className="h-3.5 w-3.5" /> },
+  { type: "text", label: "Text Block", icon: <Type className="h-3.5 w-3.5" /> },
+  { type: "info_box", label: "Info Box", icon: <Info className="h-3.5 w-3.5" /> },
+  { type: "table", label: "Table", icon: <Table2 className="h-3.5 w-3.5" /> },
+  { type: "image", label: "Image", icon: <Image className="h-3.5 w-3.5" /> },
+  { type: "divider", label: "Divider", icon: <Minus className="h-3.5 w-3.5" /> },
+];
+
+function defaultSection(type: GuideSection["type"]): GuideSection {
+  if (type === "heading") return { id: newId(), type, title: "New Section" };
+  if (type === "text") return { id: newId(), type, title: "", content: "" };
+  if (type === "info_box") return { id: newId(), type, title: "", content: "", color: "blue" };
+  if (type === "table") return { id: newId(), type, title: "", headers: ["Column 1", "Column 2"], rows: [["", ""], ["", ""]] };
+  if (type === "image") return { id: newId(), type, url: "", alt: "", caption: "" };
+  return { id: newId(), type: "divider" };
+}
+
+function SectionEditor({
+  section,
+  onChange,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+}: {
+  section: GuideSection;
+  onChange: (s: GuideSection) => void;
+  onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
+  const inputCls = "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+  const textareaCls = `${inputCls} resize-none`;
+
+  return (
+    <div className="group relative rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-sm)]">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-2.5">
+        <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+          <GripVertical className="h-3.5 w-3.5 shrink-0" />
+          <span className="font-medium uppercase tracking-wide">
+            {SECTION_TYPES.find((t) => t.type === section.type)?.label ?? section.type}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onMoveUp}
+            disabled={isFirst}
+            className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-30 transition-colors"
+          >
+            <ChevronUp className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={isLast}
+            className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-30 transition-colors"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="rounded p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-danger-subtle,#fef2f2)] hover:text-[var(--color-danger)] transition-colors"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-4 space-y-3">
+        {section.type === "divider" && (
+          <p className="text-xs text-[var(--color-text-muted)] text-center py-2">— horizontal rule —</p>
+        )}
+
+        {section.type === "heading" && (
+          <input
+            className={inputCls}
+            value={section.title}
+            onChange={(e) => onChange({ ...section, title: e.target.value })}
+            placeholder="Section heading text"
+          />
+        )}
+
+        {(section.type === "text" || section.type === "info_box") && (
+          <>
+            <input
+              className={inputCls}
+              value={(section as any).title ?? ""}
+              onChange={(e) => onChange({ ...section, title: e.target.value } as GuideSection)}
+              placeholder="Title (optional)"
+            />
+            <textarea
+              className={textareaCls}
+              rows={4}
+              value={(section as any).content ?? ""}
+              onChange={(e) => onChange({ ...section, content: e.target.value } as GuideSection)}
+              placeholder="Content…"
+            />
+            {section.type === "info_box" && (
+              <div className="flex gap-2">
+                {(["blue", "yellow", "green", "red"] as const).map((c) => {
+                  const bgMap = { blue: "bg-blue-500", yellow: "bg-amber-400", green: "bg-emerald-500", red: "bg-red-500" };
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => onChange({ ...section, color: c } as GuideSection)}
+                      className={cn("h-5 w-5 rounded-full transition-all", bgMap[c], section.color === c ? "ring-2 ring-offset-2 ring-[var(--color-accent)]" : "opacity-60 hover:opacity-100")}
+                    />
+                  );
+                })}
+                <span className="text-xs text-[var(--color-text-muted)] self-center">Colour</span>
+              </div>
+            )}
+          </>
+        )}
+
+        {section.type === "table" && (
+          <TableEditor
+            section={section}
+            onChange={onChange}
+            inputCls={inputCls}
+          />
+        )}
+
+        {section.type === "image" && (
+          <>
+            <input
+              className={inputCls}
+              value={section.url}
+              onChange={(e) => onChange({ ...section, url: e.target.value })}
+              placeholder="Image URL (https://…)"
+            />
+            <input
+              className={inputCls}
+              value={section.alt ?? ""}
+              onChange={(e) => onChange({ ...section, alt: e.target.value })}
+              placeholder="Alt text"
+            />
+            <input
+              className={inputCls}
+              value={section.caption ?? ""}
+              onChange={(e) => onChange({ ...section, caption: e.target.value })}
+              placeholder="Caption (optional)"
+            />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TableEditor({
+  section,
+  onChange,
+  inputCls,
+}: {
+  section: Extract<GuideSection, { type: "table" }>;
+  onChange: (s: GuideSection) => void;
+  inputCls: string;
+}) {
+  const colCount = section.headers.length;
+
+  function updateHeader(i: number, val: string) {
+    const headers = [...section.headers];
+    headers[i] = val;
+    onChange({ ...section, headers });
+  }
+
+  function updateCell(ri: number, ci: number, val: string) {
+    const rows = section.rows.map((r) => [...r]);
+    rows[ri][ci] = val;
+    onChange({ ...section, rows });
+  }
+
+  function addRow() {
+    onChange({ ...section, rows: [...section.rows, Array(colCount).fill("")] });
+  }
+
+  function removeRow(i: number) {
+    onChange({ ...section, rows: section.rows.filter((_, idx) => idx !== i) });
+  }
+
+  function addCol() {
+    onChange({
+      ...section,
+      headers: [...section.headers, `Column ${section.headers.length + 1}`],
+      rows: section.rows.map((r) => [...r, ""]),
+    });
+  }
+
+  function removeCol(ci: number) {
+    if (section.headers.length <= 1) return;
+    onChange({
+      ...section,
+      headers: section.headers.filter((_, i) => i !== ci),
+      rows: section.rows.map((r) => r.filter((_, i) => i !== ci)),
+    });
+  }
+
+  return (
+    <div className="space-y-2">
+      <input
+        className={inputCls}
+        value={section.title ?? ""}
+        onChange={(e) => onChange({ ...section, title: e.target.value })}
+        placeholder="Table title (optional)"
+      />
+      <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+              {section.headers.map((h, ci) => (
+                <th key={ci} className="px-2 py-1.5 font-medium">
+                  <div className="flex items-center gap-1">
+                    <input
+                      value={h}
+                      onChange={(e) => updateHeader(ci, e.target.value)}
+                      className="min-w-0 flex-1 bg-transparent outline-none font-medium"
+                      placeholder={`Col ${ci + 1}`}
+                    />
+                    {section.headers.length > 1 && (
+                      <button onClick={() => removeCol(ci)} className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]">
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                </th>
+              ))}
+              <th className="px-2 py-1.5 w-8">
+                <button onClick={addCol} className="text-[var(--color-accent)] hover:opacity-80">
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              </th>
+              <th className="w-8" />
+            </tr>
+          </thead>
+          <tbody>
+            {section.rows.map((row, ri) => (
+              <tr key={ri} className="border-b border-[var(--color-border)] last:border-0">
+                {row.map((cell, ci) => (
+                  <td key={ci} className="px-2 py-1">
+                    <textarea
+                      value={cell}
+                      onChange={(e) => updateCell(ri, ci, e.target.value)}
+                      rows={1}
+                      className="w-full resize-none bg-transparent text-xs text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
+                      placeholder="—"
+                      onInput={(e) => {
+                        const el = e.target as HTMLTextAreaElement;
+                        el.style.height = "auto";
+                        el.style.height = `${el.scrollHeight}px`;
+                      }}
+                    />
+                  </td>
+                ))}
+                <td className="px-2 py-1 w-8" />
+                <td className="px-2 py-1 w-8">
+                  <button onClick={() => removeRow(ri)} className="text-[var(--color-text-muted)] hover:text-[var(--color-danger)]">
+                    <X className="h-3 w-3" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button
+        onClick={addRow}
+        className="flex items-center gap-1.5 text-xs text-[var(--color-accent)] hover:opacity-80 transition-opacity"
+      >
+        <Plus className="h-3 w-3" /> Add row
+      </button>
+    </div>
+  );
+}
+
+function ExhibitorGuideBuilder({
+  eventId,
+  guide,
+  saving,
+  editingId: _editingId,
+  setEditingId: _setEditingId,
+  onSave,
+}: {
+  eventId: string;
+  guide: GuideData;
+  saving: boolean;
+  editingId: string | null;
+  setEditingId: (id: string | null) => void;
+  onSave: (g: GuideData) => void;
+}) {
+  const [local, setLocal] = React.useState<GuideData>(() => ({ ...guide, sections: guide.sections ? [...guide.sections] : [] }));
+  const [addTypeOpen, setAddTypeOpen] = React.useState(false);
+
+  // Reset local when guide prop changes (e.g. on initial load)
+  const prevGuideRef = React.useRef(guide);
+  React.useEffect(() => {
+    if (guide !== prevGuideRef.current) {
+      prevGuideRef.current = guide;
+      setLocal({ ...guide, sections: guide.sections ? [...guide.sections] : [] });
+    }
+  }, [guide]);
+
+  const guideUrl = typeof window !== "undefined" ? `${window.location.origin}/guide/${eventId}` : `/guide/${eventId}`;
+
+  function updateSection(idx: number, updated: GuideSection) {
+    setLocal((prev) => {
+      const sections = [...prev.sections];
+      sections[idx] = updated;
+      return { ...prev, sections };
+    });
+  }
+
+  function deleteSection(idx: number) {
+    setLocal((prev) => ({ ...prev, sections: prev.sections.filter((_, i) => i !== idx) }));
+  }
+
+  function moveSection(idx: number, dir: -1 | 1) {
+    setLocal((prev) => {
+      const sections = [...prev.sections];
+      const target = idx + dir;
+      if (target < 0 || target >= sections.length) return prev;
+      [sections[idx], sections[target]] = [sections[target], sections[idx]];
+      return { ...prev, sections };
+    });
+  }
+
+  function addSection(type: GuideSection["type"]) {
+    setLocal((prev) => ({ ...prev, sections: [...prev.sections, defaultSection(type)] }));
+    setAddTypeOpen(false);
+  }
+
+  const inputCls = "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+
+  return (
+    <div className="space-y-5">
+      {/* Header bar */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Exhibitor Guide</h2>
+          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Build the guide page that exhibitors will see in their portal.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/guide/${eventId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> Preview
+          </a>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(guideUrl).catch(() => {});
+            }}
+            className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+          >
+            <Copy className="h-3.5 w-3.5" /> Copy link
+          </button>
+          <Button
+            size="sm"
+            onClick={() => onSave(local)}
+            disabled={saving}
+            iconLeft={saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : undefined}
+          >
+            {saving ? "Saving…" : "Save guide"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Guide meta */}
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-4 space-y-3 shadow-[var(--shadow-sm)]">
+        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Guide settings</div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">Guide title</label>
+            <input
+              className={inputCls}
+              value={local.title}
+              onChange={(e) => setLocal((p) => ({ ...p, title: e.target.value }))}
+              placeholder="e.g. DreamHack Atlanta 2026 — Exhibitor Guide"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">Hero image URL (optional)</label>
+            <input
+              className={inputCls}
+              value={local.hero_image ?? ""}
+              onChange={(e) => setLocal((p) => ({ ...p, hero_image: e.target.value || null }))}
+              placeholder="https://…"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">Intro paragraph (optional)</label>
+          <textarea
+            className={`${inputCls} resize-none`}
+            rows={2}
+            value={local.intro ?? ""}
+            onChange={(e) => setLocal((p) => ({ ...p, intro: e.target.value || null }))}
+            placeholder="A brief introduction to the guide…"
+          />
+        </div>
+      </div>
+
+      {/* Guide URL banner */}
+      <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-accent-subtle,#e0e7ff)] bg-[var(--color-accent-subtle,#f0f4ff)] px-4 py-3">
+        <BookOpen className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-[var(--color-accent)]">Public guide URL</p>
+          <p className="truncate text-xs text-[var(--color-text-secondary)]">{guideUrl}</p>
+        </div>
+        <p className="shrink-0 text-xs text-[var(--color-text-muted)]">Shown in every client portal for this event.</p>
+      </div>
+
+      {/* Sections */}
+      <div className="space-y-3">
+        {local.sections.length === 0 && (
+          <div className="rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--color-border)] py-12 text-center">
+            <BookOpen className="mx-auto mb-3 h-8 w-8 text-[var(--color-text-muted)] opacity-40" />
+            <p className="text-sm font-medium text-[var(--color-text-secondary)]">No sections yet</p>
+            <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">Add headings, text blocks, tables, and more.</p>
+          </div>
+        )}
+        {local.sections.map((section, idx) => (
+          <SectionEditor
+            key={section.id}
+            section={section}
+            onChange={(s) => updateSection(idx, s)}
+            onDelete={() => deleteSection(idx)}
+            onMoveUp={() => moveSection(idx, -1)}
+            onMoveDown={() => moveSection(idx, 1)}
+            isFirst={idx === 0}
+            isLast={idx === local.sections.length - 1}
+          />
+        ))}
+      </div>
+
+      {/* Add section */}
+      <div className="relative">
+        {addTypeOpen ? (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-3 shadow-[var(--shadow-md)]">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-semibold text-[var(--color-text-secondary)]">Add section</span>
+              <button onClick={() => setAddTypeOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+              {SECTION_TYPES.map(({ type, label, icon }) => (
+                <button
+                  key={type}
+                  onClick={() => addSection(type)}
+                  className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  {icon} {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAddTypeOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--color-border)] py-3 text-sm text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors"
+          >
+            <Plus className="h-4 w-4" /> Add section
+          </button>
+        )}
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          size="sm"
+          onClick={() => onSave(local)}
+          disabled={saving}
+          iconLeft={saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : undefined}
+        >
+          {saving ? "Saving…" : "Save guide"}
+        </Button>
+      </div>
     </div>
   );
 }
