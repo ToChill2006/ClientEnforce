@@ -157,9 +157,15 @@ export default function PhasePortalClient({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Could not start checkout");
-      if (json?.url) window.location.href = json.url;
-    } catch {
+      if (json?.url) {
+        window.location.href = json.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (e: any) {
       setPaymentBusy((p) => ({ ...p, [reqId]: false }));
+      setPaymentToast(`Payment error: ${e?.message || "Something went wrong. Please try again."}`);
+      setTimeout(() => setPaymentToast(null), 6000);
     }
   }
 
@@ -592,11 +598,22 @@ export default function PhasePortalClient({
           )}
 
           {paymentToast && (
-            <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100">
-                <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
+            <div className={cn(
+              "rounded-2xl border px-5 py-4 flex items-center gap-3",
+              paymentToast.startsWith("Payment error")
+                ? "border-red-200 bg-red-50"
+                : "border-green-200 bg-green-50"
+            )}>
+              <div className={cn(
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                paymentToast.startsWith("Payment error") ? "bg-red-100" : "bg-green-100"
+              )}>
+                {paymentToast.startsWith("Payment error")
+                  ? <svg className="h-4 w-4 text-red-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" d="M4 4l8 8M12 4l-8 8"/></svg>
+                  : <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
+                }
               </div>
-              <p className="font-semibold text-green-800">{paymentToast}</p>
+              <p className={cn("font-semibold", paymentToast.startsWith("Payment error") ? "text-red-800" : "text-green-800")}>{paymentToast}</p>
             </div>
           )}
 

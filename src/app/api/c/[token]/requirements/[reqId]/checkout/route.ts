@@ -88,7 +88,6 @@ export async function POST(
       mode: "payment",
       payment_intent_data: {
         transfer_data: { destination: org.stripe_account_id },
-        application_fee_amount: 0,
       },
       line_items: [
         {
