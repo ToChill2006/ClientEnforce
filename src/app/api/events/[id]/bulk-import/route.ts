@@ -319,6 +319,7 @@ export async function POST(
               onboarding_id: onboardingId,
               phase_number: 1,
               name: "Onboarding",
+              deadline: eventBase ? (typeof eventBase === "string" ? eventBase.split("T")[0] : null) : null,
               status: "in_progress",
               created_at: now,
               updated_at: now,

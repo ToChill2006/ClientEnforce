@@ -666,7 +666,7 @@ export async function GET(req: Request) {
       phase_name: phase?.name ?? null,
       // Use onboarding-level status for "sent" (not yet opened) and "completed"
       phase_status: o.status === "draft" ? "draft" : o.status === "sent" ? "sent" : o.status === "completed" ? "completed" : phase?.status ?? o.status ?? null,
-      phase_deadline: phase?.deadline ?? null,
+      phase_deadline: phase?.deadline ?? o.deadline ?? null,
     };
   });
 
@@ -1176,6 +1176,7 @@ export async function POST(req: Request) {
                 onboarding_id: onboarding.id,
                 phase_number: 1,
                 name: "Onboarding",
+                deadline: eventBase ? (typeof eventBase === "string" ? eventBase.split("T")[0] : null) : null,
                 status: "in_progress",
                 created_at: nowIso,
                 updated_at: nowIso,
