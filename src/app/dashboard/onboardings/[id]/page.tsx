@@ -292,6 +292,7 @@ async function fetchRequirementsDirect(onboardingId: string): Promise<Requiremen
         "payment_status",
         "payment_paid_at",
         "payment_stripe_payment_intent_id",
+        "payment_stripe_session_id",
       ].join(",")
     )
     .eq("onboarding_id", onboardingId)

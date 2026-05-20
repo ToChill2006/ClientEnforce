@@ -83,7 +83,7 @@ export async function GET(req: Request) {
     const { data: fullReqs, error: fullErr } = await supabase
       .from("onboarding_requirements")
       .select(
-        "id,onboarding_id,type,label,is_required,sort_order,phase_number,review_status,reviewer_comment,completed_at,completed_by,value_text,file_path,file_paths,signature_path,attachment_path,options,created_at,updated_at"
+        "id,onboarding_id,type,label,is_required,sort_order,phase_number,review_status,reviewer_comment,completed_at,completed_by,value_text,file_path,file_paths,signature_path,attachment_path,options,created_at,updated_at,payment_status,payment_paid_at,payment_amount,payment_currency,payment_description,payment_stripe_session_id"
       )
       .in("onboarding_id", ids)
       .order("sort_order", { ascending: true });
