@@ -147,6 +147,8 @@ export default function PhasePortalClient({
       url.searchParams.delete("paid");
       window.history.replaceState({}, "", url.toString());
       setTimeout(() => setPaymentToast(null), 4000);
+      // Confirm with server so DB reflects paid status regardless of webhook timing
+      fetch(`/api/c/${token}/requirements/${paidReqId}/confirm`, { method: "POST" }).catch(() => {});
     }
 
     if (cancelledReqId) {
