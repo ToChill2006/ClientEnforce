@@ -1041,14 +1041,7 @@ export default function OnboardingDetailAdminPage() {
                           Review →
                         </button>
                       )}
-                      {ph.status === "locked" && (
-                        <button
-                          className="rounded border border-[var(--color-accent)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)]"
-                          onClick={() => overridePhaseStatus(ph.phase_number, "in_progress")}
-                        >
-                          Unlock
-                        </button>
-                      )}
+
                       {(ph.status === "approved" || ph.status === "rejected") && (
                         <button
                           className="rounded border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
