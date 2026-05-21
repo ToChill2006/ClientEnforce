@@ -1088,12 +1088,18 @@ export default function OnboardingDetailAdminPage() {
                         </div>
                         {/* Text / signature value */}
                         {!hasFiles && (
-                          <div className="mt-0.5 flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-                            <span className="break-words">{item.value}</span>
+                          <div className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                            {item.value && item.value.length > 160 ? (
+                              <div className="max-h-20 overflow-y-auto rounded bg-[var(--color-bg)] border border-[var(--color-border)] px-2.5 py-1.5 whitespace-pre-wrap leading-relaxed">
+                                {item.value}
+                              </div>
+                            ) : (
+                              <span className="break-words whitespace-pre-wrap">{item.value}</span>
+                            )}
                             {item.signature_path && (
                               <button
                                 onClick={() => openPreview(item.signature_path!, "clientenforce-signatures", fileNameFromPath(item.signature_path))}
-                                className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] hover:bg-[var(--color-bg-hover)]"
+                                className="mt-1 shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] hover:bg-[var(--color-bg-hover)]"
                               >View signature</button>
                             )}
                           </div>
