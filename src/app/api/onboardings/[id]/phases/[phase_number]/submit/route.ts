@@ -45,7 +45,7 @@ export async function POST(
     if (phaseErr || !phase) return err(404, "Phase not found");
 
     const phaseStatus = (phase as any).status;
-    if (phaseStatus !== "in_progress" && phaseStatus !== "rejected") {
+    if (phaseStatus !== "in_progress" && phaseStatus !== "rejected" && phaseStatus !== "locked") {
       return err(400, `Phase cannot be submitted (current status: ${phaseStatus})`);
     }
 

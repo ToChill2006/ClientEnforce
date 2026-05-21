@@ -91,7 +91,6 @@ export default function PhasePortalClient({
   const progressPct = totalPhases > 0 ? Math.round((approvedCount / totalPhases) * 100) : 0;
 
   const isReadOnly = currentPhase.status === "awaiting_review" || currentPhase.status === "approved";
-  const isLocked = currentPhase.status === "locked";
 
   const [answers, setAnswers] = React.useState<Record<string, string>>(() => {
     const m: Record<string, string> = {};
@@ -389,7 +388,6 @@ export default function PhasePortalClient({
         <div className="flex items-center gap-2 overflow-x-auto px-4 py-2.5 scrollbar-none">
           {phases.map((ph) => {
             const isActive = ph.phase_number === currentPhase.phase_number;
-            const isAccessible = ph.status !== "locked";
             const isDone = ph.status === "approved";
             const mobDeadline = ph.deadline || eventDeadline;
             const mobDays = mobDeadline ? Math.ceil((new Date(mobDeadline).setHours(23,59,59,999) - Date.now()) / 86400000) : null;
@@ -397,10 +395,7 @@ export default function PhasePortalClient({
               <button
                 key={ph.id}
                 onClick={() => router.push(`/c/${token}/phase/${ph.phase_number}`)}
-                className={cn(
-                  "flex shrink-0 flex-col items-start rounded-xl px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
-                  !isAccessible && "opacity-50"
-                )}
+                className="flex shrink-0 flex-col items-start rounded-xl px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all"
                 style={
                   isActive
                     ? { color: heading, outline: `2.5px solid ${accent}`, outlineOffset: "1px" }
@@ -409,7 +404,6 @@ export default function PhasePortalClient({
               >
                 <span className="flex items-center gap-1.5">
                   {isDone && <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>}
-                  {ph.status === "locked" && <svg className="h-3 w-3 shrink-0 opacity-60" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>}
                   {ph.name}
                 </span>
                 {mobDays !== null && (
@@ -477,9 +471,6 @@ export default function PhasePortalClient({
                       <span className="shrink-0 opacity-70">
                         {ph.status === "approved" && (
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M3 8.5l3.5 3.5 6.5-7"/></svg>
-                        )}
-                        {ph.status === "locked" && (
-                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
                         )}
                         {ph.status === "awaiting_review" && (
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
@@ -667,61 +658,7 @@ export default function PhasePortalClient({
             </div>
           )}
 
-          {/* Locked state */}
-          {isLocked ? (
-            <div className="space-y-3">
-              <div className="rounded-2xl bg-white border border-gray-200 shadow-md px-6 py-8 text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-                  <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-                </div>
-                <p className="text-base font-semibold text-gray-700">This phase is locked</p>
-                <p className="mt-1 text-sm text-gray-400">
-                  It will unlock once Phase {currentPhase.phase_number - 1} is approved.
-                </p>
-                <button
-                  onClick={() => router.push(`/c/${token}/phase/${currentPhase.phase_number - 1}`)}
-                  className="mt-4 text-sm font-semibold hover:underline"
-                  style={{ color: accent }}
-                >
-                  Go to Phase {currentPhase.phase_number - 1}
-                </button>
-              </div>
-              {/* Preview of what's in this locked phase */}
-              {bodyGroups.length > 0 && (
-                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-200/60 flex items-center gap-2">
-                    <svg className="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" d="M8 3v1M3.5 5.5l.7.7M12.5 5.5l-.7.7M2 10h1M13 10h1M8 5a5 5 0 11-4.9 4h9.8A5 5 0 018 5z"/></svg>
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preview — what's in this phase</span>
-                  </div>
-                  <div className="px-4 py-3 space-y-2 opacity-60 pointer-events-none select-none">
-                    {bodyGroups.slice(0, 6).map((item, gi) => {
-                      if (item.type === "group") {
-                        const { heading: hReq } = item.data;
-                        return hReq ? (
-                          <div key={hReq.id ?? `g-${gi}`} className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">
-                            {hReq.label}
-                          </div>
-                        ) : null;
-                      }
-                      const req = item.data;
-                      return (
-                        <div key={req.id} className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
-                          <span className="text-xs text-gray-600 font-medium truncate">{req.label || "Field"}</span>
-                          {req.is_required && <span className="text-[10px] text-gray-400 shrink-0">Required</span>}
-                        </div>
-                      );
-                    })}
-                    {bodyGroups.length > 6 && (
-                      <p className="text-xs text-gray-400 text-center py-1">
-                        +{bodyGroups.length - 6} more fields
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
+          <>
               {/* Requirements — first heading/info group already absorbed into title card */}
               {(() => {
                 return (
@@ -1118,7 +1055,6 @@ export default function PhasePortalClient({
                 )}
               </div>
             </>
-          )}
         </main>
       </div>
 

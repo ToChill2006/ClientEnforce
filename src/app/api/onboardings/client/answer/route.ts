@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         .eq("phase_number", phaseNum)
         .single();
       const phaseStatus = (phaseRow as any)?.status ?? null;
-      if (!phaseRow || (phaseStatus !== "in_progress" && phaseStatus !== "rejected")) {
+      if (!phaseRow || (phaseStatus !== "in_progress" && phaseStatus !== "rejected" && phaseStatus !== "locked")) {
         return json(423, { error: "This phase is not open for editing." });
       }
       // Phase is open — allow the save
