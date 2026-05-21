@@ -1058,7 +1058,7 @@ export async function POST(req: Request) {
         });
 
         // Known stable enum values that exist in all DB versions.
-        const STABLE_TYPES = new Set(["text", "file", "signature", "multiple_choice"]);
+        const STABLE_TYPES = new Set(["text", "file", "signature", "multiple_choice", "checkbox", "heading", "textarea", "payment", "info"]);
         function isInvalidEnumError(err: any) {
           const msg = String(err?.message || "");
           return msg.toLowerCase().includes("invalid input value for enum") ||
