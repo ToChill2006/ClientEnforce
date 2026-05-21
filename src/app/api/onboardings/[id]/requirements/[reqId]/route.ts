@@ -11,8 +11,11 @@ function err(status: number, msg: string) {
   return NextResponse.json({ error: msg }, { status });
 }
 
+const ALLOWED_TYPES = ["text", "textarea", "file", "signature", "select", "heading", "date", "checkbox", "multiple_choice", "info"] as const;
+
 const PatchSchema = z.object({
   label: z.string().min(1).optional(),
+  type: z.enum(ALLOWED_TYPES).optional(),
   is_required: z.boolean().optional(),
   options: z.array(z.string()).optional().nullable(),
   allow_multi_select: z.boolean().optional(),
@@ -72,6 +75,7 @@ export async function PATCH(
 
     const updates: Record<string, unknown> = {};
     if (parsed.data.label !== undefined) updates.label = parsed.data.label;
+    if (parsed.data.type !== undefined) updates.type = parsed.data.type;
     if (parsed.data.is_required !== undefined) updates.is_required = parsed.data.is_required;
     if ("options" in parsed.data) updates.options = parsed.data.options ?? null;
 
