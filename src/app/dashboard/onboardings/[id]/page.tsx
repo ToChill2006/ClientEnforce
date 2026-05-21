@@ -1089,8 +1089,8 @@ export default function OnboardingDetailAdminPage() {
                         {/* Text / signature value */}
                         {!hasFiles && (
                           <div className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                            {item.value && item.value.length > 160 ? (
-                              <div className="max-h-20 overflow-y-auto rounded bg-[var(--color-bg)] border border-[var(--color-border)] px-2.5 py-1.5 whitespace-pre-wrap leading-relaxed">
+                            {item.value && item.value.length > 120 ? (
+                              <div className="rounded bg-[var(--color-bg)] border border-[var(--color-border)] px-2.5 py-1.5 whitespace-pre-wrap break-words leading-relaxed">
                                 {item.value}
                               </div>
                             ) : (
@@ -1795,7 +1795,7 @@ function ResponseItem({
   } else if (preview.type === "empty") {
     body = <div className="text-sm text-[var(--color-text-muted)]">—</div>;
   } else if (preview.type === "text") {
-    body = <div className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>;
+    body = <div className="whitespace-pre-wrap break-words text-sm text-[var(--color-text-primary)]">{String(preview.v)}</div>;
   } else if (preview.type === "json") {
     body = (
       <pre className="max-w-full overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-xs text-[var(--color-text-primary)]">
