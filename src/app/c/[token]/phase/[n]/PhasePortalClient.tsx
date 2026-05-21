@@ -190,12 +190,18 @@ export default function PhasePortalClient({
   async function saveAnswer(reqId: string, value: string) {
     setSaving(reqId);
     try {
-      await fetch("/api/onboardings/client/answer", {
+      const res = await fetch("/api/onboardings/client/answer", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ token, requirement_id: reqId, value_text: value }),
       });
-    } catch { /* silent */ } finally {
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        console.error("saveAnswer failed", res.status, err?.error);
+      }
+    } catch (e) {
+      console.error("saveAnswer error", e);
+    } finally {
       setSaving(null);
     }
   }
