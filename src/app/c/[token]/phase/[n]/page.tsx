@@ -42,7 +42,7 @@ export default async function PhasePortalPage({
   // Load onboarding by token
   const { data: onboarding, error: obErr } = await admin
     .from("onboardings")
-    .select("id, title, status, org_id, client_id, client_token, event_id, client_type_id, events(id, name, submission_deadline, exhibitor_guide), clients(id, full_name, email)")
+    .select("id, title, status, org_id, client_id, client_token, event_id, client_type_id, events(id, name, submission_deadline, exhibitor_guide), clients(id, full_name, email, company_name)")
     .eq("client_token", token)
     .maybeSingle();
 
@@ -97,7 +97,7 @@ export default async function PhasePortalPage({
   const clientName = (onboarding as any).clients?.full_name ?? "Exhibitor";
   const eventName = (onboarding as any).events?.name ?? null;
   const eventDeadline = (onboarding as any).events?.submission_deadline ?? null;
-  const companyName = (onboarding as any).title ?? null;
+  const companyName = (onboarding as any).clients?.company_name ?? null;
   const eventId = (onboarding as any).event_id ?? null;
   const exhibitorGuide = (onboarding as any).events?.exhibitor_guide ?? null;
   const hasGuide = exhibitorGuide && Array.isArray(exhibitorGuide.sections) && exhibitorGuide.sections.length > 0;
