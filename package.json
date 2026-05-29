@@ -11,6 +11,7 @@
     "seed:dreamhack": "tsx scripts/seed-dreamhack-demo.ts"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.98.0",
     "@vercel/analytics": "^1.6.1",
