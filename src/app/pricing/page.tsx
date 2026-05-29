@@ -1,322 +1,189 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, Minus } from "@phosphor-icons/react/dist/ssr";
-import { MarketingShell } from "@/components/marketing-v2/Chrome";
-import {
-  Container,
-  Section,
-  Eyebrow,
-  FinalCTA,
-  PullQuote,
-} from "@/components/marketing-v2/primitives";
-import { DEMO_URL } from "@/components/marketing-v2/constants";
-import { canonicalSiteOrigin } from "@/lib/app-url";
+import { headers } from "next/headers";
 
-const title = "Pricing | ClientEnforce";
-const description =
-  "ClientEnforce pricing for M&A operators. Starter from £29/mo, Medium £89, Top £149, plus white-label Enterprise. Compare every plan side-by-side.";
+import { JsonLd, PageContainer, PublicFooter, PublicHeader, CtaBand } from "@/components/marketing/public-shell";
+import { FadeUp } from "@/components/marketing/fade-up";
+import { FaqAccordion } from "@/components/marketing/faq-accordion";
+import { PricingToggle } from "@/components/marketing/pricing-toggle";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title,
-  description,
-  alternates: { canonical: "/pricing" },
-  openGraph: {
-    title,
-    description,
-    url: `${canonicalSiteOrigin()}/pricing`,
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title, description },
+export const metadata: Metadata = buildPageMetadata({
+  title: "ClientEnforce Pricing | Onboarding Software Plans for US Teams",
+  description: "Simple, transparent pricing for agencies, consultants, and accountants. Start free — no credit card required. Plans from £0 to £149/month.",
+  path: "/pricing",
+  keywords: ["client onboarding software pricing", "client portal software pricing US", "onboarding automation for agencies pricing"],
+  type: "website",
+});
+
+const pricingFaqItems = [
+  { question: "Is there a free trial for ClientEnforce?", answer: "Yes. You can start a free trial of ClientEnforce without a credit card. Build your first onboarding template and send a client portal link on the same day." },
+  { question: "Can I change my plan later?", answer: "Yes. You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing period." },
+  { question: "Do my clients need to pay or create an account?", answer: "No. Your clients access their onboarding portal through a secure link — no login required, no account needed, no cost to them." },
+  { question: "What happens to my data if I cancel?", answer: "You can export all your onboarding data and audit trails before cancelling. Your data is yours." },
+  { question: "Do you offer annual billing?", answer: "Yes. Annual billing is available and saves you the equivalent of 2 months compared to monthly. Toggle to annual above to see the annual pricing." },
+] as const;
+
+const comparisonFeatures = [
+  { name: "Admin users", solo: "1", team: "Up to 5", scale: "Up to 15", agency: "Up to 15" },
+  { name: "Onboarding templates", solo: "1", team: "Up to 10", scale: "Unlimited", agency: "Unlimited" },
+  { name: "Active onboardings", solo: "5", team: "50", scale: "200", agency: "Unlimited" },
+  { name: "Client portal (no login)", solo: true, team: true, scale: true, agency: true },
+  { name: "Document uploads", solo: true, team: true, scale: true, agency: true },
+  { name: "E-signatures", solo: true, team: true, scale: true, agency: true },
+  { name: "Automated reminders", solo: false, team: true, scale: true, agency: true },
+  { name: "Audit trail", solo: false, team: true, scale: true, agency: true },
+  { name: "Evidence export (PDF)", solo: false, team: true, scale: true, agency: true },
+  { name: "Team roles (RBAC)", solo: false, team: true, scale: true, agency: true },
+  { name: "Advanced reporting", solo: false, team: "Limited", scale: "Full", agency: "Full" },
+  { name: "White-label portals", solo: false, team: false, scale: false, agency: true },
+  { name: "Custom portal domain", solo: false, team: false, scale: false, agency: true },
+  { name: "Priority support", solo: false, team: true, scale: true, agency: "Dedicated" },
+] as const;
+
+const pricingFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: pricingFaqItems.map((item) => ({ "@type": "Question", name: item.question, acceptedAnswer: { "@type": "Answer", text: item.answer } })),
 };
 
-type CellValue = string | boolean;
-
-type Plan = {
-  key: "starter" | "medium" | "top" | "enterprise";
-  name: string;
-  price: string;
-  cadence: string;
-  blurb: string;
-  highlighted?: boolean;
-  cta: { label: string; href: string; external?: boolean };
-};
-
-const plans: Plan[] = [
-  {
-    key: "starter",
-    name: "Starter",
-    price: "£29",
-    cadence: "/mo",
-    blurb: "1–3 active onboardings",
-    cta: { label: "Get started", href: "/signup" },
-  },
-  {
-    key: "medium",
-    name: "Medium",
-    price: "£89",
-    cadence: "/mo",
-    blurb: "Up to 10 active onboardings",
-    highlighted: true,
-    cta: { label: "Get started", href: "/signup" },
-  },
-  {
-    key: "top",
-    name: "Top",
-    price: "£149",
-    cadence: "/mo",
-    blurb: "Unlimited active onboardings",
-    cta: { label: "Get started", href: "/signup" },
-  },
-  {
-    key: "enterprise",
-    name: "Enterprise",
-    price: "Custom",
-    cadence: "",
-    blurb: "White-label, integrations, founder access",
-    cta: { label: "Book a demo", href: DEMO_URL, external: true },
-  },
-];
-
-const matrix: { feature: string; values: Record<Plan["key"], CellValue> }[] = [
-  {
-    feature: "Active onboardings",
-    values: { starter: "1–3", medium: "Up to 10", top: "Unlimited", enterprise: "Unlimited" },
-  },
-  {
-    feature: "Auto-reminders",
-    values: { starter: true, medium: true, top: true, enterprise: true },
-  },
-  {
-    feature: "Team access",
-    values: { starter: false, medium: true, top: true, enterprise: true },
-  },
-  {
-    feature: "White-label",
-    values: { starter: false, medium: false, top: false, enterprise: true },
-  },
-  {
-    feature: "File storage",
-    values: { starter: "10 GB", medium: "50 GB", top: "250 GB", enterprise: "Custom" },
-  },
-  {
-    feature: "Activity log",
-    values: { starter: true, medium: true, top: true, enterprise: true },
-  },
-  {
-    feature: "Integrations",
-    values: { starter: false, medium: "Standard", top: "Standard", enterprise: "Custom" },
-  },
-  {
-    feature: "Support",
-    values: { starter: "Email", medium: "Priority email", top: "Priority + Slack", enterprise: "Founder access" },
-  },
-];
-
-const faqs = [
-  {
-    q: "Do my sellers need to create an account?",
-    a: "No — they receive a unique link.",
-  },
-  {
-    q: "How long does setup take?",
-    a: "You're live on Day 1. We configure the template with you.",
-  },
-  {
-    q: "Can I add requirements to a live onboarding?",
-    a: "Yes — without starting over.",
-  },
-  {
-    q: "Is data stored in the UK?",
-    a: "Yes — Supabase UK region, encrypted at rest and in transit.",
-  },
-  {
-    q: "What if I need features you don't have?",
-    a: "We build them. Tim at Telletire asked — we delivered within the week.",
-  },
-];
-
-function Cell({ value }: { value: CellValue }) {
-  if (typeof value === "boolean") {
-    return value ? (
-      <Check size={18} weight="bold" aria-label="Included" className="mx-auto text-sky-700" />
-    ) : (
-      <Minus size={18} aria-label="Not included" className="mx-auto text-slate-300" />
-    );
-  }
-  return <span className="text-sm text-slate-700">{value}</span>;
+function Check() {
+  return <svg className="mx-auto h-4 w-4 text-[var(--color-success)]" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+function Cross() {
+  return <svg className="mx-auto h-4 w-4 text-[var(--color-border-strong)]" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>;
+}
+function Cell({ val }: { val: boolean | string }) {
+  if (val === true) return <Check />;
+  if (val === false) return <Cross />;
+  return <span className="text-xs text-[var(--color-text-secondary)]">{val}</span>;
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const headersList = await headers();
+  const country = headersList.get("x-vercel-ip-country") ?? "GB";
+  const currency = country === "US" ? "USD" : "GBP";
+
   return (
-    <MarketingShell>
-      <Section ariaLabel="Pricing hero" className="pt-20 sm:pt-24 lg:pt-28">
-        <Container className="max-w-3xl text-center">
-          <Eyebrow>Pricing</Eyebrow>
-          <h1 className="mt-4 text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-            Pricing that scales with your acquisition pipeline.
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
-            Start when you have one deal. Grow when you have ten. Talk to us when
-            you want white-label.
-          </p>
-        </Container>
-      </Section>
+    <div className="min-h-screen bg-white">
+      <PublicHeader />
+      <main>
 
-      <Section ariaLabel="Plans" className="pt-0">
-        <Container>
-          <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {plans.map((plan) => (
-              <li
-                key={plan.key}
-                className={`flex flex-col rounded-xl border bg-white p-6 ${
-                  plan.highlighted
-                    ? "border-slate-900 ring-2 ring-slate-900/10 shadow-md"
-                    : "border-slate-200"
-                }`}
-              >
-                {plan.highlighted && (
-                  <span className="mb-3 inline-flex w-fit items-center rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white">
-                    Most popular
-                  </span>
-                )}
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                  {plan.name}
-                </h2>
-                <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold tracking-tight text-slate-950 tabular-nums">
-                    {plan.price}
-                  </span>
-                  <span className="text-sm text-slate-500">{plan.cadence}</span>
-                </div>
-                <p className="mt-2 text-sm text-slate-600">{plan.blurb}</p>
-                <div className="mt-auto pt-8">
-                  {plan.cta.external ? (
-                    <a
-                      href={plan.cta.href}
-                      className={`block w-full rounded-md px-4 py-3 text-center text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2 ${
-                        plan.highlighted
-                          ? "bg-slate-900 text-white hover:bg-slate-800"
-                          : "border border-slate-300 text-slate-900 hover:bg-slate-50"
-                      }`}
-                    >
-                      {plan.cta.label}
-                    </a>
-                  ) : (
-                    <Link
-                      href={plan.cta.href}
-                      className={`block w-full rounded-md px-4 py-3 text-center text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2 ${
-                        plan.highlighted
-                          ? "bg-slate-900 text-white hover:bg-slate-800"
-                          : "border border-slate-300 text-slate-900 hover:bg-slate-50"
-                      }`}
-                    >
-                      {plan.cta.label}
-                    </Link>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Container>
-      </Section>
-
-      <Section
-        ariaLabel="Plan comparison"
-        className="bg-white border-y border-slate-200"
-      >
-        <Container>
-          <div className="max-w-3xl">
-            <Eyebrow>Compare plans</Eyebrow>
-            <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              Every plan, side by side.
-            </h2>
-          </div>
-          <div className="mt-10 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-            <table className="w-full min-w-[640px] border-separate border-spacing-0 text-left">
-              <caption className="sr-only">
-                ClientEnforce plan feature comparison
-              </caption>
-              <thead>
-                <tr>
-                  <th
-                    scope="col"
-                    className="sticky left-0 z-10 border-b border-slate-200 bg-white px-4 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500"
-                  >
-                    Feature
-                  </th>
-                  {plans.map((p) => (
-                    <th
-                      key={p.key}
-                      scope="col"
-                      className="border-b border-slate-200 px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500"
-                    >
-                      {p.name}
-                      <div className="mt-1 text-sm font-semibold normal-case tracking-normal text-slate-900">
-                        {p.price}
-                        <span className="font-normal text-slate-500">{p.cadence}</span>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {matrix.map((row, i) => (
-                  <tr key={row.feature} className={i % 2 === 1 ? "bg-slate-50/60" : ""}>
-                    <th
-                      scope="row"
-                      className="sticky left-0 z-10 border-b border-slate-200 bg-inherit px-4 py-4 text-sm font-medium text-slate-900"
-                    >
-                      {row.feature}
-                    </th>
-                    {plans.map((p) => (
-                      <td
-                        key={p.key}
-                        className="border-b border-slate-200 px-4 py-4 text-center"
-                      >
-                        <Cell value={row.values[p.key]} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Container>
-      </Section>
-
-      <Section ariaLabel="Customer testimonial">
-        <Container className="max-w-4xl">
-          <PullQuote
-            quote="ClientEnforce checks all the boxes for managing tasks, tracking, and workflow needs — we'd highly recommend it to any organization looking for a more effective and user-friendly solution."
-            name="Tim Tuckfield"
-            role="M&A Integration & Optimization, Telletire"
-          />
-        </Container>
-      </Section>
-
-      <Section ariaLabel="Frequently asked questions" className="bg-white border-y border-slate-200">
-        <Container className="max-w-3xl">
-          <Eyebrow>FAQ</Eyebrow>
-          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-            Common questions.
-          </h2>
-          <dl className="mt-12 divide-y divide-slate-200 border-y border-slate-200">
-            {faqs.map((f) => (
-              <div key={f.q} className="py-6">
-                <dt className="text-base font-semibold text-slate-950">{f.q}</dt>
-                <dd className="mt-2 text-base leading-relaxed text-slate-700">
-                  {f.a}
-                </dd>
+        {/* Hero */}
+        <section className="border-b border-[var(--color-border)] bg-white py-24">
+          <PageContainer>
+            <FadeUp>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Pricing</p>
+              <h1 className="mt-3 text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl lg:text-[56px]" style={{ fontFamily: "var(--font-display)" }}>
+                Straightforward pricing for US teams that onboard clients
+              </h1>
+              <p className="mt-5 max-w-xl text-lg text-[var(--color-text-secondary)]">
+                Start free, then upgrade as your onboarding volume grows. Every paid plan includes automated reminders, audit trails, and required-step enforcement — no IT setup required.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/signup" className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-7 py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-accent-hover)] active:scale-[0.98] sm:w-auto">
+                  Start Free Trial
+                </Link>
+                <Link href="/contact" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-subtle)] sm:w-auto">
+                  Book a 15-min Demo
+                </Link>
               </div>
-            ))}
-          </dl>
-        </Container>
-      </Section>
+              <p className="mt-4 text-xs text-[var(--color-text-muted)]">No credit card required · 30-day money-back guarantee · Cancel anytime</p>
+            </FadeUp>
+          </PageContainer>
+        </section>
 
-      <FinalCTA
-        heading="Have a question we didn't cover?"
-        sub="Book 20 minutes with us. We'll answer it on the call."
-      />
-    </MarketingShell>
+        {/* Plans */}
+        <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-20">
+          <PageContainer>
+            <PricingToggle currency={currency} />
+          </PageContainer>
+        </section>
+
+        {/* Which plan */}
+        <section className="border-b border-[var(--color-border)] bg-white py-20">
+          <PageContainer>
+            <FadeUp>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Which plan should you pick?</h2>
+            </FadeUp>
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                { name: "Solo", desc: "Best when you're testing one workflow or onboarding your first few clients. Free, no card required." },
+                { name: "Team", desc: "Best for US agencies and service teams that need automated follow-ups, audit trails, and repeatable execution." },
+                { name: "Scale", desc: "Best when you're managing high onboarding volume and need stronger governance across a larger team." },
+                { name: "Agency Pro", desc: "Best for agencies that want to deliver a fully branded onboarding experience under their own domain." },
+              ].map((p, i) => (
+                <FadeUp key={p.name} delay={i * 80}>
+                  <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6">
+                    <h3 className="text-lg font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>{p.name}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{p.desc}</p>
+                  </div>
+                </FadeUp>
+              ))}
+            </div>
+          </PageContainer>
+        </section>
+
+        {/* Comparison table */}
+        <section className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-20">
+          <PageContainer>
+            <FadeUp>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)] sm:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>Full feature comparison</h2>
+            </FadeUp>
+            <FadeUp delay={80}>
+              <div className="mt-8 overflow-x-auto">
+              <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)]">
+                <table className="w-full min-w-[560px] text-sm">
+                  <thead>
+                    <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+                      <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Feature</th>
+                      <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Solo</th>
+                      <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">Team</th>
+                      <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Scale</th>
+                      <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Agency Pro</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-border)]">
+                    {comparisonFeatures.map((row) => (
+                      <tr key={row.name} className="hover:bg-[var(--color-bg-subtle)]">
+                        <td className="px-5 py-3.5 text-sm text-[var(--color-text-secondary)]">{row.name}</td>
+                        <td className="px-5 py-3.5 text-center"><Cell val={row.solo} /></td>
+                        <td className="px-5 py-3.5 text-center"><Cell val={row.team} /></td>
+                        <td className="px-5 py-3.5 text-center"><Cell val={row.scale} /></td>
+                        <td className="px-5 py-3.5 text-center"><Cell val={row.agency} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              </div>
+            </FadeUp>
+          </PageContainer>
+        </section>
+
+        {/* FAQ */}
+        <section className="border-b border-[var(--color-border)] bg-white py-20">
+          <PageContainer>
+            <FadeUp>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>Pricing FAQ</h2>
+            </FadeUp>
+            <div className="mt-8 max-w-2xl">
+              <FaqAccordion items={pricingFaqItems} />
+            </div>
+          </PageContainer>
+        </section>
+
+        <CtaBand
+          heading="Your next client deserves a better start."
+          subtext="Launch your first onboarding template in under 20 minutes. No credit card required. 30-day money-back guarantee."
+          primaryLabel="Start Free Trial"
+          secondaryLabel="Book a 15-min Demo →"
+          secondaryHref="/contact"
+        />
+
+      </main>
+      <PublicFooter />
+      <JsonLd data={pricingFaqSchema} />
+    </div>
   );
 }
