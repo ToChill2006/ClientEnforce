@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { RejectionBanner } from "@/components/ui/rejection-banner";
 import { PageHeader } from "@/components/ui/page-header";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 
 // ─── Reminder rule types ──────────────────────────────────────────────────────
 
@@ -677,9 +677,22 @@ export default function TemplatesPage() {
       {selected ? (
         <Card>
           <CardHeader>
-            <div>
-              <CardTitle>Edit template</CardTitle>
-              <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle>Edit template</CardTitle>
+                <CardDescription>Owner/Admin only. Changes affect future onboardings only.</CardDescription>
+              </div>
+              {selected.id && !selected.id.startsWith("temp-") ? (
+                <a
+                  href={`/templates/${selected.id}/print`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] bg-white px-3 text-xs font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
+                  aria-label={`Download ${selected.name} as PDF`}
+                >
+                  <Download className="h-3.5 w-3.5" aria-hidden /> Download as PDF
+                </a>
+              ) : null}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
