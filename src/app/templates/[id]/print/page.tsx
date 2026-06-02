@@ -470,9 +470,7 @@ export default async function TemplatePrintPage({
                   <div className="pdf-decl-sig-line" aria-hidden />
                 </div>
                 <div className="pdf-decl-sig-cell">
-                  <span className="pdf-decl-sig-cell-label">
-                    Print name (block capitals)
-                  </span>
+                  <span className="pdf-decl-sig-cell-label">Print name</span>
                   <div className="pdf-decl-sig-line" aria-hidden />
                 </div>
                 <div className="pdf-decl-sig-cell">

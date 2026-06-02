@@ -689,20 +689,22 @@
 }
 .pdf-decl-sig-row:last-child { border-bottom: 0; }
 .pdf-decl-sig-cell {
-  padding: 22px 12px 10px;
+  padding: 6px 12px 10px;
   border-right: 1px solid var(--form-ink);
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 56px;
 }
 .pdf-decl-sig-cell:last-child { border-right: 0; }
 .pdf-decl-sig-cell-label {
-  position: absolute;
-  top: 4px;
-  left: 12px;
   font-size: 7.5pt;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--form-muted);
+  line-height: 1.2;
+  margin-bottom: 22px;
 }
 .pdf-decl-sig-line {
   height: 1px;
