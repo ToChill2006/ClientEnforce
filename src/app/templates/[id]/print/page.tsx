@@ -195,10 +195,9 @@ export default async function TemplatePrintPage({
         {/* ───────── COVER ───────── */}
         <section className="pdf-page pdf-cover" aria-label="Cover">
           <div className="pdf-cover-body">
-            {/* Issuer header */}
+            {/* Form reference */}
             <div className="pdf-cover-id-block">
               <div className="pdf-cover-issuer">
-                <div className="pdf-cover-issuer-label">Issued by</div>
                 {logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -207,7 +206,6 @@ export default async function TemplatePrintPage({
                     className="pdf-cover-issuer-logo"
                   />
                 ) : null}
-                <div className="pdf-cover-issuer-name">{orgName}</div>
               </div>
               <div className="pdf-cover-formref">
                 <strong>{formRef}</strong>
