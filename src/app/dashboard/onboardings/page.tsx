@@ -1356,34 +1356,10 @@ export default function OnboardingsPage() {
                 </Select>
               </FormField>
 
-              {/* Add emails */}
-              <FormField label="Add recipients by email" hint="Paste a list — commas, semicolons or new lines work. Press Enter to add.">
-                <div className="flex gap-2">
-                  <Input
-                    value={bulkEmailInput}
-                    onChange={(e) => setBulkEmailInput(e.target.value)}
-                    placeholder="alice@acme.com, bob@beta.co, carol@gamma.io"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        commitBulkEmailInput();
-                      }
-                    }}
-                    onBlur={() => {
-                      if (bulkEmailInput.trim()) commitBulkEmailInput();
-                    }}
-                    disabled={bulkSending}
-                  />
-                  <Button variant="secondary" onClick={commitBulkEmailInput} disabled={bulkSending || !bulkEmailInput.trim()}>
-                    Add
-                  </Button>
-                </div>
-              </FormField>
-
               {/* Pick from existing clients — multi-select */}
               {clients.length > 0 ? (
                 <FormField
-                  label="Or pick from existing clients"
+                  label="Pick recipients from your clients"
                   hint="Tick the clients you want, then click Add selected."
                 >
                   <Input
@@ -1469,13 +1445,23 @@ export default function OnboardingsPage() {
                     </div>
                   )}
                 </FormField>
-              ) : null}
+              ) : (
+                <FormField label="Pick recipients from your clients">
+                  <div className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-4 py-6 text-center text-sm text-[var(--color-text-secondary)]">
+                    You don&rsquo;t have any clients yet.{" "}
+                    <Link href="/dashboard/clients" className="font-semibold text-[var(--color-accent)] hover:underline">
+                      Add a client
+                    </Link>{" "}
+                    first, then come back here to send the template to many.
+                  </div>
+                </FormField>
+              )}
 
               {/* Selected chips */}
               <FormField label={`Selected recipients (${bulkRecipients.length})`}>
                 {bulkRecipients.length === 0 ? (
                   <div className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-6 text-center text-xs text-[var(--color-text-muted)]">
-                    No recipients yet. Paste emails above or pick from your clients.
+                    No recipients yet. Tick clients above and click Add selected.
                   </div>
                 ) : (
                   <ul className="flex flex-wrap gap-2">
