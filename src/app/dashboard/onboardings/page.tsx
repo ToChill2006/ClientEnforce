@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, RefreshCw, Copy, Send, Lock, Trash2, ExternalLink, Search, CalendarDays } from "lucide-react";
+import { Plus, RefreshCw, Copy, Send, Lock, Trash2, ExternalLink, Search, CalendarDays, Users, X as XIcon, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { FormField, FormGrid } from "@/components/ui/form-field";
@@ -314,6 +314,171 @@ export default function OnboardingsPage() {
 
   const [rowBusy, setRowBusy] = React.useState<Record<string, boolean>>({});
   const [confirmDelete, setConfirmDelete] = React.useState<OnboardingRow | null>(null);
+
+  // ─── Bulk send to many ───────────────────────────────────────────────
+  type BulkRecipient = {
+    key: string;
+    email: string;
+    full_name: string;
+    company_name?: string | null;
+    source: "client" | "manual";
+    client_id?: string;
+  };
+  type BulkResult =
+    | { key: string; status: "sent" }
+    | { key: string; status: "created" } // created but email send failed
+    | { key: string; status: "error"; message: string };
+
+  const [bulkOpen, setBulkOpen] = React.useState(false);
+  const [bulkTemplateId, setBulkTemplateId] = React.useState<string>("");
+  const [bulkRecipients, setBulkRecipients] = React.useState<BulkRecipient[]>([]);
+  const [bulkEmailInput, setBulkEmailInput] = React.useState("");
+  const [bulkClientSearch, setBulkClientSearch] = React.useState("");
+  const [bulkSending, setBulkSending] = React.useState(false);
+  const [bulkProgress, setBulkProgress] = React.useState<{ done: number; total: number } | null>(null);
+  const [bulkResults, setBulkResults] = React.useState<BulkResult[] | null>(null);
+  const [bulkErr, setBulkErr] = React.useState<string | null>(null);
+
+  function openBulk() {
+    setBulkOpen(true);
+    setBulkTemplateId(selectedTemplateId || (templates[0]?.id ?? ""));
+    setBulkRecipients([]);
+    setBulkEmailInput("");
+    setBulkClientSearch("");
+    setBulkResults(null);
+    setBulkProgress(null);
+    setBulkErr(null);
+  }
+
+  function closeBulk() {
+    if (bulkSending) return;
+    setBulkOpen(false);
+  }
+
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function addBulkRecipient(r: BulkRecipient) {
+    setBulkRecipients((prev) => {
+      const norm = r.email.trim().toLowerCase();
+      if (prev.some((x) => x.email.toLowerCase() === norm)) return prev;
+      return [...prev, { ...r, email: r.email.trim() }];
+    });
+  }
+
+  function removeBulkRecipient(key: string) {
+    setBulkRecipients((prev) => prev.filter((r) => r.key !== key));
+  }
+
+  function commitBulkEmailInput() {
+    const raw = bulkEmailInput.trim();
+    if (!raw) return;
+    // Accept comma/space/newline-separated lists; tolerate `Name <email@x.com>` form
+    const tokens = raw.split(/[,\n;]+/).map((t) => t.trim()).filter(Boolean);
+    const added: string[] = [];
+    const skipped: string[] = [];
+    for (const tok of tokens) {
+      const m = tok.match(/^(.+?)\s*<([^>]+)>$/);
+      const name = m ? m[1].trim() : "";
+      const email = (m ? m[2].trim() : tok).trim();
+      if (!emailRe.test(email)) { skipped.push(tok); continue; }
+      addBulkRecipient({
+        key: `m-${email.toLowerCase()}`,
+        email,
+        full_name: name || email.split("@")[0],
+        source: "manual",
+      });
+      added.push(email);
+    }
+    setBulkEmailInput("");
+    if (skipped.length > 0) {
+      setBulkErr(`Skipped ${skipped.length} invalid entr${skipped.length === 1 ? "y" : "ies"}.`);
+    } else {
+      setBulkErr(null);
+    }
+  }
+
+  async function runBulkSend() {
+    setBulkErr(null);
+    if (bulkRecipients.length === 0) {
+      setBulkErr("Add at least one recipient.");
+      return;
+    }
+    setBulkSending(true);
+    setBulkProgress({ done: 0, total: bulkRecipients.length });
+    const results: BulkResult[] = [];
+    const created: OnboardingRow[] = [];
+
+    for (let i = 0; i < bulkRecipients.length; i += 1) {
+      const r = bulkRecipients[i];
+      const titleBase = (r.company_name || r.full_name || r.email).trim();
+      try {
+        const createRes = await fetch("/api/onboardings", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            title: titleBase,
+            template_id: bulkTemplateId || null,
+            company_name: r.company_name || null,
+            client:
+              r.source === "client" && r.client_id
+                ? { id: r.client_id }
+                : { email: r.email, full_name: r.full_name || null },
+          }),
+        });
+        if (!createRes.ok) {
+          const text = await createRes.text().catch(() => "");
+          throw new Error(text || `Create failed (${createRes.status})`);
+        }
+        const cjson = (await createRes.json().catch(() => null)) as any;
+        const item = (cjson?.item ?? cjson?.onboarding ?? null) as OnboardingRow | null;
+        if (item?.id) created.push(item);
+
+        let sentOk = false;
+        if (item?.id) {
+          const sendRes = await fetch("/api/onboardings/send", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ onboarding_id: item.id, id: item.id }),
+          });
+          sentOk = sendRes.ok;
+        }
+        results.push(sentOk ? { key: r.key, status: "sent" } : { key: r.key, status: "created" });
+      } catch (e: any) {
+        results.push({ key: r.key, status: "error", message: e?.message || "Failed" });
+      }
+      setBulkProgress({ done: i + 1, total: bulkRecipients.length });
+    }
+
+    if (created.length > 0) {
+      setRows((prev) => [...created, ...prev.filter((x) => !created.some((c) => c.id === x.id))]);
+      void loadProgress(created.map((c) => c.id));
+    }
+    setBulkResults(results);
+    setBulkSending(false);
+
+    const okCount = results.filter((r) => r.status === "sent").length;
+    const partialCount = results.filter((r) => r.status === "created").length;
+    const failCount = results.filter((r) => r.status === "error").length;
+    toast({
+      title: failCount === 0 && partialCount === 0
+        ? `${okCount} invitation${okCount === 1 ? "" : "s"} sent`
+        : `${okCount} sent, ${partialCount} created (no email), ${failCount} failed`,
+      variant: failCount === 0 ? "success" : "error",
+    });
+  }
+
+  const filteredBulkClients = React.useMemo(() => {
+    const q = bulkClientSearch.trim().toLowerCase();
+    const already = new Set(bulkRecipients.map((r) => r.email.toLowerCase()));
+    return clients
+      .filter((c) => !!c.email && !already.has(c.email.toLowerCase()))
+      .filter((c) => {
+        if (!q) return true;
+        const hay = `${c.full_name ?? ""} ${c.name ?? ""} ${c.email} ${c.company_name ?? ""}`.toLowerCase();
+        return hay.includes(q);
+      })
+      .slice(0, 50);
+  }, [clients, bulkClientSearch, bulkRecipients]);
 
   // Enterprise feature flag
   const [hasEnterpriseFlag, setHasEnterpriseFlag] = React.useState(false);
@@ -843,6 +1008,14 @@ export default function OnboardingsPage() {
                 >
                   Refresh
                 </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  iconLeft={<Users className="h-3.5 w-3.5" />}
+                  onClick={openBulk}
+                >
+                  Send to many
+                </Button>
                 <Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={() => setCreateOpen(true)}>
                   New onboarding
                 </Button>
@@ -1072,6 +1245,206 @@ export default function OnboardingsPage() {
 
           <button type="submit" className="hidden" />
         </form>
+      </Modal>
+
+      {/* ─── Bulk send modal ─────────────────────────────────────────── */}
+      <Modal
+        open={bulkOpen}
+        onClose={closeBulk}
+        size="xl"
+        title="Send template to many"
+        description="Pick a template, add recipients, send invitations in one go."
+        dismissOnBackdrop={!bulkSending}
+        hideClose={bulkSending}
+        footer={
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="secondary" onClick={closeBulk} disabled={bulkSending}>
+              {bulkResults ? "Close" : "Cancel"}
+            </Button>
+            {!bulkResults ? (
+              <Button onClick={runBulkSend} loading={bulkSending} disabled={bulkSending || bulkRecipients.length === 0}>
+                {bulkSending
+                  ? `Sending ${bulkProgress?.done ?? 0} of ${bulkProgress?.total ?? 0}…`
+                  : `Send to ${bulkRecipients.length || 0} recipient${bulkRecipients.length === 1 ? "" : "s"}`}
+              </Button>
+            ) : null}
+          </div>
+        }
+      >
+        <div className="space-y-5">
+          {bulkResults ? (
+            <div className="space-y-3">
+              <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm">
+                <div className="font-semibold text-[var(--color-text-primary)]">
+                  Done — {bulkResults.filter((r) => r.status === "sent").length} sent,{" "}
+                  {bulkResults.filter((r) => r.status === "created").length} created (no email),{" "}
+                  {bulkResults.filter((r) => r.status === "error").length} failed
+                </div>
+              </div>
+              <ul className="max-h-[320px] divide-y divide-[var(--color-border)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
+                {bulkResults.map((res) => {
+                  const r = bulkRecipients.find((x) => x.key === res.key);
+                  return (
+                    <li key={res.key} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-[var(--color-text-primary)]">
+                          {r?.full_name || r?.email || res.key}
+                        </div>
+                        <div className="truncate text-xs text-[var(--color-text-muted)]">{r?.email}</div>
+                      </div>
+                      {res.status === "sent" ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-success)]">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Sent
+                        </span>
+                      ) : res.status === "created" ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-warning)]">
+                          <AlertCircle className="h-3.5 w-3.5" /> Created, email failed
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-danger)]" title={res.message}>
+                          <AlertCircle className="h-3.5 w-3.5" /> Failed
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : (
+            <>
+              {/* Template select */}
+              <FormField label="Template" required>
+                <Select
+                  value={bulkTemplateId}
+                  onChange={(e) => setBulkTemplateId(e.target.value)}
+                  disabled={bulkSending}
+                >
+                  <option value="">No template — blank onboarding</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </Select>
+              </FormField>
+
+              {/* Add emails */}
+              <FormField label="Add recipients by email" hint="Paste a list — commas, semicolons or new lines work. Press Enter to add.">
+                <div className="flex gap-2">
+                  <Input
+                    value={bulkEmailInput}
+                    onChange={(e) => setBulkEmailInput(e.target.value)}
+                    placeholder="alice@acme.com, bob@beta.co, carol@gamma.io"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        commitBulkEmailInput();
+                      }
+                    }}
+                    onBlur={() => {
+                      if (bulkEmailInput.trim()) commitBulkEmailInput();
+                    }}
+                    disabled={bulkSending}
+                  />
+                  <Button variant="secondary" onClick={commitBulkEmailInput} disabled={bulkSending || !bulkEmailInput.trim()}>
+                    Add
+                  </Button>
+                </div>
+              </FormField>
+
+              {/* Pick from existing clients */}
+              {clients.length > 0 ? (
+                <FormField label="Or pick from existing clients">
+                  <Input
+                    value={bulkClientSearch}
+                    onChange={(e) => setBulkClientSearch(e.target.value)}
+                    placeholder="Search clients…"
+                    disabled={bulkSending}
+                  />
+                  {filteredBulkClients.length > 0 ? (
+                    <ul className="mt-2 max-h-[180px] divide-y divide-[var(--color-border)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
+                      {filteredBulkClients.map((c) => (
+                        <li key={c.id}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addBulkRecipient({
+                                key: `c-${c.id}`,
+                                email: c.email,
+                                full_name: (c.full_name || c.name || c.email.split("@")[0]) as string,
+                                company_name: c.company_name ?? null,
+                                source: "client",
+                                client_id: c.id,
+                              })
+                            }
+                            disabled={bulkSending}
+                            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
+                          >
+                            <div className="min-w-0">
+                              <div className="truncate font-medium text-[var(--color-text-primary)]">
+                                {c.full_name || c.name || "—"}
+                              </div>
+                              <div className="truncate text-xs text-[var(--color-text-muted)]">
+                                {c.email}{c.company_name ? ` · ${c.company_name}` : ""}
+                              </div>
+                            </div>
+                            <Plus className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="mt-2 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-3 text-xs text-[var(--color-text-muted)]">
+                      No clients match — or all matches are already added.
+                    </div>
+                  )}
+                </FormField>
+              ) : null}
+
+              {/* Selected chips */}
+              <FormField label={`Selected recipients (${bulkRecipients.length})`}>
+                {bulkRecipients.length === 0 ? (
+                  <div className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-6 text-center text-xs text-[var(--color-text-muted)]">
+                    No recipients yet. Paste emails above or pick from your clients.
+                  </div>
+                ) : (
+                  <ul className="flex flex-wrap gap-2">
+                    {bulkRecipients.map((r) => (
+                      <li
+                        key={r.key}
+                        className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-1 pl-3 pr-1 text-xs"
+                      >
+                        <span className="font-medium text-[var(--color-text-primary)]">
+                          {r.full_name || r.email}
+                        </span>
+                        <span className="text-[var(--color-text-muted)]">{r.email}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeBulkRecipient(r.key)}
+                          disabled={bulkSending}
+                          className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
+                          aria-label={`Remove ${r.email}`}
+                        >
+                          <XIcon className="h-3 w-3" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </FormField>
+
+              {bulkErr ? (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">
+                  {bulkErr}
+                </div>
+              ) : null}
+
+              {bulkSending && bulkProgress ? (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                  Sending {bulkProgress.done} of {bulkProgress.total}…
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
       </Modal>
 
       <ConfirmModal
