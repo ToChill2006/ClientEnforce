@@ -35,7 +35,6 @@ type PhaseDef = {
   number: number;
   name: string;
   deadline?: string | null;
-  default_deadline_offset_days?: number;
 };
 
 type TemplateDefinition = {
@@ -53,14 +52,14 @@ type TemplateRow = {
 };
 
 const TYPE_LABEL: Record<Requirement["type"], string> = {
-  text: "Text response",
-  file: "File upload",
-  signature: "Signature",
-  multiple_choice: "Multiple choice",
+  text: "Written response",
+  file: "Attachment required",
+  signature: "Signature required",
+  multiple_choice: "Selection",
   checkbox: "Acknowledgement",
-  heading: "Section heading",
+  heading: "Subsection",
   payment: "Payment",
-  info: "Information",
+  info: "For information",
 };
 
 function formatDateLong(iso: string) {
@@ -71,19 +70,27 @@ function formatDateLong(iso: string) {
   });
 }
 
-function formatDateMonthYear(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    year: "numeric",
-    month: "short",
-  });
+function makeFormRef(id: string, updatedAt: string) {
+  const short = id.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 6);
+  const y = new Date(updatedAt).getFullYear();
+  return `DDQ-${short}/${y}`;
 }
 
 function makeVersion(updatedAt: string) {
   const d = new Date(updatedAt);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}.${m}.${day}`;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function sectionLetter(n: number): string {
+  // 1 → A, 2 → B, 27 → AA
+  let s = "";
+  let x = n;
+  while (x > 0) {
+    const r = (x - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    x = Math.floor((x - 1) / 26);
+  }
+  return s || "A";
 }
 
 function groupByPhase(requirements: Requirement[], phases: PhaseDef[]) {
@@ -96,15 +103,15 @@ function groupByPhase(requirements: Requirement[], phases: PhaseDef[]) {
     if (!groups.has(num)) groups.set(num, []);
     groups.get(num)!.push(r);
   });
-  // Ensure all declared phases appear even if empty
   phases.forEach((p) => {
     if (!groups.has(p.number)) groups.set(p.number, []);
   });
   return Array.from(groups.entries())
     .sort(([a], [b]) => a - b)
-    .map(([num, reqs]) => ({
+    .map(([num, reqs], idx) => ({
       number: num,
-      name: phaseMap.get(num)?.name ?? `Phase ${num}`,
+      letter: sectionLetter(idx + 1),
+      name: phaseMap.get(num)?.name ?? `Section ${sectionLetter(idx + 1)}`,
       deadline: phaseMap.get(num)?.deadline ?? null,
       requirements: reqs,
     }));
@@ -122,9 +129,9 @@ export async function generateMetadata({
     .select("name")
     .eq("id", id)
     .single();
-  const name = (data as { name?: string } | null)?.name ?? "Template";
+  const name = (data as { name?: string } | null)?.name ?? "Form";
   return {
-    title: `${name} · Due Diligence Template`,
+    title: `${name} — Due Diligence Questionnaire`,
     robots: { index: false, follow: false },
   };
 }
@@ -156,22 +163,21 @@ export default async function TemplatePrintPage({
   const orgRecordName = (org as { name?: string } | null)?.name ?? null;
 
   const whiteLabel = await loadWhiteLabelForOrg(template.org_id);
-  const orgName = whiteLabel.brand_name || orgRecordName || "ClientEnforce";
+  const orgName = whiteLabel.brand_name || orgRecordName || "Issuing organisation";
   const logoUrl = whiteLabel.logo_url;
 
   const requirements = template.definition?.requirements ?? [];
   const phases = template.definition?.phases ?? [];
-  const grouped = groupByPhase(requirements, phases);
-  const totalRequired = requirements.filter((r) => r.is_required).length;
-  const totalOptional = requirements.length - totalRequired;
+  const sections = groupByPhase(requirements, phases);
   const generatedDate = formatDateLong(new Date().toISOString());
+  const formRef = makeFormRef(template.id, template.updated_at);
   const version = makeVersion(template.updated_at);
 
   return (
     <div className="print-root">
       <PrintToolbar templateName={template.name} />
 
-      {/* Named strings drive the print header/footer on every page */}
+      {/* Named strings drive the @page running header on every page */}
       <span className="pdf-string-title" aria-hidden style={{ display: "none" }}>
         {template.name}
       </span>
@@ -179,187 +185,346 @@ export default async function TemplatePrintPage({
         {orgName}
       </span>
       <span className="pdf-string-date" aria-hidden style={{ display: "none" }}>
-        {generatedDate}
+        Issued {generatedDate}
+      </span>
+      <span className="pdf-string-formref" aria-hidden style={{ display: "none" }}>
+        {formRef}
       </span>
 
       <div className="pdf-doc">
-        {/* ───────── Cover ───────── */}
+        {/* ───────── COVER ───────── */}
         <section className="pdf-page pdf-cover" aria-label="Cover">
-          <div className="pdf-cover-top">
-            {logoUrl ? (
-              // Org-uploaded logo on Agency Pro
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={`${orgName} logo`} className="pdf-cover-logo" />
-            ) : (
-              <span className="pdf-cover-brand">{orgName}</span>
-            )}
-            <span className="pdf-cover-rule" aria-hidden />
-            <span className="pdf-cover-brand">{version}</span>
-          </div>
-
           <div className="pdf-cover-body">
-            <div className="pdf-cover-eyebrow">Due Diligence Questionnaire</div>
-            <h1 className="pdf-cover-title">{template.name}</h1>
-            <p className="pdf-cover-subtitle">
-              This document defines the information, documents and acknowledgements
-              required to complete due diligence. Please respond to each section in
-              order. Items marked Required must be answered to submit.
-            </p>
+            {/* Issuer header */}
+            <div className="pdf-cover-id-block">
+              <div className="pdf-cover-issuer">
+                <div className="pdf-cover-issuer-label">Issued by</div>
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt={`${orgName} logo`}
+                    className="pdf-cover-issuer-logo"
+                  />
+                ) : null}
+                <div className="pdf-cover-issuer-name">{orgName}</div>
+              </div>
+              <div className="pdf-cover-formref">
+                <strong>{formRef}</strong>
+                Version {version}
+                <br />
+                Issued {generatedDate}
+              </div>
+            </div>
 
-            <dl className="pdf-cover-stats" aria-label="Document summary">
-              <div>
-                <dt className="pdf-cover-stat-label">Phases</dt>
-                <dd className="pdf-cover-stat-value">{grouped.length}</dd>
+            {/* Title block */}
+            <div className="pdf-cover-title-block">
+              <div className="pdf-cover-eyebrow">
+                Due Diligence Questionnaire
               </div>
-              <div>
-                <dt className="pdf-cover-stat-label">Items</dt>
-                <dd className="pdf-cover-stat-value">{requirements.length}</dd>
-              </div>
-              <div>
-                <dt className="pdf-cover-stat-label">Required</dt>
-                <dd className="pdf-cover-stat-value">{totalRequired}</dd>
-              </div>
-              <div>
-                <dt className="pdf-cover-stat-label">Optional</dt>
-                <dd className="pdf-cover-stat-value">{totalOptional}</dd>
-              </div>
-            </dl>
+              <h1 className="pdf-cover-title">{template.name}</h1>
+              <p className="pdf-cover-subtitle">
+                This form collects the information and documents required to
+                complete due diligence on the respondent named below. Read the
+                instructions before completing.
+              </p>
+            </div>
 
-            <dl className="pdf-cover-meta">
-              <div>
-                <dt>Prepared by</dt>
-                <dd>{orgName}</dd>
+            {/* Respondent details — to be completed */}
+            <div className="pdf-cover-respondent" aria-label="Respondent details">
+              <div className="pdf-cover-respondent-col">
+                <div className="pdf-cover-respondent-label">
+                  Respondent (full legal name)
+                </div>
+                <div className="pdf-cover-respondent-line" aria-hidden />
               </div>
-              <div>
-                <dt>Generated</dt>
-                <dd>{generatedDate}</dd>
+              <div className="pdf-cover-respondent-col">
+                <div className="pdf-cover-respondent-label">Date received</div>
+                <div className="pdf-cover-respondent-line" aria-hidden />
               </div>
-              <div>
-                <dt>Version</dt>
-                <dd>{version}</dd>
+            </div>
+            <div className="pdf-cover-respondent">
+              <div className="pdf-cover-respondent-col">
+                <div className="pdf-cover-respondent-label">Position / title</div>
+                <div className="pdf-cover-respondent-line" aria-hidden />
               </div>
-              <div>
-                <dt>Last updated</dt>
-                <dd>{formatDateMonthYear(template.updated_at)}</dd>
+              <div className="pdf-cover-respondent-col">
+                <div className="pdf-cover-respondent-label">Company name</div>
+                <div className="pdf-cover-respondent-line" aria-hidden />
               </div>
-            </dl>
+            </div>
+
+            {/* Instructions — like a real form's "Before you begin" panel */}
+            <div className="pdf-cover-instructions">
+              <div className="pdf-cover-instructions-head">
+                Instructions — please read before completing this form
+              </div>
+              <div className="pdf-cover-instructions-body">
+                <ol>
+                  <li>
+                    Complete every section in order. Sections are lettered A
+                    onwards; items within each section are numbered.
+                  </li>
+                  <li>
+                    Items marked <strong style={{ color: "#b00020" }}>*</strong>{" "}
+                    are mandatory. Items not marked are optional but encouraged.
+                  </li>
+                  <li>
+                    Print clearly in BLOCK CAPITALS where a written response is
+                    requested. Tick (✗) the appropriate box where options are
+                    listed.
+                  </li>
+                  <li>
+                    Where an attachment is requested, label the file with the
+                    item number (e.g. {sections[0]?.letter ?? "A"}.1) and
+                    return alongside this form.
+                  </li>
+                  <li>
+                    Sign and date the declaration on the final page. An
+                    unsigned form will not be accepted.
+                  </li>
+                  <li>
+                    Return the completed form and all attachments to the issuer
+                    via the secure portal link provided, or by post to the
+                    address on record.
+                  </li>
+                </ol>
+              </div>
+            </div>
           </div>
 
-          <div className="pdf-cover-footer">
-            <span className="pdf-cover-confidential">Confidential</span>
-            <span>For intended recipient only · Do not redistribute</span>
+          <div className="pdf-cover-confidentiality">
+            <span>Confidential</span>
+            <span>For the named respondent only — do not redistribute</span>
           </div>
         </section>
 
-        {/* ───────── Contents ───────── */}
-        {grouped.length > 0 ? (
+        {/* ───────── CONTENTS ───────── */}
+        {sections.length > 0 ? (
           <section className="pdf-page" aria-label="Contents">
-            <div className="pdf-contents-eyebrow">Contents</div>
-            <h2 className="pdf-contents-title">In this document</h2>
-            <ol className="pdf-contents-list">
-              {grouped.map((p) => (
-                <li key={p.number} className="pdf-contents-row">
-                  <span className="pdf-contents-num">
-                    Phase {String(p.number).padStart(2, "0")}
-                  </span>
-                  <span className="pdf-contents-name">{p.name}</span>
-                  <span className="pdf-contents-count">
-                    {p.requirements.length} item{p.requirements.length === 1 ? "" : "s"}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <div className="pdf-page-band pdf-page-band-print-hide">
+              <span className="pdf-page-band-id">{formRef}</span>
+              <span className="pdf-page-band-title">{template.name}</span>
+              <span className="pdf-page-band-side">Contents</span>
+            </div>
+            <div className="pdf-page-body">
+              <h2 className="pdf-contents-title">Contents</h2>
+              <table className="pdf-contents-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Section</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Items</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sections.map((s) => (
+                    <tr key={s.number}>
+                      <td>Section {s.letter}</td>
+                      <td>{s.name}</td>
+                      <td>
+                        {s.requirements.length === 0
+                          ? "—"
+                          : s.requirements.length}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td>Final</td>
+                    <td>Declaration and signature</td>
+                    <td>—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
         ) : null}
 
-        {/* ───────── Phases ───────── */}
-        {grouped.length === 0 ? (
+        {/* ───────── SECTIONS ───────── */}
+        {sections.length === 0 ? (
           <section className="pdf-page">
-            <p className="pdf-resp-info">This template has no requirements yet.</p>
+            <div className="pdf-page-body">
+              <p className="pdf-resp-info">
+                No items have been added to this form yet.
+              </p>
+            </div>
           </section>
         ) : (
-          grouped.map((phase) => (
+          sections.map((section) => (
             <section
-              key={phase.number}
-              className="pdf-page pdf-phase"
-              aria-label={`Phase ${phase.number}: ${phase.name}`}
+              key={section.number}
+              className="pdf-page"
+              aria-label={`Section ${section.letter}: ${section.name}`}
             >
-              <header className="pdf-phase-header">
-                <div className="pdf-phase-eyebrow">
-                  <span className="pdf-phase-eyebrow-bar" aria-hidden />
-                  Phase {phase.number} of {grouped.length}
+              <div className="pdf-page-band pdf-page-band-print-hide">
+                <span className="pdf-page-band-id">{formRef}</span>
+                <span className="pdf-page-band-title">{template.name}</span>
+                <span className="pdf-page-band-side">Section {section.letter}</span>
+              </div>
+              <div className="pdf-page-body">
+                <div className="pdf-phase-banner">
+                  <span>Section {section.letter}</span>
+                  <span>{section.requirements.length} item{section.requirements.length === 1 ? "" : "s"}</span>
                 </div>
-                <h2 className="pdf-phase-name">{phase.name}</h2>
-                {phase.deadline ? (
+                <h2 className="pdf-phase-title">{section.name}</h2>
+                {section.deadline ? (
                   <div className="pdf-phase-deadline">
-                    <span className="pdf-phase-deadline-label">Deadline</span>
-                    {formatDateLong(phase.deadline)}
+                    Return by {formatDateLong(section.deadline)}
                   </div>
                 ) : null}
-              </header>
+                <div className="pdf-phase-divider" aria-hidden />
 
-              {phase.requirements.length === 0 ? (
-                <p className="pdf-resp-info">No requirements in this phase.</p>
-              ) : (
-                <ol className="pdf-req-list">
-                  {phase.requirements.map((req, i) => {
-                    if (req.type === "heading") {
-                      return (
-                        <li key={i} className="pdf-req-heading">
-                          <div className="pdf-req-heading-eyebrow">Section</div>
-                          <h3 className="pdf-req-heading-title">
-                            {req.label || "(untitled section)"}
-                          </h3>
-                        </li>
-                      );
-                    }
-                    return (
-                      <li key={i} className="pdf-req">
-                        <div className="pdf-req-head">
-                          <span className="pdf-req-num" aria-hidden>
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <div className="pdf-req-main">
-                            <div className="pdf-req-label">
-                              {req.label || "(untitled)"}
+                {section.requirements.length === 0 ? (
+                  <p className="pdf-resp-info">
+                    No items in this section.
+                  </p>
+                ) : (
+                  <ol className="pdf-req-list">
+                    {section.requirements.map((req, i) => {
+                      if (req.type === "heading") {
+                        return (
+                          <li key={i} className="pdf-req-heading">
+                            <div className="pdf-req-heading-eyebrow">
+                              Subsection
                             </div>
-                            <div className="pdf-req-pills">
-                              <span className="pdf-pill pdf-pill-type">
-                                {TYPE_LABEL[req.type]}
-                              </span>
+                            <div className="pdf-req-heading-title">
+                              {req.label || "(untitled subsection)"}
+                            </div>
+                          </li>
+                        );
+                      }
+                      const itemRef = `${section.letter}.${i + 1}`;
+                      return (
+                        <li key={i} className="pdf-req">
+                          <div className="pdf-req-num" aria-hidden>
+                            {itemRef}
+                          </div>
+                          <div className="pdf-req-body">
+                            <div className="pdf-req-label">
+                              <span>{req.label || "(untitled)"}</span>
                               {req.is_required ? (
-                                <span className="pdf-pill pdf-pill-required">
-                                  Required
+                                <span
+                                  className="pdf-req-required"
+                                  aria-label="Mandatory"
+                                >
+                                  Mandatory
                                 </span>
                               ) : (
-                                <span className="pdf-pill pdf-pill-optional">
+                                <span className="pdf-req-optional">
                                   Optional
                                 </span>
                               )}
                             </div>
+                            <div className="pdf-req-type">
+                              {TYPE_LABEL[req.type]}
+                            </div>
+                            <ResponseBlock req={req} itemRef={itemRef} />
                           </div>
-                        </div>
-
-                        <ResponseBlock req={req} />
-                      </li>
-                    );
-                  })}
-                </ol>
-              )}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                )}
+              </div>
             </section>
           ))
         )}
 
-        {/* ───────── End ───────── */}
-        <section className="pdf-page pdf-end" aria-label="End of document">
-          <div className="pdf-end-card">
-            <div className="pdf-end-eyebrow">End of document</div>
-            <h2 className="pdf-end-title">Thank you for completing this submission.</h2>
-            <p className="pdf-end-body">
-              Once every Required item has been answered, return this document — or
-              submit your responses through the secure ClientEnforce portal link you
-              were sent. For questions, contact {orgName}.
+        {/* ───────── DECLARATION ───────── */}
+        <section className="pdf-page" aria-label="Declaration">
+          <div className="pdf-page-band pdf-page-band-print-hide">
+            <span className="pdf-page-band-id">{formRef}</span>
+            <span className="pdf-page-band-title">{template.name}</span>
+            <span className="pdf-page-band-side">Declaration</span>
+          </div>
+          <div className="pdf-page-body">
+            <h2 className="pdf-decl-title">Declaration</h2>
+            <p className="pdf-decl-body">
+              I, the undersigned respondent, declare that:
             </p>
+            <ol className="pdf-decl-list">
+              <li>
+                The information provided in this form, and in all accompanying
+                documents and attachments, is true, complete and accurate to
+                the best of my knowledge and belief.
+              </li>
+              <li>
+                I am duly authorised to provide this information and these
+                documents on behalf of the respondent organisation named on
+                the cover of this form.
+              </li>
+              <li>
+                I understand that the information will be used by {orgName}
+                {" "}for the purpose of conducting due diligence and will be
+                treated as confidential.
+              </li>
+              <li>
+                I understand that providing false or misleading information,
+                or omitting material information, may result in the
+                withdrawal of any offer and may give rise to legal liability.
+              </li>
+            </ol>
+
+            <div className="pdf-decl-sig" aria-label="Signature block">
+              <div className="pdf-decl-sig-row">
+                <div className="pdf-decl-sig-cell">
+                  <span className="pdf-decl-sig-cell-label">Signature</span>
+                  <div className="pdf-decl-sig-line" aria-hidden />
+                </div>
+                <div className="pdf-decl-sig-cell">
+                  <span className="pdf-decl-sig-cell-label">
+                    Print name (block capitals)
+                  </span>
+                  <div className="pdf-decl-sig-line" aria-hidden />
+                </div>
+                <div className="pdf-decl-sig-cell">
+                  <span className="pdf-decl-sig-cell-label">Date</span>
+                  <div className="pdf-decl-sig-line" aria-hidden />
+                </div>
+              </div>
+              <div className="pdf-decl-sig-row">
+                <div className="pdf-decl-sig-cell">
+                  <span className="pdf-decl-sig-cell-label">Position</span>
+                  <div className="pdf-decl-sig-line" aria-hidden />
+                </div>
+                <div className="pdf-decl-sig-cell">
+                  <span className="pdf-decl-sig-cell-label">
+                    Company name
+                  </span>
+                  <div className="pdf-decl-sig-line" aria-hidden />
+                </div>
+                <div className="pdf-decl-sig-cell">
+                  <span className="pdf-decl-sig-cell-label">Email</span>
+                  <div className="pdf-decl-sig-line" aria-hidden />
+                </div>
+              </div>
+            </div>
+
+            <div className="pdf-decl-official" aria-label="For official use only">
+              <div className="pdf-decl-official-head">
+                For official use only — to be completed by {orgName}
+              </div>
+              <div className="pdf-decl-official-body">
+                <div className="pdf-decl-official-cell">
+                  <span className="pdf-decl-official-cell-label">
+                    Received by
+                  </span>
+                  <span className="pdf-decl-official-cell-line" aria-hidden />
+                </div>
+                <div className="pdf-decl-official-cell">
+                  <span className="pdf-decl-official-cell-label">
+                    Date received
+                  </span>
+                  <span className="pdf-decl-official-cell-line" aria-hidden />
+                </div>
+                <div className="pdf-decl-official-cell">
+                  <span className="pdf-decl-official-cell-label">
+                    Reference
+                  </span>
+                  <span className="pdf-decl-official-cell-line" aria-hidden />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
@@ -367,7 +532,7 @@ export default async function TemplatePrintPage({
   );
 }
 
-function ResponseBlock({ req }: { req: Requirement }) {
+function ResponseBlock({ req, itemRef }: { req: Requirement; itemRef: string }) {
   if (req.type === "info") {
     return req.info_content ? (
       <div className="pdf-resp">
@@ -382,10 +547,7 @@ function ResponseBlock({ req }: { req: Requirement }) {
         {req.multiline ? (
           <div className="pdf-resp-text-box" aria-hidden />
         ) : (
-          <div className="pdf-resp-text-lines" aria-hidden>
-            <div className="pdf-resp-text-line" />
-            <div className="pdf-resp-text-line" />
-          </div>
+          <div className="pdf-resp-text-line" aria-hidden />
         )}
       </div>
     );
@@ -405,7 +567,7 @@ function ResponseBlock({ req }: { req: Requirement }) {
           {req.include_other ? (
             <li className="pdf-resp-option">
               <span className={Marker} aria-hidden />
-              <span>Other:</span>
+              <span>Other (please specify):</span>
               <span className="pdf-resp-other-line" aria-hidden />
             </li>
           ) : null}
@@ -418,13 +580,17 @@ function ResponseBlock({ req }: { req: Requirement }) {
     return (
       <div className="pdf-resp">
         <div className="pdf-resp-signature">
-          <div>
+          <div className="pdf-resp-sig-cell">
             <div className="pdf-resp-sig-line" aria-hidden />
             <div className="pdf-resp-sig-caption">Signature</div>
           </div>
-          <div>
+          <div className="pdf-resp-sig-cell">
             <div className="pdf-resp-sig-line" aria-hidden />
-            <div className="pdf-resp-sig-caption">Date signed</div>
+            <div className="pdf-resp-sig-caption">Print name</div>
+          </div>
+          <div className="pdf-resp-sig-cell">
+            <div className="pdf-resp-sig-line" aria-hidden />
+            <div className="pdf-resp-sig-caption">Date</div>
           </div>
         </div>
       </div>
@@ -436,7 +602,10 @@ function ResponseBlock({ req }: { req: Requirement }) {
       <div className="pdf-resp">
         <div className="pdf-resp-file">
           <span className="pdf-resp-file-icon" aria-hidden />
-          <span>Attach a file when submitting via the secure portal</span>
+          <span>
+            Attach the requested document and label with reference{" "}
+            <strong>{itemRef}</strong>.
+          </span>
         </div>
       </div>
     );
@@ -450,14 +619,22 @@ function ResponseBlock({ req }: { req: Requirement }) {
     return (
       <div className="pdf-resp">
         <div className="pdf-resp-payment">
-          <span className="pdf-resp-payment-amount">
-            {req.payment_currency ?? ""} {amount}
-          </span>
-          {req.payment_description ? (
-            <span className="pdf-resp-payment-desc">
-              {req.payment_description}
-            </span>
-          ) : null}
+          <div className="pdf-resp-payment-cell">
+            <div className="pdf-resp-payment-label">Currency</div>
+            <div className="pdf-resp-payment-value">
+              {req.payment_currency ?? "—"}
+            </div>
+          </div>
+          <div className="pdf-resp-payment-cell">
+            <div className="pdf-resp-payment-label">Amount</div>
+            <div className="pdf-resp-payment-value">{amount}</div>
+          </div>
+          <div className="pdf-resp-payment-cell">
+            <div className="pdf-resp-payment-label">Description</div>
+            <div className="pdf-resp-payment-value-soft">
+              {req.payment_description || "—"}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -467,7 +644,8 @@ function ResponseBlock({ req }: { req: Requirement }) {
     return (
       <div className="pdf-resp">
         <div className="pdf-resp-ack">
-          <span className="pdf-checkbox" aria-hidden /> I acknowledge
+          <span className="pdf-checkbox" aria-hidden />
+          <span>I acknowledge the above</span>
         </div>
       </div>
     );
