@@ -362,14 +362,14 @@ export default function OnboardingsPage() {
     });
   }
 
-  function addSelectedBulkClients() {
-    const ids = Array.from(bulkClientChecked);
-    if (ids.length === 0) return;
+  // Derive recipients on the fly from checked client IDs
+  const bulkRecipientsLive: BulkRecipient[] = React.useMemo(() => {
     const byId = new Map(clients.map((c) => [c.id, c] as const));
-    ids.forEach((id) => {
+    const out: BulkRecipient[] = [];
+    bulkClientChecked.forEach((id) => {
       const c = byId.get(id);
       if (!c || !c.email) return;
-      addBulkRecipient({
+      out.push({
         key: `c-${c.id}`,
         email: c.email,
         full_name: (c.full_name || c.name || c.email.split("@")[0]) as string,
@@ -378,8 +378,8 @@ export default function OnboardingsPage() {
         client_id: c.id,
       });
     });
-    setBulkClientChecked(new Set());
-  }
+    return out;
+  }, [bulkClientChecked, clients]);
 
   function closeBulk() {
     if (bulkSending) return;
@@ -430,17 +430,21 @@ export default function OnboardingsPage() {
 
   async function runBulkSend() {
     setBulkErr(null);
-    if (bulkRecipients.length === 0) {
-      setBulkErr("Add at least one recipient.");
+    const recipients = bulkRecipientsLive;
+    if (recipients.length === 0) {
+      setBulkErr("Tick at least one client to send to.");
       return;
     }
+    // Snapshot the recipient list so the results screen keeps names
+    // even if the user un-ticks clients afterwards.
+    setBulkRecipients(recipients);
     setBulkSending(true);
-    setBulkProgress({ done: 0, total: bulkRecipients.length });
+    setBulkProgress({ done: 0, total: recipients.length });
     const results: BulkResult[] = [];
     const created: OnboardingRow[] = [];
 
-    for (let i = 0; i < bulkRecipients.length; i += 1) {
-      const r = bulkRecipients[i];
+    for (let i = 0; i < recipients.length; i += 1) {
+      const r = recipients[i];
       const titleBase = (r.company_name || r.full_name || r.email).trim();
       try {
         // Build payload — prefer client_id (top-level) for existing clients
@@ -508,7 +512,7 @@ export default function OnboardingsPage() {
       } catch (e: any) {
         results.push({ key: r.key, status: "error", message: e?.message || "Failed" });
       }
-      setBulkProgress({ done: i + 1, total: bulkRecipients.length });
+      setBulkProgress({ done: i + 1, total: recipients.length });
     }
 
     if (created.length > 0) {
@@ -1324,10 +1328,10 @@ export default function OnboardingsPage() {
               {bulkResults ? "Close" : "Cancel"}
             </Button>
             {!bulkResults ? (
-              <Button onClick={runBulkSend} loading={bulkSending} disabled={bulkSending || bulkRecipients.length === 0}>
+              <Button onClick={runBulkSend} loading={bulkSending} disabled={bulkSending || bulkRecipientsLive.length === 0}>
                 {bulkSending
                   ? `Sending ${bulkProgress?.done ?? 0} of ${bulkProgress?.total ?? 0}…`
-                  : `Send to ${bulkRecipients.length || 0} recipient${bulkRecipients.length === 1 ? "" : "s"}`}
+                  : `Send to ${bulkRecipientsLive.length || 0} recipient${bulkRecipientsLive.length === 1 ? "" : "s"}`}
               </Button>
             ) : null}
           </div>
@@ -1403,8 +1407,8 @@ export default function OnboardingsPage() {
               {/* Pick from existing clients — multi-select */}
               {clients.length > 0 ? (
                 <FormField
-                  label="Pick recipients from your clients"
-                  hint="Tick the clients you want, then click Add selected."
+                  label="Tick the clients you want to send to"
+                  hint="The send button updates as you tick. No extra step needed."
                 >
                   <Input
                     value={bulkClientSearch}
@@ -1471,17 +1475,6 @@ export default function OnboardingsPage() {
                           );
                         })}
                       </ul>
-                      <div className="mt-2 flex justify-end">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={addSelectedBulkClients}
-                          disabled={bulkSending || bulkClientChecked.size === 0}
-                          iconLeft={<Plus className="h-3.5 w-3.5" />}
-                        >
-                          Add {bulkClientChecked.size || 0} selected
-                        </Button>
-                      </div>
                     </>
                   ) : (
                     <div className="mt-2 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-3 text-xs text-[var(--color-text-muted)]">
@@ -1500,38 +1493,6 @@ export default function OnboardingsPage() {
                   </div>
                 </FormField>
               )}
-
-              {/* Selected chips */}
-              <FormField label={`Selected recipients (${bulkRecipients.length})`}>
-                {bulkRecipients.length === 0 ? (
-                  <div className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-6 text-center text-xs text-[var(--color-text-muted)]">
-                    No recipients yet. Tick clients above and click Add selected.
-                  </div>
-                ) : (
-                  <ul className="flex flex-wrap gap-2">
-                    {bulkRecipients.map((r) => (
-                      <li
-                        key={r.key}
-                        className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-1 pl-3 pr-1 text-xs"
-                      >
-                        <span className="font-medium text-[var(--color-text-primary)]">
-                          {r.full_name || r.email}
-                        </span>
-                        <span className="text-[var(--color-text-muted)]">{r.email}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeBulkRecipient(r.key)}
-                          disabled={bulkSending}
-                          className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
-                          aria-label={`Remove ${r.email}`}
-                        >
-                          <XIcon className="h-3 w-3" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </FormField>
 
               {bulkErr ? (
                 <div className="rounded-[var(--radius-md)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-3 py-2 text-xs text-[var(--color-danger)]">
