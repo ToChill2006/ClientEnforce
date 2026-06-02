@@ -327,7 +327,7 @@ export default function OnboardingsPage() {
   };
   type BulkResult =
     | { key: string; status: "sent" }
-    | { key: string; status: "created" } // created but email send failed
+    | { key: string; status: "created"; message?: string } // created but email send failed
     | { key: string; status: "error"; message: string };
 
   const [bulkOpen, setBulkOpen] = React.useState(false);
@@ -443,28 +443,44 @@ export default function OnboardingsPage() {
       const r = bulkRecipients[i];
       const titleBase = (r.company_name || r.full_name || r.email).trim();
       try {
+        // Build payload — prefer client_id (top-level) for existing clients
+        // because that's the path the API validates most strictly.
+        const payload: Record<string, unknown> = {
+          title: titleBase,
+          template_id: bulkTemplateId || undefined,
+          company_name: r.company_name || undefined,
+        };
+        if (r.source === "client" && r.client_id) {
+          payload.client_id = r.client_id;
+        } else {
+          payload.client = { email: r.email, full_name: r.full_name || r.email.split("@")[0] };
+        }
+
         const createRes = await fetch("/api/onboardings", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            title: titleBase,
-            template_id: bulkTemplateId || null,
-            company_name: r.company_name || null,
-            client:
-              r.source === "client" && r.client_id
-                ? { id: r.client_id }
-                : { email: r.email, full_name: r.full_name || null },
-          }),
+          body: JSON.stringify(payload),
         });
         if (!createRes.ok) {
-          const text = await createRes.text().catch(() => "");
-          throw new Error(text || `Create failed (${createRes.status})`);
+          // Try to extract the API's JSON error message
+          const ct = createRes.headers.get("content-type") || "";
+          let msg = `Create failed (${createRes.status})`;
+          if (ct.includes("application/json")) {
+            const j = await createRes.json().catch(() => null);
+            if (j?.error) msg = String(j.error);
+            else if (j?.message) msg = String(j.message);
+          } else {
+            const text = await createRes.text().catch(() => "");
+            if (text) msg = text.slice(0, 240);
+          }
+          throw new Error(msg);
         }
         const cjson = (await createRes.json().catch(() => null)) as any;
         const item = (cjson?.item ?? cjson?.onboarding ?? null) as OnboardingRow | null;
         if (item?.id) created.push(item);
 
         let sentOk = false;
+        let sendErr: string | null = null;
         if (item?.id) {
           const sendRes = await fetch("/api/onboardings/send", {
             method: "POST",
@@ -472,8 +488,23 @@ export default function OnboardingsPage() {
             body: JSON.stringify({ onboarding_id: item.id, id: item.id }),
           });
           sentOk = sendRes.ok;
+          if (!sentOk) {
+            const ct = sendRes.headers.get("content-type") || "";
+            if (ct.includes("application/json")) {
+              const j = await sendRes.json().catch(() => null);
+              sendErr = j?.error || j?.message || null;
+            } else {
+              sendErr = (await sendRes.text().catch(() => "")) || null;
+            }
+          }
         }
-        results.push(sentOk ? { key: r.key, status: "sent" } : { key: r.key, status: "created" });
+        if (sentOk) {
+          results.push({ key: r.key, status: "sent" });
+        } else if (item?.id) {
+          results.push({ key: r.key, status: "created", message: sendErr ?? undefined });
+        } else {
+          results.push({ key: r.key, status: "error", message: "Create returned no item" });
+        }
       } catch (e: any) {
         results.push({ key: r.key, status: "error", message: e?.message || "Failed" });
       }
@@ -1312,30 +1343,42 @@ export default function OnboardingsPage() {
                   {bulkResults.filter((r) => r.status === "error").length} failed
                 </div>
               </div>
-              <ul className="max-h-[320px] divide-y divide-[var(--color-border)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
+              <ul className="max-h-[360px] divide-y divide-[var(--color-border)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
                 {bulkResults.map((res) => {
                   const r = bulkRecipients.find((x) => x.key === res.key);
                   return (
-                    <li key={res.key} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                      <div className="min-w-0">
-                        <div className="truncate font-medium text-[var(--color-text-primary)]">
-                          {r?.full_name || r?.email || res.key}
+                    <li key={res.key} className="flex flex-col gap-1 px-3 py-2 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate font-medium text-[var(--color-text-primary)]">
+                            {r?.full_name || r?.email || res.key}
+                          </div>
+                          <div className="truncate text-xs text-[var(--color-text-muted)]">{r?.email}</div>
                         </div>
-                        <div className="truncate text-xs text-[var(--color-text-muted)]">{r?.email}</div>
+                        {res.status === "sent" ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-success)]">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Sent
+                          </span>
+                        ) : res.status === "created" ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-warning)]">
+                            <AlertCircle className="h-3.5 w-3.5" /> Created, email failed
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 shrink-0 text-xs font-semibold text-[var(--color-danger)]">
+                            <AlertCircle className="h-3.5 w-3.5" /> Failed
+                          </span>
+                        )}
                       </div>
-                      {res.status === "sent" ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-success)]">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Sent
-                        </span>
-                      ) : res.status === "created" ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-warning)]">
-                          <AlertCircle className="h-3.5 w-3.5" /> Created, email failed
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-danger)]" title={res.message}>
-                          <AlertCircle className="h-3.5 w-3.5" /> Failed
-                        </span>
-                      )}
+                      {res.status === "error" && res.message ? (
+                        <div className="rounded-[var(--radius-sm)] border border-[var(--color-danger-subtle)] bg-[var(--color-danger-subtle)] px-2 py-1 text-xs text-[var(--color-danger)]">
+                          {res.message}
+                        </div>
+                      ) : null}
+                      {res.status === "created" && res.message ? (
+                        <div className="rounded-[var(--radius-sm)] border border-[var(--color-warning-subtle)] bg-[var(--color-warning-subtle)] px-2 py-1 text-xs text-[var(--color-warning)]">
+                          Email error: {res.message}
+                        </div>
+                      ) : null}
                     </li>
                   );
                 })}
