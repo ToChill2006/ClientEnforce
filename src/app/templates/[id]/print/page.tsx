@@ -73,7 +73,7 @@ function formatDateLong(iso: string) {
 function makeFormRef(id: string, updatedAt: string) {
   const short = id.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 6);
   const y = new Date(updatedAt).getFullYear();
-  return `DDQ-${short}/${y}`;
+  return `FRM-${short}/${y}`;
 }
 
 function makeVersion(updatedAt: string) {
@@ -131,7 +131,7 @@ export async function generateMetadata({
     .single();
   const name = (data as { name?: string } | null)?.name ?? "Form";
   return {
-    title: `${name} — Due Diligence Questionnaire`,
+    title: `${name} — Onboarding Form`,
     robots: { index: false, follow: false },
   };
 }
@@ -217,14 +217,10 @@ export default async function TemplatePrintPage({
 
             {/* Title block */}
             <div className="pdf-cover-title-block">
-              <div className="pdf-cover-eyebrow">
-                Due Diligence Questionnaire
-              </div>
               <h1 className="pdf-cover-title">{template.name}</h1>
               <p className="pdf-cover-subtitle">
-                This form collects the information and documents required to
-                complete due diligence on the respondent named below. Read the
-                instructions before completing.
+                This form collects the information and documents requested by
+                the issuer. Read the instructions before completing.
               </p>
             </div>
 
@@ -378,49 +374,52 @@ export default async function TemplatePrintPage({
                   </p>
                 ) : (
                   <ol className="pdf-req-list">
-                    {section.requirements.map((req, i) => {
-                      if (req.type === "heading") {
+                    {(() => {
+                      let visibleItem = 0;
+                      return section.requirements.map((req, i) => {
+                        if (req.type === "heading") {
+                          return (
+                            <li key={i} className="pdf-req-heading">
+                              <div className="pdf-req-heading-rule" aria-hidden />
+                              <div className="pdf-req-heading-title">
+                                {req.label || "(untitled divider)"}
+                              </div>
+                              <div className="pdf-req-heading-rule" aria-hidden />
+                            </li>
+                          );
+                        }
+                        visibleItem += 1;
+                        const itemRef = `${section.letter}.${visibleItem}`;
                         return (
-                          <li key={i} className="pdf-req-heading">
-                            <div className="pdf-req-heading-eyebrow">
-                              Subsection
+                          <li key={i} className="pdf-req">
+                            <div className="pdf-req-num" aria-hidden>
+                              {itemRef}
                             </div>
-                            <div className="pdf-req-heading-title">
-                              {req.label || "(untitled subsection)"}
+                            <div className="pdf-req-body">
+                              <div className="pdf-req-label">
+                                <span>{req.label || "(untitled)"}</span>
+                                {req.is_required ? (
+                                  <span
+                                    className="pdf-req-required"
+                                    aria-label="Mandatory"
+                                  >
+                                    Mandatory
+                                  </span>
+                                ) : (
+                                  <span className="pdf-req-optional">
+                                    Optional
+                                  </span>
+                                )}
+                              </div>
+                              <div className="pdf-req-type">
+                                {TYPE_LABEL[req.type]}
+                              </div>
+                              <ResponseBlock req={req} itemRef={itemRef} />
                             </div>
                           </li>
                         );
-                      }
-                      const itemRef = `${section.letter}.${i + 1}`;
-                      return (
-                        <li key={i} className="pdf-req">
-                          <div className="pdf-req-num" aria-hidden>
-                            {itemRef}
-                          </div>
-                          <div className="pdf-req-body">
-                            <div className="pdf-req-label">
-                              <span>{req.label || "(untitled)"}</span>
-                              {req.is_required ? (
-                                <span
-                                  className="pdf-req-required"
-                                  aria-label="Mandatory"
-                                >
-                                  Mandatory
-                                </span>
-                              ) : (
-                                <span className="pdf-req-optional">
-                                  Optional
-                                </span>
-                              )}
-                            </div>
-                            <div className="pdf-req-type">
-                              {TYPE_LABEL[req.type]}
-                            </div>
-                            <ResponseBlock req={req} itemRef={itemRef} />
-                          </div>
-                        </li>
-                      );
-                    })}
+                      });
+                    })()}
                   </ol>
                 )}
               </div>
@@ -453,8 +452,8 @@ export default async function TemplatePrintPage({
               </li>
               <li>
                 I understand that the information will be used by {orgName}
-                {" "}for the purpose of conducting due diligence and will be
-                treated as confidential.
+                {" "}for the purposes for which it has been requested and will
+                be treated as confidential.
               </li>
               <li>
                 I understand that providing false or misleading information,

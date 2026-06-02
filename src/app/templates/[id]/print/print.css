@@ -625,31 +625,29 @@
   color: var(--form-ink);
 }
 
-/* Section heading req — official subhead */
+/* Divider (heading type) — centered title between two rules */
 .pdf-req-heading {
-  display: block;
-  border: 0;
-  border-top: 2px solid var(--form-ink);
-  border-bottom: 1px solid var(--form-ink);
-  padding: 10px 0 8px;
-  margin-top: 14px;
-  background: var(--form-band-soft);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+  margin: 14px 0;
+  border: 0 !important;
+  background: transparent;
 }
-.pdf-req-heading-eyebrow {
-  padding: 0 14px;
-  font-size: 7.5pt;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--form-muted);
+.pdf-req-heading-rule {
+  height: 2px;
+  background: var(--form-ink);
 }
 .pdf-req-heading-title {
-  margin: 4px 14px 0;
-  font-size: 13pt;
+  font-size: 11pt;
   font-weight: 800;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--form-ink);
-  letter-spacing: -0.005em;
+  white-space: nowrap;
+  padding: 0 4px;
 }
 
 /* ─── Declaration & signature page ────────────────────────────────── */
