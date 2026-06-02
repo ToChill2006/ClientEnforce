@@ -334,6 +334,7 @@ export default function OnboardingsPage() {
   const [bulkRecipients, setBulkRecipients] = React.useState<BulkRecipient[]>([]);
   const [bulkEmailInput, setBulkEmailInput] = React.useState("");
   const [bulkClientSearch, setBulkClientSearch] = React.useState("");
+  const [bulkClientChecked, setBulkClientChecked] = React.useState<Set<string>>(new Set());
   const [bulkSending, setBulkSending] = React.useState(false);
   const [bulkProgress, setBulkProgress] = React.useState<{ done: number; total: number } | null>(null);
   const [bulkResults, setBulkResults] = React.useState<BulkResult[] | null>(null);
@@ -345,9 +346,38 @@ export default function OnboardingsPage() {
     setBulkRecipients([]);
     setBulkEmailInput("");
     setBulkClientSearch("");
+    setBulkClientChecked(new Set());
     setBulkResults(null);
     setBulkProgress(null);
     setBulkErr(null);
+  }
+
+  function toggleBulkClientChecked(id: string) {
+    setBulkClientChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function addSelectedBulkClients() {
+    const ids = Array.from(bulkClientChecked);
+    if (ids.length === 0) return;
+    const byId = new Map(clients.map((c) => [c.id, c] as const));
+    ids.forEach((id) => {
+      const c = byId.get(id);
+      if (!c || !c.email) return;
+      addBulkRecipient({
+        key: `c-${c.id}`,
+        email: c.email,
+        full_name: (c.full_name || c.name || c.email.split("@")[0]) as string,
+        company_name: c.company_name ?? null,
+        source: "client",
+        client_id: c.id,
+      });
+    });
+    setBulkClientChecked(new Set());
   }
 
   function closeBulk() {
@@ -1350,9 +1380,12 @@ export default function OnboardingsPage() {
                 </div>
               </FormField>
 
-              {/* Pick from existing clients */}
+              {/* Pick from existing clients — multi-select */}
               {clients.length > 0 ? (
-                <FormField label="Or pick from existing clients">
+                <FormField
+                  label="Or pick from existing clients"
+                  hint="Tick the clients you want, then click Add selected."
+                >
                   <Input
                     value={bulkClientSearch}
                     onChange={(e) => setBulkClientSearch(e.target.value)}
@@ -1360,37 +1393,76 @@ export default function OnboardingsPage() {
                     disabled={bulkSending}
                   />
                   {filteredBulkClients.length > 0 ? (
-                    <ul className="mt-2 max-h-[180px] divide-y divide-[var(--color-border)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
-                      {filteredBulkClients.map((c) => (
-                        <li key={c.id}>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addBulkRecipient({
-                                key: `c-${c.id}`,
-                                email: c.email,
-                                full_name: (c.full_name || c.name || c.email.split("@")[0]) as string,
-                                company_name: c.company_name ?? null,
-                                source: "client",
-                                client_id: c.id,
-                              })
-                            }
-                            disabled={bulkSending}
-                            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-[var(--color-bg-subtle)] disabled:opacity-50"
-                          >
-                            <div className="min-w-0">
-                              <div className="truncate font-medium text-[var(--color-text-primary)]">
-                                {c.full_name || c.name || "—"}
-                              </div>
-                              <div className="truncate text-xs text-[var(--color-text-muted)]">
-                                {c.email}{c.company_name ? ` · ${c.company_name}` : ""}
-                              </div>
-                            </div>
-                            <Plus className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
+                    <>
+                      <div className="mt-2 flex items-center justify-between gap-2 px-1 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const allChecked = filteredBulkClients.every((c) =>
+                              bulkClientChecked.has(c.id)
+                            );
+                            setBulkClientChecked((prev) => {
+                              const next = new Set(prev);
+                              if (allChecked) {
+                                filteredBulkClients.forEach((c) => next.delete(c.id));
+                              } else {
+                                filteredBulkClients.forEach((c) => next.add(c.id));
+                              }
+                              return next;
+                            });
+                          }}
+                          disabled={bulkSending}
+                          className="font-medium text-[var(--color-accent)] hover:underline disabled:opacity-50"
+                        >
+                          {filteredBulkClients.every((c) => bulkClientChecked.has(c.id))
+                            ? "Clear all visible"
+                            : `Select all ${filteredBulkClients.length} visible`}
+                        </button>
+                        <span className="text-[var(--color-text-muted)]">
+                          {bulkClientChecked.size} selected
+                        </span>
+                      </div>
+                      <ul className="mt-1 max-h-[220px] divide-y divide-[var(--color-border)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
+                        {filteredBulkClients.map((c) => {
+                          const checked = bulkClientChecked.has(c.id);
+                          return (
+                            <li key={c.id}>
+                              <label
+                                className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-[var(--color-bg-subtle)]"
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4 cursor-pointer accent-[var(--color-accent)]"
+                                  checked={checked}
+                                  onChange={() => toggleBulkClientChecked(c.id)}
+                                  disabled={bulkSending}
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate font-medium text-[var(--color-text-primary)]">
+                                    {c.full_name || c.name || "—"}
+                                  </div>
+                                  <div className="truncate text-xs text-[var(--color-text-muted)]">
+                                    {c.email}
+                                    {c.company_name ? ` · ${c.company_name}` : ""}
+                                  </div>
+                                </div>
+                              </label>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <div className="mt-2 flex justify-end">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={addSelectedBulkClients}
+                          disabled={bulkSending || bulkClientChecked.size === 0}
+                          iconLeft={<Plus className="h-3.5 w-3.5" />}
+                        >
+                          Add {bulkClientChecked.size || 0} selected
+                        </Button>
+                      </div>
+                    </>
                   ) : (
                     <div className="mt-2 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] px-3 py-3 text-xs text-[var(--color-text-muted)]">
                       No clients match — or all matches are already added.
