@@ -56,14 +56,6 @@ const nextConfig: NextConfig = {
       { source: "/blog/automated-onboarding-workflows", destination: "/client-onboarding-automation", permanent: true },
       { source: "/blog/onboarding-automation-guide", destination: "/client-onboarding-automation", permanent: true },
 
-      // www → apex
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.clientenforce.com" }],
-        destination: "https://clientenforce.com/:path*",
-        permanent: true,
-      },
-
       { source: "/blog/client-onboarding-for-agencies", destination: "/client-onboarding-software-for-agencies", permanent: true },
       { source: "/blog/onboarding-process-for-agencies", destination: "/client-onboarding-software-for-agencies", permanent: true },
     ];
