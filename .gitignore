@@ -46,3 +46,4 @@ next-env.d.ts
 # Local working files
 ClientEnforce/
 .claude/
+.claude/
