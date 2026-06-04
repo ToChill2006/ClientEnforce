@@ -14,10 +14,6 @@ function isCustomDomain(hostname: string) {
 
 export async function middleware(req: NextRequest) {
   const redirectUrl = req.nextUrl.clone();
-  if (redirectUrl.hostname === "www.clientenforce.com") {
-    redirectUrl.hostname = "clientenforce.com";
-    return NextResponse.redirect(redirectUrl, 301);
-  }
 
   const { pathname } = req.nextUrl;
   const hostname = req.nextUrl.hostname;
