@@ -364,18 +364,20 @@ export async function GET(req: Request) {
 
   // Prefer richer columns if they exist in your schema, but be defensive: some deployments
   // won't have denormalized fields like `client_full_name` / `client_email`.
+  // Extended variants include company_name (added by migration 20260618000000).
+  // Base variants (no company_name) serve as fallbacks for older schema.
   const selectExtendedWithDenorm =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, owner_id, client_type_id, event_id, deadline";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, owner_id, client_type_id, event_id, deadline, company_name";
   const selectExtendedNoDenorm =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, owner_id, client_type_id, event_id, deadline";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, owner_id, client_type_id, event_id, deadline, company_name";
   const selectBaseWithDenorm =
     "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email, owner_id, client_type_id, event_id, deadline";
   const selectBaseNoDenorm =
     "id, title, status, client_token, created_at, updated_at, client_id, template_id, owner_id, client_type_id, event_id, deadline";
   const selectExtendedWithDenormNoOwner =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, client_type_id, event_id, deadline";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_full_name, client_email, client_type_id, event_id, deadline, company_name";
   const selectExtendedNoDenormNoOwner =
-    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_type_id, event_id, deadline";
+    "id, title, status, client_token, created_at, updated_at, locked_at, submitted_at, client_id, template_id, client_type_id, event_id, deadline, company_name";
   const selectBaseWithDenormNoOwner =
     "id, title, status, client_token, created_at, updated_at, client_id, template_id, client_full_name, client_email, client_type_id, event_id, deadline";
   const selectBaseNoDenormNoOwner =
@@ -641,7 +643,8 @@ export async function GET(req: Request) {
     // Prefer denormalized columns on onboardings if present.
     const resolvedClientEmail = o.client_email ?? client?.email ?? null;
     const resolvedClientName = o.client_full_name ?? o.client_name ?? client?.name ?? null;
-    const resolvedCompanyName = client?.company_name ?? null;
+    // Prefer the per-onboarding company_name; fall back to the client-level value.
+    const resolvedCompanyName = (o.company_name ?? null) || (client?.company_name ?? null);
 
     const resolvedTemplateName = (template as any)?.name ?? null;
     const resolvedOwnerName = o.owner_id ? (ownerNamesById[o.owner_id] ?? null) : null;
@@ -825,7 +828,7 @@ export async function POST(req: Request) {
 
   const now = new Date().toISOString();
 
-  // Save company_name to the client record if provided (best-effort; ignored if column absent)
+  // Save company_name to the client record as a default (best-effort; ignored if column absent)
   const company_name = (parsed.data as any).company_name ?? null;
   if (company_name && client_id) {
     try {
@@ -859,6 +862,8 @@ export async function POST(req: Request) {
     ...(owner_id ? { owner_id } : {}),
     ...(event_id ? { event_id } : {}),
     ...(client_type_id ? { client_type_id } : {}),
+    // Store per-onboarding company name so each deal can show a different company.
+    ...(company_name ? { company_name } : {}),
   };
 
   const tryInsert = async (payload: Record<string, any>) =>
@@ -938,6 +943,14 @@ export async function POST(req: Request) {
       const { ob: ob3, err: err3 } = await runInsertChain(baseWithoutEvent);
       onboarding = ob3;
       onboardingErr = err3;
+    }
+
+    // If company_name column doesn't exist yet (migration not run), retry without it.
+    if (onboardingErr && isMissingColumnError(onboardingErr, "company_name")) {
+      const { company_name: _cn, ...baseWithoutCompany } = insertBase;
+      const { ob: ob4, err: err4 } = await runInsertChain(baseWithoutCompany);
+      onboarding = ob4;
+      onboardingErr = err4;
     }
   }
 
