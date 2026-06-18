@@ -336,6 +336,8 @@ export default function OnboardingsPage() {
   const [bulkEmailInput, setBulkEmailInput] = React.useState("");
   const [bulkClientSearch, setBulkClientSearch] = React.useState("");
   const [bulkClientChecked, setBulkClientChecked] = React.useState<Set<string>>(new Set());
+  // Per-client company name overrides — keyed by client id
+  const [bulkCompanyOverrides, setBulkCompanyOverrides] = React.useState<Record<string, string>>({});
   const [bulkSending, setBulkSending] = React.useState(false);
   const [bulkProgress, setBulkProgress] = React.useState<{ done: number; total: number } | null>(null);
   const [bulkResults, setBulkResults] = React.useState<BulkResult[] | null>(null);
@@ -348,6 +350,7 @@ export default function OnboardingsPage() {
     setBulkEmailInput("");
     setBulkClientSearch("");
     setBulkClientChecked(new Set());
+    setBulkCompanyOverrides({});
     setBulkResults(null);
     setBulkProgress(null);
     setBulkErr(null);
@@ -362,24 +365,26 @@ export default function OnboardingsPage() {
     });
   }
 
-  // Derive recipients on the fly from checked client IDs
+  // Derive recipients on the fly from checked client IDs.
+  // Per-recipient company name override takes precedence over the client-record value.
   const bulkRecipientsLive: BulkRecipient[] = React.useMemo(() => {
     const byId = new Map(clients.map((c) => [c.id, c] as const));
     const out: BulkRecipient[] = [];
     bulkClientChecked.forEach((id) => {
       const c = byId.get(id);
       if (!c || !c.email) return;
+      const overrideCompany = bulkCompanyOverrides[id];
       out.push({
         key: `c-${c.id}`,
         email: c.email,
         full_name: (c.full_name || c.name || c.email.split("@")[0]) as string,
-        company_name: c.company_name ?? null,
+        company_name: overrideCompany !== undefined ? (overrideCompany || null) : (c.company_name ?? null),
         source: "client",
         client_id: c.id,
       });
     });
     return out;
-  }, [bulkClientChecked, clients]);
+  }, [bulkClientChecked, clients, bulkCompanyOverrides]);
 
   function closeBulk() {
     if (bulkSending) return;
@@ -1449,11 +1454,11 @@ export default function OnboardingsPage() {
                       <ul className="mt-1 max-h-[220px] divide-y divide-[var(--color-border)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]">
                         {filteredBulkClients.map((c) => {
                           const checked = bulkClientChecked.has(c.id);
+                          const overrideValue = bulkCompanyOverrides[c.id];
+                          const displayCompany = overrideValue !== undefined ? overrideValue : (c.company_name ?? "");
                           return (
-                            <li key={c.id}>
-                              <label
-                                className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-[var(--color-bg-subtle)]"
-                              >
+                            <li key={c.id} className="flex flex-col">
+                              <label className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-[var(--color-bg-subtle)]">
                                 <input
                                   type="checkbox"
                                   className="h-4 w-4 cursor-pointer accent-[var(--color-accent)]"
@@ -1465,12 +1470,23 @@ export default function OnboardingsPage() {
                                   <div className="truncate font-medium text-[var(--color-text-primary)]">
                                     {c.full_name || c.name || "—"}
                                   </div>
-                                  <div className="truncate text-xs text-[var(--color-text-muted)]">
-                                    {c.email}
-                                    {c.company_name ? ` · ${c.company_name}` : ""}
-                                  </div>
+                                  <div className="truncate text-xs text-[var(--color-text-muted)]">{c.email}</div>
                                 </div>
                               </label>
+                              {checked && (
+                                <div className="px-3 pb-2 pl-10">
+                                  <input
+                                    type="text"
+                                    value={displayCompany}
+                                    onChange={(e) =>
+                                      setBulkCompanyOverrides((prev) => ({ ...prev, [c.id]: e.target.value }))
+                                    }
+                                    disabled={bulkSending}
+                                    placeholder="Company name for this onboarding"
+                                    className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-1 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none disabled:opacity-50"
+                                  />
+                                </div>
+                              )}
                             </li>
                           );
                         })}
