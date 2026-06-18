@@ -249,17 +249,47 @@ export function ClientPortal({
   }
 
   // ── File upload (Feature 4: appends to file_paths array) ────────────────────
+  // Files go directly to Supabase Storage via a presigned URL to avoid the
+  // 4.5 MB serverless function body limit on Vercel.
 
   async function uploadFile(requirement_id: string, file: File) {
     try {
       setBusyByReq((p) => ({ ...p, [requirement_id]: true }));
-      const fd = new FormData();
-      fd.set("token", token);
-      fd.set("requirement_id", requirement_id);
-      fd.set("file", file);
-      const res = await fetch("/api/onboardings/client/upload", { method: "POST", body: fd });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Upload failed");
+
+      // Step 1: get a presigned upload URL
+      const presignRes = await fetch("/api/onboardings/client/upload/presign", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          token,
+          requirement_id,
+          filename: file.name,
+          content_type: file.type || "application/octet-stream",
+          size: file.size,
+        }),
+      });
+      const presignJson = await presignRes.json().catch(() => null);
+      if (!presignRes.ok) throw new Error(presignJson?.error || "Upload failed");
+
+      const { signed_url, path } = presignJson as { signed_url: string; path: string };
+
+      // Step 2: PUT the file directly to Supabase Storage (bypasses function body limit)
+      const putRes = await fetch(signed_url, {
+        method: "PUT",
+        headers: { "content-type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      if (!putRes.ok) throw new Error(`Storage upload failed (${putRes.status})`);
+
+      // Step 3: confirm the upload so the database is updated
+      const confirmRes = await fetch("/api/onboardings/client/upload/confirm", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token, requirement_id, path }),
+      });
+      const json = await confirmRes.json().catch(() => null);
+      if (!confirmRes.ok) throw new Error(json?.error || "Upload failed");
+
       notify({ title: "Uploaded", variant: "success" });
       setReqs((prev) =>
         prev.map((r) => {
