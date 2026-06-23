@@ -643,8 +643,8 @@ export async function GET(req: Request) {
     // Prefer denormalized columns on onboardings if present.
     const resolvedClientEmail = o.client_email ?? client?.email ?? null;
     const resolvedClientName = o.client_full_name ?? o.client_name ?? client?.name ?? null;
-    // Prefer the per-onboarding company_name; fall back to the client-level value.
-    const resolvedCompanyName = (o.company_name ?? null) || (client?.company_name ?? null);
+    // Only use the onboarding's own company_name — never fall back to the client record.
+    const resolvedCompanyName = o.company_name ?? null;
 
     const resolvedTemplateName = (template as any)?.name ?? null;
     const resolvedOwnerName = o.owner_id ? (ownerNamesById[o.owner_id] ?? null) : null;
