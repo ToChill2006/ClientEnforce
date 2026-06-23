@@ -828,11 +828,22 @@ export async function POST(req: Request) {
 
   const now = new Date().toISOString();
 
-  // Save company_name to the client record as a default (best-effort; ignored if column absent)
   const company_name = (parsed.data as any).company_name ?? null;
+
+  // Only populate the client's company_name if they don't already have one.
+  // Never overwrite it — each onboarding stores its own company_name on the
+  // onboarding row, so the client record must stay stable.
   if (company_name && client_id) {
     try {
-      await supabase.from("clients").update({ company_name } as any).eq("id", client_id).eq("org_id", org_id);
+      const { data: existingClient } = await supabase
+        .from("clients")
+        .select("company_name")
+        .eq("id", client_id)
+        .eq("org_id", org_id)
+        .single();
+      if (!existingClient || !(existingClient as any).company_name) {
+        await supabase.from("clients").update({ company_name } as any).eq("id", client_id).eq("org_id", org_id);
+      }
     } catch { /* best-effort */ }
   }
 
