@@ -1229,9 +1229,7 @@ export default function OnboardingsPage() {
                     const nm = ((c.full_name ?? c.name ?? "") as string).trim();
                     setClientEmail(c.email);
                     setClientName(nm);
-                    // Don't inherit the client's company name — each onboarding is standalone.
-                    // The user must explicitly enter a company name for this onboarding.
-                    setClientCompany("");
+                    setClientCompany(((c as any).company_name ?? "") as string);
                   }
                 }}
               >
