@@ -1229,7 +1229,9 @@ export default function OnboardingsPage() {
                     const nm = ((c.full_name ?? c.name ?? "") as string).trim();
                     setClientEmail(c.email);
                     setClientName(nm);
-                    setClientCompany(((c as any).company_name ?? "") as string);
+                    // Don't inherit the client's company name — each onboarding is standalone.
+                    // The user must explicitly enter a company name for this onboarding.
+                    setClientCompany("");
                   }
                 }}
               >
@@ -1264,11 +1266,11 @@ export default function OnboardingsPage() {
             )}
           </div>
 
-          <FormField label="Company name">
+          <FormField label="Company name" hint="Specific to this onboarding — won't affect other onboardings for the same client.">
             <Input
               value={clientCompany}
               onChange={(e) => setClientCompany(e.target.value)}
-              placeholder="Acme Inc."
+              placeholder="e.g. Acme Inc."
             />
           </FormField>
 
