@@ -149,6 +149,27 @@ function formatDate(v?: string | null) {
   });
 }
 
+// Items completed within this window are flagged as recently submitted.
+const RECENT_SUBMISSION_WINDOW_DAYS = 2;
+
+// Date-only label for a completion timestamp, e.g. "08 Jul 2026". Returns null
+// when the value is missing or unparseable (legacy rows may lack a timestamp).
+function formatSubmittedDate(v?: string | null): string | null {
+  if (!v) return null;
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
+}
+
+// True when a completion timestamp falls within the recency window.
+function isRecentSubmission(v?: string | null): boolean {
+  if (!v) return false;
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return false;
+  const ageMs = Date.now() - d.getTime();
+  return ageMs >= 0 && ageMs <= RECENT_SUBMISSION_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+}
+
 function reqKindLabel(kind?: string | null) {
   const k = (kind || "").toLowerCase();
   if (!k) return "Field";
@@ -1647,6 +1668,8 @@ function ResponseItem({
   const rType = (r.type ?? r.kind ?? "").toLowerCase();
   const preview = valuePreview(r);
   const completed = !!r.completed_at || !!r.completed || preview.type !== "empty";
+  const submittedDate = completed ? formatSubmittedDate(r.completed_at) : null;
+  const recentlySubmitted = completed && isRecentSubmission(r.completed_at);
 
   if (rType === "heading") {
     return (
@@ -1721,8 +1744,20 @@ function ResponseItem({
       payStatus === "failed" ? "Payment failed" :
       `Not paid — ${fmtAmount}`;
 
+    const payPaid = payStatus === "paid";
+    const payRecentlyPaid = payPaid && isRecentSubmission(payPaidAt);
+
     return (
-      <li className="px-5 py-4">
+      <li
+        className={cn(
+          "px-5 py-4 border-l-2 transition-colors",
+          payRecentlyPaid
+            ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]"
+            : payPaid
+            ? "border-[var(--color-success)]"
+            : "border-transparent"
+        )}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -1730,6 +1765,7 @@ function ResponseItem({
                 {r.label || "Payment"}
               </span>
               <Tag tone="neutral">Payment</Tag>
+              {payRecentlyPaid && <Tag tone="accent">New</Tag>}
               {(r.is_required ?? r.required) && <Tag tone="info">Required</Tag>}
             </div>
             {(r as any).payment_description && (
@@ -1898,7 +1934,16 @@ function ResponseItem({
   }
 
   return (
-    <li className="px-5 py-4">
+    <li
+      className={cn(
+        "px-5 py-4 border-l-2 transition-colors",
+        recentlySubmitted
+          ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]"
+          : completed
+          ? "border-[var(--color-success)]"
+          : "border-transparent"
+      )}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -1914,7 +1959,7 @@ function ResponseItem({
           {r.prompt && <p className="mt-1 text-xs text-[var(--color-text-muted)]">{r.prompt}</p>}
           <div className="mt-2">{body}</div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-start gap-2">
           {(r.is_ad_hoc || draftMode) && canReview && phaseEditable && (
             <>
               {r.is_ad_hoc && (
@@ -1937,7 +1982,17 @@ function ResponseItem({
               </button>
             </>
           )}
-          <Tag tone={completed ? "success" : "neutral"}>{completed ? "Complete" : "Pending"}</Tag>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-1.5">
+              {recentlySubmitted && <Tag tone="accent">New</Tag>}
+              <Tag tone={completed ? "success" : "neutral"}>{completed ? "Complete" : "Pending"}</Tag>
+            </div>
+            {submittedDate && (
+              <span className="whitespace-nowrap text-[10px] text-[var(--color-text-muted)]">
+                Submitted {submittedDate}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </li>
