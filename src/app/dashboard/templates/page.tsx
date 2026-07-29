@@ -74,6 +74,8 @@ type Requirement = {
   include_other?: boolean;
   // Feature 5: multi-line textarea instead of single-line input
   multiline?: boolean;
+  // Let the client mark this item "Not applicable" (counts as complete)
+  allow_na?: boolean;
   info_content?: string | null;
   // payment type
   payment_amount?: number | null;
@@ -165,6 +167,10 @@ function normalizeTemplateDetail(input: any): TemplateDetail {
         }
         if (type === "text") {
           base.multiline = Boolean(r?.multiline);
+        }
+        // N/A is offered on answerable items only (not headings/info dividers).
+        if (type !== "heading" && type !== "info") {
+          base.allow_na = Boolean(r?.allow_na);
         }
         if (type === "info") {
           base.info_content = r?.info_content ?? r?.value_text ?? null;
@@ -1582,7 +1588,7 @@ function RequirementEditor({
             if (type !== "text") { patch.multiline = undefined; }
             if (type !== "info") { patch.info_content = undefined; }
             if (type !== "payment") { patch.payment_amount = null; patch.payment_currency = null; patch.payment_description = null; }
-            if (type === "info" || type === "heading") { patch.is_required = false; }
+            if (type === "info" || type === "heading") { patch.is_required = false; patch.allow_na = undefined; }
             if (type === "multiple_choice" && !r.options?.length) patch.options = ["", ""];
             if (type === "file") patch.file_mode = "upload";
             if (type === "payment" && !r.payment_currency) patch.payment_currency = "GBP";
@@ -1603,12 +1609,18 @@ function RequirementEditor({
           className={`flex-1 text-sm ${isHeading ? "font-semibold" : ""}`}
         />
 
-        {/* Required toggle or type hint */}
+        {/* Required + Allow N/A toggles, or type hint */}
         {!isHeading && !isInfo ? (
-          <label className="flex shrink-0 cursor-pointer items-center gap-1.5">
-            <input type="checkbox" checked={r.is_required} onChange={(e) => onUpdate({ is_required: e.target.checked })} className="accent-[var(--color-accent)]" />
-            <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">Required</span>
-          </label>
+          <>
+            <label className="flex shrink-0 cursor-pointer items-center gap-1.5">
+              <input type="checkbox" checked={r.is_required} onChange={(e) => onUpdate({ is_required: e.target.checked })} className="accent-[var(--color-accent)]" />
+              <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">Required</span>
+            </label>
+            <label className="flex shrink-0 cursor-pointer items-center gap-1.5" title="Let the client mark this item Not applicable — it still counts as complete.">
+              <input type="checkbox" checked={!!r.allow_na} onChange={(e) => onUpdate({ allow_na: e.target.checked })} className="accent-[var(--color-accent)]" />
+              <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">Allow N/A</span>
+            </label>
+          </>
         ) : (
           <span className="shrink-0 text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">{isInfo ? "info" : "divider"}</span>
         )}

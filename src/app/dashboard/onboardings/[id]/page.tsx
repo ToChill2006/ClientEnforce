@@ -55,6 +55,7 @@ type Requirement = {
   signature_path?: string | null;
   attachment_path?: string | null;
   options?: string[] | null;
+  metadata?: any;
   completed_at?: string | null;
   completed_by?: string | null;
   completed?: boolean | null;
@@ -116,6 +117,7 @@ function normalizeRequirement(raw: any): Requirement {
     signature_path: r.signature_path ?? r.signaturePath ?? null,
     attachment_path: r.attachment_path ?? null,
     options: Array.isArray(r.options) ? r.options : null,
+    metadata: r.metadata && typeof r.metadata === "object" ? r.metadata : null,
     completed_at: r.completed_at ?? r.completedAt ?? null,
     completed_by: r.completed_by ?? r.completedBy ?? null,
     completed: typeof r.completed === "boolean" ? r.completed : null,
@@ -303,6 +305,7 @@ async function fetchRequirementsDirect(onboardingId: string): Promise<Requiremen
         "signature_path",
         "attachment_path",
         "options",
+        "metadata",
         "created_at",
         "updated_at",
         "is_ad_hoc",
@@ -1799,7 +1802,15 @@ function ResponseItem({
 
   let body: React.ReactNode;
 
-  if (rType === "checkbox") {
+  if ((r as any).metadata?.na) {
+    // Client marked this item "Not applicable" — it still counts as complete.
+    body = (
+      <div className="flex items-center gap-2 text-sm">
+        <Tag tone="neutral">N/A</Tag>
+        <span className="text-[var(--color-text-muted)]">Marked not applicable</span>
+      </div>
+    );
+  } else if (rType === "checkbox") {
     const checked = (r.value_text ?? "").toLowerCase() === "true";
     body = (
       <div className="flex items-center gap-2 text-sm">

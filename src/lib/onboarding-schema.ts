@@ -42,6 +42,10 @@ export const TemplateRequirementSchema = z.object({
   // Feature 5: multi-line textarea instead of single-line input for text type
   multiline: z.boolean().optional(),
 
+  // Allow the client to mark this item "Not applicable", which counts as complete.
+  // Opt-in per requirement in the template builder.
+  allow_na: z.boolean().optional(),
+
   // payment type fields
   payment_amount: z.number().nullish(),
   payment_currency: z.string().nullish(),

@@ -1045,6 +1045,7 @@ export async function POST(req: Request) {
           if (it.allow_multi_select) metadataObj.allow_multi_select = it.allow_multi_select;
           if (it.include_other) metadataObj.include_other = it.include_other;
           if (it.multiline) metadataObj.multiline = it.multiline;
+          if (it.allow_na) metadataObj.allow_na = it.allow_na;
           if (it.visible_if && it.visible_if.depends_on_label) {
             metadataObj.visible_if = {
               depends_on_label: String(it.visible_if.depends_on_label),

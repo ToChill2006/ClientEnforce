@@ -19,6 +19,8 @@ type RequirementMetadata = {
   allow_multi_select?: boolean;    // Feature 2
   include_other?: boolean;         // Feature 3
   multiline?: boolean;             // Feature 5
+  allow_na?: boolean;              // client may mark this item "Not applicable"
+  na?: boolean;                    // client has marked this item "Not applicable"
   visible_if?: {
     depends_on_label: string;
     equals?: string;
@@ -248,6 +250,47 @@ export function ClientPortal({
     }
   }
 
+  // ── "Not applicable" toggle ──────────────────────────────────────────────────
+  // Marking N/A clears any partial answer and counts the item as complete.
+
+  async function markNa(requirement_id: string, na: boolean) {
+    try {
+      setBusyByReq((p) => ({ ...p, [requirement_id]: true }));
+      const res = await fetch("/api/onboardings/client/answer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token, requirement_id, na }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || (json && json.ok === false)) throw new Error(json?.error || `Failed (${res.status})`);
+      const rq = json?.requirement;
+      setReqs((prev) =>
+        prev.map((r) => {
+          if (r.id !== requirement_id) return r;
+          if (rq) {
+            // Trust the server: N/A is a metadata overlay and never rewrites the answer.
+            return {
+              ...r,
+              metadata: rq.metadata && typeof rq.metadata === "object" ? rq.metadata : null,
+              value_text: rq.value_text ?? r.value_text,
+              completed_at: (rq.completed_at as string | null) ?? null,
+            };
+          }
+          // Fallback if no body came back — flip the flag optimistically.
+          const meta = { ...(r.metadata || {}) } as NonNullable<RequirementMetadata>;
+          if (na) meta.na = true;
+          else delete meta.na;
+          return { ...r, metadata: meta, completed_at: na ? new Date().toISOString() : r.completed_at };
+        })
+      );
+      refreshProgress();
+    } catch (e: any) {
+      notify({ title: "Update failed", description: e?.message ?? "Unknown error", variant: "error" });
+    } finally {
+      setBusyByReq((p) => ({ ...p, [requirement_id]: false }));
+    }
+  }
+
   // ── File upload (Feature 4: appends to file_paths array) ────────────────────
   // Files go directly to Supabase Storage via a presigned URL to avoid the
   // 4.5 MB serverless function body limit on Vercel.
@@ -426,6 +469,9 @@ export function ClientPortal({
   }
 
   function renderReviewValue(r: Requirement): React.ReactNode {
+    if (r.metadata?.na) {
+      return <span className="text-[var(--color-text-secondary)]">Marked not applicable</span>;
+    }
     if (!r.completed_at) {
       return <span className="text-[var(--color-text-muted)] italic">Not answered</span>;
     }
@@ -639,6 +685,26 @@ export function ClientPortal({
 
             {/* Card body */}
             <div className="px-5 py-4">
+              {r.metadata?.na ? (
+                /* Marked "Not applicable" — inputs are hidden until the client undoes it. */
+                <div className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-3">
+                  <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                    <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">N/A</span>
+                    Marked as not applicable
+                  </div>
+                  {!isLocked ? (
+                    <button
+                      type="button"
+                      onClick={() => markNa(r.id, false)}
+                      disabled={!!busyByReq[r.id]}
+                      className="shrink-0 text-xs font-medium text-[var(--color-accent)] underline-offset-2 hover:underline disabled:opacity-40"
+                    >
+                      Undo
+                    </button>
+                  ) : null}
+                </div>
+              ) : (
+              <>
               {/* Feature 5: text with optional multiline */}
               {r.type === "text" ? (
                 <TextRequirement
@@ -698,6 +764,22 @@ export function ClientPortal({
                   label={r.label}
                   onToggle={(checked) => saveText(r.id, checked ? "true" : "false")}
                 />
+              ) : null}
+              </>
+              )}
+
+              {/* Opt-in "Not applicable" control */}
+              {r.metadata?.allow_na && !isLocked && !r.metadata?.na ? (
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => markNa(r.id, true)}
+                    disabled={!!busyByReq[r.id]}
+                    className="text-xs font-medium text-[var(--color-text-muted)] underline-offset-2 hover:text-[var(--color-text-secondary)] hover:underline disabled:opacity-40"
+                  >
+                    Mark as not applicable
+                  </button>
+                </div>
               ) : null}
             </div>
           </div>
@@ -793,12 +875,19 @@ function TextRequirement({
   const [status, setStatus] = React.useState<"idle" | "saving" | "saved" | "error">("idle");
   const mountedRef = React.useRef(false);
   const saveSeqRef = React.useRef(0);
+  // Tracks whether the client is actively editing this field. Autosave round-trips a new
+  // `initialValue` from the parent, and accepting it mid-edit would overwrite characters the
+  // user typed while the save was in flight — the reported "erases after typing" / "won't save".
+  const editingRef = React.useRef(false);
 
   React.useEffect(() => {
+    // Only accept an externally-changed value when the user isn't mid-edit and it actually
+    // differs from what we already have locally. This keeps the field stable while typing.
+    if (editingRef.current) return;
+    if (initialValue === value) return;
     setValue(initialValue);
     setLastSaved(initialValue);
-    setStatus("idle");
-  }, [initialValue]);
+  }, [initialValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function doSave(v: string) {
     if (disabled) return;
@@ -839,7 +928,8 @@ function TextRequirement({
         <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          onBlur={() => void doSave(value)}
+          onFocus={() => { editingRef.current = true; }}
+          onBlur={() => { editingRef.current = false; void doSave(value); }}
           disabled={disabled}
           rows={4}
           className="w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-base leading-6 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-subtle)] focus:outline-none disabled:opacity-50"
@@ -850,7 +940,8 @@ function TextRequirement({
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          onBlur={() => void doSave(value)}
+          onFocus={() => { editingRef.current = true; }}
+          onBlur={() => { editingRef.current = false; void doSave(value); }}
           disabled={disabled}
           className="w-full text-base"
           style={{ fontSize: "16px" }}

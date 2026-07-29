@@ -579,13 +579,17 @@ export async function GET(req: Request) {
         const kind = ((r as any)?.type || "field").toString();
 
         let answer = "—";
+        const naFlag = !!((r as any)?.metadata && typeof (r as any).metadata === "object" && (r as any).metadata.na);
         const sig = ((r as any)?.signature_path || (r as any)?.signature_url || "").toString().trim();
         const fp = ((r as any)?.file_path || (r as any)?.file_url || "").toString().trim();
 
         const vt = (r as any)?.value_text ?? (r as any)?.answer_text ?? (r as any)?.response_text ?? (r as any)?.value ?? null;
         const vj = (r as any)?.value_json ?? (r as any)?.answer_json ?? (r as any)?.response_json ?? null;
 
-        if (sig) {
+        if (naFlag) {
+          // Marked "Not applicable" — never surface a preserved draft or embed its files.
+          answer = "N/A";
+        } else if (sig) {
           answer = `Signature: ${baseName(sig)}`;
           embedded.push({ label, ref: sig, kind: "signature" });
         } else if (fp) {

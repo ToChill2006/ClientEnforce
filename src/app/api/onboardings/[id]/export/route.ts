@@ -81,6 +81,10 @@ async function resolveFileUrls(
 function formatAnswer(req: Record<string, unknown>): string {
   const type = req.type as string | null;
 
+  // "Not applicable" overrides any stored draft answer in every export.
+  const meta = req.metadata as { na?: boolean } | null | undefined;
+  if (meta && typeof meta === "object" && meta.na) return "N/A";
+
   if (type === "file") return ""; // handled separately
   if (type === "signature") return ""; // handled separately
 
@@ -226,15 +230,17 @@ export async function GET(
       const phaseNumber = r.phase_number as number;
       const phaseInfo = phaseMap.get(phaseNumber);
 
+      const metaNa = !!(r.metadata && typeof r.metadata === "object" && (r.metadata as { na?: boolean }).na);
       const answer = formatAnswer(r);
       const signatureOutput =
-        r.type === "signature" ? (r.signature_path ? "[signature captured]" : "") : "";
+        !metaNa && r.type === "signature" ? (r.signature_path ? "[signature captured]" : "") : "";
+      // N/A hides any preserved file/signature so exports never surface a withdrawn answer.
       const fileUrls =
-        r.type === "file"
+        !metaNa && r.type === "file"
           ? await resolveFileUrls(supabase, (r.file_path as string | null) ?? null, r.file_paths)
           : "";
 
-      const answerCell = r.type === "signature" ? signatureOutput : answer;
+      const answerCell = metaNa ? "N/A" : r.type === "signature" ? signatureOutput : answer;
 
       rows.push(
         csvRow([
