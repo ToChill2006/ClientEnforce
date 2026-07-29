@@ -369,6 +369,10 @@ export default function OnboardingDetailAdminPage() {
 
   // Ad-hoc requirements state
   const [canReview, setCanReview] = React.useState(false);
+
+  // Enterprise-only chat bubble (built for DreamHack's exhibitor workflow) — hidden
+  // for every other org unless their org has the enterprise_onboarding flag enabled.
+  const [hasEnterpriseChat, setHasEnterpriseChat] = React.useState(false);
   const [adHocModal, setAdHocModal] = React.useState<{
     open: boolean;
     phaseNumber: number;
@@ -754,6 +758,32 @@ export default function OnboardingDetailAdminPage() {
         setCanReview(role === "owner" || role === "admin" || role === "reviewer");
       } catch {
         // non-fatal — feature is hidden when uncertain
+      }
+    })();
+  }, []);
+
+  // Resolve the org's enterprise_onboarding flag to gate the DreamHack-only chat bubble.
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const sb = supabaseBrowser();
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data: profile } = await sb
+          .from("profiles")
+          .select("org_id")
+          .eq("user_id", user.id)
+          .single();
+        if (!profile?.org_id) return;
+        const { data: org } = await sb
+          .from("organizations")
+          .select("feature_flags")
+          .eq("id", profile.org_id)
+          .single();
+        const flags = (org as any)?.feature_flags ?? {};
+        setHasEnterpriseChat(flags?.enterprise_onboarding === true);
+      } catch {
+        // non-fatal — feature stays hidden when uncertain
       }
     })();
   }, []);
@@ -1624,8 +1654,8 @@ export default function OnboardingDetailAdminPage() {
         destructive
       />
 
-      {/* Chat bubble — only when onboarding is loaded */}
-      {ob?.id && (
+      {/* Chat bubble — DreamHack-only exhibitor feature, hidden for every other org */}
+      {ob?.id && hasEnterpriseChat && (
         <ChatBubble
           messagesUrl={`/api/onboardings/${ob.id}/messages`}
           postUrl={`/api/onboardings/${ob.id}/messages`}
